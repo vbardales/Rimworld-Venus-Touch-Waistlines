@@ -1,7 +1,7 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
-async function measure(dir) {
+export async function measure(dir) {
   let files = 0;
   let bytes = 0;
   for (const entry of await readdir(dir, { withFileTypes: true })) {

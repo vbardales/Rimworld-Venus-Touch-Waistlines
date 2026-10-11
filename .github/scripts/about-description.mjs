@@ -18,8 +18,10 @@ export function markdownToPlainText(markdown) {
     line = line.replace(/^(\s*)>\s?/, '$1');
     line = line.replace(/^(\s*)[-*+]\s+/, '$1- ');
     // The URL may hold one level of balanced parentheses (https://en.wikipedia.org/wiki/Foo_(bar)), which [^)\s]+ cut short.
-    line = line.replace(/!\[((?:(?!\]\().)*)\]\(((?:[^()\s]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)/g, (_, alt, url) => (alt && alt !== url ? `${alt} (${url})` : url));
-    line = line.replace(/\[((?:(?!\]\().)+)\]\(((?:[^()\s]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)/g, (_, text, url) => (text === url ? url : `${text} (${url})`));
+    // The link text may hold one level of balanced brackets ("[XND] Nocturnal Animals"); an unbalanced "]" ends it, so
+    // "See [note] and [Pickle](u)" links only Pickle.
+    line = line.replace(/!\[((?:[^\[\]]|\[[^\[\]]*\])*)\]\(((?:[^()\s]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)/g, (_, alt, url) => (alt && alt !== url ? `${alt} (${url})` : url));
+    line = line.replace(/\[((?:[^\[\]]|\[[^\[\]]*\])+)\]\(((?:[^()\s]|\([^()\s]*\))+)(?:\s+"[^"]*")?\)/g, (_, text, url) => (text === url ? url : `${text} (${url})`));
     line = line.replace(/\*\*(.+?)\*\*/g, '$1').replace(/__(.+?)__/g, '$1');
     line = line.replace(/(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])/g, '$1').replace(/(?<![\w_])_(?!\s)(.+?)(?<!\s)_(?![\w_])/g, '$1');
     line = line.replace(/`([^`]+)`/g, '$1');
