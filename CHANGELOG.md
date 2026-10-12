@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-Targets 0.2.0. Work in progress, uncommitted: a first APP/WDI slice (`WdiAppPatterns`,
+Targets 1.0.0. Work in progress, uncommitted: a first APP/WDI slice (`WdiAppPatterns`,
 in-memory category masks registered as APP `OnSkin` patterns for four vanilla starter
 defs, off by default). Ships no WDI texture and no APP assembly. See STATUS.md.
 

@@ -4,8 +4,8 @@ packageId:    nelim.venustouch.waistlines
 repo:         https://github.com/vbardales/Rimworld-Venus-Touch-Waistlines
 visibility:   public
 detached:     yes
-workflow_stage: code[0.2.0]
-workflow_audited: 2026-10-12 (fifth pass, vocabulary migration: 'done' -> playTests, then back to code[0.2.0] because the WDI APP slice is uncommitted Source/ work; fourth pass 2026-10-06, third 2026-09-21, second and first 2026-09-20)
+workflow_stage: code[1.0.0]
+workflow_audited: 2026-10-12 (fifth pass, vocabulary migration: 'done' -> playTests, then back to code[1.0.0] (target 1.0.0, owner 2026-10-12) because the WDI APP slice is uncommitted Source/ work; fourth pass 2026-10-06, third 2026-09-21, second and first 2026-09-20)
 localization: complete
 translation_en: complete
 translation_fr: partial
