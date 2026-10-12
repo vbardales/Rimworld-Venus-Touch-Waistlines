@@ -2,7 +2,7 @@
 # to the Workshop as it stands, so an obj/ left there would ship the publicised Assembly-CSharp.dll.
 # The assembly itself is committed, because the mod is installed by junction and has to work
 # without a build step.
-.build/
+build/
 Source/**/obj/
 Source/**/bin/
 *.pdb
@@ -16,6 +16,9 @@ Source/**/bin/
 
 # Claude Code session worktrees and local settings.
 .claude/
+
+# Ephemeral Workshop-page research pulled by Firecrawl.
+.firecrawl/
 
 # Kept on the author's machine only, and never in a public repository: they are computed from,
 # or paint over, art that grants no licence (General Textures Collection, WDI's Realistic
@@ -43,3 +46,16 @@ pickle-reports*/
 
 # Preview renderer controls, local only (PUBLISHING.md).
 Art/.render/
+
+# Diagnostic garments computed from WDI's bodies (no licence): kept on disk for the Pickle
+# passes, never in git, and to be moved out of Mod/ before any upload.
+Mod/Textures/Venus/Diagnostics/
+Mod/Defs/Diagnostic*.xml
+Mod/Patches/Diagnostic*.xml
+
+# Raw Pickle reports copied into a run folder: summary.md, summary.json and junit.xml are kept,
+# the rest weighs megabytes and a stale build proves nothing (WELCOME.md).
+docs/runs/*/report.html
+docs/runs/*/messages.ndjson
+docs/runs/*/Player.log
+docs/runs/*/screenshots/

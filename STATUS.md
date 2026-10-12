@@ -4,9 +4,8 @@ packageId:    nelim.venustouch.waistlines
 repo:         https://github.com/vbardales/Rimworld-Venus-Touch-Waistlines
 visibility:   public
 detached:     yes
-stage:        done
-workflow_stage: done
-workflow_audited: 2026-10-06 (fourth pass; third on 2026-09-21, second and first on 2026-09-20)
+workflow_stage: code[0.2.0]
+workflow_audited: 2026-10-12 (fifth pass, vocabulary migration: 'done' -> playTests, then back to code[0.2.0] because the WDI APP slice is uncommitted Source/ work; fourth pass 2026-10-06, third 2026-09-21, second and first 2026-09-20)
 localization: complete
 translation_en: complete
 translation_fr: partial
@@ -21,7 +20,7 @@ original:     none
 showcase:     Mod/About/Preview.png (896x504, 562977 B, title overlay, the ModIcon badge bottom-left) and Mod/About/ModIcon.png (128x128, 36332 B), both regenerated 2026-10-06 by scripts/Render-Preview.cjs from Art/ModIcon-source.png (config key modIconSource) and Art/Preview-source.png, and the Preview inspected. The renderer also wrote Art/Gallery/0-preview.png (byte for byte the Preview), Art/Preview.ico and Art/ModIcon.ico. Local sources in Art/ (ignored by git): Preview-source.png, ModIcon-source.png, echo.png, Preview.config.json; the checks live in Art/.render/
 tested_on:
 workshop:     "3806769245, prepublished 2026-09-23 by her. Private, as Steam creates every item and RimWorld never calls SetItemVisibility. Mod/About/PublishedFileId.txt is committed (18e2bf2); losing it would make the next upload a second item. The description was sent with the item and is not resent on an update - a correction now happens on the Steam page by hand."
-code_review: "2026-10-06, /code-review low, range 18e2bf2 (0.1.0 PublishedFileId commit)..218e8acdd89a454e37663bba586c68a23c05a13a, one changed source file (Source/TailorMadeWaistlines/TrouserArt.cs): no finding. Reviewed code SHA: 218e8acdd89a454e37663bba586c68a23c05a13a. Previous review: 2026-09-23 on TrouserArt.cs, three findings fixed in eaf8f26. Not covered: Tests/, and nothing after 218e8acdd89a454e37663bba586c68a23c05a13a."
+code_review_sha: 218e8acdd89a454e37663bba586c68a23c05a13a  # was `code_review`: 2026-10-06, /code-review low, range 18e2bf2 (0.1.0 PublishedFileId commit)..<sha>, one changed source file (Source/TailorMadeWaistlines/TrouserArt.cs): no finding. Reviewed code SHA: 218e8acdd89a454e37663bba586c68a23c05a13a. Previous review: 2026-09-23 on TrouserArt.cs, three findings fixed in eaf8f26. Not covered: Tests/, and nothing after 218e8acdd89a454e37663bba586c68a23c05a13a.
 automated_tests: "Five sets through Tests/Run-Tests.ps1, all re-run 2026-09-23 at 21:25 on the rebuilt DLL (SHA-256 7FD0FEBF...59C5, built 21:21; the 2026-09-21 build was F624927E...5271) and all green: Check-Mod 30/30 (TailorMade still looks the way the patches assume), Check-Logic 48/48 (our own patch bodies: the band per slider, the classes left whole, the fallback's recognition tolerance, which garments the shirt option lifts, which garments TailorMade is told to leave alone), Check-Settings 30/30 (defaults, reset, clamping), Check-Trousers 88/88 (the trouser-detail drawing, on synthetic shells and on AB's real ones, pure bytes), Check-Localization 45/45 (keys, French coverage, placeholders, no hardcoded sentence, hidden shortcut) - 241 checks, none of them starting the game. The earlier figures were 115 checks on an older DLL; the build changed under the audit when the trouser art arrived, and everything was re-run rather than carried over. XML, all four re-run the same evening over Mod/ and all clean: Check-XmlFields (2 files, every element maps to a 1.6 field), scripts/Check-DefInjected.ps1 (2 keys, 0 errors), Check-DefRefs (well formed, every reference resolved, every ParentName resolved), Check-TypeRefs (no unguarded third-party type). The shipped XML is now About.xml, one MainButtonDef and the three language files: the route-B TailorPatternDef is gone from Mod/Defs, the mod making its pattern defs in code instead. Pickle: Tests/Pickle, three features - 01 the trousers captures, 02 the Gear tab, 03 the ten silhouettes. All six passes of TESTING.md (tools, wdi-ab, wdi-ab-band, wdi-ab-general, wdi-xnd, wdi-xnd-general) have now run since the trouser art landed and none has failed on the mod; the last full reads are 2026-09-24/25 (see docs/runs/README.md). 03 was rewritten twice (see Tests/Pickle/README.md) and ran 10/10 on 2026-09-25 with the selection-bracket frame, which showed nothing about the trousers; the frame fix is in progress 2026-09-26/27 and the six passes have not yet been re-run with it. The children's apparent 'sack' is a suspicion, not yet judged under a working frame. What no set covers is a baked texture: every band is checked as a number, never as pixels."
 manual_scenarios: "TESTING.md, 11 scenarios, none run"
 remaining:
@@ -39,6 +38,25 @@ remaining:
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 updated:      2026-10-06
 ---
+
+# Active WDI APP slice — 2026-10-09
+
+`workflow_stage` remains **done**, not `tested`. The working tree now contains
+an uncommitted first APP/WDI vertical slice: `WdiAppPatterns` creates 60
+in-memory category masks (ten WDI profiles × top/pants × south/east/north) and
+registers narrow APP `OnSkin` patterns for four vanilla starter defs. APP
+Utilities' gender filter selects distinct Thin/Fat/Hulk female patterns. It
+ships no WDI texture, derivative file, APP assembly or APP Utilities assembly.
+It has compiled and the six non-game test sets passed 359 checks on 2026-10-09.
+The failed full-body trial is retained as negative evidence: a same-layer shirt
+hid trousers. The replacement leaves the shirt's own hem intact and clips only
+trousers at the WDI waist. Its dedicated `@facings` Pickle run is 2/2 green:
+`docs/runs/2026-10-09_app-wdi-full-top/` visibly shows blue trousers under a
+t-shirt in east and north for all ten profiles, without a waist gap. This proves
+only BasicShirt/KidShirt and Pants/KidPants. It also revealed that the alpha
+mask does not redraw WDI's black ink edge, so visual acceptance remains open.
+The player-facing setting stays off by default. Middle/Shell layers, contour
+composition, burns, robes, coats and a per-row refit remain outside this slice.
 
 # TailorMade Waistlines — status
 
@@ -216,7 +234,7 @@ At her request, after she chose public visibility and MIT: standalone repository
 `Initialise the repository with the mod folder`, 42 files) and pushed to
 https://github.com/vbardales/Rimworld-Venus-Touch-Waistlines (public, `main`, local and remote at the same commit);
 LICENSE (MIT) at the root and in `Mod/`; `.gitattributes`; `Source/Directory.Build.props` sending build intermediates to
-`.build/`; `.gitignore` excluding `Parked/`, `Art/` and `scripts/*.xcf`; ATTRIBUTION.md, README.md and CHANGELOG.md
+`build/`; `.gitignore` excluding `Parked/`, `Art/` and `scripts/*.xcf`; ATTRIBUTION.md, README.md and CHANGELOG.md
 adjusted, Mod/ATTRIBUTION.md re-copied byte-identical; `<url>` and the final `Source code on GitHub` link added to
 About.xml (XML parses). Rebuilt with the new props: 0 warnings, 0 errors, DLL byte-identical to the shipped one
 (`d96766dd…`). The monorepo `.gitignore` gained `/TailorMadeWaistlines/` (not committed there). Result: all criteria of
@@ -298,7 +316,7 @@ earlier pass argued from the sources have now been run.
 | Standalone repo, GitHub remote, first push | validated: `origin` → `vbardales/Rimworld-Venus-Touch-Waistlines`, `main` tracked, five commits pushed. `c548d57` is local only |
 | Visibility, licence, names | validated: public, MIT, `LICENSE` at the root and in `Mod/` byte-identical; `packageId`, folder, assembly, namespace and Harmony id all `nelim.venustouch.waistlines` |
 | English docs, `Mod/ATTRIBUTION.md` copy | validated, byte-identical to the root one |
-| `.gitignore`, `.gitattributes` | validated: `.build/`, `Source/**/obj`, `bin`, `.vs`, `.idea`, `*.user`; PNG and DLL marked binary |
+| `.gitignore`, `.gitattributes` | validated: `build/`, `Source/**/obj`, `bin`, `.vs`, `.idea`, `*.user`; PNG and DLL marked binary |
 | Build up to date in the published folder | validated by timestamp and by the test sets loading that DLL |
 | `ModIcon.png` | validated by direct inspection: 128×128, 28 290 B. The mascot and the tape read at 32 px |
 | `Preview.png` | validated by direct inspection: 896×504, 667 338 B (< 1 MB). Title top-left over a calm area, accent rule plainly distinct from the secondary ink, version badge, near-orthographic overhead, one figure seen from behind, no engraved count |

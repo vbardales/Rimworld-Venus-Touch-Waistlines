@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+Targets 0.2.0. Work in progress, uncommitted: a first APP/WDI slice (`WdiAppPatterns`,
+in-memory category masks registered as APP `OnSkin` patterns for four vanilla starter
+defs, off by default). Ships no WDI texture and no APP assembly. See STATUS.md.
+
 ## [0.1.0] — 2026-09-23
 
 Prepublished to the Workshop as item 3806769245 on 2026-09-23, private: Steam creates

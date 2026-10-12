@@ -6,13 +6,19 @@
 powershell -ExecutionPolicy Bypass -File Tests\Run-Tests.ps1
 ```
 
-It runs the five sets in turn — `Check-Mod.ps1`, that every method and constant
+It runs the six sets in turn — `Check-Mod.ps1`, that every method and constant
 this mod reaches into still exists and still means what the code assumes;
 `Check-Logic.ps1`, that our own patch bodies hand back the right band for each
 slider and shorten the right garments; `Check-Settings.ps1`, the defaults, the
 reset and the clamping; `Check-Trousers.ps1`, the trouser-detail drawing on
-synthetic shells and on AB's real ones, as bytes; `Check-Localization.ps1`, the
-keys and both languages. 241 checks, on the DLL in `Mod/Assemblies`.
+synthetic shells and on AB's real ones, as bytes; `Check-WdiAppPatterns.ps1`,
+that the APP bridge keeps the ten WDI targets distinct and turns only the
+installed body's alpha into a full top silhouette plus a waist-clipped pants mask; `Check-Localization.ps1`,
+the keys and both languages. 359 checks, on the DLL in `Mod/Assemblies`. The
+APP check also opens all thirty installed WDI naked-body sources, for every
+target profile and facing, and requires their expected 512×512 dimensions.
+The APP Pickle pass seeds its explicit opt-in setting; normal installations
+leave the prototype disabled.
 
 None of that is a single tick of play: the bands are compared as numbers, never
 as pixels, and no texture is ever baked. This file is the list of what has to be
@@ -73,6 +79,7 @@ there is to look at. Each pass is a different mod set, selected with
 | WDI + AB, band | `wsl-deps.wdi-ab-band.map`, seeded, **with `-Filter '<suite>,!@native-art'`** | both art options off: TailorMade fits AB's shell into the band and the pants slider applies. The only pass in which the band is what is drawn. The `@native-art` scenarios assert the opposite state and go red here by design |
 | WDI + XND | `wsl-deps.wdi-xnd.map` | XeoNovaDan's Visible Pants instead of AB's. This mod does nothing on purpose, so this shows what the band does to art drawn for the vanilla footprint |
 | WDI + XND + General | `wsl-deps.wdi-xnd-general.map` | with XND active General's retexture loads, so the art is General's, supplied by General; this mod's "leave it alone" branch runs |
+| WDI + APP | `wsl-deps.app-wdi.map` | opt-in APP slice for BasicShirt/KidShirt and Pants/KidPants. `docs/runs/2026-10-09_app-wdi-full-top/` is the clean 2/2 `@facings` proof: blue trousers remain visible under the t-shirt, with no waist gap, in east and north for all ten WDI profiles. Middle/Shell are still outside the slice |
 
 Written 2026-09-24. Before that only the first three existed. All six ran that day on the DLL with
 the trouser art: no failure on the mod, and ten `03-silhouettes` scenarios red in every AB pass (and in
@@ -108,8 +115,9 @@ waistband below all of them needs roughly 0.42 or lower.
 
 ### 4. Every body type
 
-Character Editor gives one of each in two clicks. Nine to look at: Female,
-Male, Thin, Thin_Female, Fat, Fat_Female, Hulk, Hulk_Female, Child.
+Character Editor gives one of each in two clicks. Ten silhouettes à regarder :
+Male, Female, Male_Thin, Male_Hulk, Male_Fat, Female_Thin, Female_Hulk,
+Female_Fat, Kid_Boy et Kid_Girl.
 
 - Hulk and Hulk_Female are the tall ones — their art reaches row 495 where
   Female stops at 443. A height error shows there first.

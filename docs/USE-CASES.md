@@ -1,6 +1,6 @@
 # Use cases and backlog
 
-What the mod has to look right on, per body (Male, Female, Thin, Thin female, Fat, Fat female, Hulk, Hulk female, Child) and
+What the mod has to look right on, per silhouette humaine WDI (Male, Female, Male_Thin, Male_Hulk, Male_Fat, Female_Thin, Female_Hulk, Female_Fat, Kid_Boy, Kid_Girl) and
 per pass. A case is done when its captures were opened and read, not when the run is green.
 
 ## Covered by the gallery pass (`05-gallery.feature`, "ten bodies, four outfits")
@@ -83,8 +83,28 @@ garments are the first cases to test it on.
 - **Keep APP, drop THIGAPPE** (Virginie, 2026-10-08). `nalsnoir.ApparelPaperPattern` is the engine; THIGAPPE is a content pack for it
   (per-body mask textures, e.g. `Textures/Things/ApparelPaperPattern/Human/Female/Armor/Female_cmask_bottom_cover_south.png`, in its
   `1.6/Mods/RealisticBody/` for [NL]'s bodies, and pattern defs patched in by XML). Venus would be the same kind of pack for WDI's bodies:
-  masks drawn from WDI's underwear curves (what `ShirtCut` already computes) and the pattern defs, so APP refits every garment of any
-  mod, and Venus keeps only AB's trousers. Not started; read first: how APP reads a mask, and what a pattern def needs for a body.
+  masks generated at runtime from the alpha silhouette of the player-installed WDI naked bodies and the pattern defs, so APP can clip every garment of any
+  mod, and Venus keeps only AB's trousers. The first vertical slice registered runtime-only alpha masks for all ten WDI profiles and
+  APP `OnSkin` patterns; APP Utilities supplied the gender predicate which distinguishes Thin/Fat/Hulk women. Its 2026-10-09 capture
+  showed a full-height shirt hiding same-layer trousers. The corrected slice gives the shirt the whole WDI silhouette and clips only
+  the trousers at the waist. `docs/runs/2026-10-09_app-wdi-full-top/` is green 2/2 and its east/north captures show the four starter
+  defs without a waist gap on all ten profiles. The setting remains opt-in because Middle/Shell, burns and dresses are not covered.
+
+### Couches APP à traiter, après la preuve OnSkin
+
+Le contenu THIGAPPE installé ne réduit pas les vêtements à une seule couche :
+sa bibliothèque de patterns contient 346 entrées `OnSkin`, 222 `Shell`, 215
+`Middle`, puis des couches de tête/accessoires (`Overhead`, `EyeCover`, `Belt`)
+et de sous-vêtements (`UnderwearTop`, `Underwear`). Ces nombres décrivent son
+corpus, pas un objectif de copier ses assets. Pour WDI, l'ordre est donc :
+
+1. `OnSkin` — hauts proches du corps, validés par le premier rendu APP ;
+2. `Middle` — gilets et robes courtes, à vérifier sur les bustes WDI avant de
+   les masquer ;
+3. `Shell` — manteaux, dusters et robes longues, qui exigent un masque/burn ou
+   une exemption afin de préserver le drapé ;
+4. sous-vêtements et couches ajoutées par d'autres mods — seulement après un
+   cas de rendu dédié ; les couches inconnues restent ignorées.
 
 ## Findings of 2026-10-08 on the UNAGI dresses (wardrobe-3, zoomed on Fat, Female and Hulk women)
 
