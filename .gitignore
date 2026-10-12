@@ -59,3 +59,6 @@ docs/runs/*/report.html
 docs/runs/*/messages.ndjson
 docs/runs/*/Player.log
 docs/runs/*/screenshots/
+
+# Windows Explorer folder settings (WELCOME.md: never in Mod/).
+desktop.ini
