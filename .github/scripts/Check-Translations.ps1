@@ -18,10 +18,13 @@
     3. No stale entry: a DefInjected entry whose key matches no inventoried text is reported.
     4. Duplicates: the same key twice in the translation (or twice in the inventory).
     5. Empty, TODO or (with -RejectCjk) CJK text in a translation entry.
+    1b. A def that has no text field of its own inherits it from its ParentName chain (an abstract def with Name="..."): the
+       inherited text is inventoried for that def too, because the game takes the translation by the child defName.
     6. Formatting tokens ({0}, <b>, \n ...) are identical in source and translation, for DefInjected and Keyed.
     7. Keyed: every "Mod.Key" or "Mod_Key".Translate() used in Source/**/*.cs exists in the source language AND the translation;
        with Source/ present, an entry used nowhere is reported (turn off with -AllowUnusedKeyed). -DependencyKeyed lists the keys
        of a dependency mod that this mod only translates (no source-language entry, no call here): neither reported.
+    8. With -RejectIdentical: a translation identical to its source text (HairDef and -AllowIdentical keys excepted).
 
   What it does not do: resolve keys against the game's classes (Check-DefInjected.ps1 does), compare wording, or
   check handles of list elements other than <stages>. Run both.
@@ -44,6 +47,10 @@ param(
   [string[]]$DependencyKeyed = @(),
   # Make the warnings errors: an injection outside the inventory, a stage with no usable label handle.
   [switch]$Strict,
+  # A translation identical to the source text is a finding (a text left untranslated), except HairDef and the keys of -AllowIdentical
+  # (proper nouns, units, names that stay the same in the language). Off by default: many mods keep some texts on purpose.
+  [switch]$RejectIdentical,
+  [string[]]$AllowIdentical = @(),
   # Skip the Keyed part (a mod with no code).
   [switch]$NoKeyed,
   # A JSON file holding the SHA-256 of every inventoried source text. A source text edited (or added) after the baseline fails
@@ -76,12 +83,37 @@ function Add-Text($type, $key, $value) {
 $sources = @()
 # every Defs/ and Patches/ folder under Mod/, loadFolders subfolders included (Mod/Integrations/<X>/Patches, ...)
 foreach ($d in Get-ChildItem $modDir -Recurse -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -in 'Defs', 'Patches' -and $_.FullName -notmatch '[\\/](Languages|\.claude)[\\/]' }) { $sources += Get-ChildItem $d.FullName -Recurse -Filter *.xml -File }
+# every def carrying Name="..." (abstract bases included), to walk a ParentName chain
+$byName = @{}
+$parsed = New-Object System.Collections.Generic.List[object]
 foreach ($file in $sources) {
   $doc = New-Object System.Xml.XmlDocument
   try { $doc.Load($file.FullName) } catch { Find "Malformed XML: $($file.FullName)"; continue }
+  $parsed.Add($doc)
+  foreach ($n in $doc.SelectNodes('//*[@Name]')) { if (-not $byName.ContainsKey($n.GetAttribute('Name'))) { $byName[$n.GetAttribute('Name')] = $n } }
+}
+# first node of a text field found on the def's ParentName chain (cycle guard: 20 levels)
+function Get-InheritedField($def, $f) {
+  $p = $def.GetAttribute('ParentName')
+  for ($i = 0; $p -and $i -lt 20; $i++) {
+    $parent = $byName[$p]
+    if (-not $parent) { return $null }
+    $node = $parent.SelectSingleNode($f)
+    if ($node) { return $node }
+    $p = $parent.GetAttribute('ParentName')
+  }
+  return $null
+}
+foreach ($doc in $parsed) {
   foreach ($def in $doc.SelectNodes('//*[defName]')) {
     $own = @()
     foreach ($f in $topFields) { foreach ($node in $def.SelectNodes($f)) { $p = if ($f -like '*/*') { $f -replace '/', '.' } else { $node.LocalName }; Add-Text $def.LocalName "$($def.defName).$p" $node.InnerText; $own += $node } }
+    # a top field the def does not write itself comes from its parent chain (a RecipeDef jobString set on an abstract base)
+    foreach ($f in $topFields) {
+      if ($def.SelectNodes($f).Count) { continue }
+      $inh = Get-InheritedField $def $f
+      if ($inh) { $p = if ($f -like '*/*') { $f -replace '/', '.' } else { $inh.LocalName }; Add-Text $def.LocalName "$($def.defName).$p" $inh.InnerText }
+    }
     # the game numbers stages that share a handle: initial-0, initial-1
     $stageHandles = @($def.SelectNodes('stages/li') | ForEach-Object { ([string]$_.label) -replace '[^a-zA-Z0-9_ ]', '' -replace ' ', '_' })
     $stageSeen = @{}
@@ -158,6 +190,7 @@ $tr = Read-Language $Language 'DefInjected'
 foreach ($key in $inventory.Keys) {
   if (-not $tr.ContainsKey($key)) { Find "$Language coverage missing: $key"; continue }
   if ((Tokens $inventory[$key]) -cne (Tokens $tr[$key])) { Find "Formatting tokens differ: $key" }
+  if ($RejectIdentical -and $key -notlike 'HairDef/*' -and $AllowIdentical -cnotcontains $key -and ([string]$inventory[$key]).Trim() -ceq ([string]$tr[$key]).Trim()) { Find "$Language text identical to the source (untranslated, or list the key in -AllowIdentical): $key" }
 }
 # The inventory is not exhaustive (nested list texts such as tools/li/label are not walked), so an injection it does
 # not list is a warning; Check-DefInjected.ps1 proves the key resolves. -Strict makes it an error.
