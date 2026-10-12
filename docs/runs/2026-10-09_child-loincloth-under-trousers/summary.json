@@ -1,0 +1,1 @@
+{"total":1,"passed":1,"failed":0,"skipped":0,"flaky":0,"exitReason":"passed","setName":"app-wdi-underwear","scenarios":[{"name":"two children show whether trousers overlap WDI's loincloth","outcome":"Passed","durationMs":27940,"attempts":1,"tickCost":{"ticks":182,"meanMs":2.469,"maxMs":8.372}}]}

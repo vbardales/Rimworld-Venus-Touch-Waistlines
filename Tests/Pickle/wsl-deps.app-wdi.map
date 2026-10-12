@@ -1,0 +1,24 @@
+# APP proof for Venus' first WDI slice: all ten human profiles in the existing
+# facing gallery, with APP and APP Utilities but without TailorMade.  Venus
+# builds the masks in memory from the player's WDI textures; the capture must
+# show the basic shirts and blue AB trousers in south/east/north without a
+# missing-texture warning. config/app-wdi seeds both APP's opt-in and AB's
+# worn-graphic categories; without the latter, a bare pawn is not a pass.
+#
+# Run after the Pickle lock is free:
+#   Run-PickleWsl.ps1 -Mod VenusTouchWaistlines -DepMap wsl-deps.app-wdi.map -Filter '@facings'
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+wdi.realistic.bodies           3527486510
+nalsnoir.ApparelPaperPattern   2480887589
+WRK.APPBodyTypeOverrider       2839443438
+ab.vplrf                       2986402536
+LoneKin.ChildrenWearAnything   3688530033
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.clickdiagnostics  path:PickleTools/ClickDiagnostics/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

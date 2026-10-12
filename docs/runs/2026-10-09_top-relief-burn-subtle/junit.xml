@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the fitting, seen from the side and from behind" tests="2" failures="0" skipped="0" flakes="0" time="242.878">
+    <testcase name="ten bodies, four outfits, facing east" classname="the fitting, seen from the side and from behind" time="130.497">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: facings, east, outfit 1 t-shirt, no trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--east--outfit-1-t-shirt--no-trousers--step0.png
+Attachment: facings, east, outfit 2 bare torso, trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--east--outfit-2-bare-torso--trousers--step0.png
+Attachment: facings, east, outfit 3 t-shirt, trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--east--outfit-3-t-shirt--trousers--step0.png
+Attachment: facings, east, outfit 4 jacket on a bare torso, trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--east--outfit-4-jacket-on-a-bare-torso--trou-5b63cf12--step0.png
+</system-out>
+    </testcase>
+    <testcase name="ten bodies, four outfits, facing north" classname="the fitting, seen from the side and from behind" time="112.381">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: facings, north, outfit 1 t-shirt, no trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--north--outfit-1-t-shirt--no-trousers--step0.png
+Attachment: facings, north, outfit 2 bare torso, trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--north--outfit-2-bare-torso--trousers--step0.png
+Attachment: facings, north, outfit 3 t-shirt, trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--north--outfit-3-t-shirt--trousers--step0.png
+Attachment: facings, north, outfit 4 jacket on a bare torso, trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--facings--north--outfit-4-jacket-on-a-bare-torso--tro-67145d98--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

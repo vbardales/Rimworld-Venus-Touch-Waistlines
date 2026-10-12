@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="WDI underwear under a t-shirt and trousers, from every facing" tests="3" failures="0" skipped="0" flakes="0" time="117.178">
+    <testcase name="ten silhouettes wear their WDI underwear under trousers, facing South" classname="WDI underwear under a t-shirt and trousers, from every facing" time="40.667">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: underwear comparison, South, t-shirt and trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--underwear-comparison--South--t-shirt-and-trousers--step0.png
+</system-out>
+    </testcase>
+    <testcase name="ten silhouettes wear their WDI underwear under trousers, facing East" classname="WDI underwear under a t-shirt and trousers, from every facing" time="40.684">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: underwear comparison, East, t-shirt and trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--underwear-comparison--East--t-shirt-and-trousers--step0.png
+</system-out>
+    </testcase>
+    <testcase name="ten silhouettes wear their WDI underwear under trousers, facing North" classname="WDI underwear under a t-shirt and trousers, from every facing" time="35.827">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: underwear comparison, North, t-shirt and trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--underwear-comparison--North--t-shirt-and-trousers--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

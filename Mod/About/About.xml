@@ -19,14 +19,17 @@
     <li>astryl.tailormade</li>
     <li>ab.vplrf</li>
     <li>Kas.GeneralCollection</li>
+    <li>nalsnoir.ApparelPaperPattern</li>
+    <li>WRK.APPBodyTypeOverrider</li>
+    <li>WDI.Realistic.Bodies</li>
   </loadAfter>
   <description>Decides where garments stop on the body. Works with TailorMade, which is optional, and is not affiliated with it.
 
-TailorMade sorts apparel into classes and fits each class into a horizontal band of the body — pants into the bottom 58%, boots into the bottom 20%, chest pieces into the top 55%. Those numbers suit a body drawn with legs. On a body retexture drawn as one legless shape, 58% of the way up from the hem lands above the navel, and trousers read as a high-waisted skirt.
+TailorMade sorts apparel into classes and fits each class into a horizontal band of the body: pants into the bottom 58%, boots into the bottom 20%, chest pieces into the top 55%. Those numbers suit a body drawn with legs. On a body retexture drawn as one legless shape, 58% of the way up from the hem lands above the navel, and trousers read as a high-waisted skirt.
 
 They are constants, and nothing exposes them. This mod makes them settings, so every leg garment of every mod is corrected at once. Nothing changes until a slider moves: the defaults are TailorMade's own values.
 
-It also offers to lift one of TailorMade's own guards, carefully. TailorMade only bands a torso garment whose art already starts 40% of the way up the texture. That guard exists so long coats and capes keep draping to the ankles, and it is right to — but it also excludes the garments that most need shortening: a vanilla shirt is drawn over the whole body, so it stays full length and hides the trousers entirely. The option lifts the test for on-skin garments only. Shirts and tribalwear are cut where the trousers begin; dusters, parkas, jackets and robes are worn on the shell layer and still drape, and jackets are drawn as they are.
+It also offers to lift one of TailorMade's own guards, carefully. TailorMade only bands a torso garment whose art already starts 40% of the way up the texture. That guard exists so long coats and capes keep draping to the ankles, and it is right to, but it also excludes the garments that most need shortening: a vanilla shirt is drawn over the whole body, so it stays full length and hides the trousers entirely. The option lifts the test for on-skin garments only. Shirts and tribalwear are cut where the trousers begin; dusters, parkas, jackets and robes are worn on the shell layer and still drape, and jackets are drawn as they are.
 
 With WDI's Realistic Bodies, the shirts WDI draws for each body are not resized by TailorMade at all: they are cut on the top edge of WDI's underwear for that body, column by column, and the trousers start on the same edge, so the two always meet on the same shape. Thin, Fat and Hulk women get their own trousers, cut on their own underwear. Children have no underwear in WDI, so their line is the one their trousers start on. The option is off by default.
 

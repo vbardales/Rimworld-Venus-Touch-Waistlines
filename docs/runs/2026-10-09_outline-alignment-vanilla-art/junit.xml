@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="WDI edge-only diagnostic clothing over underwear" tests="3" failures="0" skipped="0" flakes="0" time="154.985">
+    <testcase name="the ten WDI silhouettes expose only garment edges, facing South" classname="WDI edge-only diagnostic clothing over underwear" time="60.259">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline alignment, South, red shirt and blue pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--outline-alignment--South--red-shirt-and-blue-pants--step0.png
+</system-out>
+    </testcase>
+    <testcase name="the ten WDI silhouettes expose only garment edges, facing East" classname="WDI edge-only diagnostic clothing over underwear" time="47.897">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline alignment, East, red shirt and blue pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--outline-alignment--East--red-shirt-and-blue-pants--step0.png
+</system-out>
+    </testcase>
+    <testcase name="the ten WDI silhouettes expose only garment edges, facing North" classname="WDI edge-only diagnostic clothing over underwear" time="46.829">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline alignment, North, red shirt and blue pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--outline-alignment--North--red-shirt-and-blue-pants--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

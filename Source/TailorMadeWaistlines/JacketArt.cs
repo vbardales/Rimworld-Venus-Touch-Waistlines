@@ -58,9 +58,6 @@ namespace TailorMadeWaistlines
                 + NativeCut + " shirt textures cut on the underwear without TailorMade's resizing.");
         }
 
-        // The bodies whose shirts are not resized by TailorMade: the art drawn for the body is cut instead, as THIGAPPE does.
-        private static readonly string[] NativeBodies = { "Male", "Female", "Thin", "Fat", "Hulk", "Child" };
-
         public static int NativeCut { get; private set; }
 
         /// <summary>
@@ -71,22 +68,22 @@ namespace TailorMadeWaistlines
         private static void NativeShirts(ModContentHolder<Texture2D> mine)
         {
             NativeCut = 0;
-            foreach (string bodyName in NativeBodies)
+            // One BodyTypeDef can have two WDI targets (Thin/Fat/Hulk men and women).
+            // The profile table is the sole authority for the corresponding texture keys.
+            foreach (string bodyName in new[] { "Male", "Female", "Thin", "Hulk", "Fat", "Child" })
             {
                 BodyTypeDef body = DefDatabase<BodyTypeDef>.GetNamedSilentFail(bodyName);
                 if (body == null) continue;
                 var targets = new List<string>();
-                var done = new HashSet<string>();
                 foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading)
                 {
                     if (Kind(def) != 2) continue;
                     string worn = def.apparel.wornGraphicPath;
                     if (string.IsNullOrEmpty(worn)) continue;
                     int cut = 0;
-                    // Thin, Fat and Hulk have a separate female body; Male and Female are one body each.
-                    foreach (string sex in bodyName == "Male" || bodyName == "Female" || bodyName == "Child" ? new[] { "" } : new[] { "", "_Female" })
+                    foreach (WdiVisualProfile profile in WdiVisualProfiles.ForBodyType(bodyName))
                         for (int f = 0; f < FacingNames.Length; f++)
-                            if (CutNative(worn + "_" + bodyName + sex + "_" + FacingNames[f], bodyName + sex, FacingNames[f], mine)) cut++;
+                            if (CutNative(worn + "_" + profile.TextureKey + "_" + FacingNames[f], profile.TextureKey, FacingNames[f], mine)) cut++;
                     // Only a garment the body retexture draws for this body is left alone; any other is still resized.
                     if (cut > 0 || mine.contentList.ContainsKey(worn + "_" + bodyName + "_south"))
                         targets.Add("^" + System.Text.RegularExpressions.Regex.Escape(def.defName) + "$");

@@ -1,6 +1,6 @@
 'use strict';
 // The naked WDI bodies from the front, the side and the back, with the two lines the mod cares about.
-//   node naked-lines.js            writes docs/runs/naked-lines-men.png and naked-lines-women.png
+//   node naked-lines.js            writes Art/work/naked-lines-men.png and naked-lines-women.png
 //
 // Blue: where a shirt is cut. The top edge of WDI's underwear (boxers or panties) for the same body and facing, column by
 // column on the front and the back; a straight line at the body's underwear height on the side (what ShirtCut does).
@@ -13,7 +13,7 @@ const { decode, encode } = require('./png');
 
 const WDI = 'C:/Program Files (x86)/Steam/steamapps/workshop/content/294100/3527486510/Textures';
 const KAS = 'C:/Program Files (x86)/Steam/steamapps/workshop/content/294100/3789119336/Mods/VisiblePants/Textures/Core/Things/Pawn/Humanlike/Apparel/Pants';
-const OUT = path.join(__dirname, '..', 'docs', 'runs');
+const OUT = path.join(__dirname, '..', 'Art', 'work');
 const WITH_UNDERWEAR = process.argv.includes('--underwear');
 const LINE = { Male: 0.711, Female: 0.686, Thin: 0.699, Thin_Female: 0.674, Fat: 0.643, Fat_Female: 0.643, Hulk: 0.799, Hulk_Female: 0.783 };
 const SETS = { men: ['Male', 'Thin', 'Fat', 'Hulk'], women: ['Female', 'Thin_Female', 'Fat_Female', 'Hulk_Female'] };

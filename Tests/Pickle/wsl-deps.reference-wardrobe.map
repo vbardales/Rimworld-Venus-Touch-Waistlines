@@ -1,0 +1,22 @@
+# Visual reference only: these providers supply the baseline garments.  This is
+# deliberately separate from the abandoned native-direct rendering experiment.
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+wdi.realistic.bodies           3527486510
+Malistaticy.UnderWhere          1870010563
+ab.vplrf                        2986402536
+VanillaExpanded.VAPPE           1814987817
+OskarPotocki.VanillaFactionsExpanded.Core 2023507013
+astryl.tailormade               3756915448
+erdelf.HumanoidAlienRaces       839005762
+Barbariank.Hoomancute           3271245723
+UNAGI.Ap.Dress                  3352990362
+GilieART.LewdHoomanApparel      3275648920
+LoneKin.ChildrenWearAnything    3688530033
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

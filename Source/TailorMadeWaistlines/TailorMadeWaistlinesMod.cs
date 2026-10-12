@@ -45,6 +45,11 @@ namespace TailorMadeWaistlines
         // and the shirt is compressed into the band rather than cut off at it.
         public bool shortenShirts = false;
 
+        // Experimental APP patterns alter only the four vanilla control garments.
+        // They are opt-in and read at startup, so a review pass can seed them
+        // without changing a normal player's apparel.
+        public bool enableExperimentalAppPatterns = false;
+
         // On by default: a jacket is drawn to its own length instead of being banded to the waist.
         public bool keepJacketsLong = true;
 
@@ -65,6 +70,7 @@ namespace TailorMadeWaistlines
             Scribe_Values.Look(ref bootsTop, "bootsTop", DefaultBootsTop);
             Scribe_Values.Look(ref chestBottom, "chestBottom", DefaultChestBottom);
             Scribe_Values.Look(ref shortenShirts, "shortenShirts", false);
+            Scribe_Values.Look(ref enableExperimentalAppPatterns, "enableExperimentalAppPatterns", false);
             Scribe_Values.Look(ref keepJacketsLong, "keepJacketsLong", true);
             Scribe_Values.Look(ref keepDressesWhole, "keepDressesWhole", true);
             Scribe_Values.Look(ref useGeneralArt, "useGeneralArt", true);
@@ -92,6 +98,7 @@ namespace TailorMadeWaistlines
             bootsTop = DefaultBootsTop;
             chestBottom = DefaultChestBottom;
             shortenShirts = false;
+            enableExperimentalAppPatterns = false;
             keepJacketsLong = true;
             keepDressesWhole = true;
             useGeneralArt = true;
@@ -128,8 +135,24 @@ namespace TailorMadeWaistlines
             }
             else
                 TailorMadeLink.SayAbsent();
+            // The autonomous WDI diagnostic renderer is a Venus patch, not a
+            // TailorMade one.  It must therefore be installed even in the
+            // deliberately AB/APP/TailorMade-free evidence map.
+            new Harmony("nelim.venustouch.waistlines.nativewdi").CreateClassProcessor(typeof(NativeWdiPants.NativeGraphicPatch)).Patch();
             // After the game has loaded every mod's textures, which is when there is something to replace.
             LongEventHandler.ExecuteWhenFinished(TrouserArt.Apply);
+            // AB's APP bridge adds its own patterns from a late initializer.
+            // A single ExecuteWhenFinished here ran before that bridge, so AB
+            // won APP's last-pattern selection and Venus' masks were never
+            // rendered. Queue one turn later: all first-wave late initializers
+            // (including AB) finish first, then our WDI patterns become the
+            // final, explicit match. This remains opt-in inside Apply().
+            LongEventHandler.ExecuteWhenFinished(() =>
+                LongEventHandler.ExecuteWhenFinished(() =>
+                {
+                    WdiAppPatterns.Apply();
+                    NativeWdiPants.Apply();
+                }));
             // After the trousers: the jackets are measured on their shells.
             LongEventHandler.ExecuteWhenFinished(JacketArt.Apply);
             // Dresses drawn for the body: TailorMade clips them, they need no fitting.
@@ -173,6 +196,9 @@ namespace TailorMadeWaistlines
             list.CheckboxLabeled("TailorMadeWaistlines.Settings.ShortenShirts".Translate(),
                 ref Settings.shortenShirts,
                 "TailorMadeWaistlines.Settings.ShortenShirtsTip".Translate());
+            list.CheckboxLabeled("TailorMadeWaistlines.Settings.ExperimentalAppPatterns".Translate(),
+                ref Settings.enableExperimentalAppPatterns,
+                "TailorMadeWaistlines.Settings.ExperimentalAppPatternsTip".Translate());
             list.CheckboxLabeled("TailorMadeWaistlines.Settings.KeepJacketsLong".Translate(),
                 ref Settings.keepJacketsLong,
                 "TailorMadeWaistlines.Settings.KeepJacketsLongTip".Translate());

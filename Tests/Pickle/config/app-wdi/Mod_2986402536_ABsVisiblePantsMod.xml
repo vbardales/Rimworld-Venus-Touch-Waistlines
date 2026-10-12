@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AB must be seeded: without these categories, vanilla Apparel_Pants has no worn graphic and an APP screenshot cannot prove the pants mask. Source: config/wdi-ab/. -->
+<SettingsBlock>
+  <ModSettings Class="ABsVisiblePants.AVPSettings">
+    <datas>
+      <li><category>Normal_Pants</category><keyWord><li>Pants</li></keyWord><TargetApparel IsNull="True" /><ingoreApparel IsNull="True" /><path>Things/Pawn/Humanlike/Apparel/Pants/Pants</path></li>
+      <li><category>Skirt</category><keyWord><li>skirt</li><li>Skirt</li></keyWord><TargetApparel IsNull="True" /><ingoreApparel IsNull="True" /><path>Things/Pawn/Humanlike/Apparel/Skirt/Skirt</path></li>
+      <li><category>Suit_Pants</category><keyWord><li>SuitPants</li><li>suitPants</li><li>Trousers</li><li>trousers</li></keyWord><TargetApparel IsNull="True" /><ingoreApparel IsNull="True" /><path>Things/Pawn/Humanlike/Apparel/Trousers/Trousers</path></li>
+      <li><category>Jeans</category><keyWord><li>jeans</li><li>Jeans</li></keyWord><TargetApparel IsNull="True" /><ingoreApparel IsNull="True" /><path>Things/Pawn/Humanlike/Apparel/Jeans/Jeans</path></li>
+      <li><category>Shorts_Pants</category><keyWord><li>Shorts_Pants</li><li>shortsPants</li></keyWord><TargetApparel IsNull="True" /><ingoreApparel IsNull="True" /><path>Things/Pawn/Humanlike/Apparel/Shorts/Shorts</path></li>
+    </datas>
+    <UnderShirt />
+    <NotPants />
+  </ModSettings>
+</SettingsBlock>

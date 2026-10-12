@@ -1,7 +1,7 @@
 'use strict';
 // WDI's bra for the four female bodies, as the bust fit uses it: row 1 the bra as drawn, row 2 only its inside (the black lines
 // are dropped, shown here as magenta so that the holes can be seen).
-//   node bra-interior.js        writes docs/runs/bra-interior.png
+//   node bra-interior.js        writes Art/work/bra-interior.png
 const path = require('path');
 const { decode, encode } = require('./png');
 const WDI = 'C:/Program Files (x86)/Steam/steamapps/workshop/content/294100/3527486510/Textures/UWUnderwear/bra';
@@ -21,6 +21,6 @@ BODIES.forEach((b, c) => {
         for (let k = 0; k < 3; k++) out[d + k] = Math.round(rgb[k] * a + out[d + k] * (1 - a));
     }
 });
-const file = path.join(__dirname, '..', 'docs', 'runs', 'bra-interior.png');
+const file = path.join(__dirname, '..', 'Art', 'work', 'bra-interior.png');
 encode(file, { width: W, height: H, data: out });
 console.log(file);

@@ -26,6 +26,16 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3756915448\Assemblies\TailorMadeUnifiedApparelBodyRefitting.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- APP and its utilities remain player-side dependencies.  Venus uses
+         their public def contracts but never redistributes their assemblies. -->
+    <Reference Include="ApparelPaperPattern">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2480887589\1.6\Assemblies\ApparelPaperPattern.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="APPUtilities">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2839443438\1.6\Assemblies\APPUtilities.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@
     Runs every test set beside it and reports which of them failed.
 
 .DESCRIPTION
-    Five sets, each answering a different question, none of them starting the
+    Six sets, each answering a different question, none of them starting the
     game:
 
       - `Check-Mod.ps1`          - does TailorMade still look the way the
@@ -18,6 +18,9 @@
                                    onto a plain shell keep to its rules, on
                                    synthetic shells and on AB's real ones?
                                    Pure bytes; no Unity, no game.
+      - `Check-WdiAppPatterns.ps1` - does the APP bridge retain ten distinct
+                                   WDI targets and turn only a body's alpha
+                                   channel into an in-memory clipping mask?
       - `Check-Localization.ps1` - every player-facing key resolves in English
                                    and French, and the hidden shortcut is
                                    declared as asked.
@@ -57,6 +60,7 @@ $sets = @(
     @{ Name = 'bands and the shirt option';    Script = 'Check-Logic.ps1' }
     @{ Name = 'settings, reset and clamping';  Script = 'Check-Settings.ps1' }
     @{ Name = 'trouser details';               Script = 'Check-Trousers.ps1' }
+    @{ Name = 'WDI APP patterns';              Script = 'Check-WdiAppPatterns.ps1' }
     @{ Name = 'English, French, shortcut';     Script = 'Check-Localization.ps1' }
 )
 

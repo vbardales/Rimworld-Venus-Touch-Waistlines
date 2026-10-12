@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="clothing libraries on the ten bodies" tests="1" failures="0" skipped="0" flakes="0" time="56.640">
+    <testcase name="UNAGI Royal dress, bust fit on ten bodies" classname="clothing libraries on the ten bodies" time="56.640">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: wardrobe, unagi royal dress, bust fit, bare -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--wardrobe--unagi-royal-dress--bust-fit--bare--step0.png
+Attachment: wardrobe, unagi royal dress, bust fit, Apparel_UNARoyalDress -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--wardrobe--unagi-royal-dress--bust-fit--Apparel_UNARo-b3aa5daf--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -118,6 +118,7 @@ try {
     $settingsType = $ours.GetType('TailorMadeWaistlines.TailorMadeWaistlinesSettings', $true)
     $apparelClass = $tm.GetType('TailorMade.ApparelClass', $true)
     $classifier = $tm.GetType('TailorMade.ApparelClassifier', $true)
+    $wdiProfiles = $ours.GetType('TailorMadeWaistlines.WdiVisualProfiles', $true)
 
     # A fresh settings object, planted where the mod looks for it. Nothing in
     # the decisions reads anything else, so this is the whole world they need.
@@ -127,6 +128,30 @@ try {
     $For = $bands.GetMethod('For')
     $ClassOf = { param([string]$n) [Enum]::Parse($apparelClass, $n) }
 
+    # --- WDI's target silhouettes --------------------------------------------
+    Write-Host ""
+    Write-Host "WDI visual targets stay distinct"
+    $allProfiles = $wdiProfiles.GetField('All', [System.Reflection.BindingFlags]'Public,Static').GetValue($null)
+    Assert-That 'WDI declares all ten human silhouette targets' ($allProfiles.Count -eq 10)
+    $resolveProfile = $wdiProfiles.GetMethod('Resolve')
+    function Resolve-WdiProfile {
+        param([string]$Body, [Verse.Gender]$Gender)
+        return $resolveProfile.Invoke($null, @($Body, $Gender))
+    }
+    function Assert-WdiProfile {
+        param([string]$What, [string]$Body, [Verse.Gender]$Gender, [string]$Id, [string]$TextureKey)
+        $profile = Resolve-WdiProfile $Body $Gender
+        $ok = $profile -and $profile.Id -eq $Id -and $profile.TextureKey -eq $TextureKey
+        Assert-That $What $ok $(if ($profile) { "got $($profile.Id)/$($profile.TextureKey)" } else { 'got null' })
+    }
+    Assert-WdiProfile 'Thin man maps to Male_Thin'       'Thin'  ([Verse.Gender]::Male)   'Male_Thin'   'Thin'
+    Assert-WdiProfile 'Thin woman maps to Female_Thin'   'Thin'  ([Verse.Gender]::Female) 'Female_Thin' 'Thin_Female'
+    Assert-WdiProfile 'Hulk woman maps to Female_Hulk'   'Hulk'  ([Verse.Gender]::Female) 'Female_Hulk' 'Hulk_Female'
+    Assert-WdiProfile 'Fat woman maps to Female_Fat'     'Fat'   ([Verse.Gender]::Female) 'Female_Fat'  'Fat_Female'
+    Assert-WdiProfile 'girl maps to Kid_Girl'            'Child' ([Verse.Gender]::Female) 'Kid_Girl'    'Child'
+    Assert-WdiProfile 'boy maps to Kid_Boy'              'Child' ([Verse.Gender]::Male)   'Kid_Boy'     'Child'
+    Assert-That 'an unknown body is never remapped to WDI' ((Resolve-WdiProfile 'AlienCustom' ([Verse.Gender]::Male)) -eq $null)
+
     # --- the sliders start where TailorMade left them -------------------------
     Write-Host ""
     Write-Host "a fresh install changes nothing"
@@ -134,7 +159,8 @@ try {
     Assert-That 'settings default pantsTop 0.58'   ([Math]::Abs((Get-Field $settingsType 'pantsTop' $settings) - 0.58) -lt 0.0005)
     Assert-That 'settings default bootsTop 0.20'   ([Math]::Abs((Get-Field $settingsType 'bootsTop' $settings) - 0.20) -lt 0.0005)
     Assert-That 'settings default chestBottom 0.25'([Math]::Abs((Get-Field $settingsType 'chestBottom' $settings) - 0.25) -lt 0.0005)
-    Assert-That 'settings default shortenShirts off' ((Get-Field $settingsType 'shortenShirts' $settings) -eq $false)
+      Assert-That 'settings default shortenShirts off' ((Get-Field $settingsType 'shortenShirts' $settings) -eq $false)
+      Assert-That 'settings default experimental APP patterns off' ((Get-Field $settingsType 'enableExperimentalAppPatterns' $settings) -eq $false)
 
     # Our copies of the stock values, against TailorMade's live fields. The
     # fallback prefix only rewrites a band it recognises, so a drift here is a

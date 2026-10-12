@@ -1,0 +1,17 @@
+# Child waistband inspection: UnderWhere must load before WDI so the wearable
+# def exists while WDI supplies its Child loincloth textures.
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+Malistaticy.UnderWhere          1870010563
+wdi.realistic.bodies           3527486510
+nalsnoir.ApparelPaperPattern   2480887589
+WRK.APPBodyTypeOverrider       2839443438
+ab.vplrf                       2986402536
+LoneKin.ChildrenWearAnything   3688530033
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

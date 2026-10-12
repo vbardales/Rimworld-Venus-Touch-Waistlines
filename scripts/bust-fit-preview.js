@@ -18,7 +18,7 @@ const { decode, encode } = require('./png');
 
 const WDI = 'C:/Program Files (x86)/Steam/steamapps/workshop/content/294100/3527486510/Textures';
 const UNA = 'C:/Program Files (x86)/Steam/steamapps/workshop/content/294100/3352990362/Textures/Things/Pawn/Humanlike/Apparel/UNARoyalDress';
-const OUT = path.join(__dirname, '..', 'docs', 'runs');
+const OUT = path.join(__dirname, '..', 'Art', 'work');
 const FADE = 90;
 
 // dress body, WDI female body, body lines [top, nipple, under], dress lines [top, dip, cups]

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="Architect Studio loads and its patches apply" tests="5" failures="0" skipped="0" flakes="0" time="2.817">
+    <testcase name="the mod loads after Harmony" classname="Architect Studio loads and its patches apply" time="0.868">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="the build keeps the access-check waiver" classname="Architect Studio loads and its patches apply" time="0.479">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="the patches from the constructor and the deferred ones are all in place" classname="Architect Studio loads and its patches apply" time="1.227">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="the key binding def is loaded" classname="Architect Studio loads and its patches apply" time="0.102">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="nothing from Architect Studio in the startup log" classname="Architect Studio loads and its patches apply" time="0.141">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="the two buttons in the Architect window" tests="4" failures="0" skipped="0" flakes="0" time="63.586">
+    <testcase name="Groups… opens the group editor" classname="the two buttons in the Architect window" time="15.439">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: geometry before clicking 'btn:Groupes…' -&gt; scale 1, GUI space 1920x1080, window 1920x1080, Architect window at (x:0.00, y:735.00, width:200.00, height:310.00)
+</system-out>
+    </testcase>
+    <testcase name="Categories… opens the category editor" classname="the two buttons in the Architect window" time="14.415">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: geometry before clicking 'btn:Catégories…' -&gt; scale 1, GUI space 1920x1080, window 1920x1080, Architect window at (x:0.00, y:735.00, width:200.00, height:310.00)
+</system-out>
+    </testcase>
+    <testcase name="turning the button off removes the row and its height" classname="the two buttons in the Architect window" time="21.772">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="turning it back on restores both" classname="the two buttons in the Architect window" time="11.960">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: geometry before clicking 'btn:Groupes…' -&gt; scale 1, GUI space 1920x1080, window 1920x1080, Architect window at (x:0.00, y:735.00, width:200.00, height:310.00)
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="dragging a group member" tests="3" failures="0" skipped="0" flakes="0" time="14.204">
+    <testcase name="the first member dragged below the last lands last" classname="dragging a group member" time="9.181">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+Attachment: film-note -&gt; "group-member-first-to-last": 15 pictures in 4.3 s, encoded to /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/film/pickletools--group-member-first-to-last/film.webm
+Attachment: film-frames -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/film/pickletools--group-member-first-to-last/0000.jpg
+</system-out>
+    </testcase>
+    <testcase name="the last member dragged above the first lands first" classname="dragging a group member" time="2.647">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+</system-out>
+    </testcase>
+    <testcase name="a one-row drag downwards moves exactly one row" classname="dragging a group member" time="2.376">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="the up and down arrows" tests="1" failures="0" skipped="0" flakes="0" time="2.512">
+    <testcase name="an arrow on a middle row moves it one place" classname="the up and down arrows" time="2.512">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="the arrows at 150% interface scale" tests="1" failures="0" skipped="0" flakes="0" time="14.899">
+    <testcase name="screenshots of the group editor at 100% and 150%" classname="the arrows at 150% interface scale" time="14.899">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+Attachment: group editor at 100 percent -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--group-editor-at-100-percent--step0.png
+Attachment: group editor at 150 percent -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--group-editor-at-150-percent--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="reordering categories" tests="2" failures="0" skipped="0" flakes="0" time="1.928">
+    <testcase name="moving a category up" classname="reordering categories" time="0.742">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="several moves in a row, without closing anything" classname="reordering categories" time="1.186">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="creating a group and filling it" tests="2" failures="0" skipped="0" flakes="0" time="2.606">
+    <testcase name="members collapse into one button at once" classname="creating a group and filling it" time="1.148">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+</system-out>
+    </testcase>
+    <testcase name="a removed member becomes its own button again" classname="creating a group and filling it" time="1.458">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="a category forced on a whole group" tests="4" failures="0" skipped="0" flakes="0" time="6.008">
+    <testcase name="without a category of its own, the group splits" classname="a category forced on a whole group" time="1.049">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="forcing a category moves every member there" classname="a category forced on a whole group" time="1.494">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="a member added later follows on its own" classname="a category forced on a whole group" time="1.754">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="clearing the category sends members home" classname="a category forced on a whole group" time="1.711">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="creating a category, and its keyboard shortcut" tests="6" failures="0" skipped="3" flakes="0" time="42.106">
+    <testcase name="a created category gets a tab and a key binding category" classname="creating a category, and its keyboard shortcut" time="11.235">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="the keyboard configuration opens and draws without errors once a category exists" classname="creating a category, and its keyboard shortcut" time="19.428">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="deleting it removes the tab" classname="creating a category, and its keyboard shortcut" time="11.443">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="a category created with a parent nests under it" classname="creating a category, and its keyboard shortcut" time="0.000">
+      <skipped />
+    </testcase>
+    <testcase name="a tab that is not ours moves under another, then back, then is put back by the reset" classname="creating a category, and its keyboard shortcut" time="0.000">
+      <skipped />
+    </testcase>
+    <testcase name="the reset brings a moved tab back to the bar at once" classname="creating a category, and its keyboard shortcut" time="0.000">
+      <skipped />
+    </testcase>
+  </testsuite>
+  <testsuite name="label, colour and icon of a category" tests="3" failures="0" skipped="2" flakes="0" time="14.115">
+    <testcase name="a chosen icon shows without a restart" classname="label, colour and icon of a category" time="0.000">
+      <skipped />
+    </testcase>
+    <testcase name="the appearance window of a created category, with its parent row" classname="label, colour and icon of a category" time="14.115">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: appearance window, parent row -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--appearance-window--parent-row--step0.png
+</system-out>
+    </testcase>
+    <testcase name="the parent row of a tab that is not ours, with and without subcategories" classname="label, colour and icon of a category" time="0.000">
+      <skipped />
+    </testcase>
+  </testsuite>
+  <testsuite name="deleting a group that belongs to another mod" tests="4" failures="0" skipped="1" flakes="0" time="2.245">
+    <testcase name="the group is emptied and remembered as deleted" classname="deleting a group that belongs to another mod" time="0.707">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="it stays deleted when the settings are replayed" classname="deleting a group that belongs to another mod" time="0.734">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="Restore deleted groups brings its members back" classname="deleting a group that belongs to another mod" time="0.804">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="a Categories Dropdowns group can be dissolved without breaking" classname="deleting a group that belongs to another mod" time="0.000">
+      <skipped />
+    </testcase>
+  </testsuite>
+  <testsuite name="showing what research still locks" tests="5" failures="1" skipped="1" flakes="0" time="220.730">
+    <testcase name="off by default, the locked building is hidden" classname="showing what research still locks" time="8.963">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="on, it shows greyed out and refuses" classname="showing what research still locks" time="25.310">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="finishing the research makes it buildable, without a restart" classname="showing what research still locks" time="175.661">
+      <failure message="PickleDriver.WaitUntil timed out after 175s">PickleDriver.WaitUntil timed out after 175s</failure>
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: screenshot -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/showing-what-research-still-locks--finishing-the-research-ma-62573b2f--step1.png
+Log tail:
+Exception while init loading file: /home/nelim/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Saves/__pickle_fixture.rws
+System.IO.FileNotFoundException: Could not find file "/home/nelim/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Saves/__pickle_fixture.rws"
+File name: '/home/nelim/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Saves/__pickle_fixture.rws'
+[Ref ACB96879] Duplicate stacktrace, see ref for original
+Exception from asynchronous event: System.IO.FileNotFoundException: Could not find file "/home/nelim/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Saves/__pickle_fixture.rws"
+File name: '/home/nelim/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Saves/__pickle_fixture.rws'
+[Ref E45E542] Duplicate stacktrace, see ref for original
+</system-out>
+    </testcase>
+    <testcase name="turning the option off hides it again" classname="showing what research still locks" time="10.796">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="a moved tab that research still locks follows the option and the research" classname="showing what research still locks" time="0.000">
+      <skipped />
+    </testcase>
+  </testsuite>
+  <testsuite name="everything survives a restart" tests="1" failures="0" skipped="0" flakes="0" time="1.961">
+    <testcase name="group, category, order and colour come back from the file" classname="everything survives a restart" time="1.961">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: buildings picked -&gt; A = AtmosphericHeater, B = BioferriteHarvester, C = BioferriteShaper, D = ElectricInhibitor in Anomaly
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

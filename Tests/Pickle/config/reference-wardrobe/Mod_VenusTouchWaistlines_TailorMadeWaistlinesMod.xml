@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reference pass: native diagnostic rendering remains disabled. -->
+<SettingsBlock>
+  <ModSettings Class="TailorMadeWaistlines.TailorMadeWaistlinesSettings">
+    <enableExperimentalAppPatterns>False</enableExperimentalAppPatterns>
+    <shortenShirts>False</shortenShirts>
+    <keepJacketsLong>True</keepJacketsLong>
+    <keepDressesWhole>True</keepDressesWhole>
+    <useGeneralArt>True</useGeneralArt>
+    <detailPlainShells>True</detailPlainShells>
+  </ModSettings>
+</SettingsBlock>

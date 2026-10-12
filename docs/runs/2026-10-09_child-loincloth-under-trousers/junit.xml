@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="child loincloth and trousers, from every facing" tests="1" failures="0" skipped="0" flakes="0" time="27.940">
+    <testcase name="two children show whether trousers overlap WDI's loincloth" classname="child loincloth and trousers, from every facing" time="27.940">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: child underwear, south, loincloth only -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--child-underwear--south--loincloth-only--step0.png
+Attachment: child underwear, south, loincloth under trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--child-underwear--south--loincloth-under-trousers--step0.png
+Attachment: child underwear, east, loincloth under trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--child-underwear--east--loincloth-under-trousers--step0.png
+Attachment: child underwear, north, loincloth under trousers -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--child-underwear--north--loincloth-under-trousers--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

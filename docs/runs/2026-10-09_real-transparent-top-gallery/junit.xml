@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="WDI translucent diagnostic clothing over underwear" tests="3" failures="3" skipped="0" flakes="0" time="69.729">
+    <testcase name="the ten WDI silhouettes expose translucent garment coverage, facing South" classname="WDI translucent diagnostic clothing over underwear" time="28.367">
+      <failure message="M-Kid should wear 'Apparel_VenusDiagnosticTop_Child'; it wears UnderWhere_Loincloth">M-Kid should wear 'Apparel_VenusDiagnosticTop_Child'; it wears UnderWhere_Loincloth</failure>
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: screenshot -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/WDI-translucent-diagnostic-clothing-over-underwear--the-ten--2b665bd6--step74.png
+State dump [SimSteps.ColonistState]: tick=1937565 paused=False map=0
+  F-Avg: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(198, 0, 184)
+  F-Fat: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(200, 0, 184)
+  F-Hulk: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(202, 0, 184)
+  F-Kid: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(204, 0, 184)
+  F-Thin: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(196, 0, 184)
+  M-Avg: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(198, 0, 186)
+  M-Fat: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(200, 0, 186)
+  M-Hulk: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(202, 0, 186)
+  M-Kid: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(204, 0, 186)
+  M-Thin: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(196, 0, 186)
+  Nelim: job=Train driver=JobDriver_Train drafted=False stance=Stance_Mobile pos=(149, 0, 209)
+</system-out>
+    </testcase>
+    <testcase name="the ten WDI silhouettes expose translucent garment coverage, facing East" classname="WDI translucent diagnostic clothing over underwear" time="20.580">
+      <failure message="M-Kid should wear 'Apparel_VenusDiagnosticTop_Child'; it wears UnderWhere_Loincloth">M-Kid should wear 'Apparel_VenusDiagnosticTop_Child'; it wears UnderWhere_Loincloth</failure>
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: screenshot -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/WDI-translucent-diagnostic-clothing-over-underwear--the-ten--aee078e8--step74.png
+State dump [SimSteps.ColonistState]: tick=1937574 paused=False map=0
+  F-Avg: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(198, 0, 184)
+  F-Fat: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(200, 0, 184)
+  F-Hulk: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(202, 0, 184)
+  F-Kid: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(204, 0, 184)
+  F-Thin: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(196, 0, 184)
+  M-Avg: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(198, 0, 186)
+  M-Fat: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(200, 0, 186)
+  M-Hulk: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(202, 0, 186)
+  M-Kid: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(204, 0, 186)
+  M-Thin: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(196, 0, 186)
+  Nelim: job=Train driver=JobDriver_Train drafted=False stance=Stance_Mobile pos=(149, 0, 209)
+</system-out>
+    </testcase>
+    <testcase name="the ten WDI silhouettes expose translucent garment coverage, facing North" classname="WDI translucent diagnostic clothing over underwear" time="20.782">
+      <failure message="M-Kid should wear 'Apparel_VenusDiagnosticTop_Child'; it wears UnderWhere_Loincloth">M-Kid should wear 'Apparel_VenusDiagnosticTop_Child'; it wears UnderWhere_Loincloth</failure>
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: screenshot -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/WDI-translucent-diagnostic-clothing-over-underwear--the-ten--c0f7be20--step74.png
+State dump [SimSteps.ColonistState]: tick=1937573 paused=False map=0
+  F-Avg: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(198, 0, 184)
+  F-Fat: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(200, 0, 184)
+  F-Hulk: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(202, 0, 184)
+  F-Kid: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(204, 0, 184)
+  F-Thin: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(196, 0, 184)
+  M-Avg: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(198, 0, 186)
+  M-Fat: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(200, 0, 186)
+  M-Hulk: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(202, 0, 186)
+  M-Kid: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(204, 0, 186)
+  M-Thin: job=Wait_Combat driver=JobDriver_Wait drafted=True stance=Stance_Mobile pos=(196, 0, 186)
+  Nelim: job=Train driver=JobDriver_Train drafted=False stance=Stance_Mobile pos=(149, 0, 209)
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

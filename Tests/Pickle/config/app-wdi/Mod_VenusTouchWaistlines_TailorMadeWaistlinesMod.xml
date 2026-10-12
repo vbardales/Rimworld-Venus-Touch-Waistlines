@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Seed for the WDI + APP visual proof. This is the only pass that opts into
+  Venus' experimental APP masks; staging removes it before the next pass.
+-->
+<SettingsBlock>
+  <ModSettings Class="TailorMadeWaistlines.TailorMadeWaistlinesSettings">
+    <pantsTop>0.58</pantsTop>
+    <bootsTop>0.2</bootsTop>
+    <chestBottom>0.45</chestBottom>
+    <shortenShirts>False</shortenShirts>
+    <enableExperimentalAppPatterns>True</enableExperimentalAppPatterns>
+    <useGeneralArt>False</useGeneralArt>
+    <detailPlainShells>False</detailPlainShells>
+    <trouserDrop>0.03</trouserDrop>
+    <trouserDropChild>0.067</trouserDropChild>
+  </ModSettings>
+</SettingsBlock>

@@ -1,0 +1,15 @@
+# The private package is texture/XML only.  In particular, Hooman Cute, LEWD,
+# TailorMade and AB are absent from this pass.
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+wdi.realistic.bodies            3527486510
+LoneKin.ChildrenWearAnything    3688530033
+nelim.private.lewd-wdi-textures path:VenusTouchWaistlines/Parked/LEWD-WDI-Textures
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.clickdiagnostics  path:PickleTools/ClickDiagnostics/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod
