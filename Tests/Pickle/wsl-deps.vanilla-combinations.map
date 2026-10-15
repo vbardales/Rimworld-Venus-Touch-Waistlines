@@ -1,0 +1,18 @@
+# 1.0.0 vanilla scope (Virginie, 2026-10-15): WDI bodies, Underwhere's underwear, Vanilla Apparel
+# Expanded, APP and APP Utilities, AB's trousers. UnderWhere loads before WDI (WDI supplies its textures).
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+Malistaticy.UnderWhere          1870010563
+VanillaExpanded.VAPPE           1814987817
+wdi.realistic.bodies           3527486510
+nalsnoir.ApparelPaperPattern   2480887589
+WRK.APPBodyTypeOverrider       2839443438
+ab.vplrf                       2986402536
+LoneKin.ChildrenWearAnything   3688530033
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod
