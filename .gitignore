@@ -62,3 +62,7 @@ docs/runs/*/screenshots/
 
 # Windows Explorer folder settings (WELCOME.md: never in Mod/).
 desktop.ini
+
+# Working images written by scripts/*.js (studies, previews). Kept in git history up to
+# 2026-10-15, then removed (PUBLISHING.md, Images: Art/ holds the minimal set only).
+Art/work/
