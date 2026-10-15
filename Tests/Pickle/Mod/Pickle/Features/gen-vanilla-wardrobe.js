@@ -74,7 +74,9 @@ for (const [label, clothes] of [['bare', []], ['T-shirt and pants', ['Apparel_Ba
   for (const item of clothes) line(`And Nelim's Pickle Tools: "<pawn>" wears "${item}"`);
   for (const facing of ['South', 'East', 'North']) {
     line(`And Nelim's Pickle Tools: "<pawn>" faces ${facing}`);
-    line('And Nelim\'s Pickle Tools: the camera is centered on "<pawn>" at root size 11');
+    // 12 is Pickle's closest root size; 11 was not applied (2026-10-12 run). Read it back.
+    line('And Nelim\'s Pickle Tools: the camera is centered on "<pawn>" at root size 12');
+    line('Then Nelim\'s Pickle Tools: the camera root size is 12');
     line(`And I take a screenshot "vanilla close <profile>, ${label}, ${facing.toLowerCase()}"`);
   }
 }

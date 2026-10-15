@@ -34,9 +34,7 @@ namespace TailorMadeWaistlines
         private static readonly WdiApparelCategory[] Categories =
         {
             WdiApparelCategory.Top,
-            WdiApparelCategory.Pants,
-            WdiApparelCategory.DiagnosticTop,
-            WdiApparelCategory.DiagnosticPants
+            WdiApparelCategory.Pants
         };
         // Safety gate: the category masks have static proof only. Do not change
         // a player's visible clothing until a clean, exclusive in-game capture
@@ -102,13 +100,11 @@ namespace TailorMadeWaistlines
                 if (source == null) return false;
 
                 byte[] pixels = TrouserArt.Read(source, out int width, out int height);
-                bool pants = category == WdiApparelCategory.Pants || category == WdiApparelCategory.DiagnosticPants;
+                bool pants = category == WdiApparelCategory.Pants;
                 byte[] mask = pants
                     ? UnderwearCoverageMask(profile, facing, pixels, width, height, wdi)
                     : AlphaMask(pixels, width, height, new int[width], false);
                 if (mask == null) return false;
-                if (category == WdiApparelCategory.DiagnosticTop || category == WdiApparelCategory.DiagnosticPants)
-                    mask = OpacityMask(mask, 77); // 30%: enough colour to locate cloth without hiding underwear.
                 mine.contentList[maskPath + "_" + facing] = TrouserArt.Build(mask, width, height,
                     "Venus_APP_" + profile.Id + "_" + category + "_" + facing);
                 if (category == WdiApparelCategory.Top)
@@ -254,42 +250,6 @@ namespace TailorMadeWaistlines
             return relief;
         }
 
-        // Kept for the eventual post-render compositor. APP RenderVersion 2's
-        // BurnPath alters the garment's tint as well as drawing black, so it
-        // cannot safely be used as an outline channel for this alpha-mask path.
-        private static byte[] EdgeMask(byte[] mask, int width, int height)
-        {
-            byte[] edge = new byte[mask.Length];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int i = (y * width + x) * TrouserDetail.Channels;
-                    if (mask[i + 3] == 0) continue;
-                    bool outside = x == 0 || x == width - 1 || y == 0 || y == height - 1;
-                    if (!outside)
-                    {
-                        outside = mask[i - TrouserDetail.Channels + 3] == 0 ||
-                            mask[i + TrouserDetail.Channels + 3] == 0 ||
-                            mask[i - width * TrouserDetail.Channels + 3] == 0 ||
-                            mask[i + width * TrouserDetail.Channels + 3] == 0;
-                    }
-                    if (!outside) continue;
-                    edge[i] = edge[i + 1] = edge[i + 2] = edge[i + 3] = 255;
-                }
-            }
-            return edge;
-        }
-
-        private static byte[] OpacityMask(byte[] mask, byte opacity)
-        {
-            if (mask == null) throw new ArgumentNullException(nameof(mask));
-            byte[] translucent = (byte[])mask.Clone();
-            for (int i = 3; i < translucent.Length; i += TrouserDetail.Channels)
-                translucent[i] = (byte)(translucent[i] * opacity / 255);
-            return translucent;
-        }
-
         private static bool AddOnSkinPattern(WdiVisualProfile profile, WdiApparelCategory category)
         {
             string defName = "Venus_WDI_" + profile.Id + "_" + category;
@@ -322,7 +282,7 @@ namespace TailorMadeWaistlines
             // their transparent upper half exposes the boxer/panty beneath.
             // The mask remains the final authority on the contour, so this
             // expansion cannot spill outside WDI's supplied underwear shape.
-            if (category == WdiApparelCategory.Pants || category == WdiApparelCategory.DiagnosticPants)
+            if (category == WdiApparelCategory.Pants)
             {
                 pattern.ScaleNorth = 1.75f;
                 pattern.ScaleEast = 1.75f;
@@ -348,10 +308,6 @@ namespace TailorMadeWaistlines
                     return new[] { "^Apparel_(BasicShirt|KidShirt)$" };
                 case WdiApparelCategory.Pants:
                     return new[] { "^Apparel_(Pants|KidPants)$" };
-                case WdiApparelCategory.DiagnosticTop:
-                    return new[] { "^Apparel_(BasicShirt|KidShirt)$" };
-                case WdiApparelCategory.DiagnosticPants:
-                    return new[] { "^Apparel_(Pants|KidPants)$" };
                 default:
                     return Enumerable.Empty<string>();
             }
@@ -367,8 +323,6 @@ namespace TailorMadeWaistlines
     internal enum WdiApparelCategory
     {
         Top,
-        Pants,
-        DiagnosticTop,
-        DiagnosticPants
+        Pants
     }
 }

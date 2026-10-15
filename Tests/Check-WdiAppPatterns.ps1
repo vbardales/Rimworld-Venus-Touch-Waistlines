@@ -110,20 +110,8 @@ try {
     $pantsTargets = @($targetDefs.Invoke($null, [object[]]@($pants)))
     Assert-That 'the top pattern can match only the two vanilla shirt defs' (($topTargets -join ',') -eq '^Apparel_(BasicShirt|KidShirt)$')
     Assert-That 'the pants pattern can match only the two vanilla pants defs' (($pantsTargets -join ',') -eq '^Apparel_(Pants|KidPants)$')
-    $diagnosticTop = [Enum]::Parse($categoryType, 'DiagnosticTop')
-    $diagnosticPants = [Enum]::Parse($categoryType, 'DiagnosticPants')
-    $diagnosticPaths = @(
-        foreach ($profile in $all) {
-            foreach ($category in @($diagnosticTop, $diagnosticPants)) {
-                $maskPath.Invoke($null, [object[]]@($profile.psobject.BaseObject, $category))
-            }
-        }
-    )
-    Assert-That 'all ten profiles receive separate diagnostic shirt and pants masks' (($diagnosticPaths.Count -eq 20) -and (($diagnosticPaths | Select-Object -Unique).Count -eq 20))
-    $diagnosticTopTargets = @($targetDefs.Invoke($null, [object[]]@($diagnosticTop)))
-    $diagnosticPantsTargets = @($targetDefs.Invoke($null, [object[]]@($diagnosticPants)))
-    Assert-That 'the red diagnostic outline reuses only the established shirt graphics' (($diagnosticTopTargets -join ',') -eq '^Apparel_(BasicShirt|KidShirt)$')
-    Assert-That 'the blue diagnostic outline reuses only the established pants graphics' (($diagnosticPantsTargets -join ',') -eq '^Apparel_(Pants|KidPants)$')
+    $names = [Enum]::GetNames($categoryType)
+    Assert-That 'only Top and Pants register a pattern: APP keeps the last match, so a second category on the same defs replaces the real one (2026-10-12, undyed shirts and pants vanished)' (($names -join ',') -eq 'Top,Pants')
 
     $genderFor = $bridge.GetMethod('GenderFor', $flags)
     $femaleFat = $profiles.GetField('FemaleFat', [System.Reflection.BindingFlags]'Public,Static').GetValue($null)
@@ -144,8 +132,6 @@ try {
     Write-Host ''
     Write-Host 'the WDI alpha becomes a mask, not copied colour art'
     $alphaMask = $bridge.GetMethod('AlphaMask', $flags)
-    $edgeMask = $bridge.GetMethod('EdgeMask', $flags)
-    $opacityMask = $bridge.GetMethod('OpacityMask', $flags)
     $reliefMask = $bridge.GetMethod('ReliefMask', $flags)
     [byte[]]$source = New-Object byte[] 108
     for ($pixel = 0; $pixel -lt 27; $pixel++) {
@@ -165,12 +151,6 @@ try {
     Assert-That 'top keeps its full silhouette so its own graphic sets the hem' (($topMask[4] -eq 255) -and ($topMask[7] -eq 127) -and ($topMask[103] -eq 255))
     Assert-That 'pants retain only pixels from the waistline down' (($pantsMask[3] -eq 0) -and ($pantsMask[7] -eq 127) -and ($pantsMask[11] -eq 255) -and ($pantsMask[15] -eq 255))
     Assert-That 'both masks keep the body alpha where they overlap' (($topMask[7] -eq 127) -and ($pantsMask[7] -eq 127))
-    [byte[]]$solid = @(255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255)
-    [byte[]]$edge = $edgeMask.Invoke($null, [object[]]@($solid, 3, 3))
-    Assert-That 'the burn mask traces the opaque silhouette edge' (($edge[3] -eq 255) -and ($edge[35] -eq 255))
-    Assert-That 'the burn mask leaves an opaque interior uninked' ($edge[19] -eq 0)
-    [byte[]]$translucent = $opacityMask.Invoke($null, [object[]]@($solid, [byte]77))
-    Assert-That 'the diagnostic garment mask uses the requested 30 percent opacity' (($translucent[0] -eq 255) -and ($translucent[3] -eq 77) -and ($translucent[35] -eq 77))
     [byte[]]$reliefSource = @(255,255,255,255, 0,0,0,255, 100,100,100,128, 255,255,255,0)
     [byte[]]$relief = $reliefMask.Invoke($null, [object[]]@($reliefSource, 4, 1))
     Assert-That 'the relief burn leaves bright body pixels transparent' ($relief[3] -eq 0)

@@ -1054,25 +1054,31 @@ Feature: vanilla garments on every WDI silhouette, three facings
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I destroy the gear of "<pawn>"
     And Nelim's Pickle Tools: "<pawn>" faces South
-    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 11
+    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 12
+    Then Nelim's Pickle Tools: the camera root size is 12
     And I take a screenshot "vanilla close <profile>, bare, south"
     And Nelim's Pickle Tools: "<pawn>" faces East
-    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 11
+    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 12
+    Then Nelim's Pickle Tools: the camera root size is 12
     And I take a screenshot "vanilla close <profile>, bare, east"
     And Nelim's Pickle Tools: "<pawn>" faces North
-    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 11
+    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 12
+    Then Nelim's Pickle Tools: the camera root size is 12
     And I take a screenshot "vanilla close <profile>, bare, north"
     And I destroy the gear of "<pawn>"
     And Nelim's Pickle Tools: "<pawn>" wears "Apparel_BasicShirt"
     And Nelim's Pickle Tools: "<pawn>" wears "Apparel_Pants"
     And Nelim's Pickle Tools: "<pawn>" faces South
-    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 11
+    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 12
+    Then Nelim's Pickle Tools: the camera root size is 12
     And I take a screenshot "vanilla close <profile>, T-shirt and pants, south"
     And Nelim's Pickle Tools: "<pawn>" faces East
-    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 11
+    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 12
+    Then Nelim's Pickle Tools: the camera root size is 12
     And I take a screenshot "vanilla close <profile>, T-shirt and pants, east"
     And Nelim's Pickle Tools: "<pawn>" faces North
-    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 11
+    And Nelim's Pickle Tools: the camera is centered on "<pawn>" at root size 12
+    Then Nelim's Pickle Tools: the camera root size is 12
     And I take a screenshot "vanilla close <profile>, T-shirt and pants, north"
     Then no warning matching "Failed to find any textures" was logged
 
