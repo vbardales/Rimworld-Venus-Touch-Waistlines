@@ -2,9 +2,26 @@
 
 ## [Unreleased]
 
-Targets 1.0.0. Work in progress, uncommitted: a first APP/WDI slice (`WdiAppPatterns`,
-in-memory category masks registered as APP `OnSkin` patterns for four vanilla starter
-defs, off by default). Ships no WDI texture and no APP assembly. See STATUS.md.
+Targets 1.0.0, the first public version.
+
+- **Renamed Venus Touch Waistlines**, `packageId` `nelim.venustouch.waistlines` (the
+  private 0.1.0 item carried the old name).
+- **TailorMade is optional.** Every reach into it goes through one link; its bands and
+  resizing are patched only when it is loaded, and the band sliders show only then.
+- **Trousers start on WDI's underwear**, column by column, instead of a fixed band;
+  female Thin, Fat and Hulk get their own copy of AB's shell; Fat trousers keep AB's full
+  width; the gap between the legs is painted, not cut; the low-resolution silhouette is
+  softened; children's trousers have their own drop.
+- **Shirts are cut just under the trousers' top edge**, every facing, so no belly skin
+  shows; Fat and Hulk shirts are cut on WDI's own art; jackets and other shell-layer torso
+  garments stay full length.
+- **Dresses drawn for the body are left as they are** (setting, on by default), and the
+  bodice of the royal dress is fitted to the breasts of WDI's bodies.
+- **Experimental, off by default: APP patterns for WDI's ten bodies.** With Apparel Paper
+  Pattern and APP Utilities, the vanilla T-shirt and trousers are fitted to each WDI
+  silhouette through masks made in memory from the installed WDI art (no WDI texture is
+  shipped). Trousers start at the higher of WDI's boxers and panties lines and the shirt
+  stops at the lower one, so the two always overlap.
 
 ## [0.1.0] — 2026-09-23
 
