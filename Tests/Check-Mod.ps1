@@ -32,7 +32,7 @@ param(
     [string]$TailorMade = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3756915448\Assemblies\TailorMadeUnifiedApparelBodyRefitting.dll',
     # Reading our own [HarmonyPatch] attributes means resolving the attribute
     # type, so Harmony's own assembly has to be findable too.
-    [string]$Harmony = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll',
+    [string]$Harmony = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\1.6\Assemblies\0Harmony.dll',
     [string]$ModAssembly
 )
 

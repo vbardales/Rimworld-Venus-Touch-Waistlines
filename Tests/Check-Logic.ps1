@@ -46,7 +46,7 @@
 param(
     [string]$Managed = 'C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed',
     [string]$TailorMade = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3756915448\Assemblies\TailorMadeUnifiedApparelBodyRefitting.dll',
-    [string]$Harmony = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll',
+    [string]$Harmony = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\1.6\Assemblies\0Harmony.dll',
     [string]$ModAssembly
 )
 
