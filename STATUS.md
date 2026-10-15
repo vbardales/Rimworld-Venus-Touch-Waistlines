@@ -1,7 +1,8 @@
 ---
-mod:          TailorMade Waistlines
+mod:          Venus Touch Waistlines
 packageId:    nelim.venustouch.waistlines
 repo:         https://github.com/vbardales/Rimworld-Venus-Touch-Waistlines
+remote:       origin https://github.com/vbardales/Rimworld-Venus-Touch-Waistlines.git
 visibility:   public
 detached:     yes
 workflow_stage: code[1.0.0]
@@ -42,6 +43,7 @@ remaining:
   - "feature/housekeeping: ModsConfig.xml still lists the retired packageId nelim.tailoredpants beside nelim.venustouch.waistlines; RimSort shows it as a missing active mod. She chose to remove it herself; nothing was touched."
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 updated:      2026-10-06
+protocols_read_sha: e733386f133716f60efbad53c37602935eda7050
 ---
 
 # Active WDI APP slice — 2026-10-09

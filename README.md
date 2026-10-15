@@ -1,4 +1,4 @@
-# TailorMade Waistlines
+# Venus Touch Waistlines
 
 Decides where garments stop on the body. An add-on to TailorMade, which is
 MIT, and not affiliated with it.
@@ -119,7 +119,7 @@ green in east and north for all ten profiles, but it also exposed the missing
 ink contour at the WDI silhouette edge; the option therefore remains opt-in.
 This proof covers only those four starter defs, not Middle or Shell.
 
-**Where the settings are.** Mod options, then TailorMade Waistlines. The same
+**Where the settings are.** Mod options, then Venus Touch Waistlines. The same
 window also has a `MainButtonDef`, hidden by default (`buttonVisible` false: not
 shown, not greyed out), which a customisation mod such as RIMMSQOL can reveal.
 It opens the same settings, with the same values. Values read back from the
