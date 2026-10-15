@@ -19,11 +19,11 @@ namespace TailorMadeWaistlines
     /// predicate needed to keep Thin/Fat/Hulk female WDI profiles distinct.
     /// APP resolves the last matching pattern, so the category must be explicit:
     /// two OnSkin garments cannot safely share a full-height body mask. The
-    /// initial pair targets only vanilla shirts and pants.  The shirt gets the
-    /// whole WDI silhouette, so its own artwork decides its hem; only trousers
-    /// are clipped at the measured waistline.  Cutting both independent vanilla
-    /// graphics creates a visible body band. Middle and Shell require separate
-    /// policies and must never fall through to these patterns.
+    /// initial pair targets only vanilla shirts and pants.  Both are cut on
+    /// WDI's own underwear lines, trousers from the higher one, the shirt down
+    /// to the lower one, so the two always overlap (see WaistLines).  Middle
+    /// and Shell require separate policies and must never fall through to
+    /// these patterns.
     /// </summary>
     public static class WdiAppPatterns
     {
@@ -100,11 +100,11 @@ namespace TailorMadeWaistlines
                 if (source == null) return false;
 
                 byte[] pixels = TrouserArt.Read(source, out int width, out int height);
-                bool pants = category == WdiApparelCategory.Pants;
-                byte[] mask = pants
-                    ? UnderwearCoverageMask(profile, facing, pixels, width, height, wdi)
-                    : AlphaMask(pixels, width, height, new int[width], false);
-                if (mask == null) return false;
+                if (!WaistLines(profile, facing, width, height, wdi, out int[] trouserTop, out int[] shirtHem)) return false;
+                byte[] mask = category == WdiApparelCategory.Pants
+                    ? AlphaMask(pixels, width, height, trouserTop, true)
+                    : AlphaMask(pixels, width, height, shirtHem, false);
+                if (!mask.Any(value => value != 0)) return false;
                 mine.contentList[maskPath + "_" + facing] = TrouserArt.Build(mask, width, height,
                     "Venus_APP_" + profile.Id + "_" + category + "_" + facing);
                 if (category == WdiApparelCategory.Top)
@@ -115,49 +115,75 @@ namespace TailorMadeWaistlines
             return found;
         }
 
-        // The supplied underwear gives us the waistband, not the trouser area.
-        // Pants begin one pixel above that boundary and continue to the bottom
-        // of the WDI silhouette.  Intersecting the two alpha images only drew
-        // a second pair of briefs; it could never make the long blue control
-        // garment the gallery is meant to inspect.
-        private static byte[] UnderwearCoverageMask(WdiVisualProfile profile, string facing, byte[] bodyPixels, int width, int height, ModContentPack wdi)
+        // The cut rule (Virginie, 2026-10-15): WDI draws two adult underwear
+        // lines, the top of its boxers and the top of its panties, and neither
+        // is always the higher one.  Trousers start at the higher of the two,
+        // the shirt stops at the lower, so the shirt always overlaps the
+        // trousers and no band of skin shows between them.  Children have only
+        // the fundoshi: trousers start at its smoothed line and the shirt keeps
+        // its own drawn hem (shirtHem null).
+        private static bool WaistLines(WdiVisualProfile profile, string facing, int width, int height, ModContentPack wdi,
+            out int[] trouserTop, out int[] shirtHem)
         {
+            trouserTop = null;
+            shirtHem = null;
             string key = profile.TextureKey;
-            string kind = key == "Child" ? "loincloth" :
-                (profile.Id.StartsWith("Male", StringComparison.Ordinal) ? "boxers" : "panties");
+            if (key == "Child")
+            {
+                int[] fundoshi = UnderwearTopLine(wdi, "loincloth", key, facing, width, height);
+                if (fundoshi == null) return false;
+                SmoothChildFundoshiLine(fundoshi, facing);
+                trouserTop = fundoshi.Select(y => y < 0 ? y : y - 1).ToArray();
+                return true;
+            }
+            int[] boxers = UnderwearTopLine(wdi, "boxers", key, facing, width, height);
+            int[] panties = UnderwearTopLine(wdi, "panties", key, facing, width, height);
+            if (boxers == null && panties == null) return false;
+            CombineUnderwearLines(boxers ?? panties, panties ?? boxers, out trouserTop, out shirtHem);
+            return true;
+        }
+
+        // Per column, the waistband sits one pixel above the higher underwear
+        // line; the shirt hem is the lower line.  -1 marks a column with no
+        // underwear on either side.
+        private static void CombineUnderwearLines(int[] boxers, int[] panties, out int[] trouserTop, out int[] shirtHem)
+        {
+            trouserTop = new int[boxers.Length];
+            shirtHem = new int[boxers.Length];
+            for (int x = 0; x < boxers.Length; x++)
+            {
+                int a = boxers[x], b = panties[x];
+                if (a < 0 && b < 0) { trouserTop[x] = shirtHem[x] = -1; continue; }
+                if (a < 0) a = b;
+                if (b < 0) b = a;
+                trouserTop[x] = Math.Min(a, b) - 1;
+                shirtHem[x] = Math.Max(a, b);
+            }
+        }
+
+        // First opaque row of a WDI underwear texture, per column, resampled to
+        // the body's size and filled across the columns the sprite leaves empty.
+        private static int[] UnderwearTopLine(ModContentPack wdi, string kind, string key, string facing, int width, int height)
+        {
             Texture2D underwear = wdi.GetContentHolder<Texture2D>().Get("UWUnderwear/" + kind + "/" + kind + "_" + key + "_" + facing);
             if (underwear == null) return null;
             byte[] pixels = TrouserArt.Read(underwear, out int sourceWidth, out int sourceHeight);
             if (sourceWidth <= 0 || sourceHeight <= 0) return null;
-            int[] waist = new int[width];
-            for (int x = 0; x < width; x++) waist[x] = -1;
+            int[] line = new int[width];
             for (int x = 0; x < width; x++)
             {
+                line[x] = -1;
                 int sourceX = Math.Min(sourceWidth - 1, (int)(x * (long)sourceWidth / width));
                 for (int y = 0; y < height; y++)
                 {
                     int sourceY = Math.Min(sourceHeight - 1, (int)(y * (long)sourceHeight / height));
                     if (pixels[(sourceY * sourceWidth + sourceX) * TrouserDetail.Channels + 3] == 0) continue;
-                    waist[x] = y;
+                    line[x] = y;
                     break;
                 }
             }
-            FillMissingWaistColumns(waist);
-            if (key == "Child") SmoothChildFundoshiLine(waist, facing);
-
-            var mask = new byte[bodyPixels.Length];
-            for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
-            {
-                // Adult waistband is one pixel above underwear.  The child
-                // line has already been smoothed from the lower fundoshi edge.
-                if (waist[x] < 0 || y < waist[x] - 1) continue;
-                int i = (y * width + x) * TrouserDetail.Channels;
-                byte alpha = bodyPixels[i + 3];
-                if (alpha == 0) continue;
-                mask[i] = mask[i + 1] = mask[i + 2] = 255;
-                mask[i + 3] = alpha;
-            }
-            return mask.Any(value => value != 0) ? mask : null;
+            FillMissingWaistColumns(line);
+            return line;
         }
 
         private static void FillMissingWaistColumns(int[] waist)
@@ -201,18 +227,20 @@ namespace TailorMadeWaistlines
         {
             if (source == null || width <= 0 || height <= 0 || source.Length != width * height * TrouserDetail.Channels)
                 throw new ArgumentException("source must hold width * height * 4 bytes.");
-            if (cutRows == null || cutRows.Length != width)
+            if (cutRows != null && cutRows.Length != width)
                 throw new ArgumentException("cutRows must hold one row per column.");
             byte[] mask = new byte[source.Length];
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    // A top garment already has its intended lower hem in its
-                    // own texture.  Let it run behind the pants; APP's draw
-                    // order then hides the overlap.  Pants alone start at the
-                    // profile waistline.
-                    if (keepBelow && y < cutRows[x]) continue;
+                    // keepBelow: trousers, from the cut row down.  Otherwise a
+                    // shirt, down to and including its hem row.  No rows, or a
+                    // column at -1, keeps the whole silhouette (the child's
+                    // shirt, which keeps its own drawn hem).
+                    int cut = cutRows == null ? -1 : cutRows[x];
+                    if (cut >= 0 && (keepBelow ? y < cut : y > cut)) continue;
+                    if (cut < 0 && keepBelow) continue;
                     int i = (y * width + x) * TrouserDetail.Channels;
                     byte alpha = source[i + 3];
                     if (alpha == 0) continue;
