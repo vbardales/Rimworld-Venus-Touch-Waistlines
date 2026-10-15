@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="vanilla garments on every WDI silhouette, three facings" tests="5" failures="0" skipped="0" flakes="0" time="773.158">
+    <testcase name="vanilla garments on ten WDI silhouettes, facing South" classname="vanilla garments on every WDI silhouette, three facings" time="194.264">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: vanilla wardrobe, South, bare -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--bare--step0.png
+Attachment: vanilla wardrobe, South, T-shirt -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--T-shirt--step0.png
+Attachment: vanilla wardrobe, South, pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--pants--step0.png
+Attachment: vanilla wardrobe, South, T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--T-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, South, button-down shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--button-down-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, South, jacket over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--jacket-over-T-shirt-and-pan-1a6e1530--step0.png
+Attachment: vanilla wardrobe, South, duster over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--duster-over-T-shirt-and-pan-32f52cdb--step0.png
+Attachment: vanilla wardrobe, South, parka over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--parka-over-T-shirt-and-pant-66859e93--step0.png
+Attachment: vanilla wardrobe, South, tribalwear -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--South--tribalwear--step0.png
+</system-out>
+    </testcase>
+    <testcase name="vanilla garments on ten WDI silhouettes, facing East" classname="vanilla garments on every WDI silhouette, three facings" time="218.431">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: vanilla wardrobe, East, bare -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--bare--step0.png
+Attachment: vanilla wardrobe, East, T-shirt -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--T-shirt--step0.png
+Attachment: vanilla wardrobe, East, pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--pants--step0.png
+Attachment: vanilla wardrobe, East, T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--T-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, East, button-down shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--button-down-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, East, jacket over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--jacket-over-T-shirt-and-pant-424b5e12--step0.png
+Attachment: vanilla wardrobe, East, duster over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--duster-over-T-shirt-and-pant-d377abb1--step0.png
+Attachment: vanilla wardrobe, East, parka over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--parka-over-T-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, East, tribalwear -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--East--tribalwear--step0.png
+</system-out>
+    </testcase>
+    <testcase name="vanilla garments on ten WDI silhouettes, facing North" classname="vanilla garments on every WDI silhouette, three facings" time="206.275">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: vanilla wardrobe, North, bare -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--bare--step0.png
+Attachment: vanilla wardrobe, North, T-shirt -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--T-shirt--step0.png
+Attachment: vanilla wardrobe, North, pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--pants--step0.png
+Attachment: vanilla wardrobe, North, T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--T-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, North, button-down shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--button-down-shirt-and-pants--step0.png
+Attachment: vanilla wardrobe, North, jacket over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--jacket-over-T-shirt-and-pan-001be12a--step0.png
+Attachment: vanilla wardrobe, North, duster over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--duster-over-T-shirt-and-pan-134e1289--step0.png
+Attachment: vanilla wardrobe, North, parka over T-shirt and pants -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--parka-over-T-shirt-and-pant-eb3eaecd--step0.png
+Attachment: vanilla wardrobe, North, tribalwear -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-wardrobe--North--tribalwear--step0.png
+</system-out>
+    </testcase>
+    <testcase name="a WDI child in close-up, bare then in T-shirt and pants, three facings" classname="vanilla garments on every WDI silhouette, three facings" time="73.728">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: vanilla close Kid_Boy, bare, south -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Boy--bare--south--step0.png
+Attachment: vanilla close Kid_Boy, bare, east -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Boy--bare--east--step0.png
+Attachment: vanilla close Kid_Boy, bare, north -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Boy--bare--north--step0.png
+Attachment: vanilla close Kid_Boy, T-shirt and pants, south -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Boy--T-shirt-and-pants--south--step0.png
+Attachment: vanilla close Kid_Boy, T-shirt and pants, east -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Boy--T-shirt-and-pants--east--step0.png
+Attachment: vanilla close Kid_Boy, T-shirt and pants, north -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Boy--T-shirt-and-pants--north--step0.png
+</system-out>
+    </testcase>
+    <testcase name="a WDI child in close-up, bare then in T-shirt and pants, three facings" classname="vanilla garments on every WDI silhouette, three facings" time="80.460">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: vanilla close Kid_Girl, bare, south -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Girl--bare--south--step0.png
+Attachment: vanilla close Kid_Girl, bare, east -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Girl--bare--east--step0.png
+Attachment: vanilla close Kid_Girl, bare, north -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Girl--bare--north--step0.png
+Attachment: vanilla close Kid_Girl, T-shirt and pants, south -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Girl--T-shirt-and-pants--south--step0.png
+Attachment: vanilla close Kid_Girl, T-shirt and pants, east -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Girl--T-shirt-and-pants--east--step0.png
+Attachment: vanilla close Kid_Girl, T-shirt and pants, north -&gt; /mnt/c/Users/nelim/Documents/rimworld/pickle-reports/screenshots/manual--vanilla-close-Kid_Girl--T-shirt-and-pants--north--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>
