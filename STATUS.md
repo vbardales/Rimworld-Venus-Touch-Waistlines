@@ -42,7 +42,7 @@ remaining:
   - "feature/housekeeping: ModsConfig.xml still lists the retired packageId nelim.tailoredpants beside nelim.venustouch.waistlines; RimSort shows it as a missing active mod. She chose to remove it herself; nothing was touched."
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 updated:      2026-10-06
-protocols_read_sha: 00104eecf6b298ba73fea1d204376665cd8154b6
+protocols_read_sha: ad8c1682365f424822d5af98900855d254a81dc1
 ---
 # Active WDI APP slice — 2026-10-09
 
