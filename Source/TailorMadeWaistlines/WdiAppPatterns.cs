@@ -100,7 +100,8 @@ namespace TailorMadeWaistlines
                 if (source == null) return false;
 
                 byte[] pixels = TrouserArt.Read(source, out int width, out int height);
-                if (!WaistLines(profile, facing, width, height, wdi, out int[] trouserTop, out int[] shirtHem)) return false;
+                BodyColumns(pixels, width, height, out int bodyMin, out int bodyMax);
+                if (!WaistLines(profile, facing, width, height, wdi, bodyMin, bodyMax, out int[] trouserTop, out int[] shirtHem)) return false;
                 byte[] mask = category == WdiApparelCategory.Pants
                     ? AlphaMask(pixels, width, height, trouserTop, true)
                     : AlphaMask(pixels, width, height, shirtHem, false);
@@ -123,22 +124,28 @@ namespace TailorMadeWaistlines
         // the fundoshi: trousers start at its smoothed line and the shirt keeps
         // its own drawn hem (shirtHem null).
         private static bool WaistLines(WdiVisualProfile profile, string facing, int width, int height, ModContentPack wdi,
-            out int[] trouserTop, out int[] shirtHem)
+            int bodyMin, int bodyMax, out int[] trouserTop, out int[] shirtHem)
         {
             trouserTop = null;
             shirtHem = null;
             string key = profile.TextureKey;
             if (key == "Child")
             {
-                int[] fundoshi = UnderwearTopLine(wdi, "loincloth", key, facing, width, height);
+                int[] fundoshi = UnderwearTopLine(wdi, "loincloth", key, facing, width, height, bodyMin, bodyMax);
                 if (fundoshi == null) return false;
-                SmoothChildFundoshiLine(fundoshi, facing);
+                // The two child lines are the fundoshi's edge (Virginie, 2026-10-18): the shirt ends on it, the trousers start
+                // one row above it.  Front and back keep the flat smoothing; the profile follows the edge, extrapolated at the
+                // back like the adults', instead of a straight slope between its two ends.
+                if (facing != "east") SmoothChildFundoshiLine(fundoshi, facing); else SmoothRipple(fundoshi);
                 trouserTop = fundoshi.Select(y => y < 0 ? y : y - 1).ToArray();
+                shirtHem = (int[])fundoshi.Clone();
                 return true;
             }
-            int[] boxers = UnderwearTopLine(wdi, "boxers", key, facing, width, height);
-            int[] panties = UnderwearTopLine(wdi, "panties", key, facing, width, height);
+            int[] boxers = UnderwearTopLine(wdi, "boxers", key, facing, width, height, bodyMin, bodyMax);
+            int[] panties = UnderwearTopLine(wdi, "panties", key, facing, width, height, bodyMin, bodyMax);
             if (boxers == null && panties == null) return false;
+            // Each line follows its own sprite (Virginie, 2026-10-18): the slip gives the top of the trousers, the boxers the hem
+            // of the shirt.  Either sprite stands in for a body that lacks the other.
             CombineUnderwearLines(boxers ?? panties, panties ?? boxers, out trouserTop, out shirtHem);
             return true;
         }
@@ -156,14 +163,24 @@ namespace TailorMadeWaistlines
                 if (a < 0 && b < 0) { trouserTop[x] = shirtHem[x] = -1; continue; }
                 if (a < 0) a = b;
                 if (b < 0) b = a;
-                trouserTop[x] = Math.Min(a, b) - 1;
-                shirtHem[x] = Math.Max(a, b);
+                trouserTop[x] = b - 1;
+                shirtHem[x] = a;
             }
+            // Where the boxers' edge is higher than the slip's, bare skin is left between the two lines.  Both lines move apart by
+            // half of the largest such gap of the body and facing (the hem down, the trousers up), so they meet there and
+            // overlap elsewhere (Virginie, 2026-10-18).
+            int gap = 0;
+            for (int x = 0; x < boxers.Length; x++)
+                if (shirtHem[x] >= 0) gap = Math.Max(gap, trouserTop[x] - shirtHem[x] - 1);
+            int shift = (gap + 1) / 2;
+            if (shift > 0)
+                for (int x = 0; x < boxers.Length; x++)
+                    if (shirtHem[x] >= 0) { shirtHem[x] += shift; trouserTop[x] -= shift; }
         }
 
         // First opaque row of a WDI underwear texture, per column, resampled to
         // the body's size and filled across the columns the sprite leaves empty.
-        private static int[] UnderwearTopLine(ModContentPack wdi, string kind, string key, string facing, int width, int height)
+        private static int[] UnderwearTopLine(ModContentPack wdi, string kind, string key, string facing, int width, int height, int bodyMin, int bodyMax)
         {
             Texture2D underwear = wdi.GetContentHolder<Texture2D>().Get("UWUnderwear/" + kind + "/" + kind + "_" + key + "_" + facing);
             if (underwear == null) return null;
@@ -182,10 +199,59 @@ namespace TailorMadeWaistlines
                     break;
                 }
             }
+            ExtrapolateToBody(line, bodyMin, bodyMax);
             FillMissingWaistColumns(line);
             return line;
         }
 
+        private static void BodyColumns(byte[] pixels, int width, int height, out int min, out int max)
+        {
+            min = width; max = -1;
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    if (pixels[(y * width + x) * TrouserDetail.Channels + 3] != 0) { if (x < min) min = x; if (x > max) max = x; }
+        }
+
+        // The rule (Virginie, 2026-10-18): follow the edge of the underwear as drawn and, at each side, where the sprite's
+        // rounded corner begins, extrapolate the line out to the body's last column.  The corner is the stretch of outer
+        // columns where the line moves against its dominant direction (the top of the buttock on a profile, the bottom of the
+        // hook on the front and back) or steeply (more than CornerStep rows a column); from the first column past it, the slope
+        // over SlopeWindow columns is carried outward, replacing the corner.  scripts/game-cut-preview.js draws the same rule.
+        private const int CornerStep = 2, SlopeWindow = 10, MaxCorner = 90;   // a corner never takes more than a third of the sprite
+        private static void ExtrapolateToBody(int[] line, int bodyMin, int bodyMax)
+        {
+            int first = Array.FindIndex(line, value => value >= 0);
+            int last = Array.FindLastIndex(line, value => value >= 0);
+            if (first < 0 || last - first < 60) return;
+            int corner = Math.Min(MaxCorner, (last - first) / 3 - SlopeWindow);
+
+            int lead = Math.Sign(line[first + corner + SlopeWindow] - line[first + corner]);
+            int a = first;
+            while (a < first + corner && ((lead != 0 && (line[a + 1] - line[a]) * lead < 0) || Math.Abs(line[a + 1] - line[a]) > CornerStep)) a++;
+            for (int x = a - 1; x >= Math.Min(bodyMin, first) && x >= 0; x--)
+                line[x] = Extend(line[a], line[a + SlopeWindow], line[a + 2 * SlopeWindow], a - x);
+
+            int trail = Math.Sign(line[last - corner - SlopeWindow] - line[last - corner]);
+            int b = last;
+            while (b > last - corner && ((trail != 0 && (line[b - 1] - line[b]) * trail < 0) || Math.Abs(line[b - 1] - line[b]) > CornerStep)) b--;
+            for (int x = b + 1; x <= Math.Max(bodyMax, last) && x < line.Length; x++)
+                line[x] = Extend(line[b], line[b - SlopeWindow], line[b - 2 * SlopeWindow], x - b);
+        }
+
+        // A parabola through the interior points y0 (the first smooth column), y1 and y2 (SlopeWindow and 2 SlopeWindow columns
+        // further in), followed outward for SmoothColumns, then straight on with the slope it reached: the line leaves the
+        // corner with the curve it had inside, not at an angle.  s = columns outward from y0.
+        private const int SmoothColumns = 16;
+        private static int Extend(int y0, int y1, int y2, int s)
+        {
+            double d1 = y1 - y0, d2 = y2 - y0;
+            double c = (d2 - 2 * d1) / (SlopeWindow * SlopeWindow);
+            double b = d1 / SlopeWindow - 0.5 * c * SlopeWindow;
+            int sc = Math.Min(s, SmoothColumns);
+            double y = y0 - b * sc + 0.5 * c * sc * sc;
+            if (s > SmoothColumns) y += (-b + c * SmoothColumns) * (s - SmoothColumns);
+            return (int)Math.Round(y, MidpointRounding.AwayFromZero);
+        }
         private static void FillMissingWaistColumns(int[] waist)
         {
             int last = -1;
@@ -199,6 +265,22 @@ namespace TailorMadeWaistlines
             {
                 if (waist[x] >= 0) { last = waist[x]; continue; }
                 if (last >= 0) waist[x] = last;
+            }
+        }
+
+        // The child profile follows the fundoshi edge, which ripples by 1 to 3 rows: a moving average over 2 * RippleRadius + 1
+        // columns takes it out and keeps the slope and the curve of the back (Virginie, 2026-10-18).
+        private const int RippleRadius = 8;
+        private static void SmoothRipple(int[] line)
+        {
+            int[] source = (int[])line.Clone();
+            for (int x = 0; x < line.Length; x++)
+            {
+                if (source[x] < 0) continue;
+                int sum = 0, count = 0;
+                for (int k = Math.Max(0, x - RippleRadius); k <= Math.Min(line.Length - 1, x + RippleRadius); k++)
+                    if (source[k] >= 0) { sum += source[k]; count++; }
+                line[x] = (int)Math.Round(sum / (double)count, MidpointRounding.AwayFromZero);
             }
         }
 

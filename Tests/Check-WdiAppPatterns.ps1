@@ -158,10 +158,14 @@ try {
     [void]$combine.Invoke($null, $lines)
     [int[]]$trouserTop = $lines[2]
     [int[]]$shirtHem = $lines[3]
-    Assert-That 'trousers start one row above the higher underwear line (Virginie, 2026-10-15)' (($trouserTop[0] -eq 39) -and ($trouserTop[1] -eq 43))
-    Assert-That 'the shirt stops at the lower underwear line, so it always overlaps the trousers' (($shirtHem[0] -eq 45) -and ($shirtHem[1] -eq 50))
-    Assert-That 'a column with one underwear line uses it for both' (($trouserTop[2] -eq 29) -and ($shirtHem[2] -eq 30))
-    Assert-That 'a column with no underwear stays uncut (-1)' (($trouserTop[3] -eq -1) -and ($shirtHem[3] -eq -1))
+    # Each line follows its own sprite (Virginie, 2026-10-18): the trousers start one row above the slip (panties) line, the shirt
+    # ends on the boxers line.  Column 0 leaves 3 bare rows (boxers 40, slip 45), so both lines move apart by ceil(3 / 2) = 2.
+    Assert-That 'trousers start one row above the slip line, moved up by half the largest gap' (($trouserTop[0] -eq 42) -and ($trouserTop[1] -eq 41))
+    Assert-That 'the shirt ends on the boxers line, moved down by that half gap, so no bare row is left' (($shirtHem[0] -eq 42) -and ($shirtHem[1] -eq 52) -and ($shirtHem[0] -ge $trouserTop[0]))
+    Assert-That 'a column with one underwear line uses it for both' (($trouserTop[2] -eq 27) -and ($shirtHem[2] -eq 32))
+    $noGap = [object[]]@([int[]]@(50, 48), [int[]]@(45, 47), $null, $null)
+    [void]$combine.Invoke($null, $noGap)
+    Assert-That 'when the boxers are the lower line nothing moves: top = slip - 1, hem = boxers' (($noGap[2][0] -eq 44) -and ($noGap[3][0] -eq 50) -and ($noGap[2][1] -eq 46) -and ($noGap[3][1] -eq 48))    Assert-That 'a column with no underwear stays uncut (-1)' (($trouserTop[3] -eq -1) -and ($shirtHem[3] -eq -1))
     Assert-That 'pants retain only pixels from the waistline down' (($pantsMask[3] -eq 0) -and ($pantsMask[7] -eq 127) -and ($pantsMask[11] -eq 255) -and ($pantsMask[15] -eq 255))
     Assert-That 'both masks keep the body alpha where they overlap' (($topMask[7] -eq 127) -and ($pantsMask[7] -eq 127))
     [byte[]]$reliefSource = @(255,255,255,255, 0,0,0,255, 100,100,100,128, 255,255,255,0)
