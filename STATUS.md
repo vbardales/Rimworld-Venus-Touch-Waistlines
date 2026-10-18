@@ -41,7 +41,8 @@ remaining:
   - "feature/housekeeping: the Steam description and the change note for 1.0.0 are not written (see PUBLICATION.md and the CI/CD note below); CHANGELOG.md has no [1.0.0] section yet. They belong to prepublished, not to tested."
   - "feature/housekeeping: ModsConfig.xml still lists the retired packageId nelim.tailoredpants beside nelim.venustouch.waistlines; RimSort shows it as a missing active mod. She chose to remove it herself; nothing was touched."
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
-updated:      2026-10-06
+publication_changelog_review_sha: b083afbf2c36b906c562272fc3719a556c5922e2
+updated:      2026-10-18
 protocols_read_sha: ad8c1682365f424822d5af98900855d254a81dc1
 ---
 # Active WDI APP slice — 2026-10-09
