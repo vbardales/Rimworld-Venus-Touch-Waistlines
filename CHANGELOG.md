@@ -12,9 +12,9 @@ Targets 1.0.0, the first public version.
   female Thin, Fat and Hulk get their own copy of AB's shell; Fat trousers keep AB's full
   width; the gap between the legs is painted, not cut; the low-resolution silhouette is
   softened; children's trousers have their own drop.
-- **Shirts are cut just under the trousers' top edge**, every facing, so no belly skin
-  shows; Fat and Hulk shirts are cut on WDI's own art; jackets and other shell-layer torso
-  garments stay full length.
+- **Shirts end just under the trousers' top edge**, every facing, so no belly skin
+  shows: cut on WDI's own art for Fat and Hulk, compressed into the band elsewhere;
+  jackets and other shell-layer torso garments stay full length.
 - **Dresses drawn for the body are left as they are** (setting, on by default), and the
   bodice of the royal dress is fitted to the breasts of WDI's bodies.
 - **Experimental, off by default: APP patterns for WDI's ten bodies.** With Apparel Paper

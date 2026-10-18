@@ -3,7 +3,7 @@
 What the Workshop page needs and the repository holds nowhere else (`PUBLISHING.md`, `AUDIT.md` step
 `tested → prepublished`). It serves twice: at the first upload, and for whoever takes the mod over.
 
-**State, 2026-10-07: incomplete, on purpose.** Since 2026-09-25 the mod cuts shirts on WDI's underwear instead of compressing them, redraws trousers per body and sex, and lets TailorMade out of the shirts WDI draws itself (`docs/USE-CASES.md`, `docs/SHIRT-FITTING-RESEARCH.md`). The `About.xml` description was updated for that; the live Steam description still has the 0.1.0 text. Older note: **State, 2026-09-25: incomplete, on purpose.** The item exists (`3806769245`, prepublished 0.1.0, private).
+**State, 2026-10-07: incomplete, on purpose.** Since 2026-09-25 the mod ends shirts on WDI's underwear line (cut on WDI's own art where it exists, compressed into the band otherwise), redraws trousers per body and sex, and lets TailorMade out of the shirts WDI draws itself (`docs/USE-CASES.md`, `docs/SHIRT-FITTING-RESEARCH.md`). The `About.xml` description was updated for that; the live Steam description still has the 0.1.0 text. Older note: **State, 2026-09-25: incomplete, on purpose.** The item exists (`3806769245`, prepublished 0.1.0, private).
 The sections below say what is decided and what is not. Nothing here is filled in to look finished.
 
 ## 1. Description
