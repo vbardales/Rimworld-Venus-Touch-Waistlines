@@ -66,3 +66,7 @@ desktop.ini
 # Working images written by scripts/*.js (studies, previews). Kept in git history up to
 # 2026-10-15, then removed (PUBLISHING.md, Images: Art/ holds the minimal set only).
 Art/work/
+
+# Pickle runs land in Inbox/ and failures wait in Parked/ (AGENTS.md, Test evidence); only Evidence/ holds proofs.
+Tests/Pickle/Inbox/
+Tests/Pickle/Parked/
