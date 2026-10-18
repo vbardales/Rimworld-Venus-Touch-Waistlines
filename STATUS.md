@@ -41,64 +41,50 @@ remaining:
   - "feature/housekeeping: ModsConfig.xml still lists the retired packageId nelim.tailoredpants beside nelim.venustouch.waistlines; RimSort shows it as a missing active mod. She chose to remove it herself; nothing was touched."
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 updated:      2026-10-06
-protocols_read_sha: e733386f133716f60efbad53c37602935eda7050
+protocols_read_sha: 00104eecf6b298ba73fea1d204376665cd8154b6
 ---
-
 # Active WDI APP slice — 2026-10-09
 
-`workflow_stage` remains **done**, not `tested`. The working tree now contains
-an uncommitted first APP/WDI vertical slice: `WdiAppPatterns` creates 60
-in-memory category masks (ten WDI profiles × top/pants × south/east/north) and
-registers narrow APP `OnSkin` patterns for four vanilla starter defs. APP
-Utilities' gender filter selects distinct Thin/Fat/Hulk female patterns. It
-ships no WDI texture, derivative file, APP assembly or APP Utilities assembly.
-It has compiled and the six non-game test sets passed 359 checks on 2026-10-09.
-The failed full-body trial is retained as negative evidence: a same-layer shirt
-hid trousers. The replacement leaves the shirt's own hem intact and clips only
-trousers at the WDI waist. Its dedicated `@facings` Pickle run is 2/2 green:
-`docs/runs/2026-10-09_app-wdi-full-top/` visibly shows blue trousers under a
-t-shirt in east and north for all ten profiles, without a waist gap. This proves
-only BasicShirt/KidShirt and Pants/KidPants. It also revealed that the alpha
-mask does not redraw WDI's black ink edge, so visual acceptance remains open.
-The player-facing setting stays off by default. Middle/Shell layers, contour
-composition, burns, robes, coats and a per-row refit remain outside this slice.
+`workflow_stage` remains **done**, not `tested`. Working tree has uncommitted first APP/WDI vertical slice: `WdiAppPatterns` creates 60 in-memory category masks (ten WDI profiles × top/pants × south/east/north), registers narrow APP `OnSkin` patterns for four vanilla starter defs. APP Utilities' gender filter selects distinct Thin/Fat/Hulk female patterns. Ships no WDI texture, derivative file, APP assembly or APP Utilities assembly. Compiled; six non-game test sets passed 359 checks on 2026-10-09.
+Failed full-body trial kept as negative evidence: same-layer shirt hid trousers. Replacement leaves shirt's own hem intact, clips only trousers at WDI waist. Dedicated `@facings` Pickle run 2/2 green: `docs/runs/2026-10-09_app-wdi-full-top/` visibly shows blue trousers under t-shirt in east and north for all ten profiles, no waist gap. Proves only BasicShirt/KidShirt and Pants/KidPants. Also revealed alpha mask does not redraw WDI's black ink edge, so visual acceptance still open.
+Player-facing setting stays off by default. Middle/Shell layers, contour composition, burns, robes, coats, per-row refit remain outside slice.
 
 # TailorMade Waistlines — status
 
 ## Workflow audit — 2026-10-06, fourth pass: `done` holds, `tested` is not reached
 
-**Result: `done` -> `done`** (`stage: done`, `workflow_stage: done`). Audited revision: `ce8961d` (main, pushed) plus the local changes of this session, committed after the audit. The shipped assembly is unchanged (`Mod/Assemblies/TailorMadeWaistlines.dll`, SHA-256 `7FD0FEBF…`); `Mod/` changed only in the two images and `ATTRIBUTION.md` (see below).
+**Result: `done` -> `done`** (`stage: done`, `workflow_stage: done`). Audited revision: `ce8961d` (main, pushed) plus local changes of this session, committed after audit. Shipped assembly unchanged (`Mod/Assemblies/TailorMadeWaistlines.dll`, SHA-256 `7FD0FEBF…`); `Mod/` changed only in two images and `ATTRIBUTION.md` (see below).
 
 Criteria re-run against today's documents (AUDIT.md `90d51374`, MOD_SETTINGS.md `90d51374`, TRANSLATIONS.md `90d51374`, PUBLISHING.md `2771698f`, STYLE_RIMWORLD.md `c576e43a`):
 
-- `options -> l10n`: the mod displays no count (the sliders print a decimal), so the plural rule of 2026-09-25 has no key to ask for. No text agrees with a pawn, so the French gender rule of 2026-09-30 does not apply and no French-presentation setting is warranted. `Check-Localization.ps1` 45/45. New since the last audit: the French review rule of 2026-09-30, so `translation_fr` is `partial` and `FRENCH_REVIEW.md` is generated (revision `130d841`, 2 DefInjected rows and the Keyed rows, no doubts flagged).
-- `l10n -> preTest`: dependencies re-read in `About.xml` (`brrainz.harmony`, `astryl.tailormade`, both required, with their Workshop ids; `loadAfter` both). `Check-TypeRefs` clean. `upstream_mod_remotes: N/A`: TailorMade's Workshop page (3756915448) links no source repository; the Chinese fork `QianYI-Yan/RimworldMods:TailorMade-ZhCN` is a translation, not the upstream, so no pull request can be aimed at it.
-- `preTest -> done`: all five sets re-run today through `Tests/Run-Tests.ps1`, all passed (Check-Mod, Check-Logic, Check-Settings, Check-Trousers, Check-Localization). XML re-run over `Mod/`: `Check-XmlFields` (2 files, no unknown field), `Check-DefInjected` (2 keys, 0 errors), `Check-DefRefs` (clean), `Check-TypeRefs` (no unguarded third-party type). Pickle suites written (`Tests/Pickle`, four features: 01 trousers, 02 Gear tab, 03 silhouettes, 04 other supplier) and justified in `TESTING.md`.
+- `options -> l10n`: mod displays no count (sliders print decimal), so plural rule of 2026-09-25 has no key to ask for. No text agrees with pawn, so French gender rule of 2026-09-30 does not apply, no French-presentation setting warranted. `Check-Localization.ps1` 45/45. New since last audit: French review rule of 2026-09-30, so `translation_fr` is `partial` and `FRENCH_REVIEW.md` generated (revision `130d841`, 2 DefInjected rows and Keyed rows, no doubts flagged).
+- `l10n -> preTest`: dependencies re-read in `About.xml` (`brrainz.harmony`, `astryl.tailormade`, both required, with Workshop ids; `loadAfter` both). `Check-TypeRefs` clean. `upstream_mod_remotes: N/A`: TailorMade's Workshop page (3756915448) links no source repository; Chinese fork `QianYI-Yan/RimworldMods:TailorMade-ZhCN` is translation, not upstream, so no pull request can be aimed at it.
+- `preTest -> done`: all five sets re-run today through `Tests/Run-Tests.ps1`, all passed (Check-Mod, Check-Logic, Check-Settings, Check-Trousers, Check-Localization). XML re-run over `Mod/`: `Check-XmlFields` (2 files, no unknown field), `Check-DefInjected` (2 keys, 0 errors), `Check-DefRefs` (clean), `Check-TypeRefs` (no unguarded third-party type). Pickle suites written (`Tests/Pickle`, four features: 01 trousers, 02 Gear tab, 03 silhouettes, 04 other supplier), justified in `TESTING.md`.
 - Images: Preview 896x504, 562977 B (< 1 MB), inspected; ModIcon 128x128, 36332 B. Both regenerated today (see `showcase`).
 
-**`done -> tested` is not reached**, for these reasons (all pending work, none a defect of the shipped assembly except the first):
+**`done -> tested` not reached**, reasons (all pending work, none a defect of shipped assembly except first):
 
-1. `defect`: the child trouser art is oversized (2026-09-27), cause not located; KidPants `drawSize` is 0.70.
-2. The 11 manual scenarios of `TESTING.md` have not been run. `tested` needs no manual test left to validate.
-3. No `@wip` in `Tests/Pickle` (grep, 2026-10-06): that criterion holds.
-4. Conditional scenarios: every `@requires` tag had its pass on 2026-09-24/25 (AB, XND, General, WDI), but `03-silhouettes` changed since (frame fix) and has run on the fixed frame for two of its ten scenarios only.
-5. Settings, FR/EN display and the RIMMSQOL shortcut have never been observed in game.
+1. `defect`: child trouser art oversized (2026-09-27), cause not located; KidPants `drawSize` is 0.70.
+2. 11 manual scenarios of `TESTING.md` not run. `tested` needs no manual test left to validate.
+3. No `@wip` in `Tests/Pickle` (grep, 2026-10-06): criterion holds.
+4. Conditional scenarios: every `@requires` tag had its pass on 2026-09-24/25 (AB, XND, General, WDI), but `03-silhouettes` changed since (frame fix), ran on fixed frame for two of ten scenarios only.
+5. Settings, FR/EN display, RIMMSQOL shortcut never observed in game.
 
-**Housekeeping done in this session:**
+**Housekeeping done this session:**
 
-- `_tools/` moved to `scripts/` (STYLE_RIMWORLD.md, "Dossiers à la racine d'un mod"; 28 files, history kept by `git mv`), references updated in `README.md`, `ATTRIBUTION.md` (root and `Mod/` copies, identical), `.gitignore` (`scripts/*.xcf`) and `Parked/README.md`; `CHANGELOG.md` is append-only and keeps its old mentions.
-- `CHANGELOG.md` heading `## 0.1.0 — 2026-09-23` became `## [0.1.0] — 2026-09-23`: `changelog-section.sh` matches `## [<version>]`, and the old form would have failed the release-notes check. Content untouched. `About/PublishedFileId.txt` holds `3806769245` (commit `18e2bf2`), so the `0.1.0` entry stands.
-- Evidence: `evidence-*/` added to `.gitignore`; the four tracked files of `docs/runs/2026-09-25_wdi-ab-frame/evidence-1/kept/` untracked and kept on disk (sole proof of the two frame-fix scenarios, cited above). No `.dds` is tracked (`git ls-files`: none), and `*.dds` is already ignored.
-- `Art/echo.png` put back from `Art/.wip/` (the renderer reads it there; its config names it).
+- `_tools/` moved to `scripts/` (STYLE_RIMWORLD.md, "Dossiers à la racine d'un mod"; 28 files, history kept by `git mv`), references updated in `README.md`, `ATTRIBUTION.md` (root and `Mod/` copies, identical), `.gitignore` (`scripts/*.xcf`), `Parked/README.md`; `CHANGELOG.md` append-only, keeps old mentions.
+- `CHANGELOG.md` heading `## 0.1.0 — 2026-09-23` became `## [0.1.0] — 2026-09-23`: `changelog-section.sh` matches `## [<version>]`, old form would fail release-notes check. Content untouched. `About/PublishedFileId.txt` holds `3806769245` (commit `18e2bf2`), so `0.1.0` entry stands.
+- Evidence: `evidence-*/` added to `.gitignore`; four tracked files of `docs/runs/2026-09-25_wdi-ab-frame/evidence-1/kept/` untracked, kept on disk (sole proof of two frame-fix scenarios, cited above). No `.dds` tracked (`git ls-files`: none), `*.dds` already ignored.
+- `Art/echo.png` put back from `Art/.wip/` (renderer reads it there; config names it).
 
-**Left for her** (a deletion was refused to the session; nothing was deleted):
+**Left for her** (deletion refused to session; nothing deleted):
 
 - ~~`Art/.wip/`~~ deleted by her, 2026-10-06.
-- Superseded or failed evidence, none cited by a field: `docs/runs/2026-09-25_wdi-ab-boy/`, `docs/runs/2026-09-25_wdi-ab-hulk/`, `docs/runs/2026-09-25_wdi-ab-frame/evidence/` (a failed run, 3.4 MB capture), and in `docs/runs/2026-09-27_childpants-drawsize/`: `evidence/`, and in `evidence-1/` and `evidence-2/` everything but `summary.json` (15 MB of reports, logs and a 3.3 MB capture).
+- Superseded or failed evidence, none cited by a field: `docs/runs/2026-09-25_wdi-ab-boy/`, `docs/runs/2026-09-25_wdi-ab-hulk/`, `docs/runs/2026-09-25_wdi-ab-frame/evidence/` (failed run, 3.4 MB capture), and in `docs/runs/2026-09-27_childpants-drawsize/`: `evidence/`, and in `evidence-1/` and `evidence-2/` everything but `summary.json` (15 MB reports, logs, 3.3 MB capture).
 - `Tests/Pickle/Mod/Pickle/Features/99-explore-childpants-scale.feature` (throwaway, read once, untracked).
-- What stays: the six 2026-09-24 passes, `2026-09-25_wdi-ab-silhouettes` (sole proof of eight scenarios of `03`), `2026-09-25_wdi-ab-frame/evidence-1/` (the two frame-fix scenarios).
+- Stays: six 2026-09-24 passes, `2026-09-25_wdi-ab-silhouettes` (sole proof of eight scenarios of `03`), `2026-09-25_wdi-ab-frame/evidence-1/` (two frame-fix scenarios).
 
 
 ## Earlier journal
 
-The dated sections from 2026-09-20 to 2026-10-06 (CI/CD note, earlier remaining entries, the three first audits, the Pickle suite history, the frame fix) are in [docs/runs/status-journal-2026-09-20_2026-10-06.md](docs/runs/status-journal-2026-09-20_2026-10-06.md).
+Dated sections 2026-09-20 to 2026-10-06 (CI/CD note, earlier remaining entries, three first audits, Pickle suite history, frame fix) in [docs/runs/status-journal-2026-09-20_2026-10-06.md](docs/runs/status-journal-2026-09-20_2026-10-06.md).
