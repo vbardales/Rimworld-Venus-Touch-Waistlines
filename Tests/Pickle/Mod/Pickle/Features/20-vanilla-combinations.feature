@@ -6,6 +6,7 @@ Feature: the 1.0.0 outfits on every WDI silhouette, three facings
 
   Background:
     Given the save "Nelims-tribe" is loaded
+    And game speed is paused
 
   @requires:wdi.realistic.bodies @requires:Malistaticy.UnderWhere @requires:VanillaExpanded.VAPPE @requires:nalsnoir.ApparelPaperPattern @requires:ab.vplrf @requires:LoneKin.ChildrenWearAnything @requires:nelim.pickletools.screenshotstudio @requires:nelim.pickletools.colonistrace
   Scenario: the 1.0.0 outfits on ten WDI silhouettes, facing South

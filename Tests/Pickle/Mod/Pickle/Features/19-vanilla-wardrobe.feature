@@ -6,6 +6,7 @@ Feature: vanilla garments on every WDI silhouette, three facings
 
   Background:
     Given the save "Nelims-tribe" is loaded
+    And game speed is paused
 
   @requires:wdi.realistic.bodies @requires:nalsnoir.ApparelPaperPattern @requires:ab.vplrf @requires:LoneKin.ChildrenWearAnything @requires:nelim.pickletools.screenshotstudio @requires:nelim.pickletools.colonistrace
   Scenario: vanilla garments on ten WDI silhouettes, facing South
