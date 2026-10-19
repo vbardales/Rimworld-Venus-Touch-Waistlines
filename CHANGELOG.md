@@ -21,7 +21,8 @@ Targets 1.0.0, the first public version.
   Pattern and APP Utilities, the vanilla T-shirt and trousers are fitted to each WDI
   silhouette through masks made in memory from the installed WDI art (no WDI texture is
   shipped). Trousers start at the higher of WDI's boxers and panties lines and the shirt
-  stops at the lower one, so the two always overlap.
+  stops at the lower one, so the two always overlap. For now the garments are drawn as a
+  5 px inner outline, interior left empty, to show where vanilla garments stop fitting.
 
 ## [0.1.0] — 2026-09-23
 
