@@ -87,7 +87,7 @@ garments are the first cases to test it on.
   mod, and Venus keeps only AB's trousers. The first vertical slice registered runtime-only alpha masks for all ten WDI profiles and
   APP `OnSkin` patterns; APP Utilities supplied the gender predicate which distinguishes Thin/Fat/Hulk women. Its 2026-10-09 capture
   showed a full-height shirt hiding same-layer trousers. The corrected slice gives the shirt the whole WDI silhouette and clips only
-  the trousers at the waist. `docs/runs/2026-10-09_app-wdi-full-top/` is green 2/2 and its east/north captures show the four starter
+  the trousers at the waist. the 2026-10-09 `@facings` run (green 2/2, evidence deleted 2026-10-19) showed in its east/north captures the four starter
   defs without a waist gap on all ten profiles. The setting remains opt-in because Middle/Shell, burns and dresses are not covered.
 
 ### Couches APP à traiter, après la preuve OnSkin

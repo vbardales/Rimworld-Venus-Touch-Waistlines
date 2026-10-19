@@ -40,7 +40,7 @@ Scenarios below played more than once, because what supplies trousers changes wh
 | WDI + AB, band | `wsl-deps.wdi-ab-band.map`, seeded, **with `-Filter '<suite>,!@native-art'`** | both art options off: TailorMade fits AB's shell into band, pants slider applies. Only pass where band is what is drawn. `@native-art` scenarios assert opposite state, go red here by design |
 | WDI + XND | `wsl-deps.wdi-xnd.map` | XeoNovaDan's Visible Pants instead of AB's. Mod does nothing on purpose, so shows what band does to art drawn for vanilla footprint |
 | WDI + XND + General | `wsl-deps.wdi-xnd-general.map` | with XND active General's retexture loads, art is General's, supplied by General; mod's "leave it alone" branch runs |
-| WDI + APP | `wsl-deps.app-wdi.map` | opt-in APP slice for BasicShirt/KidShirt and Pants/KidPants. `docs/runs/2026-10-09_app-wdi-full-top/` = clean 2/2 `@facings` proof: blue trousers remain visible under t-shirt, no waist gap, east and north, all ten WDI profiles. Middle/Shell still outside slice |
+| WDI + APP | `wsl-deps.app-wdi.map` | opt-in APP slice for BasicShirt/KidShirt and Pants/KidPants. the 2026-10-09 `@facings` run (2/2 green, evidence deleted 2026-10-19: it predates the redrawn cut lines) showed: blue trousers remain visible under t-shirt, no waist gap, east and north, all ten WDI profiles. Middle/Shell still outside slice |
 
 Written 2026-09-24. Before that only first three existed. All six ran that day on DLL with trouser art: no failure on mod, ten `03-silhouettes` scenarios red in every AB pass (and band pass) on step Pickle does not have. `03` then rewritten, first three scenarios on released Pickle, then ten on PickleTools step (`Tests/Pickle/README.md`), not run in either form. Results and images kept: `STATUS.md`, `docs/runs/`.
 
@@ -151,7 +151,7 @@ So fully green suite answers **4** (without drawn path), part of **2**, adds thr
 
 ## Evidence: what to keep, and how small
 
-Reports and screenshots weigh megabytes each, Pickle run overwrites own folder, disk finite. So evidence lives **on disk, never in git** (`.gitignore` covers `evidence/`, `Tests/Pickle/Evidence/`, `PickleReports*/` and `*.dds`), in `docs/runs/<date>_<hour>/evidence/`, history is **one text line per run** in `docs/runs/README.md`.
+Reports and screenshots weigh megabytes each, Pickle run overwrites own folder, disk finite. So evidence lives **on disk, never in git** (`.gitignore` covers `evidence/`, `Tests/Pickle/Evidence/`, `PickleReports*/` and `*.dds`), in `Tests/Pickle/Inbox/` then `Evidence/` (since 2026-10-19), history is **one text line per run** in `docs/runs/README.md`.
 
 What proves something, worth keeping while latest for shipped DLL:
 
@@ -166,7 +166,7 @@ Everything else goes: full frames, `report.html` (tens of MB), `messages.ndjson`
 
 ### What to keep, restated 2026-10-06
 
-- Evidence folders `docs/runs/<date>_<pass>/evidence*/` (`evidence`, `evidence-1`, `evidence-2`, ...). All git-ignored; none committed. Git gets text line in `docs/runs/README.md`.
+- Evidence: `Tests/Pickle/Inbox/<run>` (reception), `Tests/Pickle/Evidence/` (minified proofs, each with a RELEASE.md), `Tests/Pickle/Parked/`. All git-ignored; none committed. Git gets text line in `docs/runs/README.md`.
 - Per scenario, keep **latest report for DLL now in `Mod/`**, minimised to `summary.json` (read `exitReason` first), mod's log lines, one capture a person actually judged, cropped. Keep older report only if sole proof of scenario latest run did not repeat; delete once newer replaces it. `report.html`, `messages.ndjson`, `junit.xml`, full `Player.log`, uncropped 1080p frames never kept.
 - Failed or superseded run keeps one line in `docs/runs/README.md`, no files.
 - Never delete report a `STATUS.md` field still names; repoint field first.

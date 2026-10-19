@@ -1,1 +1,0 @@
-{"total":1,"passed":1,"failed":0,"skipped":0,"flaky":0,"exitReason":"passed","setName":"gallery-notm","scenarios":[{"name":"ten bodies, four outfits","outcome":"Passed","durationMs":107356,"attempts":1,"tickCost":{"ticks":352,"meanMs":5.059,"maxMs":22.403}}]}

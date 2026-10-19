@@ -1,1 +1,0 @@
-{"total":1,"passed":1,"failed":0,"skipped":0,"flaky":0,"exitReason":"passed","setName":"gallery-notm","scenarios":[{"name":"Vanilla garments without WDI art on ten bodies","outcome":"Passed","durationMs":115845,"attempts":1,"tickCost":{"ticks":440,"meanMs":3.862,"maxMs":19.179}}]}

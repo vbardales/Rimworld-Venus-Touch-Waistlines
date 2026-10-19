@@ -1,1 +1,0 @@
-{"total":1,"passed":1,"failed":0,"skipped":0,"flaky":0,"exitReason":"passed","setName":"thigappe","scenarios":[{"name":"ten bodies, four outfits","outcome":"Passed","durationMs":97699,"attempts":1,"tickCost":{"ticks":352,"meanMs":4.535,"maxMs":17.093}}]}
