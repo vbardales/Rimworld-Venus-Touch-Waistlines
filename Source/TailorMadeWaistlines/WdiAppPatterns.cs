@@ -105,6 +105,7 @@ namespace TailorMadeWaistlines
                 byte[] mask = category == WdiApparelCategory.Pants
                     ? AlphaMask(pixels, width, height, trouserTop, true)
                     : AlphaMask(pixels, width, height, shirtHem, false);
+                mask = Ring(mask, width, height, RingPx);
                 if (!mask.Any(value => value != 0)) return false;
                 mine.contentList[maskPath + "_" + facing] = TrouserArt.Build(mask, width, height,
                     "Venus_APP_" + profile.Id + "_" + category + "_" + facing);
@@ -333,6 +334,36 @@ namespace TailorMadeWaistlines
                 }
             }
             return mask;
+        }
+
+        // The garment drawn as an outline, interior left empty, to show the limits of a vanilla garment (Virginie, 2026-10-19).
+        // A mask pixel stays when a pixel within radius of it (a disc) is outside the mask: transparent body, the picture's
+        // edge, or a row cut away by the waist rule, so the cut line is part of the outline.  The stroke lies inside the
+        // silhouette.  Same rule as scripts/game-cut-preview.js --ring.
+        private const int RingPx = 5;
+        private static byte[] Ring(byte[] mask, int width, int height, int radius)
+        {
+            if (mask == null || width <= 0 || height <= 0 || mask.Length != width * height * TrouserDetail.Channels)
+                throw new ArgumentException("mask must hold width * height * 4 bytes.");
+            byte[] ring = new byte[mask.Length];
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                {
+                    int i = (y * width + x) * TrouserDetail.Channels;
+                    if (mask[i + 3] == 0) continue;
+                    bool edge = false;
+                    for (int dy = -radius; dy <= radius && !edge; dy++)
+                        for (int dx = -radius; dx <= radius; dx++)
+                        {
+                            if (dx * dx + dy * dy > radius * radius) continue;
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || ny < 0 || nx >= width || ny >= height
+                                || mask[(ny * width + nx) * TrouserDetail.Channels + 3] == 0) { edge = true; break; }
+                        }
+                    if (!edge) continue;
+                    ring[i] = mask[i]; ring[i + 1] = mask[i + 1]; ring[i + 2] = mask[i + 2]; ring[i + 3] = mask[i + 3];
+                }
+            return ring;
         }
 
         // APP's burn pass reads a white alpha map.  The alpha here is the

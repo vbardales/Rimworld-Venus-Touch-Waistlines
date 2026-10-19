@@ -176,6 +176,23 @@ try {
     Assert-That 'the relief burn keeps transparent body pixels transparent' ($relief[15] -eq 0)
 
     Write-Host ''
+    Write-Host 'the garment is an outline 5 px thick, inside the silhouette, interior empty'
+    $ringMethod = $bridge.GetMethod('Ring', $flags)
+    $ringSide = 30
+    [byte[]]$ringSource = New-Object byte[] ($ringSide * $ringSide * 4)
+    for ($i = 0; $i -lt $ringSource.Length; $i++) { $ringSource[$i] = 255 }
+    # a transparent column at x = 20 cuts the silhouette in two, as a cut row would
+    for ($y = 0; $y -lt $ringSide; $y++) { $ringSource[($y * $ringSide + 20) * 4 + 3] = 0 }
+    [byte[]]$ringOut = $ringMethod.Invoke($null, [object[]]@($ringSource, $ringSide, $ringSide, 5))
+    $alphaAt = { param($x, $y) $ringOut[($y * $ringSide + $x) * 4 + 3] }
+    Assert-That 'a pixel at the picture edge is on the outline' ((& $alphaAt 0 15) -eq 255)
+    Assert-That 'a pixel 4 px inside the edge is on the outline' ((& $alphaAt 4 15) -eq 255)
+    Assert-That 'a pixel 6 px inside every edge is left empty' ((& $alphaAt 8 15) -eq 0)
+    Assert-That 'the cut line is part of the outline: 4 px from the transparent column is kept' ((& $alphaAt 16 15) -eq 255)
+    Assert-That 'a transparent pixel stays transparent' ((& $alphaAt 20 15) -eq 0)
+    Assert-That 'the outline keeps the source colour' ($ringOut[(0 * $ringSide + 0) * 4] -eq 255)
+
+    Write-Host ''
     Write-Host 'the installed WDI body sources cover every runtime profile'
     Add-Type -AssemblyName System.Drawing
     foreach ($profile in $all) {
