@@ -105,7 +105,10 @@ namespace TailorMadeWaistlines
                 byte[] mask = category == WdiApparelCategory.Pants
                     ? AlphaMask(pixels, width, height, trouserTop, true)
                     : AlphaMask(pixels, width, height, shirtHem, false);
+                int filled = OpaquePixels(mask);
                 mask = Ring(mask, width, height, RingPx);
+                Log.Message("[Venus Touch Waistlines] APP mask " + profile.Id + " " + category + " " + facing + " " + width + "x" + height
+                    + ": opaque pixels " + filled + " before Ring, " + OpaquePixels(mask) + " after.");
                 if (!mask.Any(value => value != 0)) return false;
                 mine.contentList[maskPath + "_" + facing] = TrouserArt.Build(mask, width, height,
                     "Venus_APP_" + profile.Id + "_" + category + "_" + facing);
@@ -341,6 +344,13 @@ namespace TailorMadeWaistlines
         // edge, or a row cut away by the waist rule, so the cut line is part of the outline.  The stroke lies inside the
         // silhouette.  Same rule as scripts/game-cut-preview.js --ring.
         private const int RingPx = 5;
+        private static int OpaquePixels(byte[] mask)
+        {
+            int count = 0;
+            for (int i = 3; i < mask.Length; i += TrouserDetail.Channels)
+                if (mask[i] != 0) count++;
+            return count;
+        }
         private static byte[] Ring(byte[] mask, int width, int height, int radius)
         {
             if (mask == null || width <= 0 || height <= 0 || mask.Length != width * height * TrouserDetail.Channels)
