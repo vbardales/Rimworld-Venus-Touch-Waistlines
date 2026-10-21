@@ -52,7 +52,7 @@ remaining:
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 publication_changelog_review_sha: b083afbf2c36b906c562272fc3719a556c5922e2
 updated:      2026-10-18
-protocols_read_sha: ae87363716dac783e6270bf9d624c99484e6c2c0
+protocols_read_sha: a95bef8fdd5f4dab18177aa78ca7c8ad53cac5c0
 ---
 # Active WDI APP slice — 2026-10-09
 
