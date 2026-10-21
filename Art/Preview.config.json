@@ -1,1 +1,43 @@
-{"title":"Venus Touch Waistlines","titleSize":38,"titleParts":[{"text":"Venus Touch"},{"text":"Waistlines","breakBefore":true}],"suffix":"","tag":"","tagInline":true,"copyLines":["Decide where every garment stops.","One waistline for every body."],"layout":"panel","panelAnchor":"top-left","backgroundFile":"Preview-source.png","backgroundPosition":"center","backgroundSize":"cover","modIconSource":"ModIcon-source.png","echo":{"file":"echo.png","preSized":true,"mode":"alpha","color":"var(--accent)","width":190,"height":165,"opacity":1,"veil":false,"panelTop":38,"panelRight":1,"panelWidth":33,"flipX":true},"iconBadge":{"file":"ModIcon-source.png","corner":"bottom-left","width":180,"translate":"-12.5%, 12.5%","rotate":15,"radius":48,"outline":false,"veil":"radial","veilSize":250,"veilLeft":-45,"veilBottom":-45},"palette":{"veil":"#1E2731","inkPrimary":"#F2EEE4","inkSecondary":"#B9A88C","accent":"#D9673D","badgeInk":"#10161D"}}
+{
+  "title": "Venus Touch Waistlines",
+  "titleSize": 38,
+  "titleParts": [
+    {
+      "text": "Venus Touch"
+    },
+    {
+      "text": "Waistlines",
+      "breakBefore": true
+    }
+  ],
+  "suffix": "",
+  "tag": "",
+  "tagInline": true,
+  "copyLines": [
+    "Decide where every garment stops.",
+    "One waistline for every body."
+  ],
+  "modIconSource": "ModIcon-source.png",
+  "echo": {
+    "file": "echo.png",
+    "color": "var(--accent)",
+    "width": 190,
+    "height": 165,
+    "panelTop": 38,
+    "panelWidth": 33
+  },
+  "iconBadge": {
+    "file": "ModIcon-source.png",
+    "radius": 48,
+    "veilSize": 250,
+    "veilLeft": -45,
+    "veilBottom": -45
+  },
+  "palette": {
+    "veil": "#1E2731",
+    "inkPrimary": "#F2EEE4",
+    "inkSecondary": "#B9A88C",
+    "accent": "#D9673D",
+    "badgeInk": "#10161D"
+  }
+}
