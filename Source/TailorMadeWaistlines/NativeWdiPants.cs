@@ -23,6 +23,8 @@ namespace TailorMadeWaistlines
         private static readonly Dictionary<string, Texture2D> PantsTextures = new Dictionary<string, Texture2D>();
         private static readonly Dictionary<string, Texture2D> TopTextures = new Dictionary<string, Texture2D>();
         private static readonly Dictionary<string, Graphic> Graphics = new Dictionary<string, Graphic>();
+        // The outline shirt is baked red and ignores the apparel's dye (Virginie, 2026-10-23).
+        private static bool RedOutline;
 
         public static void Apply()
         {
@@ -108,6 +110,8 @@ namespace TailorMadeWaistlines
                     byte[] pixels = TrouserArt.Read(body, out int width, out int height);
                     byte[] mask = WdiAppPatterns.OutlineMask(profile, WdiApparelCategory.Top, facing, pixels, width, height, wdi);
                     if (mask == null) continue;
+                    for (int i = 0; i < mask.Length; i += TrouserDetail.Channels)
+                        if (mask[i + 3] != 0) { mask[i] = 255; mask[i + 1] = mask[i + 2] = 0; }
                     Texture2D texture = TrouserArt.Build(mask, width, height, "Venus_OutlineShirt_" + profile.TextureKey + "_" + facing);
                     mine.contentList[TopPath + "_" + profile.TextureKey + "_" + facing] = texture;
                     TopTextures[profile.TextureKey + "_" + facing] = texture;
@@ -118,6 +122,7 @@ namespace TailorMadeWaistlines
             AliasTop(mine, "Child_Female", "Child");
             shirt.apparel.wornGraphicPath = TopPath;
             kidShirt.apparel.wornGraphicPath = TopPath;
+            RedOutline = true;
             Log.Message("[Venus Touch Waistlines] outline shirt ready: " + TopTextures.Count + " textures.");
         }
 
@@ -140,10 +145,11 @@ namespace TailorMadeWaistlines
                 if (profile == null || !source.ContainsKey(profile.TextureKey + "_south")) return true;
                 if (traceCount++ < 12)
                     Log.Message("[Venus Touch Waistlines] direct apparel match " + apparel.def.defName + " " + profile.TextureKey + ".");
-                string cacheKey = apparel.def.defName + "|" + profile.TextureKey + "|" + apparel.DrawColor;
+                Color color = RedOutline && source == TopTextures ? Color.white : apparel.DrawColor;
+                string cacheKey = apparel.def.defName + "|" + profile.TextureKey + "|" + color;
                 if (!Graphics.TryGetValue(cacheKey, out Graphic graphic))
                 {
-                    graphic = BuildGraphic(source, profile.TextureKey, apparel.DrawColor, apparel.def.graphicData.drawSize);
+                    graphic = BuildGraphic(source, profile.TextureKey, color, apparel.def.graphicData.drawSize);
                     Graphics[cacheKey] = graphic;
                 }
                 rec = new ApparelGraphicRecord(graphic, apparel);

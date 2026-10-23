@@ -1,5 +1,5 @@
-# The basic shirt drawn by Venus alone (no APP, no TailorMade, no AB): outline of 5 px, interior empty, on the ten WDI
-# profiles, facing South (Virginie, 2026-10-23). Pass: wsl-deps.wdi-outline.map. Derived from 19-vanilla-wardrobe, first outfits only.
+# The basic shirt drawn by Venus alone (no APP, no TailorMade, no AB): red outline of 5 px, interior empty, over UnderWhere underwear,
+# on the ten WDI profiles, facing South (Virginie, 2026-10-23). Pass: wsl-deps.wdi-outline.map. Derived from 19-vanilla-wardrobe.
 @review @outline-shirt @timeout:900
 Feature: the basic shirt as an outline on every WDI silhouette
 
@@ -78,24 +78,38 @@ Feature: the basic shirt as an outline on every WDI silhouette
     And I wait 120 ticks
     And I take a screenshot "outline shirt, South, bare"
     And I destroy the gear of "M-Thin"
-    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
     And I destroy the gear of "M-Avg"
-    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
     And I destroy the gear of "M-Fat"
-    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
     And I destroy the gear of "M-Hulk"
-    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
     And I destroy the gear of "M-Kid"
-    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And I destroy the gear of "F-Thin"
-    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
     And I destroy the gear of "F-Avg"
-    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
     And I destroy the gear of "F-Fat"
-    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
     And I destroy the gear of "F-Hulk"
-    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
     And I destroy the gear of "F-Kid"
+    And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
+    And Nelim's Pickle Tools: studio presentation mode is enabled
+    And I wait 120 ticks
+    And I take a screenshot "outline shirt, South, underwear"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_BasicShirt"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_BasicShirt"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_BasicShirt"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
