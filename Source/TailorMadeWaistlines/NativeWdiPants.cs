@@ -78,6 +78,49 @@ namespace TailorMadeWaistlines
             Log.Message("[Venus Touch Waistlines] native WDI diagnostic top and pants are ready for the direct apparel renderer.");
         }
 
+        /// <summary>
+        /// The shirt drawn by this mod alone, no APP: the WDI body cut on its waist line and reduced to an outline, interior empty
+        /// (Virginie, 2026-10-23).  Opaque pixels, so the Cutout shader keeps every stroke.  Only the two vanilla shirts are
+        /// taken over; trousers are left to whatever else supplies them.
+        /// </summary>
+        public static void ApplyOutlineShirt()
+        {
+            if (TailorMadeWaistlinesMod.Settings == null || !TailorMadeWaistlinesMod.Settings.enableExperimentalAppPatterns)
+                return;
+            if (!ModsConfig.IsActive(WdiPackageId)) return;
+            if (ModsConfig.IsActive("nalsnoir.ApparelPaperPattern")) return;   // APP draws the shirts then
+
+            ThingDef shirt = DefDatabase<ThingDef>.GetNamedSilentFail("Apparel_BasicShirt");
+            ThingDef kidShirt = DefDatabase<ThingDef>.GetNamedSilentFail("Apparel_KidShirt");
+            if (shirt?.apparel == null || kidShirt?.apparel == null) return;
+            ModContentPack wdi = LoadedModManager.RunningMods.FirstOrDefault(mod =>
+                string.Equals(mod.PackageIdPlayerFacing, WdiPackageId, StringComparison.OrdinalIgnoreCase));
+            if (wdi == null) return;
+
+            ModContentHolder<Texture2D> mine = TailorMadeWaistlinesMod.Instance.Content.GetContentHolder<Texture2D>();
+            TopTextures.Clear();
+            Graphics.Clear();
+            foreach (WdiVisualProfile profile in WdiVisualProfiles.All)
+                foreach (string facing in Facings)
+                {
+                    Texture2D body = ContentFinder<Texture2D>.Get("Things/Pawn/Humanlike/Bodies/Naked_" + profile.TextureKey + "_" + facing, false);
+                    if (body == null) continue;
+                    byte[] pixels = TrouserArt.Read(body, out int width, out int height);
+                    byte[] mask = WdiAppPatterns.OutlineMask(profile, WdiApparelCategory.Top, facing, pixels, width, height, wdi);
+                    if (mask == null) continue;
+                    Texture2D texture = TrouserArt.Build(mask, width, height, "Venus_OutlineShirt_" + profile.TextureKey + "_" + facing);
+                    mine.contentList[TopPath + "_" + profile.TextureKey + "_" + facing] = texture;
+                    TopTextures[profile.TextureKey + "_" + facing] = texture;
+                }
+            AliasTop(mine, "Thin_Female", "Thin_Female");
+            AliasTop(mine, "Hulk_Female", "Hulk_Female");
+            AliasTop(mine, "Fat_Female", "Fat_Female");
+            AliasTop(mine, "Child_Female", "Child");
+            shirt.apparel.wornGraphicPath = TopPath;
+            kidShirt.apparel.wornGraphicPath = TopPath;
+            Log.Message("[Venus Touch Waistlines] outline shirt ready: " + TopTextures.Count + " textures.");
+        }
+
         [HarmonyPatch(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel))]
         internal static class NativeGraphicPatch
         {

@@ -19,11 +19,6 @@ WDI's Realistic Bodies and AB's Visible Pants are optional, and deliberately not
       <displayName>TailorMade Waistlines</displayName>
     </li>
     <li>
-      <packageId>astryl.tailormade</packageId>
-      <displayName>TailorMade: Unified Apparel &amp; Body Refitting</displayName>
-      <steamWorkshopUrl>steam://url/CommunityFilePage/3756915448</steamWorkshopUrl>
-    </li>
-    <li>
       <packageId>rimworks.pickle</packageId>
       <displayName>Pickle</displayName>
       <steamWorkshopUrl>steam://url/CommunityFilePage/3791648678</steamWorkshopUrl>
@@ -31,7 +26,6 @@ WDI's Realistic Bodies and AB's Visible Pants are optional, and deliberately not
   </modDependencies>
   <loadAfter>
     <li>nelim.venustouch.waistlines</li>
-    <li>astryl.tailormade</li>
     <li>rimworks.pickle</li>
     <li>wdi.realistic.bodies</li>
     <li>ab.vplrf</li>

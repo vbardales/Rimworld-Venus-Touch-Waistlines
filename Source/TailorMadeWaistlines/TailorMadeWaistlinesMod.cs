@@ -154,6 +154,8 @@ namespace TailorMadeWaistlines
                     // NativeWdiPants.Apply() is off (2026-10-19): it rewrote the worn graphic of the four defs APP targets
                     // (alpha 77 under a Cutout shader) and is the suspect for undyed garments not being drawn.
                     // Its Harmony patch stays registered and passes through while its texture tables are empty.
+                    // The outline shirt (2026-10-23) uses that patch without APP; same experimental setting.
+                    NativeWdiPants.ApplyOutlineShirt();
                 }));
             // After the trousers: the jackets are measured on their shells.
             LongEventHandler.ExecuteWhenFinished(JacketArt.Apply);

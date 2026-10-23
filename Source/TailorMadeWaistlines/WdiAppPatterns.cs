@@ -100,18 +100,8 @@ namespace TailorMadeWaistlines
                 if (source == null) return false;
 
                 byte[] pixels = TrouserArt.Read(source, out int width, out int height);
-                BodyColumns(pixels, width, height, out int bodyMin, out int bodyMax);
-                if (!WaistLines(profile, facing, width, height, wdi, bodyMin, bodyMax, out int[] trouserTop, out int[] shirtHem)) return false;
-                byte[] mask = category == WdiApparelCategory.Pants
-                    ? AlphaMask(pixels, width, height, trouserTop, true)
-                    : AlphaMask(pixels, width, height, shirtHem, false);
-                int filled = OpaquePixels(mask);
-                byte[] solid = mask;
-                mask = Ring(mask, width, height, RingPx);
-                if (ChannelTest) mask = ChannelVariant(profile.Id, solid, mask);
-                Log.Message("[Venus Touch Waistlines] APP mask " + profile.Id + " " + category + " " + facing + " " + width + "x" + height
-                    + ": opaque pixels " + filled + " before Ring, " + OpaquePixels(mask) + " after.");
-                if (!mask.Any(value => value != 0)) return false;
+                byte[] mask = OutlineMask(profile, category, facing, pixels, width, height, wdi);
+                if (mask == null) return false;
                 mine.contentList[maskPath + "_" + facing] = TrouserArt.Build(mask, width, height,
                     "Venus_APP_" + profile.Id + "_" + category + "_" + facing);
                 if (category == WdiApparelCategory.Top)
@@ -120,6 +110,24 @@ namespace TailorMadeWaistlines
                 found = true;
             }
             return found;
+        }
+
+        // The garment's mask for one profile, category and facing: the WDI body cut on its waist line, then drawn as an outline
+        // (Ring).  Null when the waist line cannot be found or nothing is left.  Shared by the APP masks and by the shirt
+        // Venus draws itself (NativeWdiPants.ApplyOutlineShirt).
+        internal static byte[] OutlineMask(WdiVisualProfile profile, WdiApparelCategory category, string facing,
+            byte[] pixels, int width, int height, ModContentPack wdi)
+        {
+            BodyColumns(pixels, width, height, out int bodyMin, out int bodyMax);
+            if (!WaistLines(profile, facing, width, height, wdi, bodyMin, bodyMax, out int[] trouserTop, out int[] shirtHem)) return null;
+            byte[] mask = category == WdiApparelCategory.Pants
+                ? AlphaMask(pixels, width, height, trouserTop, true)
+                : AlphaMask(pixels, width, height, shirtHem, false);
+            int filled = OpaquePixels(mask);
+            mask = Ring(mask, width, height, RingPx);
+            Log.Message("[Venus Touch Waistlines] outline mask " + profile.Id + " " + category + " " + facing + " " + width + "x" + height
+                + ": opaque pixels " + filled + " before Ring, " + OpaquePixels(mask) + " after.");
+            return mask.Any(value => value != 0) ? mask : null;
         }
 
         // The cut rule (Virginie, 2026-10-15): WDI draws two adult underwear
@@ -346,34 +354,6 @@ namespace TailorMadeWaistlines
         // edge, or a row cut away by the waist rule, so the cut line is part of the outline.  The stroke lies inside the
         // silhouette.  Same rule as scripts/game-cut-preview.js --ring.
         private const int RingPx = 5;
-        // Temporary diagnostic (2026-10-21): APP draws through vanilla's CutoutComplex / CutoutSkinOverlay shaders, which may read
-        // the mask's colour channels rather than its alpha.  One variant per profile, left to right in the 19 South capture, top row
-        // Thin, Avg, Fat, Hulk, Kid (men) then the same for women: 0 current ring (rgb 255, alpha 0 inside), 1 inside rgb 0 alpha kept,
-        // 2 inside rgb 255 alpha 0 and ring alpha kept (same as 0 except the inside rgb is white), 3 inside rgb 128 alpha kept, 4 solid.
-        private const bool ChannelTest = true;
-        private static byte[] ChannelVariant(string profileId, byte[] solid, byte[] ring)
-        {
-            int variant;
-            switch (profileId)
-            {
-                case "Male_Thin": case "Female_Thin": variant = 0; break;
-                case "Male": case "Female": variant = 1; break;
-                case "Male_Fat": case "Female_Fat": variant = 2; break;
-                case "Male_Hulk": case "Female_Hulk": variant = 3; break;
-                default: variant = 4; break;
-            }
-            if (variant == 4) return solid;
-            byte[] output = (byte[])ring.Clone();
-            if (variant == 0) return output;
-            for (int i = 0; i < output.Length; i += TrouserDetail.Channels)
-            {
-                if (solid[i + 3] == 0 || ring[i + 3] != 0) continue;
-                byte value = variant == 1 ? (byte)0 : variant == 2 ? (byte)255 : (byte)128;
-                output[i] = output[i + 1] = output[i + 2] = value;
-                output[i + 3] = variant == 2 ? (byte)0 : solid[i + 3];
-            }
-            return output;
-        }
         private static int OpaquePixels(byte[] mask)
         {
             int count = 0;
