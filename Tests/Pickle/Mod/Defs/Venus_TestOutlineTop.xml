@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Test garment of the Pickle mod, never shipped (Virginie, 2026-10-23): a top that can be worn OVER a shirt, drawn by
+  TailorMadeWaistlines (NativeWdiPants.ApplyOutlineShirt) as a red outline of the WDI body down to its waist line.  The worn
+  graphic below is a sentinel (a non-empty path makes RimWorld create the render node); the mod's NativeGraphicPatch supplies
+  the real textures and only when WDI is active and the experimental setting is on.
+-->
+<Defs>
+  <ThingDef ParentName="ApparelBase">
+    <defName>Venus_TestOutlineTop</defName>
+    <label>red outline top (test)</label>
+    <description>Test garment: the outline of a top, worn over a shirt.</description>
+    <graphicData>
+      <texPath>Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <tradeability>None</tradeability>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+      </bodyPartGroups>
+      <wornGraphicPath>Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic</wornGraphicPath>
+      <layers>
+        <li>Middle</li>
+      </layers>
+    </apparel>
+  </ThingDef>
+</Defs>
