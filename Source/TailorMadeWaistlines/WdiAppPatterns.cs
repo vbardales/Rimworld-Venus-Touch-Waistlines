@@ -158,21 +158,22 @@ namespace TailorMadeWaistlines
             int[] boxers = UnderwearTopLine(wdi, "boxers", key, facing, width, height, bodyMin, bodyMax);
             int[] panties = UnderwearTopLine(wdi, "panties", key, facing, width, height, bodyMin, bodyMax);
             if (boxers == null && panties == null) return false;
-            // M-Fat, F-Thin and F-Fat take the panties' line for both (Virginie, 2026-10-25): their boxers sit on a different line that leaves the hem off the underwear.
-            if ((key == "Fat" || key == "Thin_Female" || key == "Fat_Female") && panties != null) boxers = panties;
-            // F-Hulk takes the boxers' line instead: its panties start at the very bottom of the body, so the hem would not show.
-            else if (key == "Hulk_Female" && boxers != null) panties = boxers;
             // Each line follows its own sprite (Virginie, 2026-10-18): the slip gives the top of the trousers, the boxers the hem
-            // of the shirt.  Either sprite stands in for a body that lacks the other.
-            CombineUnderwearLines(boxers ?? panties, panties ?? boxers, out trouserTop, out shirtHem);
+            // of the shirt.  Either sprite stands in for a body that lacks the other.  M-Fat, F-Thin and F-Fat are the other way
+            // round, the panties for the hem and the boxers for the trousers (Virginie, 2026-10-25).
+            bool swapped = key == "Fat" || key == "Thin_Female" || key == "Fat_Female";
+            int[] hem = swapped ? panties : boxers, top = swapped ? boxers : panties;
+            // F-Hulk's panties start at the very bottom of the body: closing the gap would push its hem down there too.
+            CombineUnderwearLines(hem ?? top, top ?? hem, key != "Hulk_Female", out trouserTop, out shirtHem);
             return true;
         }
 
         // Per column, the waistband sits one pixel above the higher underwear
         // line; the shirt hem is the lower line.  -1 marks a column with no
         // underwear on either side.
-        private static void CombineUnderwearLines(int[] boxers, int[] panties, out int[] trouserTop, out int[] shirtHem)
+        private static void CombineUnderwearLines(int[] hemLine, int[] trouserLine, bool closeGap, out int[] trouserTop, out int[] shirtHem)
         {
+            int[] boxers = hemLine, panties = trouserLine;
             trouserTop = new int[boxers.Length];
             shirtHem = new int[boxers.Length];
             for (int x = 0; x < boxers.Length; x++)
@@ -190,7 +191,7 @@ namespace TailorMadeWaistlines
             int gap = 0;
             for (int x = 0; x < boxers.Length; x++)
                 if (shirtHem[x] >= 0) gap = Math.Max(gap, trouserTop[x] - shirtHem[x] - 1);
-            int shift = (gap + 1) / 2;
+            int shift = closeGap ? (gap + 1) / 2 : 0;
             if (shift > 0)
                 for (int x = 0; x < boxers.Length; x++)
                     if (shirtHem[x] >= 0) { shirtHem[x] += shift; trouserTop[x] -= shift; }

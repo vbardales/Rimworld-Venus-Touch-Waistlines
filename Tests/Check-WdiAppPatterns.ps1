@@ -154,18 +154,22 @@ try {
     $combine = $bridge.GetMethod('CombineUnderwearLines', $flags)
     [int[]]$boxersLine = @(40, 50, -1, -1)
     [int[]]$pantiesLine = @(45, 44, 30, -1)
-    $lines = [object[]]@($boxersLine, $pantiesLine, $null, $null)
+    $lines = [object[]]@($boxersLine, $pantiesLine, $true, $null, $null)
     [void]$combine.Invoke($null, $lines)
-    [int[]]$trouserTop = $lines[2]
-    [int[]]$shirtHem = $lines[3]
+    [int[]]$trouserTop = $lines[3]
+    [int[]]$shirtHem = $lines[4]
     # Each line follows its own sprite (Virginie, 2026-10-18): the trousers start one row above the slip (panties) line, the shirt
     # ends on the boxers line.  Column 0 leaves 3 bare rows (boxers 40, slip 45), so both lines move apart by ceil(3 / 2) = 2.
     Assert-That 'trousers start one row above the slip line, moved up by half the largest gap' (($trouserTop[0] -eq 42) -and ($trouserTop[1] -eq 41))
     Assert-That 'the shirt ends on the boxers line, moved down by that half gap, so no bare row is left' (($shirtHem[0] -eq 42) -and ($shirtHem[1] -eq 52) -and ($shirtHem[0] -ge $trouserTop[0]))
     Assert-That 'a column with one underwear line uses it for both' (($trouserTop[2] -eq 27) -and ($shirtHem[2] -eq 32))
-    $noGap = [object[]]@([int[]]@(50, 48), [int[]]@(45, 47), $null, $null)
+    $noGap = [object[]]@([int[]]@(50, 48), [int[]]@(45, 47), $true, $null, $null)
     [void]$combine.Invoke($null, $noGap)
-    Assert-That 'when the boxers are the lower line nothing moves: top = slip - 1, hem = boxers' (($noGap[2][0] -eq 44) -and ($noGap[3][0] -eq 50) -and ($noGap[2][1] -eq 46) -and ($noGap[3][1] -eq 48))    Assert-That 'a column with no underwear stays uncut (-1)' (($trouserTop[3] -eq -1) -and ($shirtHem[3] -eq -1))
+    Assert-That 'when the boxers are the lower line nothing moves: top = slip - 1, hem = boxers' (($noGap[3][0] -eq 44) -and ($noGap[4][0] -eq 50) -and ($noGap[3][1] -eq 46) -and ($noGap[4][1] -eq 48))
+    $kept = [object[]]@($boxersLine, $pantiesLine, $false, $null, $null)
+    [void]$combine.Invoke($null, $kept)
+    Assert-That 'with the gap left open (F-Hulk) the hem stays on its own line and the trousers on theirs' (($kept[4][0] -eq 40) -and ($kept[4][1] -eq 50) -and ($kept[3][0] -eq 44) -and ($kept[3][1] -eq 43))
+    Assert-That 'a column with no underwear stays uncut (-1)' (($trouserTop[3] -eq -1) -and ($shirtHem[3] -eq -1))
     Assert-That 'pants retain only pixels from the waistline down' (($pantsMask[3] -eq 0) -and ($pantsMask[7] -eq 127) -and ($pantsMask[11] -eq 255) -and ($pantsMask[15] -eq 255))
     Assert-That 'both masks keep the body alpha where they overlap' (($topMask[7] -eq 127) -and ($pantsMask[7] -eq 127))
     [byte[]]$reliefSource = @(255,255,255,255, 0,0,0,255, 100,100,100,128, 255,255,255,0)
