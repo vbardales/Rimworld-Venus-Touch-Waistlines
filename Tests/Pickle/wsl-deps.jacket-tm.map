@@ -1,0 +1,14 @@
+# The vanilla jacket with TailorMade (NPT's look-gallery photo of Apparel_Jacket shows two grey strips and the belly through the middle, 2026-10-25).
+# Same as wsl-deps.wdi-outline.map plus TailorMade, which loads after the body mods; no AB, so JacketArt does not stretch. Control: wsl-deps.wdi-outline.map.
+tiagocc0.FemaleBodyVariants    3798082132
+Malistaticy.UnderWhere          1870010563
+wdi.realistic.bodies           3527486510
+LoneKin.ChildrenWearAnything   3688530033
+astryl.tailormade 3756915448
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

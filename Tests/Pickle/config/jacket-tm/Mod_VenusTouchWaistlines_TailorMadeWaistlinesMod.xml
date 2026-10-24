@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Seed for the "gallery" pass: this mod's own settings at their defaults, except that the full-body shirt option is ON, because the
+  gallery shows what the mod does: with it off a vanilla t-shirt hides the trousers entirely (run 2026-10-06, outfit 1 and 3).
+  Same naming rule as the other seeds: Mod_<staged folder>_<Class>.xml.
+-->
+<SettingsBlock>
+  <ModSettings Class="TailorMadeWaistlines.TailorMadeWaistlinesSettings">
+    <pantsTop>0.58</pantsTop>
+    <bootsTop>0.2</bootsTop>
+    <chestBottom>0.25</chestBottom>
+    <shortenShirts>True</shortenShirts>
+    <keepJacketsLong>False</keepJacketsLong>
+    <useGeneralArt>True</useGeneralArt>
+    <detailPlainShells>True</detailPlainShells>
+    <trouserDrop>0.03</trouserDrop>
+    <trouserDropChild>0.067</trouserDropChild>
+  </ModSettings>
+</SettingsBlock>
