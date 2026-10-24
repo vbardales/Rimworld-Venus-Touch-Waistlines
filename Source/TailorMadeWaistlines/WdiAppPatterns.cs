@@ -158,8 +158,8 @@ namespace TailorMadeWaistlines
             int[] boxers = UnderwearTopLine(wdi, "boxers", key, facing, width, height, bodyMin, bodyMax);
             int[] panties = UnderwearTopLine(wdi, "panties", key, facing, width, height, bodyMin, bodyMax);
             if (boxers == null && panties == null) return false;
-            // M-Fat and F-Thin take the panties' line for both (Virginie, 2026-10-25): their boxers sit on a different line that leaves the hem off the underwear.
-            if ((key == "Fat" || key == "Thin_Female") && panties != null) boxers = panties;
+            // M-Fat, F-Thin and F-Fat take the panties' line for both (Virginie, 2026-10-25): their boxers sit on a different line that leaves the hem off the underwear.
+            if ((key == "Fat" || key == "Thin_Female" || key == "Fat_Female") && panties != null) boxers = panties;
             // Each line follows its own sprite (Virginie, 2026-10-18): the slip gives the top of the trousers, the boxers the hem
             // of the shirt.  Either sprite stands in for a body that lacks the other.
             CombineUnderwearLines(boxers ?? panties, panties ?? boxers, out trouserTop, out shirtHem);
