@@ -1,9 +1,10 @@
 # Outline shirt proof (Virginie, 2026-10-23): WDI alone draws the bodies, Venus draws the basic shirt as an outline
 # itself, in red, as the test def Venus_TestOutlineTop (Tests/Pickle/Mod/Defs), worn over a shirt. UnderWhere (underwear worn under the shirt) is the only clothing mod; APP, APP Utilities, AB, TailorMade and THIGAPPE are absent.
-# FemaleBodyVariants gives WDI its female Thin/Fat/Hulk bodies; ChildrenWearAnything lets the two children wear the shirt.
+# FemaleBodyVariants gives WDI its female Thin/Fat/Hulk bodies, FemaleApparelVariants the _Female textures of the apparel (without it a woman wears the men's UnderWhere boxers, 2026-10-25); ChildrenWearAnything lets the two children wear the shirt.
 # config/wdi-outline seeds enableExperimentalAppPatterns, the setting that turns the outline shirt on.
 #   Run-PickleWsl.ps1 -Mod VenusTouchWaistlines -DepMap wsl-deps.wdi-outline.map -Filter '22-outline-underwear'  (then 23-outline-layers)
 tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
 Malistaticy.UnderWhere          1870010563
 wdi.realistic.bodies           3527486510
 LoneKin.ChildrenWearAnything   3688530033
