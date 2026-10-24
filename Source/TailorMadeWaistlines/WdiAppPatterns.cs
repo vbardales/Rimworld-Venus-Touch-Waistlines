@@ -160,6 +160,8 @@ namespace TailorMadeWaistlines
             if (boxers == null && panties == null) return false;
             // M-Fat, F-Thin and F-Fat take the panties' line for both (Virginie, 2026-10-25): their boxers sit on a different line that leaves the hem off the underwear.
             if ((key == "Fat" || key == "Thin_Female" || key == "Fat_Female") && panties != null) boxers = panties;
+            // F-Hulk takes the boxers' line instead: its panties start at the very bottom of the body, so the hem would not show.
+            else if (key == "Hulk_Female" && boxers != null) panties = boxers;
             // Each line follows its own sprite (Virginie, 2026-10-18): the slip gives the top of the trousers, the boxers the hem
             // of the shirt.  Either sprite stands in for a body that lacks the other.
             CombineUnderwearLines(boxers ?? panties, panties ?? boxers, out trouserTop, out shirtHem);
