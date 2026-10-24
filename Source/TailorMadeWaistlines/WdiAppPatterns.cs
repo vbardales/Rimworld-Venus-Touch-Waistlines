@@ -163,8 +163,10 @@ namespace TailorMadeWaistlines
             // round, the panties for the hem and the boxers for the trousers (Virginie, 2026-10-25).
             bool swapped = key == "Fat" || key == "Thin_Female" || key == "Fat_Female";
             int[] hem = swapped ? panties : boxers, top = swapped ? boxers : panties;
-            // F-Hulk's panties start at the very bottom of the body: closing the gap would push its hem down there too.
-            CombineUnderwearLines(hem ?? top, top ?? hem, key != "Hulk_Female", out trouserTop, out shirtHem);
+            // F-Hulk's panties start at the very bottom of the body: closing the gap would push its hem down there too.  Same on
+            // M-Hulk's side view (Virginie, 2026-10-25): the hem swung down across the boxers instead of sitting on their edge.
+            bool closeGap = key != "Hulk_Female" && !(key == "Hulk" && facing == "east");
+            CombineUnderwearLines(hem ?? top, top ?? hem, closeGap, out trouserTop, out shirtHem);
             return true;
         }
 
