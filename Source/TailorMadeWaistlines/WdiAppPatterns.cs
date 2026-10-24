@@ -169,7 +169,25 @@ namespace TailorMadeWaistlines
             bool closeGap = key != "Hulk_Female"
                 && !(facing == "east" && (key == "Hulk" || key == "Female" || key == "Fat_Female"));
             CombineUnderwearLines(hem ?? top, top ?? hem, closeGap, out trouserTop, out shirtHem);
+            // Side view of these bodies (Virginie, 2026-10-25): both lines are horizontal.  The trousers start on the highest row
+            // of their underwear's edge, the hem sits on the lowest row of its own, so the two overlap without a diagonal swoosh.
+            if (facing == "east" && (key == "Fat" || key == "Hulk" || key == "Female" || key == "Fat_Female" || key == "Hulk_Female"))
+            {
+                FlattenLine(trouserTop, true);
+                FlattenLine(shirtHem, false);
+            }
             return true;
+        }
+
+        // Replaces every column that has a line (value >= 0) by the highest row (smallest) or the lowest row (largest) of the line.
+        private static void FlattenLine(int[] line, bool highest)
+        {
+            int row = -1;
+            foreach (int y in line)
+                if (y >= 0) row = row < 0 ? y : (highest ? Math.Min(row, y) : Math.Max(row, y));
+            if (row < 0) return;
+            for (int x = 0; x < line.Length; x++)
+                if (line[x] >= 0) line[x] = row;
         }
 
         // Per column, the waistband sits one pixel above the higher underwear
