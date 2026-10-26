@@ -128,7 +128,7 @@ namespace TailorMadeWaistlines
                     if (underwear == null) continue;
                     byte[] cut = WdiAppPatterns.CutMask(profile, WdiApparelCategory.Pants, facing, pixels, width, height, wdi);
                     if (cut == null) continue;
-                    byte[] rgba = BuildPantsOutline(profile, facing, cut, underwear, width, height);
+                    byte[] rgba = BuildPantsOutline(profile, facing, cut, pixels, width, height);
                     Texture2D pantsTexture = TrouserArt.Build(rgba, width, height, "Venus_OutlinePants_" + profile.TextureKey + "_" + facing);
                     mine.contentList[Path + "_" + profile.TextureKey + "_" + facing] = pantsTexture;
                     PantsTextures[profile.TextureKey + "_" + facing] = pantsTexture;
@@ -300,31 +300,83 @@ namespace TailorMadeWaistlines
         /// WdiAppPatterns.WaistLines, plus a line around the between-leg wedge (the triangle of DrawTriangle, which is a gap in the
         /// trousers) to show its position and size.  Opaque pixels, baked blue, drawn with a white material colour.
         /// </summary>
-        private static byte[] BuildPantsOutline(WdiVisualProfile profile, string facing, byte[] cut, Texture2D underwear, int width, int height)
+        private static byte[] BuildPantsOutline(WdiVisualProfile profile, string facing, byte[] cut, byte[] body, int width, int height)
         {
             byte[] outline = WdiAppPatterns.Ring(cut, width, height, WdiAppPatterns.RingPx);
-            if (facing != "east" && UnderwearRows(profile, facing, underwear, width, height, out int[] top, out int[] bottom)
-                && TriangleBounds(cut, width, height, top, bottom, profile.TextureKey == "Child", out int mid, out int apex, out int lowest))
+            if (facing != "east" && WedgeEdges(body, width, height, out int tip, out int baseRow, out int[] left, out int[] right))
             {
-                // The wedge grown by Margin on every side, so the line lies around it, not on it.
-                const int Margin = 3;
-                byte[] around = new byte[cut.Length];
-                for (int y = Math.Max(0, apex - Margin); y <= Math.Min(height - 1, lowest + Margin); y++)
+                const int Stroke = 2;   // columns each side of the edge
+                for (int y = tip; y <= baseRow; y++)
                 {
-                    int half = Math.Max(0, (y - apex) * 7 / Math.Max(1, lowest - apex)) + Margin;
-                    for (int x = Math.Max(0, mid - half); x <= Math.Min(width - 1, mid + half); x++)
-                    {
-                        int i = (y * width + x) * TrouserDetail.Channels;
-                        if (cut[i + 3] != 0) around[i + 3] = 255;
-                    }
+                    // A step of the edge from one row to the next is drawn as a run, so the arc has no hole.
+                    int next = Math.Min(y + 1, baseRow);
+                    int l0 = Math.Min(left[y], left[next]), l1 = Math.Max(left[y], left[next]);
+                    int r0 = Math.Min(right[y], right[next]), r1 = Math.Max(right[y], right[next]);
+                    for (int x = l0 - Stroke; x <= l1 + Stroke; x++) Mark(outline, width, x, y, body);
+                    for (int x = r0 - Stroke; x <= r1 + Stroke; x++) Mark(outline, width, x, y, body);
                 }
-                byte[] line = WdiAppPatterns.Ring(around, width, height, 2);
-                for (int i = 3; i < line.Length; i += TrouserDetail.Channels)
-                    if (line[i] != 0) outline[i] = 255;
             }
             for (int i = 0; i < outline.Length; i += TrouserDetail.Channels)
                 if (outline[i + 3] != 0) { outline[i] = outline[i + 1] = 0; outline[i + 2] = 255; outline[i + 3] = 255; }
             return outline;
+        }
+
+        private static void Mark(byte[] image, int width, int x, int y, byte[] body)
+        {
+            if (x < 0 || x >= width) return;
+            int i = (y * width + x) * TrouserDetail.Channels;
+            if (body[i + 3] != 0) image[i + 3] = 255;
+        }
+
+        // The between-leg wedge as WDI draws it (Virginie, 2026-10-27): the black ink from the crotch down to where it meets the
+        // round, black-edged lower part of the body.  Read in the body texture on the middle column: from the bottom up, past the
+        // dark run wider than MaxWedge (the body's own outline), the first narrower dark run is the last row of the wedge; going on
+        // up while the middle column stays dark gives the crotch.  No wedge is drawn when the body has none (M-Thin, M, which
+        // have the genitals there instead).  Per row, the run's two ends are the arcs.  The pubic bar is wider
+        // than the stem under it, so the edges only move inward going up: the wedge is a triangle with curved sides.
+        private const int MaxWedge = 60, DarkLuma = 60, MinAlpha = 40;
+        private static bool WedgeEdges(byte[] body, int width, int height, out int tip, out int baseRow, out int[] left, out int[] right)
+        {
+            tip = baseRow = -1;
+            left = right = null;
+            int mid = width / 2;
+            Func<int, int, bool> dark = (x, y) =>
+            {
+                if (x < 0 || x >= width) return false;
+                int i = (y * width + x) * TrouserDetail.Channels;
+                return body[i + 3] >= MinAlpha && (body[i] + body[i + 1] + body[i + 2]) / 3 < DarkLuma;
+            };
+            Func<int, int[]> run = y =>
+            {
+                if (!dark(mid, y)) return null;
+                int l = mid, r = mid;
+                while (dark(l - 1, y)) l--;
+                while (dark(r + 1, y)) r++;
+                return r - l + 1 <= MaxWedge ? new[] { l, r } : null;
+            };
+            // Only the lower part of the body: above it the middle column crosses hair and the navel, not the wedge.
+            int floor = height * 3 / 5;
+            bool merged = false;
+            for (int y = height - 1; y >= floor; y--)
+            {
+                if (!dark(mid, y)) continue;
+                if (run(y) == null) merged = true;
+                else if (merged) { baseRow = y; break; }
+            }
+            if (baseRow < 0) return false;
+            tip = baseRow;
+            while (tip > floor && dark(mid, tip - 1) && run(tip - 1) != null) tip--;
+            if (baseRow - tip < 10) return false;
+            left = new int[height];
+            right = new int[height];
+            for (int y = baseRow; y >= tip; y--)
+            {
+                int[] ends = run(y);
+                left[y] = ends[0];
+                right[y] = ends[1];
+                if (y < baseRow) { left[y] = Math.Max(left[y], left[y + 1]); right[y] = Math.Min(right[y], right[y + 1]); }
+            }
+            return true;
         }
 
         // The shirt ends two pixels below the underwear's upper edge.  That is
