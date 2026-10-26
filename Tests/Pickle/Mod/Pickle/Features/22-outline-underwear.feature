@@ -74,29 +74,39 @@ Feature: the red outline top over underwear on every WDI silhouette
     And I destroy the gear of "F-Hulk"
     And I destroy the gear of "F-Kid"
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
-    And I take a screenshot "outline underwear, front, slip"
+    And I take a screenshot "outline underwear, front, slip-trousers"
     And I destroy the gear of "M-Thin"
     And I destroy the gear of "M-Avg"
     And I destroy the gear of "M-Fat"
@@ -108,29 +118,39 @@ Feature: the red outline top over underwear on every WDI silhouette
     And I destroy the gear of "F-Hulk"
     And I destroy the gear of "F-Kid"
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
-    And I take a screenshot "outline underwear, front, boxers"
+    And I take a screenshot "outline underwear, front, boxers-trousers"
 
   @requires:wdi.realistic.bodies @requires:LoneKin.ChildrenWearAnything @requires:nelim.pickletools.screenshotstudio @requires:nelim.pickletools.colonistrace
   Scenario: the red outline top over underwear, side (East)
@@ -199,29 +219,39 @@ Feature: the red outline top over underwear on every WDI silhouette
     And I destroy the gear of "F-Hulk"
     And I destroy the gear of "F-Kid"
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
-    And I take a screenshot "outline underwear, side, slip"
+    And I take a screenshot "outline underwear, side, slip-trousers"
     And I destroy the gear of "M-Thin"
     And I destroy the gear of "M-Avg"
     And I destroy the gear of "M-Fat"
@@ -233,29 +263,39 @@ Feature: the red outline top over underwear on every WDI silhouette
     And I destroy the gear of "F-Hulk"
     And I destroy the gear of "F-Kid"
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
-    And I take a screenshot "outline underwear, side, boxers"
+    And I take a screenshot "outline underwear, side, boxers-trousers"
 
   @requires:wdi.realistic.bodies @requires:LoneKin.ChildrenWearAnything @requires:nelim.pickletools.screenshotstudio @requires:nelim.pickletools.colonistrace
   Scenario: the red outline top over underwear, back (North)
@@ -324,29 +364,39 @@ Feature: the red outline top over underwear on every WDI silhouette
     And I destroy the gear of "F-Hulk"
     And I destroy the gear of "F-Kid"
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
-    And I take a screenshot "outline underwear, back, slip"
+    And I take a screenshot "outline underwear, back, slip-trousers"
     And I destroy the gear of "M-Thin"
     And I destroy the gear of "M-Avg"
     And I destroy the gear of "M-Fat"
@@ -358,26 +408,36 @@ Feature: the red outline top over underwear on every WDI silhouette
     And I destroy the gear of "F-Hulk"
     And I destroy the gear of "F-Kid"
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Boxers"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
+    And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
-    And I take a screenshot "outline underwear, back, boxers"
+    And I take a screenshot "outline underwear, back, boxers-trousers"
