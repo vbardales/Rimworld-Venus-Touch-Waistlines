@@ -163,7 +163,9 @@ namespace TailorMadeWaistlines
             // round, the panties for the hem and the boxers for the trousers (Virginie, 2026-10-25).
             // Seen from behind they are all like M: the boxers for the hem, the panties for the trousers (Virginie, 2026-10-25).
             bool swapped = facing != "north" && (key == "Fat" || key == "Thin_Female" || key == "Fat_Female");
-            int[] hem = swapped ? panties : boxers, top = swapped ? boxers : panties;
+            // Front of F-Thin and F-Fat (Virginie, 2026-10-26): the hem follows the boxers too.
+            bool frontBoxersHem = facing == "south" && (key == "Thin_Female" || key == "Fat_Female");
+            int[] hem = swapped && !frontBoxersHem ? panties : boxers, top = swapped ? boxers : panties;
             // F-Hulk's panties start at the very bottom of the body: closing the gap would push its hem down there too.  Same on
             // the side view of M-Hulk, F and F-Fat (Virginie, 2026-10-25): the hem swung down across the underwear instead of
             // sitting on its edge.
