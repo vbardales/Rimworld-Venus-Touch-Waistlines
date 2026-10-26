@@ -169,12 +169,14 @@ namespace TailorMadeWaistlines
             // F-Hulk's panties start at the very bottom of the body: closing the gap would push its hem down there too.  Same on
             // the side view of M-Hulk, F and F-Fat (Virginie, 2026-10-25): the hem swung down across the underwear instead of
             // sitting on its edge.
+            // Side view of M-Fat, M-Hulk, F and F-Fat (Virginie, 2026-10-26): both lines follow the top of their underwear as drawn,
+            // no gap closing and no flattening.
             bool closeGap = key != "Hulk_Female"
-                && !(facing == "east" && (key == "Hulk" || key == "Female" || key == "Fat_Female"));
+                && !(facing == "east" && (key == "Fat" || key == "Hulk" || key == "Female" || key == "Fat_Female"));
             CombineUnderwearLines(hem ?? top, top ?? hem, closeGap, out trouserTop, out shirtHem);
             // Side view of these bodies (Virginie, 2026-10-25): both lines are horizontal.  The trousers start on the highest row
             // of their underwear's edge, the hem sits on the lowest row of its own, so the two overlap without a diagonal swoosh.
-            if (facing == "east" && (key == "Fat" || key == "Hulk" || key == "Female" || key == "Fat_Female" || key == "Hulk_Female"))
+            if (facing == "east" && key == "Hulk_Female")
             {
                 FlattenLine(trouserTop, true);
                 FlattenLine(shirtHem, false);
