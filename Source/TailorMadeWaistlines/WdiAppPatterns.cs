@@ -118,16 +118,24 @@ namespace TailorMadeWaistlines
         internal static byte[] OutlineMask(WdiVisualProfile profile, WdiApparelCategory category, string facing,
             byte[] pixels, int width, int height, ModContentPack wdi)
         {
-            BodyColumns(pixels, width, height, out int bodyMin, out int bodyMax);
-            if (!WaistLines(profile, facing, width, height, wdi, bodyMin, bodyMax, out int[] trouserTop, out int[] shirtHem)) return null;
-            byte[] mask = category == WdiApparelCategory.Pants
-                ? AlphaMask(pixels, width, height, trouserTop, true)
-                : AlphaMask(pixels, width, height, shirtHem, false);
+            byte[] mask = CutMask(profile, category, facing, pixels, width, height, wdi);
+            if (mask == null) return null;
             int filled = OpaquePixels(mask);
             mask = Ring(mask, width, height, RingPx);
             Log.Message("[Venus Touch Waistlines] outline mask " + profile.Id + " " + category + " " + facing + " " + width + "x" + height
                 + ": opaque pixels " + filled + " before Ring, " + OpaquePixels(mask) + " after.");
             return mask.Any(value => value != 0) ? mask : null;
+        }
+
+        // The garment's filled mask: the WDI body cut on its waist line, before Ring.  Null when the waist line cannot be found.
+        internal static byte[] CutMask(WdiVisualProfile profile, WdiApparelCategory category, string facing,
+            byte[] pixels, int width, int height, ModContentPack wdi)
+        {
+            BodyColumns(pixels, width, height, out int bodyMin, out int bodyMax);
+            if (!WaistLines(profile, facing, width, height, wdi, bodyMin, bodyMax, out int[] trouserTop, out int[] shirtHem)) return null;
+            return category == WdiApparelCategory.Pants
+                ? AlphaMask(pixels, width, height, trouserTop, true)
+                : AlphaMask(pixels, width, height, shirtHem, false);
         }
 
         // The cut rule (Virginie, 2026-10-15): WDI draws two adult underwear
@@ -385,7 +393,7 @@ namespace TailorMadeWaistlines
         // A mask pixel stays when a pixel within radius of it (a disc) is outside the mask: transparent body, the picture's
         // edge, or a row cut away by the waist rule, so the cut line is part of the outline.  The stroke lies inside the
         // silhouette.  Same rule as scripts/game-cut-preview.js --ring.
-        private const int RingPx = 5;
+        internal const int RingPx = 5;
         private static int OpaquePixels(byte[] mask)
         {
             int count = 0;
@@ -393,7 +401,7 @@ namespace TailorMadeWaistlines
                 if (mask[i] != 0) count++;
             return count;
         }
-        private static byte[] Ring(byte[] mask, int width, int height, int radius)
+        internal static byte[] Ring(byte[] mask, int width, int height, int radius)
         {
             if (mask == null || width <= 0 || height <= 0 || mask.Length != width * height * TrouserDetail.Channels)
                 throw new ArgumentException("mask must hold width * height * 4 bytes.");

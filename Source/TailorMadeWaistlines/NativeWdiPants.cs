@@ -26,6 +26,8 @@ namespace TailorMadeWaistlines
         // The outline top is baked red and ignores the apparel's dye (Virginie, 2026-10-23).
         private const string OutlineTopDef = "Venus_TestOutlineTop";
         private static readonly Dictionary<string, Texture2D> OutlineTextures = new Dictionary<string, Texture2D>();
+        // True when the trousers are the baked blue outline (ApplyOutlineShirt): drawn white, the dye does not touch them.
+        private static bool outlinePants;
 
         public static void Apply()
         {
@@ -43,6 +45,7 @@ namespace TailorMadeWaistlines
             PantsTextures.Clear();
             TopTextures.Clear();
             Graphics.Clear();
+            outlinePants = false;
             foreach (WdiVisualProfile profile in WdiVisualProfiles.All)
                 foreach (string facing in Facings)
                 {
@@ -123,12 +126,14 @@ namespace TailorMadeWaistlines
                     }
                     Texture2D underwear = ContentFinder<Texture2D>.Get(UnderwearPath(profile, facing), false);
                     if (underwear == null) continue;
-                    byte[] rgba = BuildPants(profile, facing, body, underwear, out width, out height);
-                    if (rgba == null) continue;
-                    Texture2D pantsTexture = TrouserArt.Build(rgba, width, height, "Venus_NativePants_" + profile.TextureKey + "_" + facing);
+                    byte[] cut = WdiAppPatterns.CutMask(profile, WdiApparelCategory.Pants, facing, pixels, width, height, wdi);
+                    if (cut == null) continue;
+                    byte[] rgba = BuildPantsOutline(profile, facing, cut, underwear, width, height);
+                    Texture2D pantsTexture = TrouserArt.Build(rgba, width, height, "Venus_OutlinePants_" + profile.TextureKey + "_" + facing);
                     mine.contentList[Path + "_" + profile.TextureKey + "_" + facing] = pantsTexture;
                     PantsTextures[profile.TextureKey + "_" + facing] = pantsTexture;
                 }
+            outlinePants = true;
             Alias(mine, "Thin_Female", "Thin_Female");
             Alias(mine, "Hulk_Female", "Hulk_Female");
             Alias(mine, "Fat_Female", "Fat_Female");
@@ -162,7 +167,7 @@ namespace TailorMadeWaistlines
                 if (profile == null || !source.ContainsKey(profile.TextureKey + "_south")) return true;
                 if (traceCount++ < 12)
                     Log.Message("[Venus Touch Waistlines] direct apparel match " + apparel.def.defName + " " + profile.TextureKey + ".");
-                Color color = source == OutlineTextures ? Color.white : apparel.DrawColor;
+                Color color = source == OutlineTextures || (source == PantsTextures && outlinePants) ? Color.white : apparel.DrawColor;
                 string cacheKey = apparel.def.defName + "|" + profile.TextureKey + "|" + color;
                 if (!Graphics.TryGetValue(cacheKey, out Graphic graphic))
                 {
@@ -251,23 +256,7 @@ namespace TailorMadeWaistlines
         private static byte[] BuildPants(WdiVisualProfile profile, string facing, Texture2D body, Texture2D underwear, out int width, out int height)
         {
             byte[] bodyPixels = TrouserArt.Read(body, out width, out height);
-            byte[] underwearPixels = TrouserArt.Read(underwear, out int uw, out int uh);
-            int[] top = Enumerable.Repeat(-1, width).ToArray();
-            int[] bottom = Enumerable.Repeat(-1, width).ToArray();
-            for (int x = 0; x < width; x++)
-            {
-                int ux = Math.Min(uw - 1, (int)(x * (long)uw / width));
-                for (int y = 0; y < height; y++)
-                {
-                    int uy = Math.Min(uh - 1, (int)(y * (long)uh / height));
-                    if (underwearPixels[(uy * uw + ux) * TrouserDetail.Channels + 3] == 0) continue;
-                    if (top[x] < 0) top[x] = y;
-                    bottom[x] = y;
-                }
-            }
-            Fill(top); Fill(bottom);
-            if (top.All(v => v < 0)) return null;
-            if (profile.TextureKey == "Child") SmoothChild(top, facing);
+            if (!UnderwearRows(profile, facing, underwear, width, height, out int[] top, out int[] bottom)) return null;
 
             byte[] output = new byte[bodyPixels.Length];
             for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
@@ -280,6 +269,62 @@ namespace TailorMadeWaistlines
             }
             if (facing != "east") DrawTriangle(output, width, height, top, bottom, profile.TextureKey == "Child");
             return output;
+        }
+
+        // Per column, the first and last row of the underwear sprite, resampled to the body and filled across empty columns.
+        private static bool UnderwearRows(WdiVisualProfile profile, string facing, Texture2D underwear, int width, int height,
+            out int[] top, out int[] bottom)
+        {
+            byte[] underwearPixels = TrouserArt.Read(underwear, out int uw, out int uh);
+            top = Enumerable.Repeat(-1, width).ToArray();
+            bottom = Enumerable.Repeat(-1, width).ToArray();
+            for (int x = 0; x < width; x++)
+            {
+                int ux = Math.Min(uw - 1, (int)(x * (long)uw / width));
+                for (int y = 0; y < height; y++)
+                {
+                    int uy = Math.Min(uh - 1, (int)(y * (long)uh / height));
+                    if (underwearPixels[(uy * uw + ux) * TrouserDetail.Channels + 3] == 0) continue;
+                    if (top[x] < 0) top[x] = y;
+                    bottom[x] = y;
+                }
+            }
+            Fill(top); Fill(bottom);
+            if (top.All(v => v < 0)) return false;
+            if (profile.TextureKey == "Child") SmoothChild(top, facing);
+            return true;
+        }
+
+        /// <summary>
+        /// The trousers as a blue outline, interior empty (Virginie, 2026-10-26): the WDI body cut on the trouser line of
+        /// WdiAppPatterns.WaistLines, plus a line around the between-leg wedge (the triangle of DrawTriangle, which is a gap in the
+        /// trousers) to show its position and size.  Opaque pixels, baked blue, drawn with a white material colour.
+        /// </summary>
+        private static byte[] BuildPantsOutline(WdiVisualProfile profile, string facing, byte[] cut, Texture2D underwear, int width, int height)
+        {
+            byte[] outline = WdiAppPatterns.Ring(cut, width, height, WdiAppPatterns.RingPx);
+            if (facing != "east" && UnderwearRows(profile, facing, underwear, width, height, out int[] top, out int[] bottom)
+                && TriangleBounds(cut, width, height, top, bottom, profile.TextureKey == "Child", out int mid, out int apex, out int lowest))
+            {
+                // The wedge grown by Margin on every side, so the line lies around it, not on it.
+                const int Margin = 3;
+                byte[] around = new byte[cut.Length];
+                for (int y = Math.Max(0, apex - Margin); y <= Math.Min(height - 1, lowest + Margin); y++)
+                {
+                    int half = Math.Max(0, (y - apex) * 7 / Math.Max(1, lowest - apex)) + Margin;
+                    for (int x = Math.Max(0, mid - half); x <= Math.Min(width - 1, mid + half); x++)
+                    {
+                        int i = (y * width + x) * TrouserDetail.Channels;
+                        if (cut[i + 3] != 0) around[i + 3] = 255;
+                    }
+                }
+                byte[] line = WdiAppPatterns.Ring(around, width, height, 2);
+                for (int i = 3; i < line.Length; i += TrouserDetail.Channels)
+                    if (line[i] != 0) outline[i] = 255;
+            }
+            for (int i = 0; i < outline.Length; i += TrouserDetail.Channels)
+                if (outline[i + 3] != 0) { outline[i] = outline[i + 1] = 0; outline[i + 2] = 255; outline[i + 3] = 255; }
+            return outline;
         }
 
         // The shirt ends two pixels below the underwear's upper edge.  That is
@@ -331,14 +376,22 @@ namespace TailorMadeWaistlines
             for (int x = left; x <= right; x++) rows[x] = from + (to - from) * (x - left) / (right - left);
         }
 
+        // The between-leg wedge: its apex on the underwear's lower edge at the middle column (the middle of the loincloth for a
+        // child), its base on the lowest opaque row of the garment at that column.
+        private static bool TriangleBounds(byte[] garment, int width, int height, int[] top, int[] bottom, bool child,
+            out int mid, out int apex, out int lowest)
+        {
+            mid = width / 2;
+            apex = child ? (top[mid] + bottom[mid]) / 2 : bottom[mid];
+            lowest = -1;
+            if (apex < 0) return false;
+            for (int y = height - 1; y >= apex; y--) if (garment[(y * width + mid) * TrouserDetail.Channels + 3] > 0) { lowest = y; break; }
+            return lowest > apex;
+        }
+
         private static void DrawTriangle(byte[] output, int width, int height, int[] top, int[] bottom, bool child)
         {
-            int mid = width / 2;
-            int apex = child ? (top[mid] + bottom[mid]) / 2 : bottom[mid];
-            if (apex < 0) return;
-            int lowest = -1;
-            for (int y = height - 1; y >= apex; y--) if (output[(y * width + mid) * TrouserDetail.Channels + 3] > 0) { lowest = y; break; }
-            if (lowest <= apex) return;
+            if (!TriangleBounds(output, width, height, top, bottom, child, out int mid, out int apex, out int lowest)) return;
             for (int y = apex; y <= lowest; y++)
             {
                 int half = Math.Max(0, (y - apex) * 7 / Math.Max(1, lowest - apex));
