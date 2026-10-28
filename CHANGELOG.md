@@ -17,12 +17,13 @@ Targets 1.0.0, the first public version.
   jackets and other shell-layer torso garments stay full length.
 - **Dresses drawn for the body are left as they are** (setting, on by default), and the
   bodice of the royal dress is fitted to the breasts of WDI's bodies.
-- **Experimental, off by default: APP patterns for WDI's ten bodies.** With Apparel Paper
-  Pattern and APP Utilities, the vanilla T-shirt and trousers are fitted to each WDI
-  silhouette through masks made in memory from the installed WDI art (no WDI texture is
-  shipped). Trousers start at the higher of WDI's boxers and panties lines and the shirt
-  stops at the lower one, so the two always overlap. For now the garments are drawn as a
-  5 px inner outline, interior left empty, to show where vanilla garments stop fitting.
+- **Experimental, off by default: outline of vanilla trousers on WDI's ten bodies.** The
+  vanilla trousers are drawn as a blue outline, interior left empty, cut on the installed
+  WDI art (no WDI texture is shipped), to show where vanilla garments stop fitting. The
+  trousers line follows the panties or boxers line, chosen per body and per view (front,
+  side, back), and the outline also surrounds the open triangle between the legs. The
+  matching red hem outline of a top is drawn for a test garment only, never shipped.
+  Skipped when Apparel Paper Pattern is active.
 
 ## [0.1.0] — 2026-09-23
 
