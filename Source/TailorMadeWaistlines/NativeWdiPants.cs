@@ -334,7 +334,7 @@ namespace TailorMadeWaistlines
         private static byte[] BuildPantsOutline(WdiVisualProfile profile, string facing, byte[] cut, byte[] body, int width, int height)
         {
             byte[] outline = WdiAppPatterns.Ring(cut, width, height, WdiAppPatterns.RingPx);
-            if (facing != "east") DrawOpenTriangle(outline, body, profile, width, height);
+            if (facing != "east") DrawOpenTriangle(outline, body, profile, width, height, facing);
             for (int i = 0; i < outline.Length; i += TrouserDetail.Channels)
                 if (outline[i + 3] != 0) { outline[i] = outline[i + 1] = 0; outline[i + 2] = 255; outline[i + 3] = 255; }
             return outline;
@@ -368,7 +368,14 @@ namespace TailorMadeWaistlines
         //    like the basic shirt's hem and ignores the small notch the body outline has between the legs.
         // Nothing is drawn when the texture shows no crotch there.
         private const int DarkLuma = 60, MinAlpha = 40;
-        private static void DrawOpenTriangle(byte[] outline, byte[] body, WdiVisualProfile profile, int width, int height)
+        // Seen from behind the apex is the bottom of the buttocks, the small mark where the two curves meet the middle crease
+        // (Virginie, 2026-10-29, red dots on the WDI north textures).  Rows above the inner edge of the bottom outline, at the middle
+        // column, read off her dots (512 px textures, about 2 px of error).  A body that is not listed keeps the rule above.
+        private static readonly Dictionary<string, int> BackApexRise = new Dictionary<string, int>
+        {
+            { "Male", 10 }, { "Female", 32 }, { "Fat", 4 }, { "Hulk_Female", 26 }
+        };
+        private static void DrawOpenTriangle(byte[] outline, byte[] body, WdiVisualProfile profile, int width, int height, string facing)
         {
             int mid = width / 2, floor = height * 3 / 5;
             Func<int, int, bool> solid = (x, y) => x >= 0 && x < width && body[(y * width + x) * TrouserDetail.Channels + 3] >= MinAlpha;
@@ -405,7 +412,9 @@ namespace TailorMadeWaistlines
             }
             int thick = bottom(mid + 32) - inner(mid + 32);   // the bottom outline's thickness, away from the crotch
             int apex = -1;
-            if (male)
+            if (facing == "north" && BackApexRise.TryGetValue(profile.TextureKey, out int rise))
+                apex = Math.Max(floor, inner(mid) - rise);
+            else if (male)
             {
                 int seedX = -1, seedY = -1;
                 for (int y = bottom(mid) - thick - 1; y > bottom(mid) - thick - 50 && seedX < 0; y--)
