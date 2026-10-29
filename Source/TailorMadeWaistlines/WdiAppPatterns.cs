@@ -185,13 +185,9 @@ namespace TailorMadeWaistlines
             bool closeGap = key != "Hulk_Female"
                 && !(facing == "east" && (key == "Fat" || key == "Hulk" || key == "Female" || key == "Fat_Female"));
             CombineUnderwearLines(hem ?? top, top ?? hem, closeGap, out trouserTop, out shirtHem);
-            // Side view of these bodies (Virginie, 2026-10-25): both lines are horizontal.  The trousers start on the highest row
-            // of their underwear's edge, the hem sits on the lowest row of its own, so the two overlap without a diagonal swoosh.
-            if (facing == "east" && key == "Hulk_Female")
-            {
-                FlattenLine(trouserTop, true);
-                FlattenLine(shirtHem, false);
-            }
+            // F-Hulk side (2026-10-29): no flattening any more.  Her panties slope steeply, so the highest row of their edge sent the
+            // blue line across the chest and the lowest row of the hem put the red line under the underwear (captures f43b).  Both
+            // lines now follow their underwear's top edge as drawn, like the other side views (Virginie, 2026-10-26).
             return true;
         }
 
