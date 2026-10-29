@@ -277,7 +277,7 @@ namespace TailorMadeWaistlines
             // images are generated at runtime and deliberately have none.
             // Their material already contains the apparel dye, so retaining
             // this direct graphic is the correct recoloured version.
-            private sealed class DirectGraphic : Graphic_Multi
+            internal sealed class DirectGraphic : Graphic_Multi
             {
                 public override Graphic GetColoredVersion(Shader newShader, Color newColor, Color newColorTwo) => this;
             }

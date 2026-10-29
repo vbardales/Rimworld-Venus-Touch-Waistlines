@@ -50,6 +50,9 @@ namespace TailorMadeWaistlines
         // without changing a normal player's apparel.
         public bool enableExperimentalAppPatterns = false;
 
+        // Off by default: every on-skin top is clipped to the silhouette of a WDI body (TopFit).
+        public bool fitTopsToSilhouette = false;
+
         // On by default: a jacket is drawn to its own length instead of being banded to the waist.
         public bool keepJacketsLong = true;
 
@@ -71,6 +74,7 @@ namespace TailorMadeWaistlines
             Scribe_Values.Look(ref chestBottom, "chestBottom", DefaultChestBottom);
             Scribe_Values.Look(ref shortenShirts, "shortenShirts", false);
             Scribe_Values.Look(ref enableExperimentalAppPatterns, "enableExperimentalAppPatterns", false);
+            Scribe_Values.Look(ref fitTopsToSilhouette, "fitTopsToSilhouette", false);
             Scribe_Values.Look(ref keepJacketsLong, "keepJacketsLong", true);
             Scribe_Values.Look(ref keepDressesWhole, "keepDressesWhole", true);
             Scribe_Values.Look(ref useGeneralArt, "useGeneralArt", true);
@@ -99,6 +103,7 @@ namespace TailorMadeWaistlines
             chestBottom = DefaultChestBottom;
             shortenShirts = false;
             enableExperimentalAppPatterns = false;
+            fitTopsToSilhouette = false;
             keepJacketsLong = true;
             keepDressesWhole = true;
             useGeneralArt = true;
@@ -139,6 +144,8 @@ namespace TailorMadeWaistlines
             // TailorMade one.  It must therefore be installed even in the
             // deliberately AB/APP/TailorMade-free evidence map.
             new Harmony("nelim.venustouch.waistlines.nativewdi").CreateClassProcessor(typeof(NativeWdiPants.NativeGraphicPatch)).Patch();
+            // Tops of any mod clipped to a WDI body's silhouette, behind the option fitTopsToSilhouette.
+            new Harmony("nelim.venustouch.waistlines.topfit").CreateClassProcessor(typeof(TopFit.Patch)).Patch();
             // After the game has loaded every mod's textures, which is when there is something to replace.
             LongEventHandler.ExecuteWhenFinished(TrouserArt.Apply);
             // AB's APP bridge adds its own patterns from a late initializer.
@@ -203,6 +210,9 @@ namespace TailorMadeWaistlines
             list.CheckboxLabeled("TailorMadeWaistlines.Settings.ExperimentalAppPatterns".Translate(),
                 ref Settings.enableExperimentalAppPatterns,
                 "TailorMadeWaistlines.Settings.ExperimentalAppPatternsTip".Translate());
+            list.CheckboxLabeled("TailorMadeWaistlines.Settings.FitTops".Translate(),
+                ref Settings.fitTopsToSilhouette,
+                "TailorMadeWaistlines.Settings.FitTopsTip".Translate());
             list.CheckboxLabeled("TailorMadeWaistlines.Settings.KeepJacketsLong".Translate(),
                 ref Settings.keepJacketsLong,
                 "TailorMadeWaistlines.Settings.KeepJacketsLongTip".Translate());

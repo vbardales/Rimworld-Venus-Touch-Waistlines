@@ -6,6 +6,10 @@ Targets 1.0.0, the first public version.
 
 - **Renamed Venus Touch Waistlines**, `packageId` `nelim.venustouch.waistlines` (the
   private 0.1.0 item carried the old name).
+- **New option: fit tops to the body's silhouette** (off by default). With a WDI body, every
+  garment worn on the skin that covers the torso but not the legs is cut along the outline
+  of the body, so a shirt drawn for another body no longer sticks out at the shoulders and
+  the collar. Colours and hem are kept; garments TailorMade fits itself are left alone.
 - **TailorMade is optional.** Every reach into it goes through one link; its bands and
   resizing are patched only when it is loaded, and the band sliders show only then.
 - **Trousers start on WDI's underwear**, column by column, instead of a fixed band;

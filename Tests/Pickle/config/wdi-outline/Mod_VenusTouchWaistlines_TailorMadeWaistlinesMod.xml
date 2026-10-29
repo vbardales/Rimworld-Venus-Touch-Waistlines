@@ -10,6 +10,7 @@
     <chestBottom>0.45</chestBottom>
     <shortenShirts>False</shortenShirts>
     <enableExperimentalAppPatterns>True</enableExperimentalAppPatterns>
+    <fitTopsToSilhouette>True</fitTopsToSilhouette>
     <useGeneralArt>False</useGeneralArt>
     <detailPlainShells>False</detailPlainShells>
     <trouserDrop>0.03</trouserDrop>

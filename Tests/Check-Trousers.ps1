@@ -403,6 +403,27 @@ for ($x = 0; $x -lt $gw; $x++) { for ($y = 0; $y -lt $rowsA[$x]; $y++) { if ($aO
 Assert-That 'trousers cut along a curve have nothing left above the curve in any column' $aOk
 Assert-That 'trousers cut along a curve keep their bottom' ([TmwCheck]::BottomRow($aOut, $gw, $gh) -eq $jbot)
 
+# TopFit.ClipToBody: a garment clipped to a body picture of another resolution.
+$fitT = $asm.GetType('TailorMadeWaistlines.TopFit')
+$clip = $fitT.GetMethod('ClipToBody', [System.Reflection.BindingFlags]'NonPublic,Static')
+$tg = New-Object byte[] (8 * 8 * 4)
+for ($i = 0; $i -lt 64; $i++) { $tg[$i * 4] = 200; $tg[$i * 4 + 1] = 100; $tg[$i * 4 + 2] = 50; $tg[$i * 4 + 3] = 255 }
+$tb = New-Object byte[] (4 * 4 * 4)
+for ($by = 1; $by -le 2; $by++) { for ($bx = 1; $bx -le 2; $bx++) { $tb[($by * 4 + $bx) * 4 + 3] = 255 } }
+$tb[(0 * 4 + 0) * 4 + 3] = 39   # below the threshold: still outside
+$tkeep = [byte[]]$tg.Clone()
+$tc = $clip.Invoke($null, @($tg, 8, 8, $tb, 4, 4))
+$tIn = 0; $tOutOk = $true; $tRgbOk = $true
+for ($y = 0; $y -lt 8; $y++) { for ($x = 0; $x -lt 8; $x++) {
+    $a = $tc[($y * 8 + $x) * 4 + 3]
+    $inside = ($x -ge 2 -and $x -le 5 -and $y -ge 2 -and $y -le 5)
+    if ($inside) { $tIn += [int]($a -eq 255) } elseif ($a -ne 0) { $tOutOk = $false }
+    if ($tc[($y * 8 + $x) * 4] -ne 200 -or $tc[($y * 8 + $x) * 4 + 1] -ne 100 -or $tc[($y * 8 + $x) * 4 + 2] -ne 50) { $tRgbOk = $false }
+} }
+Assert-That 'a garment clipped to a body keeps exactly the pixels over the body, across resolutions' (($tIn -eq 16) -and $tOutOk) "inside kept $tIn of 16"
+Assert-That 'clipping a garment leaves its colours alone' $tRgbOk
+Assert-That 'clipping a garment does not change the input' ([TmwCheck]::Same($tg, $tkeep))
+
 Write-Host ""
 Write-Host "AB's real textures"
 if (-not (Test-Path $AbPants)) {
