@@ -29,6 +29,7 @@ const shot = label => ['    And Nelim\'s Sanctuary: I am at the sanctuary "calm-
   '    And I wait 120 ticks', '    And I take a screenshot "' + label + '"'];
 const stripAll = () => NAMES.map(n => '    And I destroy the gear of "' + n + '"');
 const underwear = (n, kind) => isKid(n) ? 'UnderWhere_Loincloth' : (kind.startsWith('slip') ? 'UnderWhere_Panties' : 'UnderWhere_Boxers');
+const RIM = 'Venus_TestShirtRim';   // the rim of the vanilla basic shirt in green (Virginie, 2026-10-29), adults only
 const TOP = 'Venus_TestOutlineTop', CREAM = '230, 224, 206', BLUE = '46, 74, 120';
 const shirt = n => isKid(n) ? 'Apparel_KidShirt' : 'Apparel_BasicShirt';
 const pants = n => isKid(n) ? 'Apparel_KidPants' : 'Apparel_Pants';
@@ -46,7 +47,7 @@ function underwearFeature() {
       o.push(...stripAll());
       // 'slip-trousers' and 'boxers-trousers' (Virginie, 2026-10-26): the translucent blue WDI trousers over the underwear, no shirt,
       // to read the trousers' top line beside the red hem.
-      for (const n of NAMES) { o.push(wear(n, underwear(n, kind))); if (kind.endsWith('trousers')) o.push(wear(n, pants(n), BLUE)); o.push(wear(n, TOP)); }
+      for (const n of NAMES) { o.push(wear(n, underwear(n, kind))); if (kind.endsWith('trousers')) o.push(wear(n, pants(n), BLUE)); o.push(wear(n, TOP)); if (!isKid(n)) o.push(wear(n, RIM)); }
       o.push(...shot('outline underwear, ' + view + ', ' + kind));
     }
     o.push('');

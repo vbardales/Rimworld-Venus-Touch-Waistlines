@@ -76,30 +76,38 @@ Feature: the red outline top over underwear on every WDI silhouette
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
@@ -120,30 +128,38 @@ Feature: the red outline top over underwear on every WDI silhouette
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
@@ -221,30 +237,38 @@ Feature: the red outline top over underwear on every WDI silhouette
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
@@ -265,30 +289,38 @@ Feature: the red outline top over underwear on every WDI silhouette
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
@@ -366,30 +398,38 @@ Feature: the red outline top over underwear on every WDI silhouette
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Panties"
     And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"
@@ -410,30 +450,38 @@ Feature: the red outline top over underwear on every WDI silhouette
     And Nelim's Pickle Tools: "M-Thin" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Avg" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Fat" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Hulk" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "M-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "M-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "M-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "M-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "M-Kid" wears "Venus_TestOutlineTop"
     And Nelim's Pickle Tools: "F-Thin" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Thin" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Thin" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Avg" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Avg" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Avg" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Fat" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Fat" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Fat" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Hulk" wears "UnderWhere_Boxers"
     And Nelim's Pickle Tools: "F-Hulk" wears "Apparel_Pants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestOutlineTop"
+    And Nelim's Pickle Tools: "F-Hulk" wears "Venus_TestShirtRim"
     And Nelim's Pickle Tools: "F-Kid" wears "UnderWhere_Loincloth"
     And Nelim's Pickle Tools: "F-Kid" wears "Apparel_KidPants" dyed rgb (46, 74, 120)
     And Nelim's Pickle Tools: "F-Kid" wears "Venus_TestOutlineTop"

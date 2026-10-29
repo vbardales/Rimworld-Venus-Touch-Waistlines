@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Test garment of the Pickle mod, never shipped (Virginie, 2026-10-29): the rim of the vanilla basic shirt as a green outline,
+  worn over the red outline top to compare the red hem and the blue trouser line with the real shirt.  Drawn by
+  TailorMadeWaistlines (NativeWdiPants.ApplyOutlineShirt) from the texture the game itself resolves for Apparel_BasicShirt on each
+  body, only when WDI is active and the experimental setting is on.  The worn graphic below is a sentinel (a non-empty path makes
+  RimWorld create the render node).  Shell layer, so it is drawn above the red top.
+-->
+<Defs>
+  <ThingDef ParentName="ApparelBase">
+    <defName>Venus_TestShirtRim</defName>
+    <label>green shirt rim (test)</label>
+    <description>Test garment: the outline of the vanilla basic shirt, in green.</description>
+    <graphicData>
+      <texPath>Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <tradeability>None</tradeability>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+      </bodyPartGroups>
+      <wornGraphicPath>Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic</wornGraphicPath>
+      <layers>
+        <li>Shell</li>
+      </layers>
+    </apparel>
+  </ThingDef>
+</Defs>
