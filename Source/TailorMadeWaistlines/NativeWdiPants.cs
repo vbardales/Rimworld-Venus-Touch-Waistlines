@@ -136,7 +136,7 @@ namespace TailorMadeWaistlines
                     if (underwear == null) continue;
                     byte[] cut = WdiAppPatterns.CutMask(profile, WdiApparelCategory.Pants, facing, pixels, width, height, wdi);
                     if (cut == null) continue;
-                    byte[] rgba = BuildPantsOutline(profile, facing, cut, pixels, width, height);
+                    byte[] rgba = BuildPantsOutline(profile, facing, WithShirtBelowBelt(cut, profile, facing, width, height), pixels, width, height);
                     Texture2D pantsTexture = TrouserArt.Build(rgba, width, height, "Venus_OutlinePants_" + profile.TextureKey + "_" + facing);
                     mine.contentList[Path + "_" + profile.TextureKey + "_" + facing] = pantsTexture;
                     PantsTextures[profile.TextureKey + "_" + facing] = pantsTexture;
@@ -161,10 +161,45 @@ namespace TailorMadeWaistlines
         // The green rim: the alpha of the basic shirt texture the game resolves for this body (WDI's own where it ships one, the
         // vanilla one otherwise), reduced to a 5 px outline at the body's 512 px scale.  Children are left out: their shirt is
         // another def.
+        private static Texture2D ShirtTexture(WdiVisualProfile profile, string facing)
+        {
+            return ContentFinder<Texture2D>.Get(ShirtTexturePath + profile.TextureKey + "_" + facing, false)
+                ?? ContentFinder<Texture2D>.Get(ShirtTexturePath + profile.BodyTypeName + "_" + facing, false);
+        }
+
+        // The trousers' silhouette is the larger of the body cut on the trouser line and the basic shirt below that line
+        // (Virginie, 2026-10-29: "le max entre le vert et la ligne bleue pour le pantalon, pas pour le haut"; the shirt sticks out
+        // at the collar, so only the rows under the belt count).  The trouser line itself does not move.  Children keep the cut.
+        private static byte[] WithShirtBelowBelt(byte[] cut, WdiVisualProfile profile, string facing, int width, int height)
+        {
+            if (profile.TextureKey == "Child") return cut;
+            Texture2D shirt = ShirtTexture(profile, facing);
+            if (shirt == null) return cut;
+            byte[] shirtPixels = TrouserArt.Read(shirt, out int sw, out int sh);
+            int[] belt = Enumerable.Repeat(-1, width).ToArray();
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                    if (cut[(y * width + x) * TrouserDetail.Channels + 3] != 0) { belt[x] = y; break; }
+            Fill(belt);
+            byte[] merged = (byte[])cut.Clone();
+            for (int x = 0; x < width; x++)
+            {
+                if (belt[x] < 0) continue;
+                int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
+                for (int y = belt[x]; y < height; y++)
+                {
+                    int sy = Math.Min(sh - 1, (int)(y * (long)sh / height));
+                    if (shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] == 0) continue;
+                    int i = (y * width + x) * TrouserDetail.Channels;
+                    merged[i] = merged[i + 1] = merged[i + 2] = merged[i + 3] = 255;
+                }
+            }
+            return merged;
+        }
+
         private static void BuildShirtRim(ModContentHolder<Texture2D> mine, WdiVisualProfile profile, string facing)
         {
-            Texture2D shirt = ContentFinder<Texture2D>.Get(ShirtTexturePath + profile.TextureKey + "_" + facing, false)
-                ?? ContentFinder<Texture2D>.Get(ShirtTexturePath + profile.BodyTypeName + "_" + facing, false);
+            Texture2D shirt = ShirtTexture(profile, facing);
             if (shirt == null) return;
             byte[] pixels = TrouserArt.Read(shirt, out int width, out int height);
             byte[] mask = new byte[pixels.Length];
