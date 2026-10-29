@@ -370,10 +370,11 @@ namespace TailorMadeWaistlines
         private const int DarkLuma = 60, MinAlpha = 40;
         // Seen from behind the apex is the bottom of the buttocks, the small mark where the two curves meet the middle crease
         // (Virginie, 2026-10-29, red dots on the WDI north textures).  Rows above the inner edge of the bottom outline, at the middle
-        // column, read off her dots (512 px textures, about 2 px of error).  A body that is not listed keeps the rule above.
+        // column, read off her dots (512 px textures, about 2 px of error).  The eight adult bodies are listed (the second four from her dots of the same day); the children keep the rule above.
         private static readonly Dictionary<string, int> BackApexRise = new Dictionary<string, int>
         {
-            { "Male", 10 }, { "Female", 32 }, { "Fat", 4 }, { "Hulk_Female", 26 }
+            { "Male", 10 }, { "Female", 32 }, { "Fat", 4 }, { "Hulk_Female", 26 },
+            { "Thin", 25 }, { "Hulk", 9 }, { "Thin_Female", 37 }, { "Fat_Female", 16 }
         };
         private static void DrawOpenTriangle(byte[] outline, byte[] body, WdiVisualProfile profile, int width, int height, string facing)
         {
