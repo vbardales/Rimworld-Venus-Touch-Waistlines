@@ -9,7 +9,7 @@ The sections below say what is decided and what is not. Nothing here is filled i
 ## 1. Description
 
 The live description is the one sent when the item was created (`SetItemDescription` is called once). It is
-`Mod/About/About.xml`'s at that commit and is corrected by hand on the Steam page. What still differs from
+the text of `Mod/About/About.xml` at that commit and is corrected by hand on the Steam page. What still differs from
 `AUDIT.md`'s required order (body, `IF I GO QUIET`, `AI-GENERATED`, `THANKS`, the line pointing to
 `ATTRIBUTION.md` and the licence, then the source link), to fix on the page:
 
@@ -122,7 +122,8 @@ Read from `Mod/About/About.xml` on 2026-09-25; the sources were checked in the 2
 
 - **Hard:** Harmony, and TailorMade (`astryl.tailormade`): the mod is Harmony patches on its internals.
 - **`loadAfter`, not dependencies:** AB's Visible Pants and General Textures Collection. The trouser step acts
-  only where AB is active; without either, nothing is drawn or registered.
+  only where AB is active; without AB, nothing is drawn or registered; without General, its retexture is unavailable
+  and the details are drawn onto AB's shell instead.
 - **DLC:** none declared. The child garment (`Apparel_KidPants`) is Biotech's; the mod does not require Biotech.
   Not re-verified against the `LoadFolders`/`IfModActive` branches of the dependencies.
 
@@ -135,7 +136,7 @@ and neither has been reopened for this question. To answer with the images open.
 
 **Not written.** It is written at the moment of upload, in a tab nothing asks for until the form is open. The
 0.1.0 upload only created the item. The `1.0.0` note will say what the mod does now: the three band sliders, the
-shirt option (shirts cut on WDI's underwear, trousers on the same line), the trouser art from General's retexture and the drawn
+shirt option (shirts cut on WDI's underwear, trousers on the same line), General Textures Collection's trouser retexture and the drawn
 details, the two drop sliders, per-sex trousers for Thin, Fat and Hulk, children on their trousers' line, and that every trouser
 texture is read at run time and none is shipped.
 
