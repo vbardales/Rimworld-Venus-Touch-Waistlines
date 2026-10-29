@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Control seed: Children Wear Anything with its four visual effects off.
+  Decompiled from the DLL 2026-10-29: ScaleForPostfix scales the Child body node (enableBodyScaling), the apparel nodes (enableScaling)
+  and the tattoos (enableTattooScaling); enableRotation tilts apparel. Penalties are left on, they do not draw anything.
+-->
+<SettingsBlock>
+  <ModSettings Class="ChildClothingUnrestricted.Core.ChildClothingSettings">
+    <enableRotation>False</enableRotation>
+    <enableScaling>False</enableScaling>
+    <enableBodyScaling>False</enableBodyScaling>
+    <enableTattooScaling>False</enableTattooScaling>
+  </ModSettings>
+</SettingsBlock>

@@ -1,0 +1,16 @@
+# Control of wsl-deps.wdi-outline.map for the question "does Children Wear Anything rescale the outline on a child?" (Virginie, 2026-10-29).
+# Same mods, same order. config/wdi-outline-cwaoff turns off the four CWA visual effects (rotation, scaling, body scaling, tattoo scaling) and keeps
+# the Venus outline setting on, so the only thing that differs from the wdi-outline pass is CWA's rescaling.
+#   Run-PickleWsl.ps1 -Mod VenusTouchWaistlines -DepMap wdi-outline-cwaoff -Filter '25-cwa-kids'   (and the same filter with -DepMap wdi-outline)
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+Malistaticy.UnderWhere          1870010563
+wdi.realistic.bodies           3527486510
+LoneKin.ChildrenWearAnything   3688530033
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod
