@@ -182,9 +182,14 @@ namespace TailorMadeWaistlines
             // sitting on its edge.
             // Side view of M-Fat, M-Hulk, F and F-Fat (Virginie, 2026-10-26): both lines follow the top of their underwear as drawn,
             // no gap closing and no flattening.
-            bool closeGap = key != "Hulk_Female"
-                && !(facing == "east" && (key == "Fat" || key == "Hulk" || key == "Female" || key == "Fat_Female"));
+            bool closeGap = key != "Hulk_Female" && key != "Fat"
+                && !(facing == "east" && (key == "Hulk" || key == "Female" || key == "Fat_Female"));
             CombineUnderwearLines(hem ?? top, top ?? hem, closeGap, out trouserTop, out shirtHem);
+            // M-Fat (Virginie, 2026-10-30: "il faut toujours prendre la plus haute entre les segments où elles se croisent"): where
+            // its two lines cross, so that the blue would start under the red hem, both take the higher row instead of moving apart.
+            if (key == "Fat")
+                for (int x = 0; x < trouserTop.Length; x++)
+                    if (shirtHem[x] >= 0 && trouserTop[x] > shirtHem[x]) trouserTop[x] = shirtHem[x];
             // F-Hulk side (2026-10-29): no flattening any more.  Her panties slope steeply, so the highest row of their edge sent the
             // blue line across the chest and the lowest row of the hem put the red line under the underwear (captures f43b).  Both
             // lines now follow their underwear's top edge as drawn, like the other side views (Virginie, 2026-10-26).

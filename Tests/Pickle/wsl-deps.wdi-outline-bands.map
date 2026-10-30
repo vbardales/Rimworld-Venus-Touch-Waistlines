@@ -1,0 +1,19 @@
+# Comparison of the shirt fit under the blue trousers (Virginie 2026-10-30): same mods as wsl-deps.wdi-outline.map, config/wdi-outline-bands sets outlineShirtFit 2.
+# FemaleBodyVariants gives WDI its female Thin/Fat/Hulk bodies, FemaleApparelVariants the _Female textures of the apparel (without it a woman wears the men's UnderWhere boxers, 2026-10-25); ChildrenWearAnything lets the two children wear the shirt.
+# config/wdi-outline seeds enableExperimentalAppPatterns, the setting that turns the outline shirt on.
+#   Run-PickleWsl.ps1 -Mod VenusTouchWaistlines -DepMap wsl-deps.wdi-outline.map -Filter '22-outline-underwear'  (then 23-outline-layers)
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+Malistaticy.UnderWhere          1870010563
+# Vanilla Apparel Expanded (2026-10-30, Virginie): its blouse is the shirt the blue trousers outline takes its width from, for the adults WDI ships no shirt for.
+OskarPotocki.VanillaFactionsExpanded.Core 2023507013
+VanillaExpanded.VAPPE           1814987817
+wdi.realistic.bodies           3527486510
+LoneKin.ChildrenWearAnything   3688530033
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

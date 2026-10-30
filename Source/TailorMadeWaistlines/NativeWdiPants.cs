@@ -189,20 +189,69 @@ namespace TailorMadeWaistlines
                 for (int y = 0; y < height; y++)
                     if (cut[(y * width + x) * TrouserDetail.Channels + 3] != 0) { belt[x] = y; break; }
             Fill(belt);
+            // The shirt's alpha at the body's resolution, then fitted to the body (setting outlineShirtFit).
+            bool[] shirt1 = new bool[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                int sy = Math.Min(sh - 1, (int)(y * (long)sh / height));
+                for (int x = 0; x < width; x++)
+                {
+                    int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
+                    shirt1[y * width + x] = shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] != 0;
+                }
+            }
+            int fit = TailorMadeWaistlinesMod.Settings?.outlineShirtFit ?? 0;
+            if (fit == 1 || fit == 2) shirt1 = FitShirt(shirt1, cut, belt, width, height, fit == 2);
             byte[] merged = (byte[])cut.Clone();
             for (int x = 0; x < width; x++)
             {
                 if (belt[x] < 0) continue;
-                int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
                 for (int y = belt[x]; y < height; y++)
                 {
-                    int sy = Math.Min(sh - 1, (int)(y * (long)sh / height));
-                    if (shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] == 0) continue;
+                    if (!shirt1[y * width + x]) continue;
                     int i = (y * width + x) * TrouserDetail.Channels;
                     merged[i] = merged[i + 1] = merged[i + 2] = merged[i + 3] = 255;
                 }
             }
             return merged;
+        }
+
+        // The shirt is wider than the body at the belt on the heavy bodies, and the max then keeps a ledge there (captures 060f).
+        // Two ways to fit it (Virginie 2026-10-30, to compare): one horizontal scale from the belt row (everything below keeps the
+        // shirt's own shape, hem included), or a scale of each row on the body's width at that row (like TailorMade's bands).
+        // Both stretch about the middle of the body; a row with no body (below its bottom) takes the last row's width.
+        private static bool[] FitShirt(bool[] shirt, byte[] cut, int[] belt, int width, int height, bool perRow)
+        {
+            Func<int, int, int, bool> opaque = (x, y, pass) => pass == 0 ? cut[(y * width + x) * TrouserDetail.Channels + 3] != 0 : shirt[y * width + x];
+            Func<int, int, int> left = (y, pass) => { for (int x = 0; x < width; x++) if (opaque(x, y, pass)) return x; return -1; };
+            Func<int, int, int> right = (y, pass) => { for (int x = width - 1; x >= 0; x--) if (opaque(x, y, pass)) return x; return -1; };
+            bool[] fitted = new bool[shirt.Length];
+            int beltRow = belt[width / 2];
+            if (beltRow < 0) return shirt;
+            int refRow = Math.Min(height - 1, beltRow + 4);
+            double once = 1.0;
+            if (!perRow)
+            {
+                int bl0 = left(refRow, 0), br0 = right(refRow, 0), sl0 = left(refRow, 1), sr0 = right(refRow, 1);
+                if (bl0 < 0 || sl0 < 0 || sr0 - sl0 <= br0 - bl0) return shirt;
+                once = (br0 - bl0 + 1.0) / (sr0 - sl0 + 1.0);
+            }
+            int lastBl = -1, lastBr = -1;
+            for (int y = beltRow; y < height; y++)
+            {
+                int bl = left(y, 0), br = right(y, 0), sl = left(y, 1), sr = right(y, 1);
+                if (bl >= 0) { lastBl = bl; lastBr = br; } else { bl = lastBl; br = lastBr; }
+                if (sl < 0 || bl < 0) continue;
+                double bc = (bl + br) / 2.0, sc = (sl + sr) / 2.0;
+                double scale = perRow ? (br - bl + 1.0) / (sr - sl + 1.0) : once;
+                for (int x = 0; x < width; x++)
+                {
+                    int sx = (int)Math.Round(sc + (x - bc) / scale);
+                    fitted[y * width + x] = sx >= 0 && sx < width && shirt[y * width + sx];
+                }
+            }
+            for (int y = 0; y < beltRow; y++) Array.Copy(shirt, y * width, fitted, y * width, width);
+            return fitted;
         }
 
         // The green rim: the alpha of the shirt the blue takes its width from (MaxShirt: WDI's own for the three female Thin, Fat

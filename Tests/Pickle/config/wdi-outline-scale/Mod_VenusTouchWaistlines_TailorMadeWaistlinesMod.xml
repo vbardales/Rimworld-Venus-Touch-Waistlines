@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Comparison seed (Virginie 2026-10-30): outlineShirtFit 1 (scale of the shirt under the blue). Same as wdi-outline otherwise. Opts into
+  the outline shirt; staging removes it before the next pass.
+-->
+<SettingsBlock>
+  <ModSettings Class="TailorMadeWaistlines.TailorMadeWaistlinesSettings">
+    <pantsTop>0.58</pantsTop>
+    <bootsTop>0.2</bootsTop>
+    <chestBottom>0.45</chestBottom>
+    <shortenShirts>False</shortenShirts>
+    <enableExperimentalAppPatterns>True</enableExperimentalAppPatterns>
+    <fitTopsToSilhouette>True</fitTopsToSilhouette>
+    <outlineShirtFit>1</outlineShirtFit>
+    <useGeneralArt>False</useGeneralArt>
+    <detailPlainShells>False</detailPlainShells>
+    <trouserDrop>0.03</trouserDrop>
+    <trouserDropChild>0.067</trouserDropChild>
+  </ModSettings>
+</SettingsBlock>

@@ -53,6 +53,10 @@ namespace TailorMadeWaistlines
         // Off by default: every on-skin top is clipped to the silhouette of a WDI body (TopFit).
         public bool fitTopsToSilhouette = false;
 
+        // Not in the options window: how the shirt under the blue trousers outline is fitted to the body (NativeWdiPants.FitShirt).
+        // 0 keeps its width, 1 scales it once on the belt row, 2 scales it row by row.  Seeded by the Pickle comparison passes.
+        public int outlineShirtFit = 0;
+
         // On by default: a jacket is drawn to its own length instead of being banded to the waist.
         public bool keepJacketsLong = true;
 
@@ -75,6 +79,7 @@ namespace TailorMadeWaistlines
             Scribe_Values.Look(ref shortenShirts, "shortenShirts", false);
             Scribe_Values.Look(ref enableExperimentalAppPatterns, "enableExperimentalAppPatterns", false);
             Scribe_Values.Look(ref fitTopsToSilhouette, "fitTopsToSilhouette", false);
+            Scribe_Values.Look(ref outlineShirtFit, "outlineShirtFit", 0);
             Scribe_Values.Look(ref keepJacketsLong, "keepJacketsLong", true);
             Scribe_Values.Look(ref keepDressesWhole, "keepDressesWhole", true);
             Scribe_Values.Look(ref useGeneralArt, "useGeneralArt", true);
@@ -104,6 +109,7 @@ namespace TailorMadeWaistlines
             shortenShirts = false;
             enableExperimentalAppPatterns = false;
             fitTopsToSilhouette = false;
+            outlineShirtFit = 0;
             keepJacketsLong = true;
             keepDressesWhole = true;
             useGeneralArt = true;

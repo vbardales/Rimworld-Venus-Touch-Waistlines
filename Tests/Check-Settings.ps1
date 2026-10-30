@@ -67,6 +67,7 @@ try {
       Assert-That 'shortenShirts starts off' ((Get-F $s 'shortenShirts') -eq $false)
       Assert-That 'experimental APP patterns start off' ((Get-F $s 'enableExperimentalAppPatterns') -eq $false)
       Assert-That 'fitTopsToSilhouette starts off' ((Get-F $s 'fitTopsToSilhouette') -eq $false)
+      Assert-That 'outlineShirtFit starts at 0' ((Get-F $s 'outlineShirtFit') -eq 0)
     Assert-That 'useGeneralArt starts on: it only acts where AB is active' ((Get-F $s 'useGeneralArt') -eq $true)
     Assert-That 'detailPlainShells starts on' ((Get-F $s 'detailPlainShells') -eq $true)
     Assert-That 'trouserDrop starts at 0.03' (Near (Get-F $s 'trouserDrop') 0.03)
@@ -106,13 +107,14 @@ try {
     Write-Host "ResetToDefaults"
     $s = New-Settings
       Set-F $s 'pantsTop' ([float]0.3); Set-F $s 'bootsTop' ([float]0.5); Set-F $s 'chestBottom' ([float]0.7); Set-F $s 'shortenShirts' $true
-      Set-F $s 'enableExperimentalAppPatterns' $true; Set-F $s 'fitTopsToSilhouette' $true
+      Set-F $s 'enableExperimentalAppPatterns' $true; Set-F $s 'fitTopsToSilhouette' $true; Set-F $s 'outlineShirtFit' 2
     Set-F $s 'useGeneralArt' $false; Set-F $s 'detailPlainShells' $false; Set-F $s 'trouserDrop' ([float]0.07); Set-F $s 'trouserDropChild' ([float]0.03)
     $type.GetMethod('ResetToDefaults').Invoke($s, @()) | Out-Null
     Assert-That 'the three bands return to their defaults' ((Near (Get-F $s 'pantsTop') 0.58) -and (Near (Get-F $s 'bootsTop') 0.20) -and (Near (Get-F $s 'chestBottom') 0.25))
       Assert-That 'the shirt option returns to off' ((Get-F $s 'shortenShirts') -eq $false)
       Assert-That 'experimental APP patterns return to off' ((Get-F $s 'enableExperimentalAppPatterns') -eq $false)
       Assert-That 'fitTopsToSilhouette returns to off' ((Get-F $s 'fitTopsToSilhouette') -eq $false)
+      Assert-That 'outlineShirtFit returns to 0' ((Get-F $s 'outlineShirtFit') -eq 0)
     Assert-That 'both trouser art options return to on' (((Get-F $s 'useGeneralArt') -eq $true) -and ((Get-F $s 'detailPlainShells') -eq $true))
     Assert-That 'both trouser drops return to their defaults' ((Near (Get-F $s 'trouserDrop') 0.03) -and (Near (Get-F $s 'trouserDropChild') 0.067))
 }
