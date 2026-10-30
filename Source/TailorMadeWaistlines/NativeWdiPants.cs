@@ -119,7 +119,7 @@ namespace TailorMadeWaistlines
             foreach (WdiVisualProfile profile in WdiVisualProfiles.All)
                 foreach (string facing in Facings)
                 {
-                    if (rimShirt?.apparel != null && profile.TextureKey != "Child") BuildShirtRim(mine, profile, facing);
+                    if (rimShirt?.apparel != null && profile.TextureKey != "Child") BuildShirtRim(mine, profile, facing, wdi);
                     Texture2D body = ContentFinder<Texture2D>.Get("Things/Pawn/Humanlike/Bodies/Naked_" + profile.TextureKey + "_" + facing, false);
                     if (body == null) continue;
                     byte[] pixels = TrouserArt.Read(body, out int width, out int height);
@@ -156,15 +156,6 @@ namespace TailorMadeWaistlines
             kidPants.apparel.wornGraphicPath = Path;
             Log.Message("[Venus Touch Waistlines] outline top ready: " + OutlineTextures.Count + " textures, trousers " + PantsTextures.Count
                 + ", shirt rim " + RimTextures.Count + ".");
-        }
-
-        // The green rim: the alpha of the basic shirt texture the game resolves for this body (WDI's own where it ships one, the
-        // vanilla one otherwise), reduced to a 5 px outline at the body's 512 px scale.  Children are left out: their shirt is
-        // another def.
-        private static Texture2D ShirtTexture(WdiVisualProfile profile, string facing)
-        {
-            return ContentFinder<Texture2D>.Get(ShirtTexturePath + profile.TextureKey + "_" + facing, false)
-                ?? ContentFinder<Texture2D>.Get(ShirtTexturePath + profile.BodyTypeName + "_" + facing, false);
         }
 
         // The trousers' silhouette is the larger of the body cut on the trouser line and the basic shirt below that line
@@ -214,9 +205,13 @@ namespace TailorMadeWaistlines
             return merged;
         }
 
-        private static void BuildShirtRim(ModContentHolder<Texture2D> mine, WdiVisualProfile profile, string facing)
+        // The green rim: the alpha of the shirt the blue takes its width from (MaxShirt: WDI's own for the three female Thin, Fat
+        // and Hulk bodies, Vanilla Apparel Expanded's blouse for the other adults), reduced to a 5 px outline at the body's 512 px
+        // scale, so the reference is the very shirt the max uses (Virginie 2026-10-30: the rim was still the old vanilla shirt).
+        // Children are left out: their shirt is another def.
+        private static void BuildShirtRim(ModContentHolder<Texture2D> mine, WdiVisualProfile profile, string facing, ModContentPack wdi)
         {
-            Texture2D shirt = ShirtTexture(profile, facing);
+            Texture2D shirt = MaxShirt(profile, facing, wdi);
             if (shirt == null) return;
             byte[] pixels = TrouserArt.Read(shirt, out int width, out int height);
             byte[] mask = new byte[pixels.Length];
@@ -456,6 +451,7 @@ namespace TailorMadeWaistlines
             int rowY = bottom(mid) - 20, left = 0, right = width - 1;
             while (left < width && !solid(left, rowY)) left++;
             while (right > 0 && !solid(right, rowY)) right--;
+            int cx = (left + right) / 2;   // the body's own middle at that row: 255 or 256 on a 512 px texture, 258 for the female back; width / 2 sat half a pixel to the right
             int half;
             switch (profile.TextureKey)
             {
@@ -467,15 +463,15 @@ namespace TailorMadeWaistlines
             int thick = bottom(mid + 32) - inner(mid + 32);   // the bottom outline's thickness, away from the crotch
             int apex = -1;
             if (facing == "north" && BackApexRise.TryGetValue(profile.TextureKey, out int rise))
-                apex = Math.Max(floor, inner(mid) - rise);
+                apex = Math.Max(floor, inner(cx) - rise);
             else if (male)
             {
                 int seedX = -1, seedY = -1;
                 for (int y = bottom(mid) - thick - 1; y > bottom(mid) - thick - 50 && seedX < 0; y--)
                     for (int d = 0; d <= 12 && seedX < 0; d++)
                     {
-                        if (dark(mid + d, y)) { seedX = mid + d; seedY = y; }
-                        else if (dark(mid - d, y)) { seedX = mid - d; seedY = y; }
+                        if (dark(cx + d, y)) { seedX = cx + d; seedY = y; }
+                        else if (dark(cx - d, y)) { seedX = cx - d; seedY = y; }
                     }
                 if (seedX >= 0)
                 {
@@ -487,19 +483,19 @@ namespace TailorMadeWaistlines
                     {
                         int[] p = stack.Pop();
                         int x = p[0], y = p[1];
-                        if (x < mid - 40 || x > mid + 40 || y < floor || y >= bottom(x) - thick || !dark(x, y) || !seen.Add(y * width + x)) continue;
+                        if (x < cx - 40 || x > cx + 40 || y < floor || y >= bottom(x) - thick || !dark(x, y) || !seen.Add(y * width + x)) continue;
                         top = Math.Min(top, y);
                         for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) if (dx != 0 || dy != 0) stack.Push(new[] { x + dx, y + dy });
                     }
                     if (top != int.MaxValue) apex = top;
                 }
             }
-            else if (bottom(mid) - inner(mid) > thick + 4) apex = inner(mid);
+            else if (bottom(mid) - inner(cx) > thick + 4) apex = inner(cx);
             if (apex < 0) return;
 
-            int xl = mid - half, xr = mid + half;
-            MarkLine(outline, body, width, height, mid, apex, xl, inner(xl));
-            MarkLine(outline, body, width, height, mid, apex, xr, inner(xr));
+            int xl = cx - half, xr = cx + half;
+            MarkLine(outline, body, width, height, cx, apex, xl, inner(xl));
+            MarkLine(outline, body, width, height, cx, apex, xr, inner(xr));
             // The rounded base: a parabola through the bottom outline 8 columns outside each corner and a point a little below the
             // higher of the two (the body's notch is not followed).
             int xa = xl - 8, xb = xr + 8, ya = bottom(xa), yb = bottom(xb);
