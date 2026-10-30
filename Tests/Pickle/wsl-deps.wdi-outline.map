@@ -6,6 +6,9 @@
 tiagocc0.FemaleBodyVariants    3798082132
 tiagocc0.FemaleApparelVariants 3799726535
 Malistaticy.UnderWhere          1870010563
+# Vanilla Apparel Expanded (2026-10-30, Virginie): its blouse is the shirt the blue trousers outline takes its width from, for the adults WDI ships no shirt for.
+OskarPotocki.VanillaFactionsExpanded.Core 2023507013
+VanillaExpanded.VAPPE           1814987817
 wdi.realistic.bodies           3527486510
 LoneKin.ChildrenWearAnything   3688530033
 nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod

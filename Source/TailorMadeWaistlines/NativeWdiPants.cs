@@ -170,14 +170,27 @@ namespace TailorMadeWaistlines
         // The trousers' silhouette is the larger of the body cut on the trouser line and the basic shirt below that line
         // (Virginie, 2026-10-29: "le max entre le vert et la ligne bleue pour le pantalon, pas pour le haut"; the shirt sticks out
         // at the collar, so only the rows under the belt count).  The trouser line itself does not move.  Children keep the cut.
-        // Only the basic shirt WDI itself ships (Thin_Female, Fat_Female, Hulk_Female, 256 px): its silhouette is closed, with a
-        // flat rounded hem.  The vanilla one has a notch at the crotch that made the blue ragged (captures of 060f, Virginie
-        // 2026-10-30: the shirt was asked for "pour ne pas avoir la partie cassée en bas").  A body WDI ships no shirt for keeps
-        // its own cut.
+        // The shirt is never the vanilla basic one: its hem has a notch at the crotch that made the blue ragged (captures of 060f,
+        // Virginie 2026-10-30: the shirt was asked for "pour ne pas avoir la partie cassée en bas").  The three female Thin, Fat
+        // and Hulk bodies take the basic shirt WDI itself ships (256 px, closed flat hem); the other adults take Vanilla Apparel
+        // Expanded's blouse (Virginie: its Thin, Fat and Hulk are the names of the male versions).  A child, or a body whose
+        // shirt is not installed, keeps its own cut.
+        private const string VaePackageId = "VanillaExpanded.VAPPE";
+        private const string BlousePath = "Things/Apparel/Blouse/Blouse_";
+
+        private static Texture2D MaxShirt(WdiVisualProfile profile, string facing, ModContentPack wdi)
+        {
+            if (profile.TextureKey == "Child") return null;
+            Texture2D shirt = wdi.GetContentHolder<Texture2D>().Get(ShirtTexturePath + profile.TextureKey + "_" + facing);
+            if (shirt != null || profile.TextureKey.EndsWith("_Female", StringComparison.Ordinal)) return shirt;
+            ModContentPack vae = LoadedModManager.RunningMods.FirstOrDefault(mod =>
+                string.Equals(mod.PackageIdPlayerFacing, VaePackageId, StringComparison.OrdinalIgnoreCase));
+            return vae?.GetContentHolder<Texture2D>().Get(BlousePath + profile.BodyTypeName + "_" + facing);
+        }
+
         private static byte[] WithShirtBelowBelt(byte[] cut, WdiVisualProfile profile, string facing, int width, int height, ModContentPack wdi)
         {
-            if (profile.TextureKey == "Child") return cut;
-            Texture2D shirt = wdi.GetContentHolder<Texture2D>().Get(ShirtTexturePath + profile.TextureKey + "_" + facing);
+            Texture2D shirt = MaxShirt(profile, facing, wdi);
             if (shirt == null) return cut;
             byte[] shirtPixels = TrouserArt.Read(shirt, out int sw, out int sh);
             int[] belt = Enumerable.Repeat(-1, width).ToArray();
