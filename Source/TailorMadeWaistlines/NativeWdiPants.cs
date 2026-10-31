@@ -473,6 +473,16 @@ namespace TailorMadeWaistlines
             { "Thin", 25 }, { "Hulk", 9 }, { "Thin_Female", 37 }, { "Fat_Female", 16 },
             { "Child", -5 }   // her dot is the centre of the black star, 5 rows below the top of the dark stem the old rule took
         };
+        // Seen from the front the apex is the crotch, where the thigh gap we removed would start (Virginie, 2026-10-31, red rings on
+        // the Naked_<body>_south textures, ten rows read off them, about 1 row of error).  Rows ABOVE the body's lowest solid pixel
+        // on the middle column (width / 2), the notch between the buttocks.  The old rules (top of the dark stem, top of the genital
+        // cluster) put the apex too high.
+        private static readonly Dictionary<string, int> FrontApexRise = new Dictionary<string, int>
+        {
+            { "Male", 31 }, { "Thin", 34 }, { "Fat", 40 }, { "Hulk", 52 },
+            { "Female", 31 }, { "Thin_Female", 44 }, { "Fat_Female", 42 }, { "Hulk_Female", 54 },
+            { "Child", 36 }
+        };
         private static void DrawOpenTriangle(byte[] outline, byte[] body, WdiVisualProfile profile, int width, int height, string facing)
         {
             int mid = width / 2, floor = height * 3 / 5;
@@ -513,6 +523,8 @@ namespace TailorMadeWaistlines
             int apex = -1;
             if (facing == "north" && BackApexRise.TryGetValue(profile.TextureKey, out int rise))
                 apex = Math.Max(floor, inner(cx) - rise);
+            else if (facing == "south" && FrontApexRise.TryGetValue(profile.TextureKey, out int up))
+                apex = Math.Max(floor, bottom(mid) - up);
             else if (male)
             {
                 int seedX = -1, seedY = -1;
