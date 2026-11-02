@@ -459,6 +459,12 @@ namespace TailorMadeWaistlines
             { "Female", 31 }, { "Thin_Female", 44 }, { "Fat_Female", 42 }, { "Hulk_Female", 54 },
             { "Child", 36 }
         };
+        // Half width of the open triangle's base at the bottom edge of the men from the front, from her blue drawing of 2026-11-02 on
+        // the Naked_<body>_south zooms (about 2 screen px per texture px in those zooms).
+        private static readonly Dictionary<string, int> FrontBaseHalf = new Dictionary<string, int>
+        {
+            { "Male", 10 }, { "Thin", 22 }, { "Fat", 29 }, { "Hulk", 16 }
+        };
         private static void DrawOpenTriangle(byte[] outline, byte[] body, WdiVisualProfile profile, int width, int height, string facing)
         {
             int mid = width / 2, floor = height * 3 / 5;
@@ -531,9 +537,12 @@ namespace TailorMadeWaistlines
             if (apex < 0) return;
 
             int xl = cx - half, xr = cx + half;
-            // The men from the front (Virginie, 2026-11-02: the triangle "fait bien plus que suivre le noir"): the sides are the
-            // outer edges of the black the body draws there, row by row, instead of two lines of a fixed width.
-            if (male && facing == "south" && TraceBlack(dark, bottom, cx, apex, floor, thick, width, out int[] lineL, out int[] lineR, out int yTop, out int yEnd))
+            // The men from the front (Virginie, 2026-11-02, her blue drawing on the four nude zooms: the triangle "fait bien plus que
+            // suivre le noir"): from the apex a thin stem along the black the body draws there, then it opens in a triangle whose
+            // sides run to the bottom outline and whose base follows the bottom edge of the body, notch included.  The half width
+            // of the base is read off her drawing (512 px textures, about 3 px of error).
+            if (male && facing == "south" && FrontBaseHalf.TryGetValue(profile.TextureKey, out int baseHalf)
+                && TraceBlack(dark, bottom, cx, apex, floor, thick, width, out int[] lineL, out int[] lineR, out int yTop, out int yEnd))
             {
                 MarkLine(outline, body, width, height, cx, apex, lineL[yTop], yTop);
                 MarkLine(outline, body, width, height, cx, apex, lineR[yTop], yTop);
@@ -542,16 +551,20 @@ namespace TailorMadeWaistlines
                     MarkLine(outline, body, width, height, lineL[y], y, lineL[y + 1], y + 1);
                     MarkLine(outline, body, width, height, lineR[y], y, lineR[y + 1], y + 1);
                 }
-                xl = lineL[yEnd];
-                xr = lineR[yEnd];
-                MarkLine(outline, body, width, height, xl, yEnd, xl, inner(xl));
-                MarkLine(outline, body, width, height, xr, yEnd, xr, inner(xr));
+                int cl = cx - baseHalf, cr = cx + baseHalf, yl = bottom(cl) - 2, yr = bottom(cr) - 2;
+                if (yl < 0 || yr < 0) return;
+                MarkLine(outline, body, width, height, lineL[yEnd], yEnd, cl, yl);
+                MarkLine(outline, body, width, height, lineR[yEnd], yEnd, cr, yr);
+                for (int x = cl; x <= cr; x++)
+                {
+                    int yb = bottom(x) - 2;
+                    Mark(outline, width, height, x, yb, body);
+                    Mark(outline, width, height, x, yb + 1, body);
+                }
+                return;
             }
-            else
-            {
-                MarkLine(outline, body, width, height, cx, apex, xl, inner(xl));
-                MarkLine(outline, body, width, height, cx, apex, xr, inner(xr));
-            }
+            MarkLine(outline, body, width, height, cx, apex, xl, inner(xl));
+            MarkLine(outline, body, width, height, cx, apex, xr, inner(xr));
             // The rounded base: a parabola through the bottom outline 8 columns outside each corner and a point a little below the
             // higher of the two (the body's notch is not followed).
             int xa = xl - 8, xb = xr + 8, ya = bottom(xa), yb = bottom(xb);
