@@ -76,6 +76,6 @@ Tight outline (the body's own outline, thickness from the nearest measured body)
 
 - Landmarks: nipples, navel and crotch apex from the body pixels; hips estimated (0.55 of the half width at half way navel to apex) until the owner confirms them.
 - Breast edge: best path under each nipple maximising the white-to-darker step going down (1 px per column, nipple + 12 to + 110 rows).
-- Collar ring: the largest ink piece inside the collar box of the reference shirt, thinned to a skeleton, 16 points by angle; ink = dark pixels (mean RGB under 60) for black rings, more than 40 levels darker than the 15 px local mean for grey lines.
+- Collar ring: the largest ink piece inside the collar box of the reference shirt, thinned to a skeleton, 16 points by angle, taken on the SKELETON at the ring's true extent (never on an ink bounding box: on the Thin shirt the ring top is 17 px above the box of its thicker lower part, and a box-derived point splits the ring); ink = dark pixels (mean RGB under 60) for black rings, more than 40 levels darker than the 15 px local mean for grey lines.
 - Outline offset: per-contour offset of the reference shirt silhouette from the body silhouette, sampled at 16 angles (not only top, left, right, bottom), signed.
 - Stroke width: median of 2 x Euclidean distance - 1 on the skeleton of the reference's interior ink.
