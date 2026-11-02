@@ -537,6 +537,15 @@ namespace TailorMadeWaistlines
                 yF = y;
             }
             if (edgeL.Count == 0) { edgeL.Add(new double[] { cx, apex }); edgeR.Add(new double[] { cx, apex }); }
+            // The top tapers to a point at the apex (her yellow on the child: a drop, not a flat-topped stem).
+            for (int i = 0; i < Math.Min(12, edgeL.Count); i++)
+            {
+                double k = (i + 1) / 13.0;
+                edgeL[i][0] = cx + (edgeL[i][0] - cx) * k;
+                edgeR[i][0] = cx + (edgeR[i][0] - cx) * k;
+            }
+            edgeL.Insert(0, new double[] { cx, apex });
+            edgeR.Insert(0, new double[] { cx, apex });
             if (men && facing == "south")
             {
                 // A narrow V between the arms of the fork, to the top of the flare.
