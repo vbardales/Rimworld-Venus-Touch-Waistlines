@@ -1,0 +1,29 @@
+# The vanilla body textures written as PNG (Virginie, 2026-11-02): to stretch the vanilla body onto the WDI body and find where a garment drawn for vanilla must be modified.
+# Pass: wsl-deps.vanilla-bodies.map. The files land in the report's screenshots folder as pickletools-texture-save--<name>.png.
+@vanilla-bodies @timeout:300
+Feature: the vanilla body textures saved as PNG
+
+  Background:
+    Given the save "Nelims-tribe" is loaded
+    And game speed is paused
+
+  @requires:nelim.pickletools.textureowner
+  Scenario: the six vanilla bodies, three facings
+    When Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Male_south" is saved as "vanilla-male-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Male_north" is saved as "vanilla-male-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Male_east" is saved as "vanilla-male-east"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Female_south" is saved as "vanilla-female-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Female_north" is saved as "vanilla-female-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Female_east" is saved as "vanilla-female-east"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Thin_south" is saved as "vanilla-thin-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Thin_north" is saved as "vanilla-thin-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Thin_east" is saved as "vanilla-thin-east"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Fat_south" is saved as "vanilla-fat-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Fat_north" is saved as "vanilla-fat-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Fat_east" is saved as "vanilla-fat-east"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Hulk_south" is saved as "vanilla-hulk-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Hulk_north" is saved as "vanilla-hulk-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Hulk_east" is saved as "vanilla-hulk-east"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Child_south" is saved as "vanilla-child-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Child_north" is saved as "vanilla-child-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Child_east" is saved as "vanilla-child-east"

@@ -1,0 +1,5 @@
+# Vanilla body textures dump (Virginie, 2026-11-02): the vanilla bodies are not loose files, only the running game can write them as PNG.
+# No body retexture mod: the path is answered by the game itself. Needs the TextureOwner step (the texture ... is saved as ...).
+#   Run-PickleWsl.ps1 -Mod VenusTouchWaistlines -DepMap wsl-deps.vanilla-bodies.map -Filter '27-vanilla-bodies'
+nelim.pickletools.textureowner      path:PickleTools/TextureOwner/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod
