@@ -79,3 +79,10 @@ Tight outline (the body's own outline, thickness from the nearest measured body)
 - Collar ring: the largest ink piece inside the collar box of the reference shirt, thinned to a skeleton, 16 points by angle, taken on the SKELETON at the ring's true extent (never on an ink bounding box: on the Thin shirt the ring top is 17 px above the box of its thicker lower part, and a box-derived point splits the ring); ink = dark pixels (mean RGB under 60) for black rings, more than 40 levels darker than the 15 px local mean for grey lines.
 - Outline offset: per-contour offset of the reference shirt silhouette from the body silhouette, sampled at 16 angles (not only top, left, right, bottom), signed.
 - Stroke width: median of 2 x Euclidean distance - 1 on the skeleton of the reference's interior ink.
+
+## Pipeline constants validated by the identity test (step 1, accepted by Audit 2026-11-02)
+
+- Stroke redraw radius bias: proportional to the stroke width, radius x (1 + 0.4 / 3.5) (the same +0.4 px at 7 px). A fixed +0.4 px over-thickened the Hulk's 3.5 px grey line by 34 %.
+- Fill low-pass: box blur 6 px, three passes, garment pixels only, strokes redrawn after it.
+- Step 1 results (WDI shirt onto its own body): Thin skeleton 0.2 / 0.5 px, width 7.2 / 7.0, 1 component 1 loop; Fat 0.2 / 0.2, 7.2 / 7.0, 3 and 1; Hulk 0.2 / 0.2, 3.5 / 3.5, 1 loop, 5 components against 6 (one small piece merged: documented deviation, accepted, not a failure).
+- Bodies with no WDI shirt, so no identity test and fallback only: Female, and all four men (WDI ships Naked_Male/Thin/Fat/Hulk bodies but no ShirtBasic for them). Step 1b (men) is therefore not an identity test; the men can only be judged on the relation criterion C1-C6 against a vanilla garment.
