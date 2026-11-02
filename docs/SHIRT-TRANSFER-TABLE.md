@@ -30,6 +30,23 @@ Interface between the runtime transfer (A, in the DLL) and the offline measureme
 
 All coordinates are in the 512 px body texture; WDI's shirt textures are 256 px and are scaled by 2 before any measure.
 
+## What is anchored by landmarks, what by relation (for bodies with no drawn breasts or belly)
+
+A vanilla body (and most third-party bodies) has no nipple, no breast edge and no navel stroke. Only the silhouette and the crotch can be read from it. So the map between two bodies rests on two kinds of anchors:
+
+| Anchor | Exists on vanilla | Exists on WDI | Used for |
+|---|---|---|---|
+| Neck junctions (left, right), top of the torso | yes (silhouette) | yes | collar placement, upper layer |
+| Shoulder tips, armpits | yes (silhouette) | yes | sleeves, upper layer sides |
+| Waist narrowest points (left, right) | yes (silhouette) | yes | the line between layers when no breast edge exists |
+| Hip widest points, crotch apex, bottom of the torso | yes (silhouette) | yes | lower layer, hem |
+| Nipples, breast lower edge | no | yes | breast layer: WDI-side only |
+| Navel | no | yes (stroke) | lower layer centre: WDI-side only |
+
+Rule: a landmark absent on the source body is not matched; the corresponding WDI feature is placed by RELATION (its position as a share of the torso height and chest width, read from the WDI table), and the source garment carries nothing there. The breast layer on a vanilla-to-WDI transfer is therefore an invention on the WDI side: the garment's fill is stretched into it, its strokes are not. This is the case most likely to look wrong; it is tested first, on a loose-PNG apparel mod drawn for the vanilla body (front view), with the vanilla bodies dumped by ticket f38f.
+
+Hip landmarks are read from the silhouette (widest points), no longer estimated at 0.55 of the half width.
+
 ## Fallback (body with no `Reference`)
 
 Tight outline (the body's own outline, thickness from the nearest measured body), collar ring from the Thin ring scaled by the chest width ratio, stroke width and grey of the Thin shirt. Every fallback use is logged once per body and flagged in the picture caption for the owner.
