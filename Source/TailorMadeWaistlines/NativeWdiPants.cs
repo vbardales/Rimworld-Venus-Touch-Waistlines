@@ -23,7 +23,7 @@ namespace TailorMadeWaistlines
         private static readonly Dictionary<string, Texture2D> PantsTextures = new Dictionary<string, Texture2D>();
         private static readonly Dictionary<string, Texture2D> TopTextures = new Dictionary<string, Texture2D>();
         private static readonly Dictionary<string, Graphic> Graphics = new Dictionary<string, Graphic>();
-        // The outline top is baked yellow and ignores the apparel's dye (Virginie, 2026-10-23).
+        // The outline top is baked red and ignores the apparel's dye (Virginie, 2026-10-23).
         private const string OutlineTopDef = "Venus_TestOutlineTop";
         private static readonly Dictionary<string, Texture2D> OutlineTextures = new Dictionary<string, Texture2D>();
         private const string ShirtTexturePath = "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_";
@@ -120,7 +120,7 @@ namespace TailorMadeWaistlines
                     if (mask != null)
                     {
                         for (int i = 0; i < mask.Length; i += TrouserDetail.Channels)
-                            if (mask[i + 3] != 0) { mask[i] = 255; mask[i + 1] = 215; mask[i + 2] = 0; }
+                            if (mask[i + 3] != 0) { mask[i] = 255; mask[i + 1] = mask[i + 2] = 0; }
                         Texture2D texture = TrouserArt.Build(mask, width, height, "Venus_OutlineTop_" + profile.TextureKey + "_" + facing);
                         mine.contentList[TopPath + "_" + profile.TextureKey + "_" + facing] = texture;
                         OutlineTextures[profile.TextureKey + "_" + facing] = texture;
@@ -409,7 +409,7 @@ namespace TailorMadeWaistlines
             if (facing != "east" && !DrawBlackTriangle(outline, body, profile, width, height, facing))
                 DrawOpenTriangle(outline, body, profile, width, height, facing);
             for (int i = 0; i < outline.Length; i += TrouserDetail.Channels)
-                if (outline[i + 3] != 0) { outline[i] = 255; outline[i + 1] = 105; outline[i + 2] = 180; outline[i + 3] = 255; }
+                if (outline[i + 3] != 0) { outline[i] = outline[i + 1] = 0; outline[i + 2] = 255; outline[i + 3] = 255; }
             return outline;
         }
 
