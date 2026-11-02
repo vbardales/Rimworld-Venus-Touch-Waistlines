@@ -1,14 +1,14 @@
-# The vanilla body textures written as PNG (Virginie, 2026-11-02): to stretch the vanilla body onto the WDI body and find where a garment drawn for vanilla must be modified.
+# The vanilla body and Core shirt textures written as PNG (Virginie, 2026-11-02): to stretch the vanilla body onto the WDI body and find where a garment drawn for vanilla must be modified.
 # Pass: wsl-deps.vanilla-bodies.map. The files land in the report's screenshots folder as pickletools-texture-save--<name>.png.
 @vanilla-bodies @timeout:300
-Feature: the vanilla body textures saved as PNG
+Feature: the vanilla body and shirt textures saved as PNG
 
   Background:
     Given the save "test-colony" is loaded
     And game speed is paused
 
   @requires:nelim.pickletools.textureowner
-  Scenario: the six vanilla bodies, three facings
+  Scenario: the six vanilla bodies, three facings, and the Core shirt, front
     When Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Male_south" is saved as "vanilla-male-south"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Male_north" is saved as "vanilla-male-north"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Male_east" is saved as "vanilla-male-east"
@@ -27,3 +27,8 @@ Feature: the vanilla body textures saved as PNG
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Child_south" is saved as "vanilla-child-south"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Child_north" is saved as "vanilla-child-north"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Bodies/Naked_Child_east" is saved as "vanilla-child-east"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Male_south" is saved as "vanilla-shirt-male-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Female_south" is saved as "vanilla-shirt-female-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Thin_south" is saved as "vanilla-shirt-thin-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Fat_south" is saved as "vanilla-shirt-fat-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Hulk_south" is saved as "vanilla-shirt-hulk-south"
