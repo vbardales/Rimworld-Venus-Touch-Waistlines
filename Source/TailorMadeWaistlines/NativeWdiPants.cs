@@ -531,8 +531,27 @@ namespace TailorMadeWaistlines
             if (apex < 0) return;
 
             int xl = cx - half, xr = cx + half;
-            MarkLine(outline, body, width, height, cx, apex, xl, inner(xl));
-            MarkLine(outline, body, width, height, cx, apex, xr, inner(xr));
+            // The men from the front (Virginie, 2026-11-02: the triangle "fait bien plus que suivre le noir"): the sides are the
+            // outer edges of the black the body draws there, row by row, instead of two lines of a fixed width.
+            if (male && facing == "south" && TraceBlack(dark, bottom, cx, apex, floor, thick, width, out int[] lineL, out int[] lineR, out int yTop, out int yEnd))
+            {
+                MarkLine(outline, body, width, height, cx, apex, lineL[yTop], yTop);
+                MarkLine(outline, body, width, height, cx, apex, lineR[yTop], yTop);
+                for (int y = yTop; y < yEnd; y++)
+                {
+                    MarkLine(outline, body, width, height, lineL[y], y, lineL[y + 1], y + 1);
+                    MarkLine(outline, body, width, height, lineR[y], y, lineR[y + 1], y + 1);
+                }
+                xl = lineL[yEnd];
+                xr = lineR[yEnd];
+                MarkLine(outline, body, width, height, xl, yEnd, xl, inner(xl));
+                MarkLine(outline, body, width, height, xr, yEnd, xr, inner(xr));
+            }
+            else
+            {
+                MarkLine(outline, body, width, height, cx, apex, xl, inner(xl));
+                MarkLine(outline, body, width, height, cx, apex, xr, inner(xr));
+            }
             // The rounded base: a parabola through the bottom outline 8 columns outside each corner and a point a little below the
             // higher of the two (the body's notch is not followed).
             int xa = xl - 8, xb = xr + 8, ya = bottom(xa), yb = bottom(xb);
@@ -546,6 +565,52 @@ namespace TailorMadeWaistlines
                 Mark(outline, width, height, x, (int)Math.Round(y - lift), body);
                 Mark(outline, width, height, x, (int)Math.Round(y - lift) + 1, body);
             }
+        }
+
+        // The black connected to the first dark pixel found within 14 columns of the middle in the 60 rows under the apex, kept
+        // between 4 rows above the apex and the bottom outline (its thickness excluded) and 40 columns of the middle.  Returns, for
+        // each of its rows from yTop to yEnd, its first and last column; false when there is no such black.
+        private static bool TraceBlack(Func<int, int, bool> dark, Func<int, int> bottom, int cx, int apex, int floor, int thick, int width,
+            out int[] lineL, out int[] lineR, out int yTop, out int yEnd)
+        {
+            lineL = lineR = null;
+            yTop = yEnd = -1;
+            int seedX = -1, seedY = -1;
+            for (int y = apex - 4; y < apex + 60 && seedX < 0; y++)
+                for (int d = 0; d <= 14 && seedX < 0; d++)
+                {
+                    if (y < floor || y >= bottom(cx) - thick) continue;
+                    if (dark(cx + d, y)) { seedX = cx + d; seedY = y; }
+                    else if (dark(cx - d, y)) { seedX = cx - d; seedY = y; }
+                }
+            if (seedX < 0) return false;
+            var minX = new Dictionary<int, int>();
+            var maxX = new Dictionary<int, int>();
+            var seen = new HashSet<int>();
+            var stack = new Stack<int[]>();
+            stack.Push(new[] { seedX, seedY });
+            while (stack.Count > 0)
+            {
+                int[] p = stack.Pop();
+                int x = p[0], y = p[1];
+                if (x < cx - 40 || x > cx + 40 || y < apex - 4 || y < floor || y >= bottom(x) - thick || !dark(x, y) || !seen.Add(y * width + x)) continue;
+                minX[y] = minX.TryGetValue(y, out int lo) ? Math.Min(lo, x) : x;
+                maxX[y] = maxX.TryGetValue(y, out int hi) ? Math.Max(hi, x) : x;
+                for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) if (dx != 0 || dy != 0) stack.Push(new[] { x + dx, y + dy });
+            }
+            if (minX.Count == 0) return false;
+            yTop = minX.Keys.Min();
+            yEnd = minX.Keys.Max();
+            int size = yEnd + 2;
+            lineL = new int[size];
+            lineR = new int[size];
+            for (int y = yTop; y <= yEnd; y++)
+            {
+                if (!minX.ContainsKey(y)) { lineL[y] = lineL[y - 1]; lineR[y] = lineR[y - 1]; continue; }
+                lineL[y] = minX[y];
+                lineR[y] = maxX[y];
+            }
+            return true;
         }
 
         // The shirt ends two pixels below the underwear's upper edge.  That is
