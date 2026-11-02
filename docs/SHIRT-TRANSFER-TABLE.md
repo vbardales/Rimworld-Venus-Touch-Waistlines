@@ -47,6 +47,19 @@ Rule: a landmark absent on the source body is not matched; the corresponding WDI
 
 Hip landmarks are read from the silhouette (widest points), no longer estimated at 0.55 of the half width.
 
+## Acceptance of a transfer (Audit, 2026-11-02, fixed before any run; relational, no pixel IoU)
+
+Input: a real Core shirt (front) on its vanilla body (both from the f38f dump). Measured on the source (garment over its own body), required on the result (WDI body):
+
+- C1 outline: along the contour (16+ samples), garment offset to the body silhouette on the result = source offset scaled by the local body scale, +-2 px at 512.
+- C2 neckline: width over shoulder width and depth over torso length kept within +-5 %.
+- C3 hem at the same fraction of torso length (+-3 %); sleeve ends at the same fraction of arm length.
+- C4 strokes: same components and loops as the source (no new strokes); width median within +-10 % of the source, IQR no wider; no stroke leaving the silhouette.
+- C5 garment area over body area = source ratio +-5 %.
+- C6 landmark residuals (shoulders, neck, waist, hip, crotch) <= 2 px.
+
+Controls first: vanilla garment on its own vanilla body = identity (skeleton <= 0.5 px, width median within 5 %); the WDI identity on every body with a WDI shirt (Thin, Fat, Hulk, then the men). The breast layer is run as its own step: baseline without it, then with it, and the difference reported. The owner then looks at side-by-side pictures, the only subjective step. If the criterion fails, the method changes, not the criterion. Order of the study: (1) WDI identities, (2) vanilla to WDI, (3) Beautiful Bodies (texture folder listed first).
+
 ## Fallback (body with no `Reference`)
 
 Tight outline (the body's own outline, thickness from the nearest measured body), collar ring from the Thin ring scaled by the chest width ratio, stroke width and grey of the Thin shirt. Every fallback use is logged once per body and flagged in the picture caption for the owner.
