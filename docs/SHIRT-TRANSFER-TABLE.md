@@ -56,7 +56,9 @@ Input: a real Core shirt (front) on its vanilla body (both from the f38f dump). 
 - C3 hem at the same fraction of torso length (+-3 %); sleeve ends at the same fraction of arm length.
 - C4 strokes: same components and loops as the source (no new strokes); width median within +-10 % of the source, IQR no wider; no stroke leaving the silhouette.
 - C5 garment area over body area = source ratio +-5 %.
-- C6 landmark residuals (shoulders, neck, waist, hip, crotch) <= 2 px.
+- C6 landmark residuals (shoulders, neck, waist, hip, crotch) <= 2 px; <= 4 px when the landmark is measured on a vanilla body (Core art is 128 px native, one native pixel = 4 px at 512; Audit 2026-11-02).
+
+Inputs of step 2 (Audit 2026-11-02): the vanilla body comes from the Pickle dump (ticket fc57, 128 px) upscaled x4 by nearest neighbour on its alpha (no smooth resample, so the silhouette gets no invented soft edge); the vanilla garment is the IMO retexture (Workshop 2660249018, 512 px, drawn per vanilla body; it stands in for Core art, which is 128 px); the Core shirt dump serves only the vanilla identity control at 128 px.
 
 Controls first: vanilla garment on its own vanilla body = identity (skeleton <= 0.5 px, width median within 5 %); the WDI identity on every body with a WDI shirt (Thin, Fat, Hulk, then the men). The breast layer is run as its own step: baseline without it, then with it, and the difference reported. The owner then looks at side-by-side pictures, the only subjective step. If the criterion fails, the method changes, not the criterion. Order of the study: (1) WDI identities, (2) vanilla to WDI, (3) Beautiful Bodies (texture folder listed first).
 
