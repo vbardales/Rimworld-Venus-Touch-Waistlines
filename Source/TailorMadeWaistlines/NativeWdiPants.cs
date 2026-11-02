@@ -136,7 +136,9 @@ namespace TailorMadeWaistlines
                     if (underwear == null) continue;
                     byte[] cut = WdiAppPatterns.CutMask(profile, WdiApparelCategory.Pants, facing, pixels, width, height, wdi);
                     if (cut == null) continue;
-                    byte[] rgba = BuildPantsOutline(profile, facing, WithShirtBelowBelt(cut, profile, facing, width, height, wdi), pixels, width, height);
+                    byte[] rgba = BuildPantsOutline(profile, facing,
+                        WdiAppPatterns.IsFrontWoman(profile, facing) ? cut : WithShirtBelowBelt(cut, profile, facing, width, height, wdi),
+                        pixels, width, height);
                     Texture2D pantsTexture = TrouserArt.Build(rgba, width, height, "Venus_OutlinePants_" + profile.TextureKey + "_" + facing);
                     mine.contentList[Path + "_" + profile.TextureKey + "_" + facing] = pantsTexture;
                     PantsTextures[profile.TextureKey + "_" + facing] = pantsTexture;
@@ -169,7 +171,7 @@ namespace TailorMadeWaistlines
         private const string VaePackageId = "VanillaExpanded.VAPPE";
         private const string BlousePath = "Things/Apparel/Blouse/Blouse_";
 
-        private static Texture2D MaxShirt(WdiVisualProfile profile, string facing, ModContentPack wdi)
+        internal static Texture2D MaxShirt(WdiVisualProfile profile, string facing, ModContentPack wdi)
         {
             if (profile.TextureKey == "Child") return null;
             Texture2D shirt = wdi.GetContentHolder<Texture2D>().Get(ShirtTexturePath + profile.TextureKey + "_" + facing);

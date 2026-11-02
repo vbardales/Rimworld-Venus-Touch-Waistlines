@@ -133,9 +133,107 @@ namespace TailorMadeWaistlines
         {
             BodyColumns(pixels, width, height, out int bodyMin, out int bodyMax);
             if (!WaistLines(profile, facing, width, height, wdi, bodyMin, bodyMax, out int[] trouserTop, out int[] shirtHem)) return null;
+            if (IsFrontWoman(profile, facing))
+                return FrontWomanMask(category, profile, facing, pixels, width, height, wdi, trouserTop, shirtHem);
             return category == WdiApparelCategory.Pants
                 ? AlphaMask(pixels, width, height, trouserTop, true)
                 : AlphaMask(pixels, width, height, shirtHem, false);
+        }
+
+        // The four women, seen from the front (Virginie, 2026-11-02, her hand-drawn masks on the nude and boxer zooms): both masks
+        // follow the silhouette of the WDI body united with the shirt WDI draws for it (the collar's hole is filled by the body, so
+        // the collar is not followed).  The top (pink) stops on the LOWER of the red and blue lines, the trousers (yellow) start
+        // on the HIGHER one, in each column, so the two always overlap.  The trousers are closed under the crotch: the notch
+        // between the thighs is filled, the open triangle is what shows the legs apart.
+        internal static bool IsFrontWoman(WdiVisualProfile profile, string facing)
+        {
+            return facing == "south" && profile.TextureKey.EndsWith("Female", StringComparison.Ordinal);
+        }
+
+        private const int ThighGapClosePx = 16;
+
+        private static byte[] FrontWomanMask(WdiApparelCategory category, WdiVisualProfile profile, string facing,
+            byte[] pixels, int width, int height, ModContentPack wdi, int[] trouserTop, int[] shirtHem)
+        {
+            byte[] silhouette = (byte[])pixels.Clone();
+            Texture2D shirt = NativeWdiPants.MaxShirt(profile, facing, wdi);
+            if (shirt != null)
+            {
+                byte[] shirtPixels = TrouserArt.Read(shirt, out int sw, out int sh);
+                for (int y = 0; y < height; y++)
+                {
+                    int sy = Math.Min(sh - 1, (int)(y * (long)sh / height));
+                    for (int x = 0; x < width; x++)
+                    {
+                        int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
+                        int i = (y * width + x) * TrouserDetail.Channels;
+                        if (silhouette[i + 3] != 0 || shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] == 0) continue;
+                        silhouette[i] = silhouette[i + 1] = silhouette[i + 2] = silhouette[i + 3] = 255;
+                    }
+                }
+            }
+            int[] top = (int[])trouserTop.Clone(), hem = (int[])shirtHem.Clone();
+            for (int x = 0; x < width; x++)
+            {
+                if (top[x] < 0 || hem[x] < 0) continue;
+                int higher = Math.Min(top[x], hem[x]), lower = Math.Max(top[x], hem[x]);
+                top[x] = higher;
+                hem[x] = lower;
+            }
+            if (category == WdiApparelCategory.Top) return AlphaMask(silhouette, width, height, hem, false);
+            return CloseNotch(AlphaMask(silhouette, width, height, top, true), width, height, ThighGapClosePx);
+        }
+
+        // Morphological closing with a (2 radius + 1) square: fills every dent narrower than that, the thigh gap among them, and
+        // leaves a convex outline as it is.  Pixels outside the picture count as set when eroding, so the edge eats nothing.
+        private static byte[] CloseNotch(byte[] mask, int width, int height, int radius)
+        {
+            bool[] set = new bool[width * height];
+            for (int p = 0; p < set.Length; p++) set[p] = mask[p * TrouserDetail.Channels + 3] != 0;
+            bool[] closed = Erode(Dilate(set, width, height, radius), width, height, radius);
+            byte[] result = (byte[])mask.Clone();
+            for (int p = 0; p < closed.Length; p++)
+            {
+                if (!closed[p] || set[p]) continue;
+                int i = p * TrouserDetail.Channels;
+                result[i] = result[i + 1] = result[i + 2] = result[i + 3] = 255;
+            }
+            return result;
+        }
+
+        // Windowed count over a line (prefix sums), applied along x then along y: a separable square window.
+        private static bool[] Dilate(bool[] set, int width, int height, int radius)
+        {
+            return Window(set, width, height, radius, false);
+        }
+
+        private static bool[] Erode(bool[] set, int width, int height, int radius)
+        {
+            return Window(set, width, height, radius, true);
+        }
+
+        private static bool[] Window(bool[] set, int width, int height, int radius, bool all)
+        {
+            bool[] horizontal = new bool[set.Length];
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    horizontal[y * width + x] = WindowHolds(set, y * width, 1, width, x, radius, all);
+            bool[] result = new bool[set.Length];
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                    result[y * width + x] = WindowHolds(horizontal, x, width, height, y, radius, all);
+            return result;
+        }
+
+        private static bool WindowHolds(bool[] data, int start, int step, int length, int at, int radius, bool all)
+        {
+            for (int k = at - radius; k <= at + radius; k++)
+            {
+                bool value = k < 0 || k >= length ? all : data[start + k * step];
+                if (all && !value) return false;
+                if (!all && value) return true;
+            }
+            return all;
         }
 
         // The cut rule (Virginie, 2026-10-15): WDI draws two adult underwear
