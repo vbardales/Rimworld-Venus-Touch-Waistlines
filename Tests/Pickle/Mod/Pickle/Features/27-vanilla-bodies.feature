@@ -4,7 +4,7 @@
 Feature: the vanilla body textures saved as PNG
 
   Background:
-    Given the save "Nelims-tribe" is loaded
+    Given the save "test-colony" is loaded
     And game speed is paused
 
   @requires:nelim.pickletools.textureowner
