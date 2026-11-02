@@ -1,7 +1,10 @@
 <#
 .SYNOPSIS
-    Checks that every player-facing text of this mod resolves in English and French,
-    and that the hidden MainButtons shortcut is declared the way MOD_SETTINGS.md asks.
+    The parts of the localization check that no shared script does: the slider labels that
+    receive a value carry {0}, no hard-coded sentence is left in the settings code, and the hidden
+    MainButtons shortcut is declared the way MOD_SETTINGS.md asks.
+    Cut 2026-11-02 (LOCAL-SCRIPTS-CUT): key coverage, unused keys, duplicates, empty texts, placeholder parity and
+    identical French texts are scripts\Check-Translations.ps1 (run it with -RejectIdentical).
 
 .DESCRIPTION
     Nothing here starts RimWorld. The checks read the source and the shipped XML:
@@ -63,44 +66,9 @@ function Read-Keyed {
 $mod = Join-Path $Root 'Mod'
 $src = Join-Path $Root 'Source\TailorMadeWaistlines'
 
-# --- keys used by the source --------------------------------------------------
-Write-Host ""
-Write-Host "keys used by the source"
-$used = @{}
-foreach ($file in Get-ChildItem $src -Filter *.cs) {
-    $text = Get-Content -Raw -Encoding UTF8 $file.FullName
-    foreach ($m in [regex]::Matches($text, '"(TailorMadeWaistlines\.[A-Za-z0-9_.]+)"')) { $used[$m.Groups[1].Value] = $true }
-}
-Assert-That ("the source uses " + $used.Count + " keys") ($used.Count -gt 0)
-
 $en = Read-Keyed (Join-Path $mod 'Languages\English\Keyed\TailorMadeWaistlines.xml')
 $fr = Read-Keyed (Join-Path $mod 'Languages\French\Keyed\TailorMadeWaistlines.xml')
 
-Write-Host ""
-Write-Host "coverage"
-foreach ($lang in @(@('English', $en), @('French', $fr))) {
-    $name = $lang[0]; $data = $lang[1]
-    Assert-That ("$name has no duplicate key") ($data.Dupes.Count -eq 0) ($data.Dupes -join ', ')
-    $missing = @($used.Keys | Where-Object { -not $data.Keys.Contains($_) })
-    Assert-That ("$name defines every key the source uses") ($missing.Count -eq 0) ($missing -join ', ')
-    $empty = @($data.Keys.Keys | Where-Object { [string]::IsNullOrWhiteSpace($data.Keys[$_]) })
-    Assert-That ("$name has no empty text") ($empty.Count -eq 0) ($empty -join ', ')
-    $extra = @($data.Keys.Keys | Where-Object { -not $used.ContainsKey($_) })
-    Assert-That ("$name holds no key the source never uses") ($extra.Count -eq 0) ($extra -join ', ')
-}
-$same = @($en.Keys.Keys | Where-Object { $fr.Keys.Contains($_) -and $fr.Keys[$_] -ceq $en.Keys[$_] })
-Assert-That "no French text is left identical to its English source" ($same.Count -eq 0) ($same -join ', ')
-
-# --- placeholders -------------------------------------------------------------
-Write-Host ""
-Write-Host "placeholders"
-function Get-Placeholders([string]$s) { @([regex]::Matches($s, '\{[0-9A-Za-z_]+\}') | ForEach-Object { $_.Value } | Sort-Object -Unique) }
-foreach ($key in $en.Keys.Keys) {
-    if (-not $fr.Keys.Contains($key)) { continue }
-    $a = (Get-Placeholders $en.Keys[$key]) -join ','
-    $b = (Get-Placeholders $fr.Keys[$key]) -join ','
-    Assert-That ("$key has the same placeholders in both languages") ($a -eq $b) "en [$a] fr [$b]"
-}
 foreach ($key in @('PantsTop', 'BootsTop', 'ChestBottom')) {
     $full = "TailorMadeWaistlines.Settings.$key"
     Assert-That ("$full receives the slider value ({0})") ($en.Keys[$full] -match '\{0\}' -and $fr.Keys[$full] -match '\{0\}')
