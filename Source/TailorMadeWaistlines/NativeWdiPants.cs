@@ -199,7 +199,7 @@ namespace TailorMadeWaistlines
                 for (int x = 0; x < width; x++)
                 {
                     int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
-                    shirt1[y * width + x] = shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] != 0;
+                    shirt1[y * width + x] = shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] >= TopFit.MinAlpha;
                 }
             }
             int fit = TailorMadeWaistlinesMod.Settings?.outlineShirtFit ?? 0;
@@ -267,7 +267,7 @@ namespace TailorMadeWaistlines
             byte[] pixels = TrouserArt.Read(shirt, out int width, out int height);
             byte[] mask = new byte[pixels.Length];
             for (int i = 0; i < pixels.Length; i += TrouserDetail.Channels)
-                if (pixels[i + 3] != 0) { mask[i] = mask[i + 1] = mask[i + 2] = 255; mask[i + 3] = 255; }
+                if (pixels[i + 3] >= TopFit.MinAlpha) { mask[i] = mask[i + 1] = mask[i + 2] = 255; mask[i + 3] = 255; }
             byte[] ring = WdiAppPatterns.Ring(mask, width, height, Math.Max(1, (int)Math.Round(WdiAppPatterns.RingPx * width / 512.0)));
             for (int i = 0; i < ring.Length; i += TrouserDetail.Channels)
                 if (ring[i + 3] != 0) { ring[i] = 0; ring[i + 1] = 200; ring[i + 2] = 0; ring[i + 3] = 255; }

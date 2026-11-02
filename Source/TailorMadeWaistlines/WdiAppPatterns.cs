@@ -167,7 +167,7 @@ namespace TailorMadeWaistlines
                     {
                         int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
                         int i = (y * width + x) * TrouserDetail.Channels;
-                        if (silhouette[i + 3] != 0 || shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] == 0) continue;
+                        if (silhouette[i + 3] != 0 || shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] < TopFit.MinAlpha) continue;
                         silhouette[i] = silhouette[i + 1] = silhouette[i + 2] = silhouette[i + 3] = 255;
                     }
                 }
