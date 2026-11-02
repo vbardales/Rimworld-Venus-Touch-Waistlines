@@ -559,6 +559,9 @@ namespace TailorMadeWaistlines
 
             int half;
             if (men && facing == "south" && FrontBaseHalf.TryGetValue(profile.TextureKey, out int tabled)) half = tabled;
+            // Virginie, 2026-11-02: the Hulk woman is very like the average one, her yellow sides run on to corners about 34 px
+            // either side of the middle on both.
+            else if (facing == "south" && (profile.TextureKey == "Female" || profile.TextureKey == "Hulk_Female")) half = 34;
             else
             {
                 int bmax = 0;
