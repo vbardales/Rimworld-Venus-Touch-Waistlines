@@ -406,7 +406,8 @@ namespace TailorMadeWaistlines
         private static byte[] BuildPantsOutline(WdiVisualProfile profile, string facing, byte[] cut, byte[] body, int width, int height)
         {
             byte[] outline = WdiAppPatterns.Ring(cut, width, height, WdiAppPatterns.RingPx);
-            if (facing != "east") DrawOpenTriangle(outline, body, profile, width, height, facing);
+            if (facing != "east" && !DrawBlackTriangle(outline, body, profile, width, height, facing))
+                DrawOpenTriangle(outline, body, profile, width, height, facing);
             for (int i = 0; i < outline.Length; i += TrouserDetail.Channels)
                 if (outline[i + 3] != 0) { outline[i] = 255; outline[i + 1] = 105; outline[i + 2] = 180; outline[i + 3] = 255; }
             return outline;
@@ -459,6 +460,139 @@ namespace TailorMadeWaistlines
             { "Female", 31 }, { "Thin_Female", 44 }, { "Fat_Female", 42 }, { "Hulk_Female", 54 },
             { "Child", 36 }
         };
+        // The open triangle as Virginie redrew it, 2026-11-02 (her yellow lines on the nude zooms): it starts between the bulbs for
+        // the men and at the lowest point of the vulva for the women and the child (from the front, her tables from the back), the
+        // sides follow the black the body draws there (a narrow V between the arms for the men, the edges of the black stem for the
+        // others), then open in a rounded flare to the two corners on the bottom edge of the body, and the base follows that edge.
+        // False when the body shows no such crotch; the older triangle is then drawn.
+        private static bool DrawBlackTriangle(byte[] outline, byte[] body, WdiVisualProfile profile, int width, int height, string facing)
+        {
+            int mid = width / 2, floor = height * 3 / 5;
+            Func<int, int, bool> solid = (x, y) => x >= 0 && x < width && y >= 0 && y < height && body[(y * width + x) * TrouserDetail.Channels + 3] >= MinAlpha;
+            Func<int, int, bool> dark = (x, y) =>
+            {
+                if (!solid(x, y)) return false;
+                int i = (y * width + x) * TrouserDetail.Channels;
+                return (body[i] + body[i + 1] + body[i + 2]) / 3 < DarkLuma;
+            };
+            Func<int, int> bottom = x =>
+            {
+                for (int y = height - 1; y >= 0; y--) if (solid(x, y)) return y;
+                return -1;
+            };
+            Func<int, int, int[]> run = (x, y) =>
+            {
+                if (!dark(x, y)) return new[] { 0, 0 };
+                int l = x, r = x;
+                while (dark(l - 1, y) && x - l < 60) l--;
+                while (dark(r + 1, y) && r - x < 60) r++;
+                return new[] { l, r };
+            };
+            int bm = bottom(mid);
+            if (bm < 0) return false;
+            int rowY = bm - 20, left = 0, right = width - 1;
+            while (left < width && !solid(left, rowY)) left++;
+            while (right > 0 && !solid(right, rowY)) right--;
+            int cx = (left + right) / 2;
+            bool men = profile.TextureKey != "Child" && profile.Id.StartsWith("Male", StringComparison.Ordinal);
+
+            int topCol = bm - 30;
+            while (topCol > floor && dark(cx, topCol - 1)) topCol--;
+            int apex;
+            if (facing == "north")
+            {
+                if (!BackApexRise.TryGetValue(profile.TextureKey, out int rise)) return false;
+                apex = Math.Max(floor, bm - 30 - rise);
+            }
+            else if (men) apex = topCol;
+            else
+            {
+                int minWidth = int.MaxValue, wingRow = topCol, wingWidth = 0;
+                for (int y = topCol; y <= topCol + 40; y++)
+                {
+                    int[] rn = run(cx, y);
+                    if (rn[1] > 0) minWidth = Math.Min(minWidth, rn[1] - rn[0] + 1);
+                    if (y <= topCol + 25 && rn[1] > 0 && rn[1] - rn[0] + 1 > wingWidth) { wingWidth = rn[1] - rn[0] + 1; wingRow = y; }
+                }
+                apex = topCol;
+                for (int y = wingRow; y <= bm - 30; y++)
+                {
+                    int[] rn = run(cx, y);
+                    if (rn[1] - rn[0] + 1 <= Math.Max(minWidth + 2, (int)(wingWidth * 0.6))) { apex = y; break; }
+                }
+            }
+            if (apex < floor || apex >= bm - 6) return false;
+
+            // The black's own edges, row by row, until the dark run flares into the bottom outline.
+            var edgeL = new List<double[]>();
+            var edgeR = new List<double[]>();
+            int yF = apex;
+            for (int y = apex; y <= bm - 6; y++)
+            {
+                int[] rn = run(cx, y);
+                if (rn[1] == 0) rn = new[] { cx, cx };
+                if (rn[1] - rn[0] + 1 > 34) break;
+                edgeL.Add(new double[] { rn[0], y });
+                edgeR.Add(new double[] { rn[1], y });
+                yF = y;
+            }
+            if (edgeL.Count == 0) { edgeL.Add(new double[] { cx, apex }); edgeR.Add(new double[] { cx, apex }); }
+            if (men && facing == "south")
+            {
+                // A narrow V between the arms of the fork, to the top of the flare.
+                int eL = 12, eR = 12;
+                for (int d = 1; d <= 40; d++) if (dark(cx - d, yF - 3)) { eL = d; break; }
+                for (int d = 1; d <= 40; d++) if (dark(cx + d, yF - 3)) { eR = d; break; }
+                eL = Math.Max(eL, 8); eR = Math.Max(eR, 8);
+                edgeL = Curve(cx, apex, cx - 0.3 * eL, apex + 0.7 * (yF - apex), cx - eL, yF);
+                edgeR = Curve(cx, apex, cx + 0.3 * eR, apex + 0.7 * (yF - apex), cx + eR, yF);
+            }
+
+            int half;
+            if (men && facing == "south" && FrontBaseHalf.TryGetValue(profile.TextureKey, out int tabled)) half = tabled;
+            else
+            {
+                int bmax = 0;
+                for (int x = cx - 70; x <= cx + 70; x++) bmax = Math.Max(bmax, bottom(x));
+                half = 0;
+                for (int d = 6; d <= 45 && half == 0; d++)
+                    if (bottom(cx + d) >= bmax - 3 && bottom(cx - d) >= bmax - 3) half = d;
+                if (half == 0) half = (int)Math.Round((right - left) * 0.065) + 8;
+            }
+            int cl = cx - half, cr = cx + half, yl = bottom(cl) - 2, yr = bottom(cr) - 2;
+            if (yl < 0 || yr < 0) return false;
+            Action<List<double[]>, int, int> side = (edge, corner, cornerY) =>
+            {
+                for (int i = 0; i + 1 < edge.Count; i++)
+                    MarkLine(outline, body, width, height, edge[i][0], edge[i][1], edge[i + 1][0], edge[i + 1][1]);
+                double[] end = edge[edge.Count - 1];
+                List<double[]> flare = Curve(end[0], end[1], end[0] + 0.25 * (corner - end[0]), cornerY, corner, cornerY);
+                for (int i = 0; i + 1 < flare.Count; i++)
+                    MarkLine(outline, body, width, height, flare[i][0], flare[i][1], flare[i + 1][0], flare[i + 1][1]);
+            };
+            side(edgeL, cl, yl);
+            side(edgeR, cr, yr);
+            for (int x = cl; x <= cr; x++)
+            {
+                int yb = bottom(x) - 2;
+                Mark(outline, width, height, x, yb, body);
+                Mark(outline, width, height, x, yb + 1, body);
+            }
+            return true;
+        }
+
+        // A quadratic curve through three points, 16 steps.
+        private static List<double[]> Curve(double x0, double y0, double x1, double y1, double x2, double y2)
+        {
+            var points = new List<double[]>();
+            for (int i = 0; i <= 16; i++)
+            {
+                double t = i / 16.0, u = 1 - t;
+                points.Add(new[] { u * u * x0 + 2 * u * t * x1 + t * t * x2, u * u * y0 + 2 * u * t * y1 + t * t * y2 });
+            }
+            return points;
+        }
+
         // Half width of the open triangle's base at the bottom edge of the men from the front, from her blue drawing of 2026-11-02 on
         // the Naked_<body>_south zooms (about 2 screen px per texture px in those zooms).
         private static readonly Dictionary<string, int> FrontBaseHalf = new Dictionary<string, int>
@@ -557,9 +691,9 @@ namespace TailorMadeWaistlines
                 MarkLine(outline, body, width, height, lineR[yEnd], yEnd, cr, yr);
                 for (int x = cl; x <= cr; x++)
                 {
-                    int yb = bottom(x) - 2;
-                    Mark(outline, width, height, x, yb, body);
-                    Mark(outline, width, height, x, yb + 1, body);
+                    int yBase = bottom(x) - 2;
+                    Mark(outline, width, height, x, yBase, body);
+                    Mark(outline, width, height, x, yBase + 1, body);
                 }
                 return;
             }
