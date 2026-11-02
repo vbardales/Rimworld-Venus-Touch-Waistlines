@@ -193,6 +193,10 @@ namespace TailorMadeWaistlines
                     shirt1[y * width + x] = shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] >= TopFit.MinAlpha;
                 }
             }
+            WdiAppPatterns.RowExtents(cut, width, height, out int[] rowLeft, out int[] rowRight);
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                    if (x < rowLeft[y] || x > rowRight[y]) shirt1[y * width + x] = false;
             int fit = TailorMadeWaistlinesMod.Settings?.outlineShirtFit ?? 0;
             if (fit == 1 || fit == 2) shirt1 = FitShirt(shirt1, cut, belt, width, height, fit == 2);
             byte[] merged = (byte[])cut.Clone();

@@ -160,11 +160,13 @@ namespace TailorMadeWaistlines
             if (shirt != null)
             {
                 byte[] shirtPixels = TrouserArt.Read(shirt, out int sw, out int sh);
+                RowExtents(pixels, width, height, out int[] rowLeft, out int[] rowRight);
                 for (int y = 0; y < height; y++)
                 {
                     int sy = Math.Min(sh - 1, (int)(y * (long)sh / height));
                     for (int x = 0; x < width; x++)
                     {
+                        if (x < rowLeft[y] || x > rowRight[y]) continue;
                         int sx = Math.Min(sw - 1, (int)(x * (long)sw / width));
                         int i = (y * width + x) * TrouserDetail.Channels;
                         if (silhouette[i + 3] != 0 || shirtPixels[(sy * sw + sx) * TrouserDetail.Channels + 3] < TopFit.MinAlpha) continue;
@@ -182,6 +184,26 @@ namespace TailorMadeWaistlines
             }
             if (category == WdiApparelCategory.Top) return AlphaMask(silhouette, width, height, hem, false);
             return CloseNotch(AlphaMask(silhouette, width, height, top, true), width, height, ThighGapClosePx);
+        }
+
+        // The first and last opaque column of every row of the body, -1 and -2 (an empty range) where the row has none.  The shirt
+        // may only fill what lies between them: a shirt wider than the body (the Hulks' blouse) would leave a ledge outside it, and
+        // a hem under the body's last row a box under the feet (Virginie, 2026-11-02, "un soucis sur les deux hulk").
+        internal static void RowExtents(byte[] body, int width, int height, out int[] left, out int[] right)
+        {
+            left = new int[height];
+            right = new int[height];
+            for (int y = 0; y < height; y++)
+            {
+                left[y] = -1; right[y] = -2;
+                for (int x = 0; x < width; x++)
+                {
+                    if (body[(y * width + x) * TrouserDetail.Channels + 3] == 0) continue;
+                    if (left[y] < 0) left[y] = x;
+                    right[y] = x;
+                }
+                if (left[y] < 0) { left[y] = width; right[y] = -2; }
+            }
         }
 
         // Morphological closing with a (2 radius + 1) square: fills every dent narrower than that, the thigh gap among them, and
