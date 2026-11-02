@@ -214,9 +214,14 @@ namespace TailorMadeWaistlines
             for (int p = 0; p < set.Length; p++) set[p] = mask[p * TrouserDetail.Channels + 3] != 0;
             bool[] closed = Erode(Dilate(set, width, height, radius), width, height, radius);
             byte[] result = (byte[])mask.Clone();
+            // The closing may add nothing outside the mask's own rows and columns: a body whose feet end within `radius` of the
+            // picture's bottom edge would otherwise get a box under them (the Hulk women, captures of 896e and f549).
+            RowExtents(mask, width, height, out int[] rowLeft, out int[] rowRight);
             for (int p = 0; p < closed.Length; p++)
             {
                 if (!closed[p] || set[p]) continue;
+                int row = p / width, column = p % width;
+                if (column < rowLeft[row] || column > rowRight[row]) continue;
                 int i = p * TrouserDetail.Channels;
                 result[i] = result[i + 1] = result[i + 2] = result[i + 3] = 255;
             }
