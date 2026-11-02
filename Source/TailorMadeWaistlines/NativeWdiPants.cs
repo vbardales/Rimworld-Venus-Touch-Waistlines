@@ -23,14 +23,10 @@ namespace TailorMadeWaistlines
         private static readonly Dictionary<string, Texture2D> PantsTextures = new Dictionary<string, Texture2D>();
         private static readonly Dictionary<string, Texture2D> TopTextures = new Dictionary<string, Texture2D>();
         private static readonly Dictionary<string, Graphic> Graphics = new Dictionary<string, Graphic>();
-        // The outline top is baked red and ignores the apparel's dye (Virginie, 2026-10-23).
+        // The outline top is baked yellow and ignores the apparel's dye (Virginie, 2026-10-23).
         private const string OutlineTopDef = "Venus_TestOutlineTop";
         private static readonly Dictionary<string, Texture2D> OutlineTextures = new Dictionary<string, Texture2D>();
-        // The rim of the vanilla basic shirt as a green outline, a reference to read the red hem and the blue line against
-        // (Virginie, 2026-10-29).  Test def of the Pickle mod, never shipped.
-        private const string RimDef = "Venus_TestShirtRim";
         private const string ShirtTexturePath = "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_";
-        private static readonly Dictionary<string, Texture2D> RimTextures = new Dictionary<string, Texture2D>();
         // True when the trousers are the baked blue outline (ApplyOutlineShirt): drawn white, the dye does not touch them.
         private static bool outlinePants;
 
@@ -113,13 +109,10 @@ namespace TailorMadeWaistlines
             ModContentHolder<Texture2D> mine = TailorMadeWaistlinesMod.Instance.Content.GetContentHolder<Texture2D>();
             PantsTextures.Clear();
             OutlineTextures.Clear();
-            RimTextures.Clear();
             Graphics.Clear();
-            ThingDef rimShirt = DefDatabase<ThingDef>.GetNamedSilentFail(RimDef);
             foreach (WdiVisualProfile profile in WdiVisualProfiles.All)
                 foreach (string facing in Facings)
                 {
-                    if (rimShirt?.apparel != null && profile.TextureKey != "Child") BuildShirtRim(mine, profile, facing, wdi);
                     Texture2D body = ContentFinder<Texture2D>.Get("Things/Pawn/Humanlike/Bodies/Naked_" + profile.TextureKey + "_" + facing, false);
                     if (body == null) continue;
                     byte[] pixels = TrouserArt.Read(body, out int width, out int height);
@@ -127,7 +120,7 @@ namespace TailorMadeWaistlines
                     if (mask != null)
                     {
                         for (int i = 0; i < mask.Length; i += TrouserDetail.Channels)
-                            if (mask[i + 3] != 0) { mask[i] = 255; mask[i + 1] = mask[i + 2] = 0; }
+                            if (mask[i + 3] != 0) { mask[i] = 255; mask[i + 1] = 215; mask[i + 2] = 0; }
                         Texture2D texture = TrouserArt.Build(mask, width, height, "Venus_OutlineTop_" + profile.TextureKey + "_" + facing);
                         mine.contentList[TopPath + "_" + profile.TextureKey + "_" + facing] = texture;
                         OutlineTextures[profile.TextureKey + "_" + facing] = texture;
@@ -153,11 +146,9 @@ namespace TailorMadeWaistlines
             AliasTop(mine, "Fat_Female", "Fat_Female");
             AliasTop(mine, "Child_Female", "Child");
             outlineTop.apparel.wornGraphicPath = TopPath;
-            if (rimShirt?.apparel != null) rimShirt.apparel.wornGraphicPath = TopPath;
             pants.apparel.wornGraphicPath = Path;
             kidPants.apparel.wornGraphicPath = Path;
-            Log.Message("[Venus Touch Waistlines] outline top ready: " + OutlineTextures.Count + " textures, trousers " + PantsTextures.Count
-                + ", shirt rim " + RimTextures.Count + ".");
+            Log.Message("[Venus Touch Waistlines] outline top ready: " + OutlineTextures.Count + " textures, trousers " + PantsTextures.Count + ".");
         }
 
         // The trousers' silhouette is the larger of the body cut on the trouser line and the basic shirt below that line
@@ -256,26 +247,6 @@ namespace TailorMadeWaistlines
             return fitted;
         }
 
-        // The green rim: the alpha of the shirt the blue takes its width from (MaxShirt: WDI's own for the three female Thin, Fat
-        // and Hulk bodies, Vanilla Apparel Expanded's blouse for the other adults), reduced to a 5 px outline at the body's 512 px
-        // scale, so the reference is the very shirt the max uses (Virginie 2026-10-30: the rim was still the old vanilla shirt).
-        // Children are left out: their shirt is another def.
-        private static void BuildShirtRim(ModContentHolder<Texture2D> mine, WdiVisualProfile profile, string facing, ModContentPack wdi)
-        {
-            Texture2D shirt = MaxShirt(profile, facing, wdi);
-            if (shirt == null) return;
-            byte[] pixels = TrouserArt.Read(shirt, out int width, out int height);
-            byte[] mask = new byte[pixels.Length];
-            for (int i = 0; i < pixels.Length; i += TrouserDetail.Channels)
-                if (pixels[i + 3] >= TopFit.MinAlpha) { mask[i] = mask[i + 1] = mask[i + 2] = 255; mask[i + 3] = 255; }
-            byte[] ring = WdiAppPatterns.Ring(mask, width, height, Math.Max(1, (int)Math.Round(WdiAppPatterns.RingPx * width / 512.0)));
-            for (int i = 0; i < ring.Length; i += TrouserDetail.Channels)
-                if (ring[i + 3] != 0) { ring[i] = 0; ring[i + 1] = 200; ring[i + 2] = 0; ring[i + 3] = 255; }
-            Texture2D texture = TrouserArt.Build(ring, width, height, "Venus_ShirtRim_" + profile.TextureKey + "_" + facing);
-            mine.contentList[TopPath + "_" + profile.TextureKey + "_" + facing + "_rim"] = texture;
-            RimTextures[profile.TextureKey + "_" + facing] = texture;
-        }
-
         [HarmonyPatch(typeof(ApparelGraphicRecordGetter), nameof(ApparelGraphicRecordGetter.TryGetGraphicApparel))]
         internal static class NativeGraphicPatch
         {
@@ -295,7 +266,7 @@ namespace TailorMadeWaistlines
                 if (profile == null || !source.ContainsKey(profile.TextureKey + "_south")) return true;
                 if (traceCount++ < 12)
                     Log.Message("[Venus Touch Waistlines] direct apparel match " + apparel.def.defName + " " + profile.TextureKey + ".");
-                Color color = source == OutlineTextures || source == RimTextures || (source == PantsTextures && outlinePants) ? Color.white : apparel.DrawColor;
+                Color color = source == OutlineTextures || (source == PantsTextures && outlinePants) ? Color.white : apparel.DrawColor;
                 string cacheKey = apparel.def.defName + "|" + profile.TextureKey + "|" + color;
                 if (!Graphics.TryGetValue(cacheKey, out Graphic graphic))
                 {
@@ -316,7 +287,6 @@ namespace TailorMadeWaistlines
                     case "Apparel_BasicShirt":
                     case "Apparel_KidShirt": return TopTextures;
                     case OutlineTopDef: return OutlineTextures;
-                    case RimDef: return RimTextures;
                     default: return null;
                 }
             }
@@ -434,7 +404,7 @@ namespace TailorMadeWaistlines
             byte[] outline = WdiAppPatterns.Ring(cut, width, height, WdiAppPatterns.RingPx);
             if (facing != "east") DrawOpenTriangle(outline, body, profile, width, height, facing);
             for (int i = 0; i < outline.Length; i += TrouserDetail.Channels)
-                if (outline[i + 3] != 0) { outline[i] = outline[i + 1] = 0; outline[i + 2] = 255; outline[i + 3] = 255; }
+                if (outline[i + 3] != 0) { outline[i] = 255; outline[i + 1] = 105; outline[i + 2] = 180; outline[i + 3] = 255; }
             return outline;
         }
 
