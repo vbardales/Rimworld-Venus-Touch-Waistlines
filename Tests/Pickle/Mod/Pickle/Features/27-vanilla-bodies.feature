@@ -33,9 +33,9 @@ Feature: the vanilla body and shirt textures saved as PNG
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Fat_south" is saved as "vanilla-shirt-fat-south"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Hulk_south" is saved as "vanilla-shirt-hulk-south"
 
-  # Virginie, 2026-11-03: the child shirt too, cut on the fundoshi line; WDI has no ShirtBasic for the child body.
+  # Virginie, 2026-11-03: the child shirt too, cut on the fundoshi line. Children cannot wear ShirtBasic: their shirt is Biotech Apparel_KidShirt (wornGraphicPath KidShirt/KidShirt + _Child).
   @requires:nelim.pickletools.textureowner
-  Scenario: the Core child shirt, three facings
-    When Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Child_south" is saved as "vanilla-shirt-child-south"
-    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Child_north" is saved as "vanilla-shirt-child-north"
-    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Child_east" is saved as "vanilla-shirt-child-east"
+  Scenario: the Biotech kid shirt, three facings
+    When Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_south" is saved as "vanilla-kidshirt-child-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_north" is saved as "vanilla-kidshirt-child-north"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_east" is saved as "vanilla-kidshirt-child-east"
