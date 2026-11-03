@@ -39,3 +39,17 @@ Feature: the vanilla body and shirt textures saved as PNG
     When Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_south" is saved as "vanilla-kidshirt-child-south"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_north" is saved as "vanilla-kidshirt-child-north"
     And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_east" is saved as "vanilla-kidshirt-child-east"
+
+  # Virginie, 2026-11-03: vanilla to WDI, navel and chest: garments with a shape, to see how WDI stretches them (WDI ships both for Thin/Fat/Hulk_Female).
+  @requires:nelim.pickletools.textureowner
+  Scenario: the button shirt and the royal corset, front
+    When Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtButton/ShirtButton_Male_south" is saved as "vanilla-shirtbutton-male-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtButton/ShirtButton_Female_south" is saved as "vanilla-shirtbutton-female-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtButton/ShirtButton_Thin_south" is saved as "vanilla-shirtbutton-thin-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtButton/ShirtButton_Fat_south" is saved as "vanilla-shirtbutton-fat-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/ShirtButton/ShirtButton_Hulk_south" is saved as "vanilla-shirtbutton-hulk-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/CorsetRoyal/CorsetRoyal_Male_south" is saved as "vanilla-corsetroyal-male-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/CorsetRoyal/CorsetRoyal_Female_south" is saved as "vanilla-corsetroyal-female-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/CorsetRoyal/CorsetRoyal_Thin_south" is saved as "vanilla-corsetroyal-thin-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/CorsetRoyal/CorsetRoyal_Fat_south" is saved as "vanilla-corsetroyal-fat-south"
+    And Nelim's Pickle Tools: the texture "Things/Pawn/Humanlike/Apparel/CorsetRoyal/CorsetRoyal_Hulk_south" is saved as "vanilla-corsetroyal-hulk-south"
