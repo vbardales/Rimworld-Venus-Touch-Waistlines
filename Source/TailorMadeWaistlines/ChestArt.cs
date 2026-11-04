@@ -31,7 +31,7 @@ namespace TailorMadeWaistlines
     public static class ChestArt
     {
         private static bool LiftsTest(ThingDef def) =>
-            TailorMadeWaistlinesMod.Settings.shortenShirts
+            TailorMadeWaistlinesMod.Settings.Tucked(def)
             && def?.apparel != null
             && def.apparel.LastLayer == ApparelLayerDefOf.OnSkin;
 

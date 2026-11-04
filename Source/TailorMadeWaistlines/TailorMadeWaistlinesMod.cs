@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
@@ -41,9 +43,14 @@ namespace TailorMadeWaistlines
         public float bootsTop = DefaultBootsTop;
         public float chestBottom = DefaultChestBottom;
 
-        // Off by default: it changes how every on-skin torso garment is drawn,
-        // and the shirt is compressed into the band rather than cut off at it.
-        public bool shortenShirts = false;
+        // On by default since 2026-11-05 (Virginie): shirts are tucked into the trousers, cut at the waistband, so a vanilla
+        // shirt drawn over the whole body no longer hides the trousers (NSB, Apparel_BasicShirt on WDI's Female body).
+        // A shirt listed in untuckedShirts is worn over the trousers instead, as drawn.
+        public bool shortenShirts = true;
+        public List<string> untuckedShirts = new List<string>();
+
+        /// <summary>True when this on-skin shirt is tucked in: the option is on and the player has not set it over the trousers.</summary>
+        public bool Tucked(ThingDef def) => shortenShirts && def != null && (untuckedShirts == null || !untuckedShirts.Contains(def.defName));
 
         // Experimental APP patterns alter only the four vanilla control garments.
         // They are opt-in and read at startup, so a review pass can seed them
@@ -76,7 +83,9 @@ namespace TailorMadeWaistlines
             Scribe_Values.Look(ref pantsTop, "pantsTop", DefaultPantsTop);
             Scribe_Values.Look(ref bootsTop, "bootsTop", DefaultBootsTop);
             Scribe_Values.Look(ref chestBottom, "chestBottom", DefaultChestBottom);
-            Scribe_Values.Look(ref shortenShirts, "shortenShirts", false);
+            Scribe_Values.Look(ref shortenShirts, "shortenShirts", true);
+            Scribe_Collections.Look(ref untuckedShirts, "untuckedShirts", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.PostLoadInit && untuckedShirts == null) untuckedShirts = new List<string>();
             Scribe_Values.Look(ref enableExperimentalAppPatterns, "enableExperimentalAppPatterns", false);
             Scribe_Values.Look(ref fitTopsToSilhouette, "fitTopsToSilhouette", false);
             Scribe_Values.Look(ref outlineShirtFit, "outlineShirtFit", 0);
@@ -106,7 +115,8 @@ namespace TailorMadeWaistlines
             pantsTop = DefaultPantsTop;
             bootsTop = DefaultBootsTop;
             chestBottom = DefaultChestBottom;
-            shortenShirts = false;
+            shortenShirts = true;
+            untuckedShirts = new List<string>();
             enableExperimentalAppPatterns = false;
             fitTopsToSilhouette = false;
             outlineShirtFit = 0;
@@ -213,6 +223,7 @@ namespace TailorMadeWaistlines
             list.CheckboxLabeled("TailorMadeWaistlines.Settings.ShortenShirts".Translate(),
                 ref Settings.shortenShirts,
                 "TailorMadeWaistlines.Settings.ShortenShirtsTip".Translate());
+            if (Settings.shortenShirts) UntuckedList(list);
             list.CheckboxLabeled("TailorMadeWaistlines.Settings.ExperimentalAppPatterns".Translate(),
                 ref Settings.enableExperimentalAppPatterns,
                 "TailorMadeWaistlines.Settings.ExperimentalAppPatternsTip".Translate());
@@ -255,6 +266,28 @@ namespace TailorMadeWaistlines
             viewHeight = list.CurHeight + 10f;
             list.End();
             Widgets.EndScrollView();
+        }
+
+        private bool untuckedOpen;
+
+        /// <summary>
+        /// One checkbox per shirt (on-skin, torso, not the legs, with a worn graphic), ticked when it is worn over the trousers.
+        /// Folded by default: a modded game has dozens of shirts.
+        /// </summary>
+        private void UntuckedList(Listing_Standard list)
+        {
+            if (list.ButtonText((untuckedOpen ? "TailorMadeWaistlines.Settings.UntuckedHide" : "TailorMadeWaistlines.Settings.UntuckedShow").Translate()))
+                untuckedOpen = !untuckedOpen;
+            if (!untuckedOpen) return;
+            list.Label("TailorMadeWaistlines.Settings.UntuckedIntro".Translate());
+            if (Settings.untuckedShirts == null) Settings.untuckedShirts = new List<string>();
+            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(JacketArt.IsShirt).OrderBy(d => d.label))
+            {
+                bool over = Settings.untuckedShirts.Contains(def.defName), was = over;
+                list.CheckboxLabeled("  " + def.LabelCap + " (" + def.defName + ")", ref over);
+                if (over == was) continue;
+                if (over) Settings.untuckedShirts.Add(def.defName); else Settings.untuckedShirts.Remove(def.defName);
+            }
         }
 
         private static void Slider(Listing_Standard list, string labelKey, string tipKey, ref float value, float min, float max)

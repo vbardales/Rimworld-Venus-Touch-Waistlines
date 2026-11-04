@@ -115,22 +115,37 @@ namespace TailorMadeWaistlines
             }
         }
 
-        /// <summary>Zero for anything else; 1 for a coat or a jacket (shell layer, torso and not the legs); 2 for a shirt (on-skin, same).</summary>
+        /// <summary>
+        /// Zero for anything else; 1 for a coat or a jacket (shell layer, torso and not the legs); 2 for a shirt tucked into
+        /// the trousers (on-skin, same, and not set over the trousers in the options).
+        /// </summary>
         public static int Kind(ThingDef def)
         {
             ApparelProperties a = def?.apparel;
             if (a == null) return 0;
             var settings = TailorMadeWaistlinesMod.Settings;
             int kind = a.LastLayer == ApparelLayerDefOf.Shell && settings.keepJacketsLong ? 1
-                     : a.LastLayer == ApparelLayerDefOf.OnSkin && settings.shortenShirts ? 2 : 0;
+                     : a.LastLayer == ApparelLayerDefOf.OnSkin && settings.Tucked(def) ? 2 : 0;
             if (kind == 0) return 0;
+            return TorsoOnly(a) ? kind : 0;
+        }
+
+        /// <summary>A shirt the options list: on-skin, torso and not the legs, with a worn graphic.</summary>
+        public static bool IsShirt(ThingDef def)
+        {
+            ApparelProperties a = def?.apparel;
+            return a != null && a.LastLayer == ApparelLayerDefOf.OnSkin && !string.IsNullOrEmpty(a.wornGraphicPath) && TorsoOnly(a);
+        }
+
+        private static bool TorsoOnly(ApparelProperties a)
+        {
             bool torso = false;
             foreach (BodyPartGroupDef g in a.bodyPartGroups ?? new List<BodyPartGroupDef>())
             {
-                if (g.defName == "Legs" || g.defName == "Feet") return 0;
+                if (g.defName == "Legs" || g.defName == "Feet") return false;
                 if (g.defName == "Torso") torso = true;
             }
-            return torso ? kind : 0;
+            return torso;
         }
 
         private static void Register(string path, string body, string facing, float navel, ModContentHolder<Texture2D> mine, bool shirt)
