@@ -1,0 +1,17 @@
+# Shirt tail prototype in game (Virginie, 2026-11-05: "lance un scénario pour faire la même chose en jeu").
+# WDI draws the Male body, AB gives the trousers a worn graphic (config/shirt-tail seeds its categories), and the
+# test-only mod nelim.venustouch.waistlines.shirttailproto replaces ShirtButton_Male south/east/north with the
+# vanilla to WDI transfer (TailorMade's method, bands, C' tail). That mod lives in Art/work/shirt-tail-proto/Mod,
+# gitignored: its textures are computed from Ludeon's. Venus' top fit and outline stay at their defaults (off).
+#   Submit-PickleRun.ps1 -Mod VenusTouchWaistlines -DepMap shirt-tail -Filter '28-shirt-tail'
+wdi.realistic.bodies           3527486510
+ab.vplrf                       2986402536
+nelim.venustouch.waistlines.shirttailproto  path:VenusTouchWaistlines/Art/work/shirt-tail-proto/Mod
+nelim.pickletools.textureowner      path:PickleTools/TextureOwner/Mod
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

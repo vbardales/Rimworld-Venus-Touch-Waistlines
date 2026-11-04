@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Seed for the "wdi-ab" pass. Read by scripts/stage-pickle-wsl.sh and copied into the WSL profile
+  before that pass only, then removed with the rest.
+
+  Origin: the working AB's Visible Pants configuration on Virginie's Windows install
+  (Config/Mod_2986402536_ABsVisiblePantsMod.xml), which holds AB's five default categories -
+  Normal_Pants, Skirt, Suit_Pants, Jeans, Shorts_Pants - with their keywords and texture paths.
+  It is the state AVPSettings.CreateStartData produces. Copied unchanged, 2026-09-21.
+
+  Why it exists: AB's category list starts empty and is only filled when a settings file is read
+  or Reset is pressed in its options window. Without this file the headless game has AB installed
+  and inert, and no garment gets a wornGraphicPath. The scenario "AB has actually given the
+  trousers a worn graphic" in 01-trousers-review.feature goes red the day this file is stale.
+-->
+<SettingsBlock>
+	<ModSettings Class="ABsVisiblePants.AVPSettings">
+		<datas>
+			<li>
+				<category>Normal_Pants</category>
+				<keyWord>
+					<li>Pants</li>
+				</keyWord>
+				<TargetApparel IsNull="True" />
+				<ingoreApparel IsNull="True" />
+				<path>Things/Pawn/Humanlike/Apparel/Pants/Pants</path>
+			</li>
+			<li>
+				<category>Skirt</category>
+				<keyWord>
+					<li>skirt</li>
+					<li>Skirt</li>
+				</keyWord>
+				<TargetApparel IsNull="True" />
+				<ingoreApparel IsNull="True" />
+				<path>Things/Pawn/Humanlike/Apparel/Skirt/Skirt</path>
+			</li>
+			<li>
+				<category>Suit_Pants</category>
+				<keyWord>
+					<li>SuitPants</li>
+					<li>suitPants</li>
+					<li>Trousers</li>
+					<li>trousers</li>
+				</keyWord>
+				<TargetApparel IsNull="True" />
+				<ingoreApparel IsNull="True" />
+				<path>Things/Pawn/Humanlike/Apparel/Trousers/Trousers</path>
+			</li>
+			<li>
+				<category>Jeans</category>
+				<keyWord>
+					<li>jeans</li>
+					<li>Jeans</li>
+				</keyWord>
+				<TargetApparel IsNull="True" />
+				<ingoreApparel IsNull="True" />
+				<path>Things/Pawn/Humanlike/Apparel/Jeans/Jeans</path>
+			</li>
+			<li>
+				<category>Shorts_Pants</category>
+				<keyWord>
+					<li>Shorts_Pants</li>
+					<li>shortsPants</li>
+				</keyWord>
+				<TargetApparel IsNull="True" />
+				<ingoreApparel IsNull="True" />
+				<path>Things/Pawn/Humanlike/Apparel/Shorts/Shorts</path>
+			</li>
+		</datas>
+		<UnderShirt />
+		<NotPants />
+	</ModSettings>
+</SettingsBlock>
