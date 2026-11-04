@@ -33,9 +33,9 @@ Feature: the transferred button shirt on the WDI Male body, three facings
     And I destroy the gear of "M-South"
     And I destroy the gear of "M-East"
     And I destroy the gear of "M-North"
-    And Nelim's Pickle Tools: "M-South" wears "Apparel_ShirtButton"
-    And Nelim's Pickle Tools: "M-East" wears "Apparel_ShirtButton"
-    And Nelim's Pickle Tools: "M-North" wears "Apparel_ShirtButton"
+    And Nelim's Pickle Tools: "M-South" wears "Apparel_CollarShirt"
+    And Nelim's Pickle Tools: "M-East" wears "Apparel_CollarShirt"
+    And Nelim's Pickle Tools: "M-North" wears "Apparel_CollarShirt"
     And Nelim's Sanctuary: I am at the sanctuary "calm-zone-close"
     And Nelim's Pickle Tools: studio presentation mode is enabled
     And I wait 120 ticks
