@@ -60,14 +60,36 @@ namespace TailorMadeWaistlines
         /// The top edge of WDI's underwear for this body, facing and sex, as a fraction of the picture height for each of its
         /// columns; columns the underwear does not reach take the nearest column's value. Null when the underwear is not there.
         /// </summary>
-        internal static float[] ProfileFor(string key, string facing)
+        // Two lines per column (Virginie 2026-11-05: "si la rose est en bas et la jaune en haut, le tshirt descend jusqu'à la
+        // rose et le pantalon est coupé selon la jaune"): of the boxers' and the panties' top edges, the higher one (yellow)
+        // is where the trousers start, the lower one (pink) is where a tucked shirt ends. The shirt is drawn over the
+        // trousers, so the band between the two lines is the shirt's, and no skin shows at the join.
+        internal static float[] ProfileFor(string key, string facing) => Combine(key, facing, true);
+
+        /// <summary>The lower of the boxers' and the panties' top edges (the pink line): where a tucked shirt ends.</summary>
+        internal static float[] LowerFor(string key, string facing) => Combine(key, facing, false);
+
+        private static float[] Combine(string key, string facing, bool upper)
         {
-            string cacheKey = key + "_" + facing;
+            string cacheKey = (upper ? "up_" : "low_") + key + "_" + facing;
+            if (profiles.TryGetValue(cacheKey, out float[] cached)) return cached;
+            float[] a = Top("boxers", key, facing), b = Top("panties", key, facing), result = a ?? b;
+            if (a != null && b != null && a.Length == b.Length)
+            {
+                result = new float[a.Length];
+                for (int x = 0; x < a.Length; x++) result[x] = upper ? Math.Min(a[x], b[x]) : Math.Max(a[x], b[x]);
+            }
+            profiles[cacheKey] = result;
+            return result;
+        }
+
+        private static float[] Top(string kind, string key, string facing)
+        {
+            string cacheKey = kind + "_" + key + "_" + facing;
             if (profiles.TryGetValue(cacheKey, out float[] cached)) return cached;
             float[] result = null;
             try
             {
-                string kind = key.StartsWith("Male") || key == "Thin" || key == "Fat" || key == "Hulk" ? "boxers" : "panties";
                 Texture2D tex = ContentFinder<Texture2D>.Get("UWUnderwear/" + kind + "/" + kind + "_" + key + "_" + facing, false);
                 if (tex != null)
                 {
@@ -108,17 +130,23 @@ namespace TailorMadeWaistlines
             if (key == "Child") facing = "south";
             // The shirt runs under the trousers as they are drawn: the top edge of the finished trousers texture, column by column,
             // so both have the same shape.
+            // ...and reaches at least the pink line, the lower underwear edge: the trousers start on the yellow one above it.
             float[] drawn = TrouserTop(key, facing);
             if (drawn != null)
             {
+                float[] pink = LowerFor(key, facing);
                 var follow = new int[width];
                 for (int x = 0; x < width; x++)
-                    follow[x] = (int)Math.Round((drawn[Math.Min(drawn.Length - 1, (int)(x * (long)drawn.Length / width))] + UnderTrousers) * height, MidpointRounding.AwayFromZero);
+                {
+                    float t = drawn[Math.Min(drawn.Length - 1, (int)(x * (long)drawn.Length / width))] + UnderTrousers;
+                    if (pink != null) t = Math.Max(t, pink[Math.Min(pink.Length - 1, (int)(x * (long)pink.Length / width))]);
+                    follow[x] = (int)Math.Round(t * height, MidpointRounding.AwayFromZero);
+                }
                 return follow;
             }
-            float[] own = ProfileFor(key, facing);
+            float[] own = LowerFor(key, facing);
             // The trousers of a female Thin, Fat or Hulk are cut on her own underwear too: the same curve.
-            float[] pants = own ?? ProfileFor(key.EndsWith("_Female") ? key.Substring(0, key.Length - 7) : key, facing);
+            float[] pants = own ?? LowerFor(key.EndsWith("_Female") ? key.Substring(0, key.Length - 7) : key, facing);
             var rows = new int[width];
             if (own == null && pants == null)
             {
