@@ -140,7 +140,8 @@ namespace TailorMadeWaistlines
                 {
                     float t = drawn[Math.Min(drawn.Length - 1, (int)(x * (long)drawn.Length / width))] + UnderTrousers;
                     if (pink != null) t = Math.Max(t, pink[Math.Min(pink.Length - 1, (int)(x * (long)pink.Length / width))]);
-                    follow[x] = (int)Math.Round(t * height, MidpointRounding.AwayFromZero);
+                    // + FeatherRows: the faded rows above the cut fall under the trousers, not on the skin (2026-11-05, bac7)
+                    follow[x] = (int)Math.Round(t * height, MidpointRounding.AwayFromZero) + FeatherRows;
                 }
                 return follow;
             }
@@ -150,7 +151,7 @@ namespace TailorMadeWaistlines
             var rows = new int[width];
             if (own == null && pants == null)
             {
-                int row = (int)Math.Round((LineFor(key) + UnderTrousers) * height, MidpointRounding.AwayFromZero);
+                int row = (int)Math.Round((LineFor(key) + UnderTrousers) * height, MidpointRounding.AwayFromZero) + FeatherRows;
                 for (int x = 0; x < width; x++) rows[x] = row;
                 return rows;
             }
@@ -159,7 +160,7 @@ namespace TailorMadeWaistlines
             {
                 float a = own == null ? 0f : own[Math.Min(own.Length - 1, (int)(x * (long)own.Length / width))];
                 float p = pants == null ? 0f : pants[Math.Min(pants.Length - 1, (int)(x * (long)pants.Length / width))] + drop;
-                rows[x] = (int)Math.Round((Math.Max(a, p) + UnderTrousers) * height, MidpointRounding.AwayFromZero);
+                rows[x] = (int)Math.Round((Math.Max(a, p) + UnderTrousers) * height, MidpointRounding.AwayFromZero) + FeatherRows;
             }
             return rows;
         }
