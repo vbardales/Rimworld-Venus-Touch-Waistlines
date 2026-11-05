@@ -16,7 +16,10 @@
 
 [CmdletBinding()]
 param(
-    [string]$Managed = 'C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed',
+    # Given by Tests/Test-Mod.ps1 (generated); by hand both default to this checkout and the protocols' scripts/.
+    [string]$ModRoot,
+    [string]$SharedDir,
+    [string]$Managed ='C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed',
     [string]$App = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2480887589\1.6\Assemblies\ApparelPaperPattern.dll',
     [string]$Utilities = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2839443438\1.6\Assemblies\APPUtilities.dll',
     [string]$WdiRoot = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3527486510',
@@ -24,19 +27,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $ModAssembly) { $ModAssembly = Join-Path (Split-Path -Parent $PSScriptRoot) 'Mod\Assemblies\TailorMadeWaistlines.dll' }
-$script:checks = 0
-$script:failures = @()
-
-function Assert-That {
-    param([string]$What, [bool]$Ok, [string]$Detail)
-    $script:checks++
-    if ($Ok) { Write-Host ('  ok    ' + $What) }
-    else {
-        $script:failures += $What + $(if ($Detail) { ' - ' + $Detail } else { '' })
-        Write-Host ('  FAIL  ' + $What + $(if ($Detail) { ' - ' + $Detail } else { '' }))
-    }
-}
+if (-not $ModRoot) { $ModRoot = Split-Path -Parent $PSScriptRoot }
+if (-not $SharedDir) { $SharedDir = Join-Path $ModRoot '..\scripts' }
+if (-not $ModAssembly) { $ModAssembly = Join-Path $ModRoot 'Mod\Assemblies\TailorMadeWaistlines.dll' }
+# Shared runner (lib/TestRunner.ps1): one numbered line per check, the detail of a failure under it, Complete-Tests exits 1 on any.
+. (Join-Path $SharedDir 'lib\TestRunner.ps1')
+function Assert-That([string]$What, [bool]$Ok, [string]$Detail) { Write-TestResult $(if ($Ok) { 'pass' } else { 'fail' }) $What @($Detail | Where-Object { $_ }) }
 
 foreach ($path in @($Managed, $App, $Utilities, $ModAssembly)) {
     if (-not (Test-Path -LiteralPath $path)) { Write-Host ('cannot find ' + $path) -ForegroundColor Red; exit 2 }
@@ -219,11 +215,4 @@ finally {
     [AppDomain]::CurrentDomain.remove_AssemblyResolve($script:resolver)
 }
 
-Write-Host ''
-if ($script:failures.Count -eq 0) {
-    Write-Host ("$($script:checks) checks, all passed.") -ForegroundColor Green
-    exit 0
-}
-Write-Host ("$($script:checks) checks, $($script:failures.Count) failed:") -ForegroundColor Red
-$script:failures | ForEach-Object { Write-Host ('  - ' + $_) -ForegroundColor Red }
-exit 1
+Complete-Tests

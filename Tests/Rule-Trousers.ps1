@@ -32,33 +32,26 @@
     made from a contact sheet or from a capture, and no assertion states it.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File Tests\Check-Trousers.ps1
+    powershell -ExecutionPolicy Bypass -File Tests\Rule-Trousers.ps1
 #>
 
 [CmdletBinding()]
 param(
+    # Given by Tests/Test-Mod.ps1 (generated); by hand both default to this checkout and the protocols' scripts/.
+    [string]$ModRoot,
+    [string]$SharedDir,
     [string]$ModAssembly,
     [string]$AbPants = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2986402536\Textures\Things\Pawn\Humanlike\Apparel\Pants'
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $ModAssembly) {
-    $ModAssembly = Join-Path (Split-Path -Parent $PSScriptRoot) 'Mod\Assemblies\TailorMadeWaistlines.dll'
-}
+if (-not $ModRoot) { $ModRoot = Split-Path -Parent $PSScriptRoot }
+if (-not $SharedDir) { $SharedDir = Join-Path $ModRoot '..\scripts' }
+if (-not $ModAssembly) { $ModAssembly = Join-Path $ModRoot 'Mod\Assemblies\TailorMadeWaistlines.dll' }
 
-$script:failures = @()
-$script:checks = 0
-
-function Assert-That {
-    param([string]$What, [bool]$Ok, [string]$Detail)
-    $script:checks++
-    if ($Ok) {
-        Write-Host ("  ok    " + $What)
-    } else {
-        $script:failures += $What + $(if ($Detail) { " - " + $Detail } else { "" })
-        Write-Host ("  FAIL  " + $What + $(if ($Detail) { " - " + $Detail } else { "" }))
-    }
-}
+# Shared runner (lib/TestRunner.ps1): one numbered line per check, the detail of a failure under it, Complete-Tests exits 1 on any.
+. (Join-Path $SharedDir 'lib\TestRunner.ps1')
+function Assert-That([string]$What, [bool]$Ok, [string]$Detail) { Write-TestResult $(if ($Ok) { 'pass' } else { 'fail' }) $What @($Detail | Where-Object { $_ }) }
 
 # The comparisons run over tens of thousands of bytes each, which PowerShell does slowly, so
 # they are written in C#. It only reads arrays and builds synthetic shells; it knows nothing of
@@ -406,9 +399,9 @@ Assert-That 'trousers cut along a curve keep their bottom' ([TmwCheck]::BottomRo
 # TopFit.ClipToBody: a garment clipped to a body picture of another resolution.
 $fitT = $asm.GetType('TailorMadeWaistlines.TopFit')
 $clip = $fitT.GetMethod('ClipToBody', [System.Reflection.BindingFlags]'NonPublic,Static')
-$tg = New-Object byte[] (8 * 8 * 4)
+[byte[]]$tg = New-Object byte[] (8 * 8 * 4)
 for ($i = 0; $i -lt 64; $i++) { $tg[$i * 4] = 200; $tg[$i * 4 + 1] = 100; $tg[$i * 4 + 2] = 50; $tg[$i * 4 + 3] = 255 }
-$tb = New-Object byte[] (4 * 4 * 4)
+[byte[]]$tb = New-Object byte[] (4 * 4 * 4)
 for ($by = 1; $by -le 2; $by++) { for ($bx = 1; $bx -le 2; $bx++) { $tb[($by * 4 + $bx) * 4 + 3] = 255 } }
 $tb[(0 * 4 + 0) * 4 + 3] = 39   # below the threshold: still outside
 $tkeep = [byte[]]$tg.Clone()
@@ -458,11 +451,4 @@ if (-not (Test-Path $AbPants)) {
     }
 }
 
-Write-Host ""
-if ($script:failures.Count -eq 0) {
-    Write-Host ("$($script:checks) checks, all passed.") -ForegroundColor Green
-    exit 0
-}
-Write-Host ("$($script:checks) checks, $($script:failures.Count) failed:") -ForegroundColor Red
-$script:failures | ForEach-Object { Write-Host ("  - " + $_) -ForegroundColor Red }
-exit 1
+Complete-Tests

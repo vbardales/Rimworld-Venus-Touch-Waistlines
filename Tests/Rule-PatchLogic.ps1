@@ -24,9 +24,10 @@
     of the argument array, read back after the call.
 
     What is not here: the defaults, the reset and the clamping of a hand-edited
-    config are `Check-Settings.ps1`, and a band is only ever compared as a
-    number - no texture is baked, so how a shortened shirt *reads* stays a
-    question for scenario 6 of TESTING.md.
+    config are `Rule-Settings.ps1`, and TailorMade's stock band values are
+    `Rule-TailorMadeContract.ps1` (cut 2026-11-05: both were repeated here).
+    A band is only ever compared as a number - no texture is baked, so how a
+    shortened shirt *reads* stays a question for scenario 6 of TESTING.md.
 
     Two things the game normally builds are faked here:
 
@@ -39,11 +40,14 @@
         postfix compares against - it tests identity, not content.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File Tests\Check-Logic.ps1
+    powershell -ExecutionPolicy Bypass -File Tests\Rule-PatchLogic.ps1
 #>
 
 [CmdletBinding()]
 param(
+    # Given by Tests/Test-Mod.ps1 (generated); by hand both default to this checkout and the protocols' scripts/.
+    [string]$ModRoot,
+    [string]$SharedDir,
     [string]$Managed = 'C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed',
     [string]$TailorMade = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3756915448\Assemblies\TailorMadeUnifiedApparelBodyRefitting.dll',
     [string]$Harmony = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\1.6\Assemblies\0Harmony.dll',
@@ -51,23 +55,13 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $ModAssembly) {
-    $ModAssembly = Join-Path (Split-Path -Parent $PSScriptRoot) 'Mod\Assemblies\TailorMadeWaistlines.dll'
-}
+if (-not $ModRoot) { $ModRoot = Split-Path -Parent $PSScriptRoot }
+if (-not $SharedDir) { $SharedDir = Join-Path $ModRoot '..\scripts' }
+if (-not $ModAssembly) { $ModAssembly = Join-Path $ModRoot 'Mod\Assemblies\TailorMadeWaistlines.dll' }
 
-$script:failures = @()
-$script:checks = 0
-
-function Assert-That {
-    param([string]$What, [bool]$Ok, [string]$Detail)
-    $script:checks++
-    if ($Ok) {
-        Write-Host ("  ok    " + $What)
-    } else {
-        $script:failures += $What + $(if ($Detail) { " - " + $Detail } else { "" })
-        Write-Host ("  FAIL  " + $What + $(if ($Detail) { " - " + $Detail } else { "" }))
-    }
-}
+# Shared runner (lib/TestRunner.ps1): one numbered line per check, the detail of a failure under it, Complete-Tests exits 1 on any.
+. (Join-Path $SharedDir 'lib\TestRunner.ps1')
+function Assert-That([string]$What, [bool]$Ok, [string]$Detail) { Write-TestResult $(if ($Ok) { 'pass' } else { 'fail' }) $What @($Detail | Where-Object { $_ }) }
 
 function Assert-Band {
     param([string]$What, $Band, [double]$X, [double]$Y)
@@ -155,23 +149,6 @@ try {
     # --- the sliders start where TailorMade left them -------------------------
     Write-Host ""
     Write-Host "a fresh install changes nothing"
-
-    Assert-That 'settings default pantsTop 0.58'   ([Math]::Abs((Get-Field $settingsType 'pantsTop' $settings) - 0.58) -lt 0.0005)
-    Assert-That 'settings default bootsTop 0.20'   ([Math]::Abs((Get-Field $settingsType 'bootsTop' $settings) - 0.20) -lt 0.0005)
-    Assert-That 'settings default chestBottom 0.25'([Math]::Abs((Get-Field $settingsType 'chestBottom' $settings) - 0.25) -lt 0.0005)
-      Assert-That 'settings default shortenShirts off' ((Get-Field $settingsType 'shortenShirts' $settings) -eq $false)
-      Assert-That 'settings default experimental APP patterns off' ((Get-Field $settingsType 'enableExperimentalAppPatterns' $settings) -eq $false)
-
-    # Our copies of the stock values, against TailorMade's live fields. The
-    # fallback prefix only rewrites a band it recognises, so a drift here is a
-    # fallback that silently stops correcting anything.
-    foreach ($pair in @(@('StockBoots', 'BootsBand'), @('StockPants', 'PantsBand'), @('StockChest', 'ChestBand'))) {
-        $mine = $bands.GetField($pair[0], [System.Reflection.BindingFlags]'Public,Static').GetValue($null)
-        $field = $classifier.GetField($pair[1], [System.Reflection.BindingFlags]'Public,Static')
-        if (-not $field) { Assert-That ("Bands." + $pair[0] + " matches ApparelClassifier." + $pair[1]) $false 'field not found'; continue }
-        $theirs = $field.GetValue($null)
-        Assert-Band ("Bands." + $pair[0] + " matches ApparelClassifier." + $pair[1]) $mine $theirs.x $theirs.y
-    }
 
     Assert-Band 'Bands.For(Pants) on defaults' ($For.Invoke($null, @((& $ClassOf 'Pants')))) 0.0 0.58
     Assert-Band 'Bands.For(Boots) on defaults' ($For.Invoke($null, @((& $ClassOf 'Boots')))) 0.0 0.20
@@ -348,11 +325,4 @@ finally {
     [System.AppDomain]::CurrentDomain.remove_AssemblyResolve($script:resolver)
 }
 
-Write-Host ""
-if ($script:failures.Count -eq 0) {
-    Write-Host ("$($script:checks) checks, all passed.") -ForegroundColor Green
-    exit 0
-}
-Write-Host ("$($script:checks) checks, $($script:failures.Count) failed:") -ForegroundColor Red
-$script:failures | ForEach-Object { Write-Host ("  - " + $_) -ForegroundColor Red }
-exit 1
+Complete-Tests

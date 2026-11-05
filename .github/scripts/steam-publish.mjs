@@ -49,6 +49,9 @@ const { createWorkshopVdf } = await import('semantic-release-steam/lib/vdf.mjs')
 if (typeof uploadWorkshopItem !== 'function' || typeof createWorkshopVdf !== 'function') {
   throw new Error('semantic-release-steam does not export the upload functions this script relies on');
 }
+// steamcmd does not apply the tags key of workshop.vdf: the tags are set after the upload by steam-set-tags.mjs, through the
+// Steam client protocol, which needs STEAM_REFRESH_TOKEN. Stop before the upload rather than after it.
+if (updateTags && !dryRun) required('STEAM_REFRESH_TOKEN');
 const stagePath = await stageModContent({ modPath });
 const { files, bytes } = await measure(stagePath);
 console.log(`staged ${files} files, ${(bytes / 1e6).toFixed(2)} MB, from ${modPath}`);
@@ -144,14 +147,14 @@ if (updateTags) {
 if (dryRun) {
   // Everything the upload does except talking to Steam: the VDF it would write, and the move of
   // workshop.vdf out of the content folder, run against a fake steamcmd.
-  const vdf = createWorkshopVdf({ appId: APP_ID, publishedFileId: config.workshopId, contentFolder: stagePath, changenote, previewfile, description, title, tags });
+  const vdf = createWorkshopVdf({ appId: APP_ID, publishedFileId: config.workshopId, contentFolder: stagePath, changenote, previewfile, description, title });
   for (const expected of [`"publishedfileid" "${config.workshopId}"`, `"appid" "${APP_ID}"`, '"changenote"']) {
     if (!vdf.includes(expected)) throw new Error(`the generated workshop.vdf lacks ${expected}`);
   }
   if (vdf.includes('"previewfile"') !== updatePreview) throw new Error(`the generated workshop.vdf ${updatePreview ? 'lacks' : 'has'} "previewfile" although update_preview is ${updatePreview}`);
   if (vdf.includes('"description"') !== updateDescription) throw new Error(`the generated workshop.vdf ${updateDescription ? 'lacks' : 'has'} "description" although update_description is ${updateDescription}`);
   if (vdf.includes('"title"') !== updateTitle) throw new Error(`the generated workshop.vdf ${updateTitle ? 'lacks' : 'has'} "title" although update_title is ${updateTitle}`);
-  if (vdf.includes('"tags"') !== updateTags) throw new Error(`the generated workshop.vdf ${updateTags ? 'lacks' : 'has'} "tags" although update_tags is ${updateTags}`);
+  if (vdf.includes('"tags"')) throw new Error('the generated workshop.vdf would carry "tags", which steamcmd ignores: tags are set by steam-set-tags.mjs');
   if (vdf.includes('"visibility"')) throw new Error('the generated workshop.vdf would set "visibility", which this workflow never sends');
   const probe = await mkdtemp(join(tmpdir(), 'vdf-probe-'));
   const probeVdf = join(probe, 'workshop.vdf');
@@ -178,7 +181,6 @@ if (dryRun) {
     previewfile,
     description,
     title,
-    tags,
     execFileAsync: relocatingExec(),
     verbose: true,
     logger: console,

@@ -23,11 +23,14 @@
     game's Managed folder on the probe path.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File Tests\Check-Mod.ps1
+    powershell -ExecutionPolicy Bypass -File Tests\Rule-TailorMadeContract.ps1
 #>
 
 [CmdletBinding()]
 param(
+    # Given by Tests/Test-Mod.ps1 (generated); by hand both default to this checkout and the protocols' scripts/.
+    [string]$ModRoot,
+    [string]$SharedDir,
     [string]$Managed = 'C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed',
     [string]$TailorMade = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3756915448\Assemblies\TailorMadeUnifiedApparelBodyRefitting.dll',
     # Reading our own [HarmonyPatch] attributes means resolving the attribute
@@ -37,23 +40,13 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if (-not $ModAssembly) {
-    $ModAssembly = Join-Path (Split-Path -Parent $PSScriptRoot) 'Mod\Assemblies\TailorMadeWaistlines.dll'
-}
+if (-not $ModRoot) { $ModRoot = Split-Path -Parent $PSScriptRoot }
+if (-not $SharedDir) { $SharedDir = Join-Path $ModRoot '..\scripts' }
+if (-not $ModAssembly) { $ModAssembly = Join-Path $ModRoot 'Mod\Assemblies\TailorMadeWaistlines.dll' }
 
-$script:failures = @()
-$script:checks = 0
-
-function Assert-That {
-    param([string]$What, [bool]$Ok, [string]$Detail)
-    $script:checks++
-    if ($Ok) {
-        Write-Host ("  ok    " + $What)
-    } else {
-        $script:failures += $What + $(if ($Detail) { " - " + $Detail } else { "" })
-        Write-Host ("  FAIL  " + $What + $(if ($Detail) { " - " + $Detail } else { "" }))
-    }
-}
+# Shared runner (lib/TestRunner.ps1): one numbered line per check, the detail of a failure under it, Complete-Tests exits 1 on any.
+. (Join-Path $SharedDir 'lib\TestRunner.ps1')
+function Assert-That([string]$What, [bool]$Ok, [string]$Detail) { Write-TestResult $(if ($Ok) { 'pass' } else { 'fail' }) $What @($Detail | Where-Object { $_ }) }
 
 # --- loading -----------------------------------------------------------------
 # TailorMade references the game's assemblies, so the resolver has to find them
@@ -218,11 +211,4 @@ finally {
     [System.AppDomain]::CurrentDomain.remove_AssemblyResolve($script:resolver)
 }
 
-Write-Host ""
-if ($script:failures.Count -eq 0) {
-    Write-Host ("$($script:checks) checks, all passed.") -ForegroundColor Green
-    exit 0
-}
-Write-Host ("$($script:checks) checks, $($script:failures.Count) failed:") -ForegroundColor Red
-$script:failures | ForEach-Object { Write-Host ("  - " + $_) -ForegroundColor Red }
-exit 1
+Complete-Tests
