@@ -227,8 +227,9 @@ namespace TailorMadeWaistlines
         /// <summary>
         /// The def names TailorMade must leave alone: every garment AB's Normal_Pants category gives
         /// this art to, and not only the two vanilla ones. AB matches a category by a plain substring of
-        /// the def name and only writes a path where the def has none, so a def is ours when its name
-        /// holds the keyword and its worn graphic is empty or already this path. Read from the defs
+        /// the def name and only writes a path where the def has none, so a def is ours when its worn
+        /// graphic is already this path (any name: the player may add keywords to AB's category), or
+        /// when it is still empty and its name holds AB's default keyword. Read from the defs
         /// rather than assumed, because a modded <c>...Pants</c> shares the path with the vanilla ones
         /// and would otherwise be fitted a second time into a band, on art that is already drawn for
         /// the body. A def with a graphic of its own is another mod's art and is left to TailorMade.
@@ -243,9 +244,11 @@ namespace TailorMadeWaistlines
                 foreach (KeyValuePair<string, string> a in apparel)
                 {
                     if (string.IsNullOrEmpty(a.Key) || names.Contains(a.Key)) continue;
-                    if (a.Value == ShortsPath) { names.Add(a.Key); continue; }
+                    // Already on AB's trousers or shorts path, whatever its name: AB's keywords are the
+                    // player's to edit (a lowercase 'pants' catches LTS_Sweatpants).
+                    if (a.Value == ShortsPath || a.Value == PantsPath) { names.Add(a.Key); continue; }
+                    if (!string.IsNullOrEmpty(a.Value)) continue;
                     if (a.Key.IndexOf(PantsKeyword, StringComparison.Ordinal) < 0) continue;
-                    if (!string.IsNullOrEmpty(a.Value) && a.Value != PantsPath) continue;
                     names.Add(a.Key);
                 }
             }

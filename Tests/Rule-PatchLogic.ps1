@@ -311,13 +311,16 @@ try {
         (New-Pair 'Apparel_OwnArtPants' 'Things/Pawn/Humanlike/Apparel/Other/Own'),
         (New-Pair 'Apparel_Jeans' ''),
         (New-Pair 'Apparel_Shirt' ''),
-        (New-Pair 'Apparel_pants_lower' '')))
+        (New-Pair 'Apparel_pants_lower' ''),
+        (New-Pair 'LTS_Sweatpants' $path),
+        (New-Pair 'Apparel_Leggings' $path)))
     Assert-That 'a modded ...Pants with no graphic of its own is left alone too'   ($mixed -contains '^Apparel_FlakPants$')
     Assert-That 'a def already on the trouser path is left alone'                  ($mixed -contains '^Apparel_ModdedPants$')
     Assert-That 'a def with art of its own is left to TailorMade'                  ($mixed -notcontains '^Apparel_OwnArtPants$')
     Assert-That 'a def without the keyword is not swept in'                        (($mixed -notcontains '^Apparel_Jeans$') -and ($mixed -notcontains '^Apparel_Shirt$'))
     Assert-That 'the keyword is matched as AB matches it: case-sensitively'       ($mixed -notcontains '^Apparel_pants_lower$')
-    Assert-That 'the two vanilla garments are never listed twice'                  (@($mixed | Where-Object { $_ -eq '^Apparel_Pants$' }).Count -eq 1)
+    Assert-That 'a def AB put on the trouser path by a keyword of the player is ours, whatever its name' (($mixed -contains '^LTS_Sweatpants$') -and ($mixed -contains '^Apparel_Leggings$'))
+    Assert-That 'the two vanilla garments are never listed twice'                 (@($mixed | Where-Object { $_ -eq '^Apparel_Pants$' }).Count -eq 1)
     $dots = @(Get-Targets @((New-Pair 'Apparel.Pants+X' '')))
     Assert-That 'a def name is escaped, never read as a pattern'                   ($dots -contains '^Apparel\.Pants\+X$')
 }

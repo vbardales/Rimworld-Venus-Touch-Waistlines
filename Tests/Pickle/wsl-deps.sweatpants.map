@@ -1,0 +1,17 @@
+# LTS_Sweatpants as trousers (2026-11-05): Raiments ships no worn graphic for them; AB's config gets a lowercase 'pants'
+# keyword (config/sweatpants seeds it) and Venus treats every def on AB's trousers path as trousers. Same mods as
+# wsl-deps.shirt-tucked.map plus Raiments.
+#   Submit-PickleRun.ps1 -Mod VenusTouchWaistlines -DepMap sweatpants -Filter '30-sweatpants'
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+wdi.realistic.bodies           3527486510
+ab.vplrf                       2986402536
+limetreesnake.raiments         3751997843
+nelim.pickletools.textureowner      path:PickleTools/TextureOwner/Mod
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod
