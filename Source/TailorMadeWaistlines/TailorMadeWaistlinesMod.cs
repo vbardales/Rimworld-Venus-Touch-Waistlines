@@ -180,6 +180,8 @@ namespace TailorMadeWaistlines
                     // The outline shirt (2026-10-23) uses that patch without APP; same experimental setting.
                     NativeWdiPants.ApplyOutlineShirt();
                 }));
+            // Shorts drawn as two legs (Swimwear's trunks): the middle line kept below the crotch only, the hem gap closed.
+            LongEventHandler.ExecuteWhenFinished(SplitLegArt.Apply);
             // After the trousers: the jackets are measured on their shells.
             LongEventHandler.ExecuteWhenFinished(JacketArt.Apply);
             // Dresses drawn for the body: TailorMade clips them, they need no fitting.

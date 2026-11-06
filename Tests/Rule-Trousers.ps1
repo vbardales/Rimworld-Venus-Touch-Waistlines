@@ -361,6 +361,20 @@ $cTop = [TmwCheck]::TopRow($gshell, $gw, $gh); $cBot = [TmwCheck]::BottomRow($gs
 # a long jacket's hem lands between the trousers' crotch and their hem (JacketArt.BelowCrotch), so the legs show under it
 Assert-That 'the crotch row lies between the waistband and the hem of the shell' ($crotchRow -gt $cTop -and $crotchRow -lt $cBot) "crotch $crotchRow, shell $cTop..$cBot"
 
+# Split-leg shorts (Swimwear's trunks): light fabric 64 x 30, dark outline, a dark middle line top to bottom, a gap in the hem.
+$sw = 64; $sh = 64; $sp = New-Object byte[] ($sw * $sh * 4)
+for ($y = 20; $y -le 49; $y++) { for ($x = 10; $x -le 53; $x++) {
+    $edge = ($y -le 21 -or $y -ge 48 -or $x -le 11 -or $x -ge 52); $mid = ($x -eq 31 -or $x -eq 32)
+    $v = if ($edge -or $mid) { 20 } else { 230 }; $i = ($y * $sw + $x) * 4; $sp[$i] = $v; $sp[$i + 1] = $v; $sp[$i + 2] = $v; $sp[$i + 3] = 255
+    if ($y -ge 48 -and $mid) { $sp[$i + 3] = 0 } } }
+$mended = $detail.GetMethod('MendSplitLegs').Invoke($null, @([byte[]]$sp, [int]$sw, [int]$sh))
+$spCrotch = $detail.GetMethod('CrotchRow').Invoke($null, @([byte[]]$sp, [int]$sw, [int]$sh))
+$hi = ((26 * $sw + 31) * 4); $lo = (($spCrotch + 2) * $sw + 31) * 4; $gap = ((49 * $sw + 31) * 4); $band = ((21 * $sw + 31) * 4)
+Assert-That 'split-leg shorts: the middle line is gone above the crotch' ($mended[$hi] -gt 150) "lum $($mended[$hi])"
+Assert-That 'split-leg shorts: the middle line stays below the crotch, as a seam' ($mended[$lo] -lt 70) "lum $($mended[$lo]), crotch row $spCrotch"
+Assert-That 'split-leg shorts: the gap in the hem is closed' ($mended[$gap + 3] -ge 128) "alpha $($mended[$gap + 3])"
+Assert-That 'split-leg shorts: the waistband outline is left as drawn' ($mended[$band] -eq $sp[$band])
+
 $jb = $detail.GetMethod('StretchBottom')
 $jbot = [TmwCheck]::BottomRow($gshell, $gw, $gh); $jtop = [TmwCheck]::TopRow($gshell, $gw, $gh)
 $pivot = $jtop + [int](($jbot - $jtop) / 2)

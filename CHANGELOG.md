@@ -22,6 +22,9 @@ Targets 1.0.0, the first public version.
 - **Long jackets stop a little below the crotch** of the trousers instead of at their hem,
   so the trouser legs show under a suit jacket or a coat (setting "Extend jackets down to
   the trousers").
+- **Swimwear's swimming trunks no longer look cut in two.** Their middle line is kept only
+  below the crotch, as a seam, and the gap in the hem between the legs is closed (front and
+  back, when Swimwear is loaded; the original art is untouched on disk).
 - **Dresses drawn for the body are left as they are** (setting, on by default), and the
   bodice of the royal dress is fitted to the breasts of WDI's bodies.
 - **Experimental, off by default: outline of vanilla trousers on WDI's ten bodies.** The

@@ -271,6 +271,98 @@ namespace TailorMadeWaistlines
         }
 
         /// <summary>
+        /// For shorts drawn as two legs side by side (Swimwear's trunks): the dark line down the middle is kept only below the
+        /// crotch, as a seam, and the small gap left in the hem between the legs is closed with the hem's own colour. On a body
+        /// drawn without legs the full-height line and the gap read as a garment cut in two (Virginie 2026-11-06).
+        /// The waistband and the outline are left as drawn: a dark pixel counts as the middle line only where the fabric goes on
+        /// at both sides of it in the same row. Returns the input itself when nothing changes.
+        /// </summary>
+        public static byte[] MendSplitLegs(byte[] rgba, int width, int height)
+        {
+            if (rgba == null) throw new ArgumentNullException(nameof(rgba));
+            if (width <= 0 || height <= 0 || rgba.Length != width * height * Channels)
+                throw new ArgumentException("rgba must hold width * height * 4 bytes.");
+            Shape s = Measure(rgba, width, height);
+            if (s == null) return rgba;
+            byte[] o = (byte[])rgba.Clone();
+            int reach = Math.Max(3, width / 40);
+            bool changed = false;
+            for (int y = s.Top; y < s.Crotch; y++)
+                changed |= EraseMiddleLine(rgba, o, width, y, s.Cx, reach);
+            for (int y = s.Crotch; y <= s.Bottom; y++)
+            {
+                for (int x = s.Cx - reach; x <= s.Cx + reach; x++)
+                {
+                    if (x <= 0 || x >= width - 1) continue;
+                    int i = (y * width + x) * Channels;
+                    bool solid = rgba[i + 3] >= Solid;
+                    if (!solid && SolidAt(rgba, width, y, x, -1, reach) && SolidAt(rgba, width, y, x, 1, reach))
+                    {
+                        // the gap in the hem between the legs: the colour of the leg next to it
+                        int src = Nearest(rgba, width, y, x, -1, reach);
+                        Buffer.BlockCopy(rgba, src, o, i, Channels);
+                        changed = true;
+                    }
+                }
+            }
+            return changed ? o : rgba;
+        }
+
+        private static int Lum(byte[] px, int i) => (px[i] + px[i + 1] + px[i + 2]) / 3;
+
+        /// <summary>
+        /// One row above the crotch: the run of pixels darker than the fabric around the middle (the line and its soft edges)
+        /// is repainted with a blend of the fabric just left and right of it. A row whose fabric does not go on at both sides
+        /// within twice the reach (the waistband, the outline) is left alone.
+        /// </summary>
+        private static bool EraseMiddleLine(byte[] src, byte[] dst, int width, int y, int cx, int reach)
+        {
+            int lo = Math.Max(1, cx - 2 * reach), hi = Math.Min(width - 2, cx + 2 * reach);
+            int il = (y * width + lo) * Channels, ir = (y * width + hi) * Channels;
+            if (src[il + 3] < Solid || src[ir + 3] < Solid) return false;
+            int fabric = Math.Max(Lum(src, il), Lum(src, ir));
+            if (fabric < 70) return false;
+            int threshold = fabric - 25;
+            // the darkest pixel near the middle, then the run around it
+            int dark = -1, darkLum = threshold;
+            for (int x = cx - reach; x <= cx + reach; x++)
+            {
+                int i = (y * width + x) * Channels;
+                if (src[i + 3] < Solid) return false;
+                if (Lum(src, i) < darkLum) { darkLum = Lum(src, i); dark = x; }
+            }
+            if (dark < 0) return false;
+            int xl = dark, xr = dark;
+            while (xl - 1 > lo && Lum(src, (y * width + xl - 1) * Channels) < threshold) xl--;
+            while (xr + 1 < hi && Lum(src, (y * width + xr + 1) * Channels) < threshold) xr++;
+            int a = (y * width + xl - 1) * Channels, b = (y * width + xr + 1) * Channels;
+            if (Lum(src, a) < threshold || Lum(src, b) < threshold) return false;
+            for (int x = xl; x <= xr; x++)
+            {
+                float t = (x - xl + 1f) / (xr - xl + 2f);
+                int i = (y * width + x) * Channels;
+                for (int c = 0; c < 3; c++) dst[i + c] = (byte)Math.Round(src[a + c] + (src[b + c] - src[a + c]) * t);
+                dst[i + 3] = src[i + 3];
+            }
+            return true;
+        }
+
+        private static bool SolidAt(byte[] px, int width, int y, int x, int dir, int reach) => Nearest(px, width, y, x, dir, reach) >= 0;
+
+        /// <summary>Index of the first solid pixel from x towards dir within reach, or -1.</summary>
+        private static int Nearest(byte[] px, int width, int y, int x, int dir, int reach)
+        {
+            for (int k = 1; k <= reach; k++)
+            {
+                int xx = x + dir * k;
+                if (xx < 0 || xx >= width) break;
+                int i = (y * width + xx) * Channels;
+                if (px[i + 3] >= Solid) return i;
+            }
+            return -1;
+        }
+
+        /// <summary>
         /// Stretches (or compresses) the part of the picture below <paramref name="pivotRow"/>, so that its lowest solid row lands on
         /// <paramref name="newBottomRow"/>; everything above the pivot stays as it is. Returns the input itself when there is
         /// nothing to do (the garment already reaches that row, or the pivot is not above its hem).
