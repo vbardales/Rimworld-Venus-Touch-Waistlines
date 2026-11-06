@@ -1,0 +1,19 @@
+# Male validation test (Virginie, 2026-11-06): eight states, three facings, WDI body with VTW active. Same mods as
+# wsl-deps.shirt-tucked.map plus UnderWhere (the boxers) and Vanilla Apparel Expanded (the shirt and the shorts).
+# config/male-validation seeds AB's categories and lists VAE_Apparel_CasualTShirt in untuckedShirts.
+#   Submit-PickleRun.ps1 -Mod VenusTouchWaistlines -DepMap wsl-deps.male-validation.map -Filter '31-male-validation'
+tiagocc0.FemaleBodyVariants    3798082132
+tiagocc0.FemaleApparelVariants 3799726535
+Malistaticy.UnderWhere          1870010563
+OskarPotocki.VanillaFactionsExpanded.Core 2023507013
+VanillaExpanded.VAPPE           1814987817
+wdi.realistic.bodies           3527486510
+ab.vplrf                       2986402536
+nelim.pickletools.textureowner      path:PickleTools/TextureOwner/Mod
+nelim.pickletools.colonistrace      path:PickleTools/ColonistRace/Mod
+nelim.pickletools.screenshotstudio  path:PickleTools/ScreenshotStudio/Mod
+nelim.pickletools.camerazoom        path:PickleTools/CameraZoom/Mod
+nelim.pickletools.stagedecor        path:PickleTools/StageDecor/Mod
+nelim.pickletools.clearscreen       path:PickleTools/ClearScreen/Mod
+nelim.pickletools.coatsteps         path:PickleTools/CoatSteps/Mod
+nelim.pickletools                  path:PickleTools/Tests/Pickle/StandaloneBase/Mod

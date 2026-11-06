@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Seed for the "male-validation" pass (wsl-deps.male-validation.map), Virginie 2026-11-06. Defaults, except that
+  VAE_Apparel_CasualTShirt is worn over the trousers (state 5), while Apparel_BasicShirt stays tucked (state 4).
+-->
+<SettingsBlock>
+  <ModSettings Class="TailorMadeWaistlines.TailorMadeWaistlinesSettings">
+    <shortenShirts>True</shortenShirts>
+    <untuckedShirts>
+      <li>VAE_Apparel_CasualTShirt</li>
+    </untuckedShirts>
+  </ModSettings>
+</SettingsBlock>
