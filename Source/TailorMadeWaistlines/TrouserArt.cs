@@ -62,6 +62,13 @@ namespace TailorMadeWaistlines
         // left open, because shorts leave the legs bare.
         private const string ShortsPath = "Things/Pawn/Humanlike/Apparel/Shorts/Shorts";
 
+        // AB's Suit_Pants (keyword Trousers) and Jeans categories. Their shells are the same small bowl as the trousers' one,
+        // and drawn raw they read as a cup at the bottom of the body (Miel's VAE_Apparel_Trousers, NSB 2026-11-06), so they are
+        // drawn the same way as the trousers.
+        private const string TrousersPath = "Things/Pawn/Humanlike/Apparel/Trousers/Trousers";
+        private const string JeansPath = "Things/Pawn/Humanlike/Apparel/Jeans/Jeans";
+        private static readonly string[] LongLegPaths = { TrousersPath, JeansPath };
+
         private static readonly string[] FacingNames = { "south", "east", "north" };
 
         // AB's Normal_Pants category matches on this keyword, as a plain substring of the def name.
@@ -115,6 +122,11 @@ namespace TailorMadeWaistlines
                     Register(body.defName + "_Female", f, false, generalDir, drop, mine, settings);
                     RegisterFemaleShell(body.defName, f, drop, mine, settings, PantsPath, false);
                     RegisterFemaleShell(body.defName, f, drop, mine, settings, ShortsPath, true);
+                    foreach (string longLegs in LongLegPaths)
+                    {
+                        Register(body.defName, f, true, null, drop, mine, settings, longLegs);
+                        RegisterFemaleShell(body.defName, f, drop, mine, settings, longLegs, false);
+                    }
                 }
 
                 // TailorMade's ignore is per body type, not per facing or gender: it would leave every
@@ -246,7 +258,7 @@ namespace TailorMadeWaistlines
                     if (string.IsNullOrEmpty(a.Key) || names.Contains(a.Key)) continue;
                     // Already on AB's trousers or shorts path, whatever its name: AB's keywords are the
                     // player's to edit (a lowercase 'pants' catches LTS_Sweatpants).
-                    if (a.Value == ShortsPath || a.Value == PantsPath) { names.Add(a.Key); continue; }
+                    if (a.Value == ShortsPath || a.Value == PantsPath || a.Value == TrousersPath || a.Value == JeansPath) { names.Add(a.Key); continue; }
                     if (!string.IsNullOrEmpty(a.Value)) continue;
                     if (a.Key.IndexOf(PantsKeyword, StringComparison.Ordinal) < 0) continue;
                     names.Add(a.Key);
@@ -356,7 +368,7 @@ namespace TailorMadeWaistlines
         private static float[] UnderwearCurve(string path, string curveBody, out string facing)
         {
             facing = null;
-            Match m = Regex.Match(path, @"(?:Pants|Shorts)_([A-Za-z]+)_(south|east|north)$");
+            Match m = Regex.Match(path, @"(?:Pants|Shorts|Trousers|Jeans)_([A-Za-z]+)_(south|east|north)$");
             if (!m.Success) return null;
             facing = m.Groups[2].Value;
             return ShirtCut.ProfileFor(curveBody ?? m.Groups[1].Value, facing);
@@ -365,7 +377,7 @@ namespace TailorMadeWaistlines
         private static bool TryBelowNavel(string path, out float target)
         {
             target = 0f;
-            Match m = Regex.Match(path, @"(?:Pants|Shorts)_([A-Za-z]+)_(south|east|north)$");
+            Match m = Regex.Match(path, @"(?:Pants|Shorts|Trousers|Jeans)_([A-Za-z]+)_(south|east|north)$");
             return m.Success && BelowNavel.TryGetValue(m.Groups[1].Value, out target);
         }
 

@@ -22,6 +22,9 @@ Targets 1.0.0, the first public version.
 - **Long jackets stop a little below the crotch** of the trousers instead of at their hem,
   so the trouser legs show under a suit jacket or a coat (setting "Extend jackets down to
   the trousers").
+- **AB's Trousers and Jeans categories are drawn like its Pants**: they start on WDI's
+  underwear line and get the waistband, fly and seams, instead of showing AB's raw shell as
+  a small cup at the bottom of the body (VAE's trousers, for one).
 - **Swimwear's swimming trunks no longer look cut in two.** Their middle line is kept only
   below the crotch, as a seam, and the gap in the hem between the legs is closed (front and
   back, when Swimwear is loaded; the original art is untouched on disk).

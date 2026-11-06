@@ -321,6 +321,10 @@ try {
     Assert-That 'the keyword is matched as AB matches it: case-sensitively'       ($mixed -notcontains '^Apparel_pants_lower$')
     Assert-That 'a def AB put on the trouser path by a keyword of the player is ours, whatever its name' (($mixed -contains '^LTS_Sweatpants$') -and ($mixed -contains '^Apparel_Leggings$'))
     Assert-That 'the two vanilla garments are never listed twice'                 (@($mixed | Where-Object { $_ -eq '^Apparel_Pants$' }).Count -eq 1)
+    $longLegs = @(Get-Targets @(
+        (New-Pair 'VAE_Apparel_Trousers' 'Things/Pawn/Humanlike/Apparel/Trousers/Trousers'),
+        (New-Pair 'Apparel_DenimJeans' 'Things/Pawn/Humanlike/Apparel/Jeans/Jeans')))
+    Assert-That 'defs AB put on its Trousers or Jeans path are drawn by this mod too, so TailorMade leaves them alone' (($longLegs -contains '^VAE_Apparel_Trousers$') -and ($longLegs -contains '^Apparel_DenimJeans$'))
     $dots = @(Get-Targets @((New-Pair 'Apparel.Pants+X' '')))
     Assert-That 'a def name is escaped, never read as a pattern'                   ($dots -contains '^Apparel\.Pants\+X$')
 }
