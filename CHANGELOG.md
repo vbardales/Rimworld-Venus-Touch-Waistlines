@@ -21,7 +21,8 @@ Targets 1.0.0, the first public version.
   jackets and other shell-layer torso garments stay full length.
 - **Long jackets stop a little below the crotch** of the trousers instead of at their hem,
   so the trouser legs show under a suit jacket or a coat (setting "Extend jackets down to
-  the trousers").
+  the trousers"). This also holds for jackets drawn at another resolution than the trousers,
+  such as VAE's suit jacket.
 - **AB's Trousers and Jeans categories are drawn like its Pants**: they start on WDI's
   underwear line and get the waistband, fly and seams, instead of showing AB's raw shell as
   a small cup at the bottom of the body (VAE's trousers, for one).

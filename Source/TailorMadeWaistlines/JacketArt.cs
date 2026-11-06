@@ -176,8 +176,11 @@ namespace TailorMadeWaistlines
                 {
                     byte[] pantsPx = TrouserArt.Read(pants, out int pw, out int ph);
                     int pantsBottom = TrouserDetail.BottomRow(pantsPx, pw, ph), crotch = TrouserDetail.CrotchRow(pantsPx, pw, ph);
-                    if (pantsBottom < 0 || crotch < 0 || h != ph) return;
-                    hem = crotch + (int)Math.Round(BelowCrotch * (pantsBottom - crotch), MidpointRounding.AwayFromZero);
+                    if (pantsBottom < 0 || crotch < 0 || ph <= 0) return;
+                    // Measured on the shell, landed on the jacket: the two need not share a resolution (VAE's suit jacket is
+                    // 256 pixels high, AB's shells 128), so the hem is carried over as a share of the picture's height.
+                    float hemShare = (crotch + BelowCrotch * (pantsBottom - crotch)) / ph;
+                    hem = (int)Math.Round(hemShare * h, MidpointRounding.AwayFromZero);
                     pivot = (int)Math.Round(navel * h, MidpointRounding.AwayFromZero);
                 }
                 byte[] stretched = TrouserDetail.StretchBottom(px, w, h, pivot, hem);
