@@ -7,10 +7,12 @@ using Verse;
 namespace TailorMadeWaistlines
 {
     /// <summary>
-    /// Lets a jacket reach down to the hem of the trousers. A vanilla jacket is drawn for a body with legs and ends at the
+    /// Lets a jacket reach down over the top of the trousers. A vanilla jacket is drawn for a body with legs and ends at the
     /// waist; on WDI's bodies the trousers go on below it, so the jacket stops where the trousers begin. The jacket's art
-    /// is stretched downwards, below the navel, until its hem lands on the lowest row of the trousers' shell for the same
-    /// body and facing. Above the navel nothing moves, so the collar, the shoulders and the chest stay as drawn.
+    /// is stretched downwards, below the navel, until its hem lands a little below the crotch of the trousers' shell for
+    /// the same body and facing (BelowCrotch of the way from the crotch to the trousers' hem), so the trouser legs still show
+    /// under it (Virginie 2026-11-06: down to the trousers' hem, the jacket hid the trousers to the feet). Above the navel
+    /// nothing moves, so the collar, the shoulders and the chest stay as drawn.
     ///
     /// Registered in this mod's own content, as the trousers are: the game takes the last loaded mod's texture for a path,
     /// so removing the mod puts the original jacket back.
@@ -18,6 +20,9 @@ namespace TailorMadeWaistlines
     public static class JacketArt
     {
         private static readonly string[] FacingNames = { "south", "east", "north" };
+
+        /// <summary>Where a jacket's hem lands: this share of the way from the trousers' crotch down to their hem.</summary>
+        public const float BelowCrotch = 0.25f;
 
         public static int Stretched { get; private set; }
 
@@ -170,8 +175,9 @@ namespace TailorMadeWaistlines
                 else
                 {
                     byte[] pantsPx = TrouserArt.Read(pants, out int pw, out int ph);
-                    hem = TrouserDetail.BottomRow(pantsPx, pw, ph);
-                    if (hem < 0 || h != ph) return;
+                    int pantsBottom = TrouserDetail.BottomRow(pantsPx, pw, ph), crotch = TrouserDetail.CrotchRow(pantsPx, pw, ph);
+                    if (pantsBottom < 0 || crotch < 0 || h != ph) return;
+                    hem = crotch + (int)Math.Round(BelowCrotch * (pantsBottom - crotch), MidpointRounding.AwayFromZero);
                     pivot = (int)Math.Round(navel * h, MidpointRounding.AwayFromZero);
                 }
                 byte[] stretched = TrouserDetail.StretchBottom(px, w, h, pivot, hem);

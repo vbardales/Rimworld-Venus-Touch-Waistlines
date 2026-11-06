@@ -19,6 +19,9 @@ Targets 1.0.0, the first public version.
 - **Shirts end just under the trousers' top edge**, every facing, so no belly skin
   shows: cut on WDI's own art for Fat and Hulk, compressed into the band elsewhere;
   jackets and other shell-layer torso garments stay full length.
+- **Long jackets stop a little below the crotch** of the trousers instead of at their hem,
+  so the trouser legs show under a suit jacket or a coat (setting "Extend jackets down to
+  the trousers").
 - **Dresses drawn for the body are left as they are** (setting, on by default), and the
   bodice of the royal dress is fitted to the breasts of WDI's bodies.
 - **Experimental, off by default: outline of vanilla trousers on WDI's ten bodies.** The

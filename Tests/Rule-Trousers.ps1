@@ -356,6 +356,11 @@ $nAlphaBare = [TmwCheck]::AlphaChanged($gshell, $bareOut)
 Assert-That 'shorts: the gap between the legs is left open (alpha removed), not painted' ($nAlphaBare -gt 0) "$nAlphaBare alpha values changed"
 Assert-That 'trousers: the gap is painted, no alpha removed' ([TmwCheck]::AlphaChanged($gshell, $gout) -eq 0)
 
+$crotchRow = $detail.GetMethod('CrotchRow').Invoke($null, @($gshell, $gw, $gh))
+$cTop = [TmwCheck]::TopRow($gshell, $gw, $gh); $cBot = [TmwCheck]::BottomRow($gshell, $gw, $gh)
+# a long jacket's hem lands between the trousers' crotch and their hem (JacketArt.BelowCrotch), so the legs show under it
+Assert-That 'the crotch row lies between the waistband and the hem of the shell' ($crotchRow -gt $cTop -and $crotchRow -lt $cBot) "crotch $crotchRow, shell $cTop..$cBot"
+
 $jb = $detail.GetMethod('StretchBottom')
 $jbot = [TmwCheck]::BottomRow($gshell, $gw, $gh); $jtop = [TmwCheck]::TopRow($gshell, $gw, $gh)
 $pivot = $jtop + [int](($jbot - $jtop) / 2)

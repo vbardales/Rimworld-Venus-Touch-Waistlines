@@ -260,6 +260,17 @@ namespace TailorMadeWaistlines
         }
 
         /// <summary>
+        /// The row where the legs of a trousers shell part (the same measure the fly and the back seam end on), or -1 when
+        /// the picture is empty.
+        /// </summary>
+        public static int CrotchRow(byte[] rgba, int width, int height)
+        {
+            if (rgba == null) throw new ArgumentNullException(nameof(rgba));
+            Shape s = Measure(rgba, width, height);
+            return s == null ? -1 : s.Crotch;
+        }
+
+        /// <summary>
         /// Stretches (or compresses) the part of the picture below <paramref name="pivotRow"/>, so that its lowest solid row lands on
         /// <paramref name="newBottomRow"/>; everything above the pivot stays as it is. Returns the input itself when there is
         /// nothing to do (the garment already reaches that row, or the pivot is not above its hem).
