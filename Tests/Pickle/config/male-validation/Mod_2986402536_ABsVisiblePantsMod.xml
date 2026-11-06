@@ -62,6 +62,7 @@
 				<keyWord>
 					<li>Shorts_Pants</li>
 					<li>shortsPants</li>
+					<li>Shorts</li>
 				</keyWord>
 				<TargetApparel IsNull="True" />
 				<ingoreApparel IsNull="True" />
