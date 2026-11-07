@@ -266,8 +266,19 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
      a dark band on the front. They stay in the B3 pairs.
   5. The **whole silhouette**, its black outline included, on both bodies: the vanilla garment covers the vanilla body's outline,
      so the map reaches the WDI body's outline too (Virginie: "on voit encore des zones noires ... il n'en faut justement pas").
-  Result on `Male`: no dark zone left, the grid covers the whole WDI body in the three views; a faint line under the pecs in
-  profile (the drawn fold).
+  Result on `Male`: no dark zone left, the grid covers the whole WDI body in the three views.
+- **Weak zones** (Virginie: "c'est les zones de faiblesse"): the board shows the map's local area change (blue squeezed, red
+  stretched). Two causes found and treated on `Male` (2026-11-08):
+  1. **The cloth, not the skin**: the relief has its hollows bridged (grey closing of radius 14) and falls from a bump no faster
+     than 0.6 px per row going down (it hangs from the pec apex), so the cloth does not follow the fold under the pecs, the small of
+     the back or the buttocks' cleft (`reliefmap.cloth`).
+  2. **Landmarks the cloth hides or that sit differently on a muscled body** are out of the heights: the under-breast fold, the
+     waist, the profile's belly front (right under the big WDI pecs, far below the apex on vanilla) and the pec apex (above the
+     armpits on vanilla, below on WDI; in profile it squeezed the apex-to-navel stretch x0.61 into a band). Heights now come from
+     the neck (bases, jugular notch, neck front and back), the armpits, the navel and the sex; the armpit, navel and sex rows are
+     shared with the side and back views.
+  Left: a mild general squeeze (the WDI torso is shorter on the surface than the vanilla one), the upper back in profile, the low
+  front and the stretched rim along the outline.
 - Still to do: carry the garment's ease (what lies outside the vanilla body), then use the map in B4 instead of the point warp.
 
 ## Other inputs
