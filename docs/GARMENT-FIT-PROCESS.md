@@ -39,9 +39,19 @@ outputs (other body families, the in-game C# version).
 | 4. trousers alone | none | stop at **min(B,C)** | trousers |
 | untucked top | down to **max(B,C) + d_min**, the **same d_min as rule 1** (measured from min(B,C)): the hem sits higher by the gap between the two lines, and a little more of the trousers shows (Virginie, 2026-11-07) | up to min(B,C) (or max(B,C): hidden either way) | **top over the trousers** |
 
-For the untucked hem, max(B,C) is never taken under min(B,C) (near the span ends the smoothed, flat-held max falls 20 to 30 px
-under the pink line), and past the shared span it follows the pink line's slope extension, moved by the gap at the span end.
-Held flat, it made a flap at the back on east (`rules4.max_ext`).
+For the top (rule 1, tucked crop, untucked), min(B,C) and max(B,C) come from `rules4.lines` (2026-11-07, Virginie: "ça a utilisé
+certaines lignes sans extrapolation, d'où la redescente"):
+
+- each sprite's top edge loses its side walls first: a jump of 5 px or more in the 10 end columns (the rounded side pad of the
+  panties: `Hulk_Female` 383 then 396 south, 377 then 397 north), then the columns that still step by more than 2 px, then a
+  gentle wall up to a real corner near the end (`Thin_Female` east back: 347 rising to 331 over 8 columns, then turning down);
+- min and max per column on the span both sprites still cover, median of 3;
+- **both lines extended past that span with their own slope** (linear fit on their last 12 columns), max never under min.
+
+Before, max was held flat and the panties' side pad bent it down at the span ends, so the untucked hem dropped at the hips on
+`Hulk_Female` south. Inside the span these lines match `hemshift .pink.txt` within 1 px except at the trimmed walls. A cap of the
+hem at the bottom of the boxers was tried and dropped: on the trapezoid boxers of `Fat_Female` it raised spikes on the slanted sides.
+The trousers still use `pantsnap.waist_line` (held flat).
 
 Layering corrected by Virginie on `Thin_Female` south the same day, and the concept validated by her on that body and facing (the
 others not reviewed yet): in both tucked and untucked cases the trousers are the lower
