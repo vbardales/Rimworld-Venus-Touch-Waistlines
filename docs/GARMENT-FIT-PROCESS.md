@@ -35,7 +35,8 @@ outputs (other body families, the in-game C# version).
 | 4. trousers alone | none | stop at **min(B,C)** | trousers |
 | untucked top | as in rule 1 | up to min(B,C) (or max(B,C): hidden either way) | **top over the trousers** |
 
-Layering corrected by Virginie on `Thin_Female` south the same day: in both tucked and untucked cases the trousers are the lower
+Layering corrected by Virginie on `Thin_Female` south the same day, and the concept validated by her on that body and facing (the
+others not reviewed yet): in both tucked and untucked cases the trousers are the lower
 layer and the top the upper one.
 
 **d_min is one constant per body type and facing** (Virginie, 2026-11-07), computed once like D
