@@ -1,0 +1,107 @@
+{
+ "Fat_Female": {
+  "table": {
+   "round_depth": 1.12,
+   "v_depth": 1.62,
+   "shoulders": "covered",
+   "measured_bare_shoulders": 0.0,
+   "source": "measured on the WDI drawings"
+  },
+  "ShirtButton": {
+   "kind": "V",
+   "ratio": 0.661,
+   "iou": 0.857,
+   "edge_px": 5.53,
+   "lum_mae": 0.154,
+   "round1_iou": 0.855,
+   "round2B_iou": 0.792,
+   "buttons": 3,
+   "strokes": 8,
+   "lapels": true,
+   "d": 5
+  },
+  "ShirtBasic": {
+   "kind": "round",
+   "ratio": 0.914,
+   "iou": 0.906,
+   "edge_px": 3.9,
+   "lum_mae": 0.114,
+   "round1_iou": 0.868,
+   "round2B_iou": 0.862,
+   "buttons": 5,
+   "strokes": 2,
+   "lapels": false,
+   "d": 5
+  }
+ },
+ "Hulk_Female": {
+  "table": {
+   "round_depth": 0.79,
+   "v_depth": 1.01,
+   "shoulders": "covered",
+   "measured_bare_shoulders": 0.4,
+   "source": "measured on the WDI drawings"
+  },
+  "ShirtButton": {
+   "kind": "V",
+   "ratio": 0.661,
+   "iou": 0.845,
+   "edge_px": 6.33,
+   "lum_mae": 0.118,
+   "round1_iou": 0.891,
+   "round2B_iou": 0.766,
+   "buttons": 2,
+   "strokes": 5,
+   "lapels": true,
+   "d": 1
+  },
+  "ShirtBasic": {
+   "kind": "round",
+   "ratio": 0.853,
+   "iou": 0.877,
+   "edge_px": 5.7,
+   "lum_mae": 0.096,
+   "round1_iou": 0.908,
+   "round2B_iou": 0.825,
+   "buttons": 1,
+   "strokes": 0,
+   "lapels": false,
+   "d": 1
+  }
+ },
+ "Thin_Female": {
+  "table": {
+   "round_depth": 0.82,
+   "v_depth": 1.05,
+   "shoulders": "covered",
+   "measured_bare_shoulders": 0.39,
+   "source": "measured on the WDI drawings"
+  },
+  "ShirtButton": {
+   "kind": "V",
+   "ratio": 0.85,
+   "iou": 0.919,
+   "edge_px": 1.88,
+   "lum_mae": 0.107,
+   "round1_iou": 0.933,
+   "round2B_iou": 0.875,
+   "buttons": 4,
+   "strokes": 3,
+   "lapels": false,
+   "d": 0
+  },
+  "ShirtBasic": {
+   "kind": "round",
+   "ratio": 1.0,
+   "iou": 0.924,
+   "edge_px": 1.74,
+   "lum_mae": 0.1,
+   "round1_iou": 0.843,
+   "round2B_iou": 0.887,
+   "buttons": 1,
+   "strokes": 0,
+   "lapels": false,
+   "d": 0
+  }
+ }
+}

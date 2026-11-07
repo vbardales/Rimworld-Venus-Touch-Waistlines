@@ -1,0 +1,59 @@
+{
+ "_doc": "front (south) neck opening per body type, landmark frame: depths = bottom of the opening below the neck base row in units of jugular-to-cleavage; width = opening half-width in shoulder half-width units; shoulders: covered | bare",
+ "Fat_Female": {
+  "round_depth": 0.92,
+  "v_depth": 1.41,
+  "width": 0.61,
+  "shoulders": "covered",
+  "source": "measured on the WDI drawings (round W 0.60, V W 0.63)"
+ },
+ "Hulk_Female": {
+  "round_depth": 0.8,
+  "v_depth": 1.03,
+  "width": 0.38,
+  "shoulders": "covered",
+  "source": "measured on the WDI drawings (round W 0.38, V W 0.38)"
+ },
+ "Thin_Female": {
+  "round_depth": 0.73,
+  "v_depth": 0.95,
+  "width": 0.53,
+  "shoulders": "covered",
+  "source": "measured on the WDI drawings (round W 0.49, V W 0.57)"
+ },
+ "Thin": {
+  "round_depth": 0.73,
+  "v_depth": 0.95,
+  "width": 0.53,
+  "shoulders": "covered",
+  "source": "default from Thin_Female, hand-editable"
+ },
+ "Fat": {
+  "round_depth": 0.92,
+  "v_depth": 1.41,
+  "width": 0.61,
+  "shoulders": "covered",
+  "source": "default from Fat_Female, hand-editable"
+ },
+ "Hulk": {
+  "round_depth": 0.8,
+  "v_depth": 1.03,
+  "width": 0.38,
+  "shoulders": "covered",
+  "source": "default from Hulk_Female, hand-editable"
+ },
+ "Male": {
+  "round_depth": 0.82,
+  "v_depth": 1.13,
+  "width": 0.51,
+  "shoulders": "covered",
+  "source": "default = mean of the three drawn bodies, hand-editable"
+ },
+ "Female": {
+  "round_depth": 0.82,
+  "v_depth": 1.13,
+  "width": 0.51,
+  "shoulders": "covered",
+  "source": "default = mean of the three drawn bodies, hand-editable"
+ }
+}
