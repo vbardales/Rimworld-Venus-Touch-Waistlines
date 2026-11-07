@@ -23,6 +23,10 @@ outputs (other body families, the in-game C# version).
   (`hemshift_<Body>_<facing>.pink.txt`, with the hook handling of `hemshift.ps1`): held flat, the back of the side view went wrong.
 - **max(B,C)**: per column the **higher** of the two tops (smaller y), same span rule, **held flat** past the shared span. **The trousers
   follow it.** The shirt therefore overlaps the top of the trousers between the two lines.
+- min and max are taken **column by column**, not as one whole sprite line (Virginie, 2026-11-07): where the boxers and panties
+  tops cross, the line moves from one to the other. On `Thin_Female` north the lower one is the boxers, then the panties, then
+  the boxers again. On `Thin_Female` east the WDI artist drew both tops identical (0 px apart on all 98 shared columns), so
+  min(B,C) = max(B,C) there.
 - **Untucked limit**: an untucked shirt never goes below the **bottom of the boxers** (her rule of 2026-11-05, confirmed 2026-11-07).
 
 **The four rules** (Virginie, 2026-11-07; board `2026-11-07_four-rules.png`, script `rules4.py`):
@@ -31,7 +35,7 @@ outputs (other body families, the in-game C# version).
 |---|---|---|---|
 | 1. top alone | down to **min(B,C) + d_min**, d_min = the smallest gap, over the columns where both sprites are drawn, between min(B,C) and the bottom of the boxers' legs (the hem keeps the shape of min(B,C) and never goes below the boxers) | none | top |
 | 2. trousers with a top | | up to **max(B,C)** | see 3 and untucked |
-| 3. tucked top | **cropped at min(B,C)** | up to max(B,C), so no gap opens between the two lines | **top over the trousers** (two layers: trousers under, top over) |
+| 3. tucked top | **cropped at min(B,C)** | up to max(B,C), so no gap opens between the two lines; **min(B,C) in the columns where the two lines are within one stroke (4 px)** | **top over the trousers** (two layers: trousers under, top over); where the lines are close, a **single stroke, the trousers' waistband** |
 | 4. trousers alone | none | stop at **min(B,C)** | trousers |
 | untucked top | as in rule 1 | up to min(B,C) (or max(B,C): hidden either way) | **top over the trousers** |
 
@@ -39,22 +43,35 @@ Layering corrected by Virginie on `Thin_Female` south the same day, and the conc
 others not reviewed yet): in both tucked and untucked cases the trousers are the lower
 layer and the top the upper one.
 
+**Tucked, where the two lines are close** (Virginie, 2026-11-07, "garde bas"; validated on `Thin_Female` south, east and north):
+when min(B,C) and max(B,C) are less than one stroke apart, the trousers' stroke and the top's hem stroke sit side by side as an
+8 px black band (east, where the lines are identical). In those columns:
+
+- the trousers go up to min(B,C), the lower line, so their waistband sits where it sits on trousers alone (rule 4);
+- the top's hem stroke is turned back into fabric (a stroke pixel nearer the hem curve than the side curve, within the hem band);
+- the top's crop goes down to the trousers' top plus 1.5 px, so no row of body shows between them;
+- the trousers' waistband stroke is drawn again over the top.
+
+On `Thin_Female` this applies to 0 of 106 columns south, 98 of 98 east, 69 of 106 north.
+
 **d_min is one constant per body type and facing** (Virginie, 2026-11-07), computed once like D
-(`Art/work/transfer-proto/dmin.json`). Values at the 512 scale:
+(`Art/work/transfer-proto/dmin.json`). Measure: the smallest gap between min(B,C) and the bottom of the boxers, over the shared
+span, **only in the columns where the boxers' bottom runs across** (slope of 1 px per column or less). The side walls of the sprite,
+where its bottom climbs to meet its top, are not the leg line: counted, they gave 11.2 on `Thin_Female` east and 65.6 north,
+both wrong (Virginie, same day). Values at the 512 scale (only `Thin_Female` reviewed; `Hulk_Female` east still looks wrong):
 
 | Body | south | east | north |
 |---|---|---|---|
-| Thin_Female | 40.0 | 11.2 | 65.6 |
-| Fat_Female | 20.0 | 3.0 | 14.8 |
-| Hulk_Female | 45.0 | 2.1 | 61.6 |
-| Male | 21.4 | 6.0 | 20.6 |
-| Female | 31.0 | 9.2 | 54.0 |
-| Thin | 33.0 | 7.5 | 49.7 |
-| Fat | 9.7 | 3.0 | 14.8 |
-| Hulk | 12.0 | 3.9 | 10.9 |
+| Thin_Female | 40.0 | 43.0 | 75.0 |
+| Fat_Female | 42.0 | 13.2 | 43.9 |
+| Hulk_Female | 45.0 | 2.1 | 72.0 |
+| Male | 32.0 | 25.0 | 43.0 |
+| Female | 31.0 | 27.0 | 70.0 |
+| Thin | 42.0 | 22.0 | 51.0 |
+| Fat | 34.0 | 9.1 | 43.9 |
+| Hulk | 53.0 | 42.0 | 66.0 |
 
-In profile the boxers' leg line comes close to min(B,C) at one end, so d_min is small there; at the back the boxers cover the
-buttocks and d_min is large on the slim bodies.
+At the back the boxers cover the buttocks, so d_min is large: the top alone reaches the bottom of the boxers.
 - **D**: per column, pink line minus the vanilla naked body bottom, **centred** (its value at the middle removed) and smoothed
   (`hemshift_<Body>_<facing>.txt`). It carries the shape of the line, not its height. Known faults: the slope extension climbs steeply
   at the sides on `Hulk` and `Hulk_Female` front and back, and leaves the body on several side views; to bound before use on trousers.
@@ -167,6 +184,8 @@ would be deformed by the outline width. Two consistent choices exist:
 | `shirt2.py` | `2026-11-07_shirt-step2.png` | shirt down to min(B,C), over the trousers |
 | `pantsnap.py` | `2026-11-07_pants-snap-<facing>.png` | trousers on the longjohns, max(B,C), U bottom |
 | `dline.py` | `2026-11-07_D-line.png` | the D line on all bodies |
+| `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | the four rules and untucked; d_min (`dmin_of`), tucked (`tucked`) |
+| `tuckzoom.py [Body]` | `2026-11-07_tucked-zoom-<Body>.png` | waist zoom: trousers alone over tucked, three facings |
 | `generalise.py` | `2026-11-07_generalise-<facing>.png` | round 8 on garments it was never tuned on |
 
 Run any of them with `uv run --with numpy --with pillow --with scipy --with scikit-image python <script>` from that folder.
