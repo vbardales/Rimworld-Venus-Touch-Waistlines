@@ -262,9 +262,12 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
      the side and back views (rows matched by the silhouette's top and bottom).
   3. Profile: the front landmarks drive the front half, the back ones the back half, the shared rows both; blended across the
      middle.
-  4. The groin fix of B3 (on the waistband min(B,C), at 0.72).
-  Result on `Male`: the profile band under the pecs is gone, the back's waist band almost; left: a thin band low on the front (near
-  the sex), small hooks at the armpit notches on the back, a faint line under the pecs in profile (the drawn fold).
+  4. The groin creases are left out of the heights: raised onto the waistband (B3) they stretched the grid x2 down to the sex,
+     a dark band on the front. They stay in the B3 pairs.
+  5. The **whole silhouette**, its black outline included, on both bodies: the vanilla garment covers the vanilla body's outline,
+     so the map reaches the WDI body's outline too (Virginie: "on voit encore des zones noires ... il n'en faut justement pas").
+  Result on `Male`: no dark zone left, the grid covers the whole WDI body in the three views; a faint line under the pecs in
+  profile (the drawn fold).
 - Still to do: carry the garment's ease (what lies outside the vanilla body), then use the map in B4 instead of the point warp.
 
 ## Other inputs
