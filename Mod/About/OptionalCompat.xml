@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mods this mod works with without requiring them and without a load order (AUDIT.md 4.b, 4.e). The mods it reads with a load
+     order (TailorMade, AB's Visible Pants, General Textures Collection, Apparel Paper Pattern, APP BodyType Overrider, WDI's
+     Realistic Bodies) are in About.xml loadAfter. Both entries below are read in the assembly, not in XML patches. -->
+<OptionalCompat>
+  <!-- NativeWdiPants.MaxShirt: the blouse art of the male adult bodies is read to place the trouser line -->
+  <li><packageId>VanillaExpanded.VAPPE</packageId><workshopId>1814987817</workshopId><kind>texture</kind></li>
+  <!-- SplitLegArt: the swimming trunks' front and back art is mended (middle line kept below the crotch, hem gap closed) -->
+  <li><packageId>kaitorisenkou.Swimwear</packageId><workshopId>2840348927</workshopId><kind>texture</kind></li>
+</OptionalCompat>
