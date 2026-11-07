@@ -1,87 +1,71 @@
 # Garment fit process: vanilla garment to a WDI body
 
-State on 2026-11-07, written from the prototype boards Virginie validated step by step that day. Nothing here is in the DLL yet: the
-prototype is Python under `Art/work/transfer-proto/fable-crack/` (local, gitignored, see "Tools"). This page says what the process
-takes, what it does and why, so it can be run on other inputs (other garments, other bodies, other mods) and, one day, produce other
-outputs (other body families, the in-game C# version).
+State on 2026-11-07, written from the prototype boards Virginie validated step by step that day. Nothing here is in the DLL yet:
+the prototype is Python under `Art/work/transfer-proto/fable-crack/` (local, gitignored, see "Tools"). This page says, step by
+step, what the process takes, what each step does and why, so it can be run on other inputs (other garments, bodies, mods) and,
+one day, produce other outputs (other body families, the in-game C# version).
 
-## 1. Inputs
+All sizes are at the 512 px working scale unless said otherwise (vanilla textures are 128 px, upscaled x4).
+
+## Overview
+
+| Part | Step | Done | Output |
+|---|---|---|---|
+| A, once per WDI body and facing | A1 points | recalibrate the landmark pairs | named WDI and vanilla points |
+| | A2 lines | min(B,C) and max(B,C) from the underwear sprites | two waist lines per column |
+| | A3 d_min | gap from min(B,C) to the boxers' leg line | one constant |
+| | A4 outlines | the target outline of the top and of the trousers | reference contours, snapped points, added points |
+| | A5 rules | where each garment stops, for each case | lower limit of the top, top of the trousers |
+| B, per garment | B1 source | the vanilla garment, x4, its vanilla points | 512 px source |
+| | B2 peel | its black outline removed by thickness | source without outline |
+| | B3 pairs | every WDI point with its vanilla partner, pressed up for the legs | the warp pairs |
+| | B4 warp | thin-plate spline driven by the pairs only | the garment on the WDI body |
+| | B5 clip | cut to the target outline of the rule, gaps filled, shading | the garment, clipped |
+| | B6 outline | 4 px stroke inward, layering with the trousers | the final image |
+
+## Inputs
 
 | Input | Where | Notes |
 |---|---|---|
-| Source garment | a worn texture drawn for the **vanilla** body types `Male`, `Female`, `Thin`, `Fat`, `Hulk`, three facings `south`, `east`, `north` | Vanilla: 128 px (`Art/work/core17/`). Mods: AB's Pants at `workshop/294100/2986402536/Textures/Things/Pawn/Humanlike/Apparel/Pants` (128 px, PNG beside DDS). Some mods ship 256 px. |
+| Source garment | a worn texture drawn for the **vanilla** body types `Male`, `Female`, `Thin`, `Fat`, `Hulk`, facings `south`, `east`, `north` | Vanilla: 128 px (`Art/work/core17/`). Mods: AB's Pants at `workshop/294100/2986402536/Textures/Things/Pawn/Humanlike/Apparel/Pants` (128 px). Some mods ship 256 px. |
 | Target body | the WDI body (`workshop/294100/3527486510/Textures/Things/Pawn/Humanlike/Bodies/Naked_<Body>_<facing>.png`), eight adult bodies | Each WDI body is drawn over one vanilla body: `Thin_Female` over `Thin`, `Fat_Female` over `Fat`, `Hulk_Female` over `Hulk`, the others over their namesake (`crack.VANILLA_OF`). |
-| Landmark pairs | `Art/work/captures/2026-11-03_points/delta-<facing>-points.txt` | Virginie's points study of 2026-11-03: for each WDI body, each named point with its vanilla and WDI position. Front has 25 points, side 12, back 17. `axis` rows are not used. |
-| Ground truth | the WDI artist's own garments: `Apparel/<Garment>/<Garment>_<Body>_<facing>.png` | Only for `ShirtBasic`, `ShirtButton`, `CorsetRoyal`, `TribalA`, `VestRoyal`, `BodyStrap`, `EltexShirt`, `UNA_Dress_sitagi`, and only on `Thin_Female`, `Fat_Female`, `Hulk_Female`. He drew **no trousers**. |
-| Underwear | `Textures/UWUnderwear/<boxers|panties|longjohns>/<kind>_<Body>_<facing>.png` | All eight bodies, three facings. The tops of boxers (B) and panties (C) give the waist lines; the longjohns are the only WDI drawing of the legs. |
-| Pants study | `Art/work/captures/2026-11-03_points/pants-<facing>-table.txt` | The same named points placed on AB, XND and catMonke pants, per vanilla body. |
+| Landmark pairs | `Art/work/captures/2026-11-03_points/delta-<facing>-points.txt` | Virginie's points study of 2026-11-03: each named point with its vanilla and WDI position, for all eight bodies. Front 25 to 27 points, side 12, back 15 to 17. `axis` rows are not used. |
+| Ground truth | the WDI artist's garments: `Apparel/<Garment>/<Garment>_<Body>_<facing>.png` | Only on `Thin_Female`, `Fat_Female`, `Hulk_Female` (`ShirtBasic`, `ShirtButton`, `CorsetRoyal`, `TribalA`, `VestRoyal`, `BodyStrap`, `EltexShirt`, `UNA_Dress_sitagi`). He drew **no trousers**. |
+| Underwear | `Textures/UWUnderwear/<boxers|panties|longjohns>/<kind>_<Body>_<facing>.png` | All eight bodies, three facings. Boxers (B) and panties (C) give the waist lines; the longjohns are the only WDI drawing of the legs. |
+| Pants study | `Art/work/captures/2026-11-03_points/pants-<facing>-table.txt` | The same named points on AB, XND and catMonke pants, per vanilla body. |
 
-## 2. Reference lines (per WDI body and facing, per column of the 512 px image)
+## Part A: once per WDI body and facing (no garment involved)
 
-- **min(B,C)**, the pink line: per column the **lower** of the boxers and panties tops on screen (`Nav.SetPink`: `Math.Max` on y), only
-  where both sprites are drawn, median of 3. **The shirt follows it.** Past the shared span it is **extended with its own slope**
-  (`hemshift_<Body>_<facing>.pink.txt`, with the hook handling of `hemshift.ps1`): held flat, the back of the side view went wrong.
-- **max(B,C)**: per column the **higher** of the two tops (smaller y), same span rule, **held flat** past the shared span. **The trousers
-  follow it.** The shirt therefore overlaps the top of the trousers between the two lines.
-- min and max are taken **column by column**, not as one whole sprite line (Virginie, 2026-11-07): where the boxers and panties
-  tops cross, the line moves from one to the other. On `Thin_Female` north the lower one is the boxers, then the panties, then
-  the boxers again. On `Thin_Female` east the WDI artist drew both tops identical (0 px apart on all 98 shared columns), so
-  min(B,C) = max(B,C) there.
-- **Untucked limit**: an untucked shirt never goes below the **bottom of the boxers** (her rule of 2026-11-05, confirmed 2026-11-07).
+### A1. Points
 
-**The four rules** (Virginie, 2026-11-07; board `2026-11-07_four-rules.png`, script `rules4.py`):
+Every point of a side moves by the same amount so the highest one sits on the top of its own silhouette (vanilla points on the
+vanilla body, WDI points on the WDI body). `explain5b.recal`.
 
-| Case | Top | Trousers | Drawn on top |
-|---|---|---|---|
-| 1. top alone | down to **min(B,C) + d_min**, d_min = the smallest gap, over the columns where both sprites are drawn, between min(B,C) and the bottom of the boxers' legs (the hem keeps the shape of min(B,C) and never goes below the boxers) | none | top |
-| 2. trousers with a top | | up to **max(B,C)** | see 3 and untucked |
-| 3. tucked top | **cropped at min(B,C)** | up to max(B,C), so no gap opens between the two lines; **min(B,C) in the columns where the two lines are within one stroke (4 px)** | **top over the trousers** (two layers: trousers under, top over); where the lines are close, a **single stroke, the trousers' waistband** |
-| 4. trousers alone | none | stop at **min(B,C)** | trousers |
-| untucked top | down to **max(B,C) + d_min**, the **same d_min as rule 1** (measured from min(B,C)): the hem sits higher by the gap between the two lines, and a little more of the trousers shows (Virginie, 2026-11-07) | up to min(B,C) (or max(B,C): hidden either way) | **top over the trousers** |
+### A2. The two waist lines, min(B,C) and max(B,C)
 
-For the top (rule 1, tucked crop, untucked), min(B,C) and max(B,C) come from `rules4.lines` (2026-11-07, Virginie: "ça a utilisé
-certaines lignes sans extrapolation, d'où la redescente"):
+- **Per column**, from the top edge of the boxers (B) and of the panties (C): **min(B,C)** is the **lower** one on screen (larger y),
+  **max(B,C)** the **higher** one. Taken column by column, not as one whole sprite line: where the two tops cross, the line moves
+  from one to the other (`Thin_Female` north: boxers, then panties, then boxers). On `Thin_Female` east the artist drew both tops
+  identical (0 px apart on all 98 shared columns), so min = max there.
+- **Sprite walls dropped first.** The top edge of a sprite is not the waistband at its ends:
+  1. a jump of 5 px or more in the 10 end columns (the rounded side pad of the panties: `Hulk_Female` 383 then 396 px south);
+  2. then the columns that still step by more than 2 px;
+  3. then a gentle wall up to a real corner within 35 % of the line from its end (the line rises to the corner, then turns back
+     down by more than 2 px): `Thin_Female` east back, 8 columns; `Hulk_Female` east back, past the corner at column 164 the top
+     edge is the buttock outline for 39 columns.
+- Median of 3 on the span both sprites still cover, then **both lines extended past that span with their own slope** (linear fit on
+  their last 12 columns); max is never under min. A line held flat, or following the sprite's silhouette, made the hems drop
+  back at the sides (Virginie: "ça a utilisé certaines lignes sans extrapolation, d'où la redescente").
+- `pantsnap.lines`; the trousers use the same lines (`pantsnap.waist_line`).
 
-- each sprite's top edge loses its side walls first: a jump of 5 px or more in the 10 end columns (the rounded side pad of the
-  panties: `Hulk_Female` 383 then 396 south, 377 then 397 north), then the columns that still step by more than 2 px, then a
-  gentle wall up to a real corner within 35 % of the line from its end (`Thin_Female` east back: 347 rising to 331 over 8
-  columns, then turning down; `Hulk_Female` east back: past the corner at column 164 the top edge is the buttock outline for 39
-  columns, and the hem followed it into a hook);
-- min and max per column on the span both sprites still cover, median of 3;
-- **both lines extended past that span with their own slope** (linear fit on their last 12 columns), max never under min.
+### A3. d_min
 
-Before, max was held flat and the panties' side pad bent it down at the span ends, so the untucked hem dropped at the hips on
-`Hulk_Female` south. Inside the span these lines match `hemshift .pink.txt` within 1 px except at the trimmed walls. A cap of the
-hem at the bottom of the boxers was tried and dropped: on the trapezoid boxers of `Fat_Female` it raised spikes on the slanted sides.
-The trousers now use the same lines (`pantsnap.waist_line`, moved there with `lines`): held flat, their line put a bump in the
-tucked hem at the back of `Thin_Female` east. In tucked, the switch between min and max (trousers) and between the trousers'
-top and min (crop of the top) are smoothed weights, the trousers' line is smoothed again (sigma 8), and the crop never sits
-above the trousers' top (Virginie: "il manque un lissage", `Hulk_Female` north).
-
-Layering corrected by Virginie on `Thin_Female` south the same day, and the concept validated by her on that body and facing (the
-others not reviewed yet): in both tucked and untucked cases the trousers are the lower
-layer and the top the upper one.
-
-**Tucked, where the two lines are close** (Virginie, 2026-11-07, "garde bas"; validated on `Thin_Female` south, east and north):
-when min(B,C) and max(B,C) are less than one stroke apart, the trousers' stroke and the top's hem stroke sit side by side as an
-8 px black band (east, where the lines are identical). In those columns:
-
-- the trousers go up to min(B,C), the lower line, so their waistband sits where it sits on trousers alone (rule 4);
-- the top's hem stroke is turned back into fabric (a stroke pixel nearer the hem curve than the side curve, within the hem band);
-- the top's crop goes down to the trousers' top plus 1.5 px, so no row of body shows between them;
-- the trousers' waistband stroke is drawn again over the top.
-
-On `Thin_Female` this applies to 0 of 106 columns south, 98 of 98 east, 69 of 106 north.
-
-**d_min is one constant per body type and facing** (Virginie, 2026-11-07), computed once like D
-(`Art/work/transfer-proto/dmin.json`), the same for the top alone and the untucked top (a second d_min measured from max(B,C)
-was tried and dropped the same day). Measure: the smallest gap between min(B,C) and the bottom of the boxers, over the shared
-span, **only in the columns where the
-boxers' bottom runs across** (slope of 0.3 px per column or less, the leg line). Not the leg line: the side walls of the sprite,
-where its bottom climbs to meet its top (counted, they gave 11.2 on `Thin_Female` east and 65.6 north, both wrong, Virginie,
-same day), and the slanted hip sides of the wide boxers (slope 0.7 to 1 on `Fat_Female`; counted, they gave 42 south, 13 east,
-44 north). Values at the 512 scale (validated by Virginie: `Thin_Female`, `Fat_Female`, `Hulk_Female`; on east the top alone
-and the untucked top follow the diagonal waistband, so they are short at the back, accepted):
+- **One constant per body type and facing.** The smallest gap between min(B,C) and the bottom of the boxers, over the shared span,
+  **only in the columns where the boxers' bottom runs across** (slope 0.3 px per column or less: the leg line).
+- Not the leg line: the side walls of the sprite (counted, they gave 11.2 on `Thin_Female` east and 65.6 north) and the slanted hip
+  sides of the wide boxers (slope 0.7 to 1 on `Fat_Female`; counted, 42 south, 13 east, 44 north).
+- The same d_min serves the top alone and the untucked top (a second d_min measured from max(B,C) was tried and dropped).
+- `rules4.dmin_of`, values in `Art/work/transfer-proto/dmin.json`:
 
 | Body | south | east | north |
 |---|---|---|---|
@@ -94,138 +78,155 @@ and the untucked top follow the diagonal waistband, so they are short at the bac
 | Fat | 56 | 27 | 91 |
 | Hulk | 53 | 42 | 68 |
 
-The top alone keeps the shape of min(B,C) moved down by d_min, so on the wide boxers its corners go below their slanted sides.
-The move is **vertical**, column by column (Virginie, 2026-11-07, "on garde"): on a steep line the gap seen across it is smaller
-(`Hulk_Female` east back, slope 2.5: 13 px across for 34 down), but a perpendicular offset of the same size would go 91 px down
-there, under the boxers, and the cut stays per column like the game's.
-On east min = max on the shared span, so the untucked hem equals the top alone's there.
+### A4. Target outlines
 
-At the back the boxers cover the buttocks, so d_min is large: the top alone reaches the bottom of the boxers.
-- **D**: per column, pink line minus the vanilla naked body bottom, **centred** (its value at the middle removed) and smoothed
-  (`hemshift_<Body>_<facing>.txt`). It carries the shape of the line, not its height. Known faults: the slope extension climbs steeply
-  at the sides on `Hulk` and `Hulk_Female` front and back, and leaves the body on several side views; to bound before use on trousers.
+**Edge convention: outer edge.** Points sit on the outer edge of the black outline; a curve through them is stroked **inward**
+(4 px in the tests). The other choice (fabric to fabric, outline drawn outward) is consistent too but needs the vanilla points
+moved onto the vanilla fabric edge.
 
-## 3. The target outline (what the garment must become on WDI)
+**Top (shirt).**
 
-1. **Recalibrate the points.** On each side, every point moves by the same amount so the highest one sits on the top of its own
-   silhouette (vanilla points on the vanilla body, WDI points on the WDI body).
-2. **Edge convention: outer edge.** Points sit on the **outer edge** of the black outline, not on the fabric. A curve drawn from them is
-   then stroked **inward** (4 px in the tests). Rationale and alternative in section 5.
-3. **Top.** If the reference garment starts below the WDI silhouette top, the **whole drawing moves up** until it meets it (no union,
-   no local stretch). Seen: `Hulk_Female` front and back 5 px, `Thin_Female` front 2 px, `Fat_Female` back 1 px.
-4. **Point 1 and point 7.** `1 top` = the topmost pixel of the outer edge on the midline. `7 jugular notch` = the top of the neckline
-   opening on the midline. On `Hulk` and `Hulk_Female` the outer edge dips at the midline, so 1 lies under the neck bases.
-5. **Snap and complete.** The contour points of the body (neck bases, shoulder tips, armpits, waist, hips; side view: neck, upper back,
-   chest, waist, belly, buttock) are snapped onto the reference contour. A centripetal Catmull-Rom curve is drawn through them, and a
-   point is **added** where the curve strays more than **3 px** (512 scale) from the reference, until none does. Typical result: 16 to
-   27 points per shirt outline (4 to 16 added), mean gap 0.8 px.
-6. **Neckline (front).** The opening the reference garment leaves bare, done the same way, starting from 7: 8 to 10 points.
-7. **Waistband.** The sides stop where the reference contour meets the waist line of section 2; the hem follows that line, with points
-   added the same way (3 to 7 points).
-8. **Trousers bottom: a U, not a W.** The naked body ends in two lobes with a crotch notch; trousers do not. The bottom 40 % of the
-   target is replaced by its convex hull, so the crotch points land at the bottom of the U.
+1. Reference: the artist's `ShirtBasic` where he drew one. If it starts below the WDI silhouette top, the **whole drawing moves up**
+   until it meets it (no union, no local stretch): `Hulk_Female` front and back 5 px, `Thin_Female` front 2, `Fat_Female` back 1.
+2. Bodies he did not draw (`Male`, `Female`, `Thin`, `Fat`, `Hulk`): the WDI body silhouette grown by the donor's ease + 2 px (donor
+   `crack2.DONOR`; his shirt sits on the body for `Thin_Female` and `Hulk_Female`, IoU 0.98, about 6 px off it for `Fat_Female`),
+   minus the opening the donor's shirt leaves bare around the neck, carried over in the neck frame (`snapshirt.synth_art`). The
+   +2 px keeps the curves from cutting inside the body.
+3. **Point 1 and point 7.** `1 top` = the topmost pixel of the outer edge on the midline. `7 jugular notch` = the top of the neckline
+   opening on the midline (on `Hulk` and `Hulk_Female` the edge dips at the midline, so 1 lies under the neck bases).
+4. **Snap and complete.** The contour points (neck bases, shoulder tips, armpits, waist, hips; side: neck, upper back, chest, waist,
+   belly, buttock) are snapped onto the reference contour. A centripetal Catmull-Rom curve goes through them, and a point is
+   **added** where the curve strays more than **3 px** from the reference, until none does: 16 to 27 points per outline (4 to 16
+   added), mean gap 0.8 px.
+5. **Neckline (front)**: the opening, done the same way from 7, 8 to 10 points.
+6. **Hem**: the sides stop where the contour meets the rule's lower limit (A5); the hem follows that line, points added the same way.
 
-Reference contour per garment class:
+Check: redrawn outline against the artist's shirt above the hips, IoU 0.971 to 0.992.
 
-| Class | Reference | Waist line |
-|---|---|---|
-| Top (shirt) | the artist's `ShirtBasic` where he drew one | min(B,C), extended |
-| Trousers | the artist's longjohns below the waist, bottom closed in a U | max(B,C), held flat |
-| Bodies he did not draw (`Male`, `Female`, `Thin`, `Fat`, `Hulk`) | top: the WDI body silhouette grown by the donor's ease + 2 px (donor `crack2.DONOR`: his shirt sits on the body for `Thin_Female` and `Hulk_Female`, IoU 0.98, about 6 px off it for `Fat_Female`), minus the opening the donor's shirt leaves bare around the neck, carried over in the neck frame (`snapshirt.synth_art`); trousers: his longjohns united with the body below the waist (on `Male` and `Female` his longjohns are narrower than the body) | same lines, which exist for all eight |
+**Trousers.** The artist's longjohns below the waist line, united with the body there (on `Male` and `Female` his longjohns are
+narrower than the body); the bottom 40 % of the target is replaced by its convex hull, so trousers end in a **U**, not the naked
+body's W. The same snap and completion. Check: IoU 0.943 to 0.984.
 
-Check: redraw the outline (white fill, 4 px stroke inward) and compare with the reference. Shirt above the hips: shape IoU 0.971 to
-0.992. Trousers: 0.943 to 0.984. Shirt and trousers meet on one line, the shirt over the trousers.
+### A5. The rules: where each garment stops
 
-## 4. Preparing the source garment
+| Case | Top | Trousers | Layers |
+|---|---|---|---|
+| 1. top alone | down to **min(B,C) + d_min** | none | top |
+| 4. trousers alone | none | up to **min(B,C)** | trousers |
+| 3. tucked top | **cropped at min(B,C)** | up to **max(B,C)**; **min(B,C)** where the two lines are within one stroke (4 px) | trousers under, top over; where the lines are close, a single stroke: the trousers' waistband |
+| untucked top | down to **max(B,C) + d_min** (same d_min): the hem sits higher by the gap between the lines, a little more of the trousers shows | up to min(B,C) | trousers under, top over |
 
-1. **Upscale x4** (128 to 512) so the warp does not resample coarse pixels.
-2. **Remove the black outline by thickness, not by colour.** Colour alone either leaves a dotted grey halo (anti-aliasing) or eats dark
-   parts of the garment (FlakVest straps). Remove a band of the measured outline thickness (vanilla about 3 to 4 px at 128) plus 1 px
-   for the halo. Inner strokes (collar, seams, buttons) are kept.
-3. **Fill the freed band with fabric** up to the vanilla outer edge, by copying the nearest **light** fabric pixel (never a stroke), so
-   the source again covers its full outer silhouette. Proposed by the Fable worker, retained by Virginie on 2026-11-07.
-4. Nothing else is cut: no collar zone, no back band (her decision on step 4, 2026-11-07).
+- **Vertical offset.** d_min moves the line straight down, column by column (Virginie: "on garde"). On a steep line the gap seen
+  across it is smaller (`Hulk_Female` east back, slope 2.5: 13 px across for 34 down); a perpendicular offset of the same size
+  would go 91 px down there, under the boxers, and the cut stays per column like the game's.
+- On east the top alone and the untucked top follow the diagonal waistband, so they are short at the back (accepted).
+- **Tucked, close lines** ("garde bas"): the trousers take min(B,C); the top's hem stroke is turned back into fabric; the crop goes
+  down to the trousers' top + 1.5 px so no body shows; the trousers' waistband is drawn again over the top. The min/max switch and
+  the crop switch are smoothed weights, the trousers' line is smoothed again (sigma 8), and the crop never sits above the trousers'
+  top (Virginie: "il manque un lissage"). `Thin_Female`: 0 of 106 columns south, 98 of 98 east, 69 of 106 north.
+- The top stays as loose as the artist drew it, even tucked (tightening at the waist: optional backlog in `STATUS.md`).
+- `rules4.py`: `untucked_hem`, `tucked`.
 
-## 5. Why the outer edge, and the alternative
+Validated by Virginie on the three bodies the artist drew, three facings; the five others reviewed, corrections made.
 
-The source keeps no black. If its fabric (smaller than its silhouette by the outline) were stretched onto an outer-edge target, it
-would be deformed by the outline width. Two consistent choices exist:
+## Part B: per garment (first pass: vanilla `ShirtBasic`, rule 1, `fullpass.py`)
 
-- **Outer to outer (retained):** fill the freed band (section 4.3), warp outer edge to outer edge, draw the WDI outline over the edge.
-  The filled band is hidden by the new outline, or becomes legitimate fabric.
-- **Fabric to fabric:** points on the fabric edge on both sides, the new outline drawn outward. Invents nothing, but the vanilla points
-  must then also be moved onto the vanilla fabric edge.
+### B1. Source
 
-## 6. The warp
+The vanilla garment upscaled x4 (128 to 512) so the warp does not resample coarse pixels, on the vanilla body, with the vanilla
+points (A1).
 
-- **Driven by the point pairs only.** Pulling every edge of the WDI silhouette onto the nearest garment edge (round 8, step 5 E) is what
+### B2. Peel
+
+- The black outline is removed **by thickness, not by colour**: the outer band of the measured outline width (vanilla about 3 to 4 px
+  at 128) + 1 px of halo, around the outer edge and around the neck hole. Colour alone left a dotted grey halo (anti-aliasing) or
+  ate dark garments (FlakVest straps). Inner strokes are kept.
+- **No fill** of the freed band (Virginie: "pas besoin de populer les bords"): B5 fills whatever the target lacks, and the whole is
+  shrunk to 256 at the end. Nothing else is cut (no collar zone, no back band).
+
+### B3. Pairs
+
+1. **Named pairs**: her points from A1. The contour points are snapped onto both outlines (the WDI target, A4; the vanilla garment's
+   outer contour); the inner points stay as they are.
+2. **Added points get vanilla twins**: the same arc-length fraction between the same two snapped neighbours, along the shorter way of
+   the vanilla contour.
+3. **Front neckline**: the WDI opening's points paired with the vanilla neck hole, by arc-length fraction from its top, same
+   direction of travel. Without them the vanilla hole landed lower than the target's.
+4. **Room for the legs.** Start row y0: the navel, else the belly, else the hips, on both bodies; always 24 px above the lower limit.
+   Below it, each WDI point takes the share of height its **vanilla** partner has between that landmark and the vanilla body bottom
+   of its column, laid between y0 and the **rule's lower limit** (A5: top alone min(B,C) + d_min, untucked max(B,C) + d_min).
+   So the vanilla crotch and body bottom land on that limit (Virginie: "on suit ce qu'on a dit à la pré-étude avec d_min"; `Male`
+   top alone: about the bottom of the boxers at the centre). A contour point it moves goes back onto the target outline; no point
+   stays under the limit. Taking the share on the WDI side left the east front points of `Male` (7, 21, 22: vanilla waist and
+   belly) on the hem.
+
+The board numbers every pair the same on steps 1 and 3: yellow her contour points, cyan her inner points, orange the added points
+and their twins, a blue ring where a point was before the press.
+
+### B4. Warp
+
+- **Driven by the point pairs only.** Pulling every edge of the WDI silhouette onto the nearest garment edge (round 8, step 5 E)
   turned corsets, jackets and strap vests into full shirts; it is gone.
-- **Thin-plate spline** from WDI to vanilla coordinates (backward map). Smoothing `lam = 2000` misses the points by 1.5 to 2 vanilla px
-  on average (6.8 max, `Fat_Female` side, waist front); `lam = 1` hits every point but folds where close points move in opposite
-  directions (crotch cluster, `Hulk_Female` top +16 px, side chest -9 / waist +16). Fix the contradictory pairs before going exact.
-- **Room for the legs.** Below the navel (else the belly front, else the hips, always 24 px above the lower limit), each WDI point
-  takes the share of height its **vanilla** partner has between the same landmark and the vanilla body bottom of its column, laid
-  between that start row and the garment's lower limit **of the rule** (section 2: top alone min(B,C) + d_min, untucked
-  max(B,C) + d_min). So the vanilla crotch and body bottom land on that limit (Virginie, 2026-11-07: "on suit ce qu'on a dit à la
-  pré-étude avec d_min"; for `Male` top alone, about the bottom of the boxers at the centre). A contour point it moves goes back
-  onto the target outline; no point stays under the limit. Taking the share on the WDI side left the east front points (vanilla
-  waist and belly) on the WDI hem, where the front ends right on it.
-- **Added points need vanilla twins.** Points added in section 3.5 exist on the WDI side only; each needs a vanilla partner, e.g. at
-  the same arc-length fraction between the same two named neighbours on the vanilla contour. Not done yet.
+- **Thin-plate spline** from WDI to vanilla coordinates (backward map), `lam = 2000`: misses the points by 1.5 to 2 vanilla px on
+  average; `lam = 1` hits every point but folds where close points move in opposite directions (crotch cluster, `Hulk_Female` top,
+  side chest and waist). Fix the contradictory pairs before going exact.
 
-## 7. Finishing
+### B5. Clip
 
-- Clip the warped garment to the target outline (section 3), cut the neckline.
-- Shading: the WDI body shading multiplied at 0.30 (round 7); to review.
-- **No forced whitening.** Bringing the fabric to the artist's white is valid only for light garments; a dark garment (FlakVest,
-  luminance 0.08) or a coloured modded one must keep its colour.
-- Draw the outline on the outer edge, inward. Tests use 4 px; the WDI artist's own outline is 10 to 12 px at 512.
+- Cut to the target outline of the rule (A4, A5), neckline included.
+- Pixels of the target the warped garment leaves empty get the **fabric's colour smoothed** (normalised blur over the garment
+  pixels, carried outward); copying the nearest pixel drew streaks.
+- Shading: the WDI body's shading at 0.30, **blurred** (sigma 10) so the body's muscles do not print on the cloth.
+- **No forced whitening**: a dark or coloured garment keeps its colour.
 
-## 8. Other inputs
+### B6. Outline and layers
 
-- **Other garments.** The outline must come from the **garment's own shape** carried through the warp, clipped to the WDI silhouette
-  only where the vanilla garment touched the vanilla body edge. A generic "body + margin" target turns every garment into a shirt
-  (generalisation test of 2026-11-07: corset, one-shoulder TribalA, open Jacket, FlakVest all failed that way). The collar block of
-  round 8 must not be pasted on garments without a collar.
-- **Other mods' textures.** Same body keys; 256 px textures are scaled to the same 512 working grid.
-- **Other bodies.** Each new body needs: its landmark pairs, its two waist lines (or underwear sprites to compute them), and a donor for
-  the reference contour if no artist garment exists.
+- The outline on the outer edge, inward, 4 px in the tests (the artist's own is 10 to 12 px at 512).
+- Layers as in A5: trousers under, top over.
 
-## 9. Outputs, now and later
+`Male` validated by Virginie for the points and the warp (three facings).
 
-- **Now:** one 512 px RGBA image per WDI body, facing and garment, for boards.
-- **In game (C#):** compute once per garment, body and facing on first draw, then cache, as TailorMade does (`TexBake.BakeFitted`); the
-  steps are plain image operations (upscale, distance transform, label, fill, thin-plate spline). Port only once the method holds on
-  several garment classes.
+## Other inputs
+
+- **Other garments.** The outline must come from the **garment's own shape** carried through the warp, clipped to the WDI
+  silhouette only where the vanilla garment touched the vanilla body edge. A generic "body + margin" target turns every garment into
+  a shirt (generalisation test: corset, one-shoulder TribalA, open Jacket, FlakVest all failed that way). No collar pasted on
+  garments without one.
+- **Other mods' textures.** Same body keys; 256 px textures are scaled to the same 512 grid.
+- **Other bodies.** Each new body needs its landmark pairs, its underwear sprites (for A2 and A3), and a donor for A4 if no artist
+  garment exists.
+
+## Outputs, now and later
+
+- **Now:** one 512 px RGBA image per WDI body, facing and garment, on boards.
+- **In game (C#):** compute once per garment, body and facing on first draw, then cache, as TailorMade does (`TexBake.BakeFitted`);
+  every step is a plain image operation (upscale, distance transform, label, blur, thin-plate spline). Port once the method holds
+  on several garment classes. Part A is per body only and can be baked as constants (24 sets: 8 bodies, 3 facings).
 - **Other targets:** a body family with its own legs and feet (for example Xeva's) is the same process with another target body and
   other reference lines; the cut line stays replaceable (expansion roadmap).
 
-## 10. Open items
+## Open items
 
-- First full pass done on `Male` (`fullpass.py`, 2026-11-07): vanilla ShirtBasic, rule 1, steps 1 to 6. Vanilla twins of the added
-  points at the same arc-length fraction between the same snapped neighbours; front neckline paired with the vanilla neck hole by
-  arc-length fraction from its top; outline removed by thickness and the band filled from fabric at least 4 px deep; body shading
-  blurred (sigma 10) so the muscles do not print on the cloth. Open: east neck front (streaks where the warp leaves gaps), the
-  vanilla inner collar stroke kept, then AB's Pants.
-- Bound the slope extension of D and of the pink line to the body.
-- Donor rule for the five bodies the artist did not draw.
-- Contradictory point pairs (crotch cluster, `Hulk_Female` top, side chest and waist) before an exact warp.
-- Outline width (4 px of the tests or the artist's 10 to 12 px).
+- Part B on the seven other bodies, then the other rules (tucked, untucked), then AB's Pants.
+- `Male` east: the neck front, where the warp leaves gaps; the vanilla inner collar stroke is kept on south.
+- Contradictory point pairs before an exact warp.
+- Outline width (4 px or the artist's 10 to 12 px).
+- Bound the slope extension of D (`hemshift_<Body>_<facing>.txt`, pink line minus the vanilla body bottom, centred) before using it
+  on trousers.
 
 ## Tools (prototype, `Art/work/transfer-proto/fable-crack/`, gitignored)
 
 | Script | Board in `Art/work/captures/` | What it shows |
 |---|---|---|
-| `crack8.py` + `steps.py` | `2026-11-07_round8-steps*.png` | round 8 step by step; switches `CUT_CLOTH`, `PEEL`, `EDGE_PULL` |
-| `explain5b.py` | `2026-11-07_step5-detail*.png` | the warp in detail; options `exact`, `legs`, `untucked`, `recal` |
-| `snapshirt.py`, `snapdraw.py` | `2026-11-07_snap-shirt.png`, `2026-11-07_snap-draw.png` | points on the artist's shirt, redraw and comparison |
-| `shirt2.py` | `2026-11-07_shirt-step2.png` | shirt down to min(B,C), over the trousers |
-| `pantsnap.py` | `2026-11-07_pants-snap-<facing>.png` | trousers on the longjohns, max(B,C), U bottom |
-| `dline.py` | `2026-11-07_D-line.png` | the D line on all bodies |
-| `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | the four rules and untucked; d_min (`dmin_of`), tucked (`tucked`) |
-| `untuck2.py` | `2026-11-07_untucked-AB.png` | untucked on min + d_min against max + a d_min from max (both set aside: the rule is max + the d_min of rule 1) |
-| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | the full pass, steps 1 to 6, three facings (vanilla ShirtBasic, rule 1) |
-| `tuckzoom.py [Body]` | `2026-11-07_tucked-zoom-<Body>.png` | waist zoom: trousers alone over tucked, three facings |
+| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | Part B, steps 1 to 6, three facings |
+| `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | A3 and A5: d_min (`dmin_of`), the four rules, untucked (`untucked_hem`), tucked (`tucked`) |
+| `pantsnap.py` | `2026-11-07_pants-snap-<facing>.png` | A2 lines (`lines`, `waist_line`), trousers outline |
+| `snapshirt.py`, `snapdraw.py` | `2026-11-07_snap-shirt.png`, `2026-11-07_snap-draw.png` | A4 top outline, points on the artist's shirt (`synth_art` for undrawn bodies) |
+| `tuckzoom.py [Body]` | `2026-11-07_tucked-zoom-<Body>.png` | waist zoom: trousers alone over tucked |
+| `untuck2.py` | `2026-11-07_untucked-AB.png` | untucked variants set aside |
+| `shirt2.py` | `2026-11-07_shirt-step2.png` | earlier shirt outline over the trousers |
+| `dline.py` | `2026-11-07_D-line.png` | the D line |
+| `explain5b.py`, `crack8.py` + `steps.py` | `2026-11-07_step5-detail*.png`, `2026-11-07_round8-steps*.png` | round 8 and its warp, superseded by `fullpass.py` |
 | `generalise.py` | `2026-11-07_generalise-<facing>.png` | round 8 on garments it was never tuned on |
 
 Run any of them with `uv run --with numpy --with pillow --with scipy --with scikit-image python <script>` from that folder.
