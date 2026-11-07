@@ -163,8 +163,13 @@ would be deformed by the outline width. Two consistent choices exist:
 - **Thin-plate spline** from WDI to vanilla coordinates (backward map). Smoothing `lam = 2000` misses the points by 1.5 to 2 vanilla px
   on average (6.8 max, `Fat_Female` side, waist front); `lam = 1` hits every point but folds where close points move in opposite
   directions (crotch cluster, `Hulk_Female` top +16 px, side chest -9 / waist +16). Fix the contradictory pairs before going exact.
-- **Room for the legs.** Below the navel (else the belly front, else the hips, always 24 px above the waist line), the WDI targets are
-  compressed so the body bottom of each column lands on the garment's lower limit (section 2).
+- **Room for the legs.** Below the navel (else the belly front, else the hips, always 24 px above the lower limit), each WDI point
+  takes the share of height its **vanilla** partner has between the same landmark and the vanilla body bottom of its column, laid
+  between that start row and the garment's lower limit **of the rule** (section 2: top alone min(B,C) + d_min, untucked
+  max(B,C) + d_min). So the vanilla crotch and body bottom land on that limit (Virginie, 2026-11-07: "on suit ce qu'on a dit à la
+  pré-étude avec d_min"; for `Male` top alone, about the bottom of the boxers at the centre). A contour point it moves goes back
+  onto the target outline; no point stays under the limit. Taking the share on the WDI side left the east front points (vanilla
+  waist and belly) on the WDI hem, where the front ends right on it.
 - **Added points need vanilla twins.** Points added in section 3.5 exist on the WDI side only; each needs a vanilla partner, e.g. at
   the same arc-length fraction between the same two named neighbours on the vanilla contour. Not done yet.
 
