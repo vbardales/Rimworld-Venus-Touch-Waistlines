@@ -38,8 +38,22 @@ outputs (other body families, the in-game C# version).
 Layering corrected by Virginie on `Thin_Female` south the same day: in both tucked and untucked cases the trousers are the lower
 layer and the top the upper one.
 
-Measured d_min (512 scale): `Thin_Female` 40.0 front, 11.2 side, 65.6 back; `Fat_Female` 20.0, 3.0, 14.8; `Hulk_Female` 45.0, 2.1,
-61.6. In profile the boxers' leg line comes close to min(B,C) at one end, so d_min is small there.
+**d_min is one constant per body type and facing** (Virginie, 2026-11-07), computed once like D
+(`Art/work/transfer-proto/dmin.json`). Values at the 512 scale:
+
+| Body | south | east | north |
+|---|---|---|---|
+| Thin_Female | 40.0 | 11.2 | 65.6 |
+| Fat_Female | 20.0 | 3.0 | 14.8 |
+| Hulk_Female | 45.0 | 2.1 | 61.6 |
+| Male | 21.4 | 6.0 | 20.6 |
+| Female | 31.0 | 9.2 | 54.0 |
+| Thin | 33.0 | 7.5 | 49.7 |
+| Fat | 9.7 | 3.0 | 14.8 |
+| Hulk | 12.0 | 3.9 | 10.9 |
+
+In profile the boxers' leg line comes close to min(B,C) at one end, so d_min is small there; at the back the boxers cover the
+buttocks and d_min is large on the slim bodies.
 - **D**: per column, pink line minus the vanilla naked body bottom, **centred** (its value at the middle removed) and smoothed
   (`hemshift_<Body>_<facing>.txt`). It carries the shape of the line, not its height. Known faults: the slope extension climbs steeply
   at the sides on `Hulk` and `Hulk_Female` front and back, and leaves the body on several side views; to bound before use on trousers.
