@@ -30,10 +30,13 @@ outputs (other body families, the in-game C# version).
 | Case | Top | Trousers | Drawn on top |
 |---|---|---|---|
 | 1. top alone | down to **min(B,C) + d_min**, d_min = the smallest gap, over the columns where both sprites are drawn, between min(B,C) and the bottom of the boxers' legs (the hem keeps the shape of min(B,C) and never goes below the boxers) | none | top |
-| 2. trousers with a top | | up to **max(B,C)** | depends on 3 / untucked |
-| 3. tucked top | **cropped at min(B,C)** | up to max(B,C) | trousers (over the top) |
+| 2. trousers with a top | | up to **max(B,C)** | see 3 and untucked |
+| 3. tucked top | **cropped at min(B,C)** | up to max(B,C), so no gap opens between the two lines | **top over the trousers** (two layers: trousers under, top over) |
 | 4. trousers alone | none | stop at **min(B,C)** | trousers |
-| untucked top | rule 1 | rule 2 | top (over the trousers) |
+| untucked top | as in rule 1 | up to min(B,C) (or max(B,C): hidden either way) | **top over the trousers** |
+
+Layering corrected by Virginie on `Thin_Female` south the same day: in both tucked and untucked cases the trousers are the lower
+layer and the top the upper one.
 
 Measured d_min (512 scale): `Thin_Female` 40.0 front, 11.2 side, 65.6 back; `Fat_Female` 20.0, 3.0, 14.8; `Hulk_Female` 45.0, 2.1,
 61.6. In profile the boxers' leg line comes close to min(B,C) at one end, so d_min is small there.
