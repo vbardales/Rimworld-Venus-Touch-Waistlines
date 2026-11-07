@@ -53,7 +53,10 @@ certaines lignes sans extrapolation, d'où la redescente"):
 Before, max was held flat and the panties' side pad bent it down at the span ends, so the untucked hem dropped at the hips on
 `Hulk_Female` south. Inside the span these lines match `hemshift .pink.txt` within 1 px except at the trimmed walls. A cap of the
 hem at the bottom of the boxers was tried and dropped: on the trapezoid boxers of `Fat_Female` it raised spikes on the slanted sides.
-The trousers still use `pantsnap.waist_line` (held flat).
+The trousers now use the same lines (`pantsnap.waist_line`, moved there with `lines`): held flat, their line put a bump in the
+tucked hem at the back of `Thin_Female` east. In tucked, the switch between min and max (trousers) and between the trousers'
+top and min (crop of the top) are smoothed weights, the trousers' line is smoothed again (sigma 8), and the crop never sits
+above the trousers' top (Virginie: "il manque un lissage", `Hulk_Female` north).
 
 Layering corrected by Virginie on `Thin_Female` south the same day, and the concept validated by her on that body and facing (the
 others not reviewed yet): in both tucked and untucked cases the trousers are the lower
