@@ -254,9 +254,17 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
   "shoulder tip" (detected) at 226/234 on vanilla, 258 on WDI (sloped shoulders): x0.56. Front: the study's groin creases at the
   navel's height on WDI (the fix of B3 is not applied here): navel to sex x2.5. And the profile mixes front and back landmarks in
   one scale.
-- **Corrections proposed, not applied yet**: only her placed anatomical landmarks (no detected ones); heights shared between the
-  views (pec apex, under-breast fold, navel, sex taken from the front, row by row); in profile the front landmarks for the front half
-  and the back ones for the back half; the groin fix.
+- **Corrections applied** (Virginie: "oui, applique"):
+  1. Only the landmarks she placed in the study (delta tables: "both placed", "one placed"), plus the armpits and the neck front
+     and back (detected, but on a real corner of the silhouette). Out: top, bottom, leftmost, rightmost, shoulder tip, chest front,
+     shoulder blade, buttock, hips, leg bottoms.
+  2. Heights shared between the views: pec apex, under-breast fold, navel and sex, taken from the front view's rows and mapped onto
+     the side and back views (rows matched by the silhouette's top and bottom).
+  3. Profile: the front landmarks drive the front half, the back ones the back half, the shared rows both; blended across the
+     middle.
+  4. The groin fix of B3 (on the waistband min(B,C), at 0.72).
+  Result on `Male`: the profile band under the pecs is gone, the back's waist band almost; left: a thin band low on the front (near
+  the sex), small hooks at the armpit notches on the back, a faint line under the pecs in profile (the drawn fold).
 - Still to do: carry the garment's ease (what lies outside the vanilla body), then use the map in B4 instead of the point warp.
 
 ## Other inputs
