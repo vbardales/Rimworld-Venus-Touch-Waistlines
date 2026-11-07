@@ -131,7 +131,7 @@ Reference contour per garment class:
 |---|---|---|
 | Top (shirt) | the artist's `ShirtBasic` where he drew one | min(B,C), extended |
 | Trousers | the artist's longjohns below the waist, bottom closed in a U | max(B,C), held flat |
-| Bodies he did not draw (`Male`, `Female`, `Thin`, `Fat`, `Hulk`) | no ground truth: borrow from a donor body (`crack2.DONOR`) | same lines, which exist for all eight |
+| Bodies he did not draw (`Male`, `Female`, `Thin`, `Fat`, `Hulk`) | top: the WDI body silhouette grown by the donor's ease + 2 px (donor `crack2.DONOR`: his shirt sits on the body for `Thin_Female` and `Hulk_Female`, IoU 0.98, about 6 px off it for `Fat_Female`), minus the opening the donor's shirt leaves bare around the neck, carried over in the neck frame (`snapshirt.synth_art`); trousers: his longjohns united with the body below the waist (on `Male` and `Female` his longjohns are narrower than the body) | same lines, which exist for all eight |
 
 Check: redraw the outline (white fill, 4 px stroke inward) and compare with the reference. Shirt above the hips: shape IoU 0.971 to
 0.992. Trousers: 0.943 to 0.984. Shirt and trousers meet on one line, the shirt over the trousers.
@@ -197,7 +197,11 @@ would be deformed by the outline width. Two consistent choices exist:
 
 ## 10. Open items
 
-- Vanilla twins of the added points (section 6), then the real warp of the vanilla shirt and of AB's Pants into the outlines.
+- First full pass done on `Male` (`fullpass.py`, 2026-11-07): vanilla ShirtBasic, rule 1, steps 1 to 6. Vanilla twins of the added
+  points at the same arc-length fraction between the same snapped neighbours; front neckline paired with the vanilla neck hole by
+  arc-length fraction from its top; outline removed by thickness and the band filled from fabric at least 4 px deep; body shading
+  blurred (sigma 10) so the muscles do not print on the cloth. Open: east neck front (streaks where the warp leaves gaps), the
+  vanilla inner collar stroke kept, then AB's Pants.
 - Bound the slope extension of D and of the pink line to the body.
 - Donor rule for the five bodies the artist did not draw.
 - Contradictory point pairs (crotch cluster, `Hulk_Female` top, side chest and waist) before an exact warp.
@@ -215,6 +219,7 @@ would be deformed by the outline width. Two consistent choices exist:
 | `dline.py` | `2026-11-07_D-line.png` | the D line on all bodies |
 | `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | the four rules and untucked; d_min (`dmin_of`), tucked (`tucked`) |
 | `untuck2.py` | `2026-11-07_untucked-AB.png` | untucked on min + d_min against max + a d_min from max (both set aside: the rule is max + the d_min of rule 1) |
+| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | the full pass, steps 1 to 6, three facings (vanilla ShirtBasic, rule 1) |
 | `tuckzoom.py [Body]` | `2026-11-07_tucked-zoom-<Body>.png` | waist zoom: trousers alone over tucked, three facings |
 | `generalise.py` | `2026-11-07_generalise-<facing>.png` | round 8 on garments it was never tuned on |
 
