@@ -24,6 +24,19 @@ outputs (other body families, the in-game C# version).
 - **max(B,C)**: per column the **higher** of the two tops (smaller y), same span rule, **held flat** past the shared span. **The trousers
   follow it.** The shirt therefore overlaps the top of the trousers between the two lines.
 - **Untucked limit**: an untucked shirt never goes below the **bottom of the boxers** (her rule of 2026-11-05, confirmed 2026-11-07).
+
+**The four rules** (Virginie, 2026-11-07; board `2026-11-07_four-rules.png`, script `rules4.py`):
+
+| Case | Top | Trousers | Drawn on top |
+|---|---|---|---|
+| 1. top alone | down to **min(B,C) + d_min**, d_min = the smallest gap, over the columns where both sprites are drawn, between min(B,C) and the bottom of the boxers' legs (the hem keeps the shape of min(B,C) and never goes below the boxers) | none | top |
+| 2. trousers with a top | | up to **max(B,C)** | depends on 3 / untucked |
+| 3. tucked top | **cropped at min(B,C)** | up to max(B,C) | trousers (over the top) |
+| 4. trousers alone | none | stop at **min(B,C)** | trousers |
+| untucked top | rule 1 | rule 2 | top (over the trousers) |
+
+Measured d_min (512 scale): `Thin_Female` 40.0 front, 11.2 side, 65.6 back; `Fat_Female` 20.0, 3.0, 14.8; `Hulk_Female` 45.0, 2.1,
+61.6. In profile the boxers' leg line comes close to min(B,C) at one end, so d_min is small there.
 - **D**: per column, pink line minus the vanilla naked body bottom, **centred** (its value at the middle removed) and smoothed
   (`hemshift_<Body>_<facing>.txt`). It carries the shape of the line, not its height. Known faults: the slope extension climbs steeply
   at the sides on `Hulk` and `Hulk_Female` front and back, and leaves the body on several side views; to bound before use on trousers.
