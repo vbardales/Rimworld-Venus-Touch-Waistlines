@@ -19,7 +19,7 @@ All sizes are at the 512 px working scale unless said otherwise (vanilla texture
 | B, per garment | B1 source | the vanilla garment, x4, its vanilla points | 512 px source |
 | | B2 peel | its black outline removed by thickness | source without outline |
 | | B3 pairs | every WDI point with its vanilla partner, pressed up for the legs | the warp pairs |
-| | B4 warp | thin-plate spline driven by the pairs only (`lam` 20), fold check | the garment on the WDI body: **the result for now** |
+| | B4 warp | **the relief map (Part C)** since 2026-11-08; the point warp (`lam` 20, fold check) under the option `pointwarp` | the garment on the WDI body: **the result for now** |
 | | B5 clip | cut to the target outline of the rule, gaps filled, shading | taken out on 2026-11-07 (option `b56`) |
 | | B6 outline | the artist's stroke width inward, layering with the trousers | taken out on 2026-11-07 (option `b56`) |
 | C, per body (in progress) | C1 relief | each body imagined in volume from its three views | a height map per facing |
@@ -190,6 +190,10 @@ and their twins, a blue ring where a point was before the press.
 
 ### B4. Warp
 
+- **Since 2026-11-08 B4 is the relief map of Part C** (Virginie: "point warp est une cata par rapport à relief map", "oui,
+  remplace"): `fullpass.py` calls `reliefmap.build(body, facing, EASE)`; the pairs of B3 are no longer used for the garment, only
+  for the comparison (`pointwarp`). Her landmarks still set the heights of the map. What follows describes the point warp.
+
 - **Driven by the point pairs only.** Pulling every edge of the WDI silhouette onto the nearest garment edge (round 8, step 5 E)
   turned corsets, jackets and strap vests into full shirts; it is gone.
 - **Thin-plate spline** from WDI to vanilla coordinates (backward map), `lam = 20` (`LAM`). With 2000 it missed the points by
@@ -287,8 +291,9 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
   (shoulders, flanks, back); the blouse keeps its lapels and its open front in profile. The fabric edge stops where the vanilla
   fabric stopped against the vanilla body (inside, the stroke peeled), so the WDI body's own outline shows around it; thin slivers of
   bare body remain at the shoulders (the stretched rim).
-- Still to do: decide the garment's edge (the body's outline as its stroke, or a stroke of its own), the slivers, the other bodies,
-  then the map in B4 instead of the point warp.
+- **In B4** since 2026-11-08 (`fullpass.py`, boards `2026-11-07_steps-<Body>-<facing>[-<garment>].png`, summary
+  `2026-11-08_B4-relief-Male.png`).
+- Still to do: decide the garment's edge (the body's outline as its stroke, or a stroke of its own), the slivers, the other bodies.
 
 ## Other inputs
 
@@ -311,7 +316,7 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
 
 ## Open items
 
-- Part C: the four landmark corrections, the garment's ease, then the map in B4; then the seven other bodies.
+- Part C (now B4): the garment's edge, the slivers at the shoulders, then the seven other bodies.
 - Part B on the seven other bodies, then the other rules (tucked, untucked), then AB's Pants.
 - `Male` south: the vanilla V slit stretched down the chest (her cleavage point is far lower on WDI): shorten or remove it.
 - The vanilla collar ring stays dark and thick after the warp.
@@ -324,7 +329,7 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
 
 | Script | Board in `Art/work/captures/` | What it shows |
 |---|---|---|
-| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | Part B, three facings. Options: `nolegs`, `garment=<core17 name>`, `b56`, `fulllen`, `nogroin` |
+| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | Part B, three facings. Options: `nolegs`, `garment=<core17 name>`, `pointwarp`, `b56`, `fulllen`, `nogroin` |
 | `stepboard.py [Body] nolegs [garment=X]` | `2026-11-07_steps-<Body>-<facing>[-<garment>].png` | Part A and Part B step by step, one board per facing |
 | `pointsboard.py [Body] nolegs [garment=X]` | `2026-11-07_points-<Body>-nolegs-groin[-<garment>].png` | the warp pairs, large, vanilla and WDI side by side |
 | `gridboard.py [Body] nolegs` | `2026-11-07_grid-<Body>.png` | the grid through the point warp, area change |
