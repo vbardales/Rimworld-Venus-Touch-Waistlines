@@ -64,7 +64,7 @@ Measure: the smallest gap between that line and the bottom of the boxers, over t
 boxers' bottom runs across** (slope of 0.3 px per column or less, the leg line). Not the leg line: the side walls of the sprite,
 where its bottom climbs to meet its top (counted, they gave 11.2 on `Thin_Female` east and 65.6 north, both wrong, Virginie,
 same day), and the slanted hip sides of the wide boxers (slope 0.7 to 1 on `Fat_Female`; counted, they gave 42 south, 13 east,
-44 north). Values at the 512 scale, alone / untucked (reviewed: `Thin_Female`, `Fat_Female`):
+44 north). Values at the 512 scale, alone / untucked (validated by Virginie: `Thin_Female`, `Fat_Female`):
 
 | Body | south | east | north |
 |---|---|---|---|
