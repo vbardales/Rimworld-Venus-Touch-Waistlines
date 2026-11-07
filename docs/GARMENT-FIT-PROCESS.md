@@ -146,8 +146,12 @@ points (A1).
 
 ### B3. Pairs
 
-1. **Named pairs**: her points from A1. The contour points are snapped onto both outlines (the WDI target, A4; the vanilla garment's
-   outer contour); the inner points stay as they are.
+1. **Named pairs**: her points from A1. The contour points are snapped onto both outlines: the WDI target (A4) and, on the vanilla
+   side, the edge of the fabric **left after B2** (not the original outer edge: the peeled band, now transparent, was stretched up to
+   the WDI outline). The inner points stay as they are, except the **groin creases**: in the study they sit at the navel's height on
+   the WDI bodies (`Male`: 356, above the pelvis lines), while on vanilla they are well under the navel. They go **on the waistband
+   line min(B,C)**, where the pelvis lines start under the navel, at 0.72 of the study's distance from the navel's x (Virginie's
+   placement on `Male` south, validated 2026-11-07; to check on the other bodies).
 2. **Added points get vanilla twins**: the same arc-length fraction between the same two snapped neighbours, along the shorter way of
    the vanilla contour.
 3. **Front neckline**: the WDI opening's points paired with the vanilla neck hole, by arc-length fraction from its top, same
