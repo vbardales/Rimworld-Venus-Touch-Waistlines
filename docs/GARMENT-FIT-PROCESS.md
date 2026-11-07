@@ -95,6 +95,9 @@ and the untucked top follow the diagonal waistband, so they are short at the bac
 | Hulk | 53 | 42 | 68 |
 
 The top alone keeps the shape of min(B,C) moved down by d_min, so on the wide boxers its corners go below their slanted sides.
+The move is **vertical**, column by column (Virginie, 2026-11-07, "on garde"): on a steep line the gap seen across it is smaller
+(`Hulk_Female` east back, slope 2.5: 13 px across for 34 down), but a perpendicular offset of the same size would go 91 px down
+there, under the boxers, and the cut stays per column like the game's.
 On east min = max on the shared span, so the untucked hem equals the top alone's there.
 
 At the back the boxers cover the buttocks, so d_min is large: the top alone reaches the bottom of the boxers.
