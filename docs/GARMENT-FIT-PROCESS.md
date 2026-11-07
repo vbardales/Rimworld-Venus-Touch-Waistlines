@@ -19,9 +19,11 @@ All sizes are at the 512 px working scale unless said otherwise (vanilla texture
 | B, per garment | B1 source | the vanilla garment, x4, its vanilla points | 512 px source |
 | | B2 peel | its black outline removed by thickness | source without outline |
 | | B3 pairs | every WDI point with its vanilla partner, pressed up for the legs | the warp pairs |
-| | B4 warp | thin-plate spline driven by the pairs only | the garment on the WDI body |
-| | B5 clip | cut to the target outline of the rule, gaps filled, shading | the garment, clipped |
-| | B6 outline | 4 px stroke inward, layering with the trousers | the final image |
+| | B4 warp | thin-plate spline driven by the pairs only (`lam` 20), fold check | the garment on the WDI body: **the result for now** |
+| | B5 clip | cut to the target outline of the rule, gaps filled, shading | taken out on 2026-11-07 (option `b56`) |
+| | B6 outline | the artist's stroke width inward, layering with the trousers | taken out on 2026-11-07 (option `b56`) |
+| C, per body (in progress) | C1 relief | each body imagined in volume from its three views | a height map per facing |
+| | C2 relief map | vanilla, laid flat on its surface, laid again on the WDI relief | a dense map, no point pairs |
 
 ## Inputs
 
@@ -143,6 +145,11 @@ points (A1).
   ate dark garments (FlakVest straps). Inner strokes are kept.
 - **No fill** of the freed band (Virginie: "pas besoin de populer les bords"): B5 fills whatever the target lacks, and the whole is
   shrunk to 256 at the end. Nothing else is cut (no collar zone, no back band).
+- **Only along the body's edge**: a stroke is peeled only within the outline depth + 8 px of the vanilla body's edge. The edges of an
+  opening inside the body keep their line, as the vanilla artist drew it (`LabCoat`'s open front). On `ShirtBasic` it changes 0
+  to 110 px.
+- The crotch notch of the hem is closed (convex hull of the bottom 40 %) only when it is a notch: an opening that runs up through
+  that whole band (`LabCoat`) is part of the garment.
 
 ### B3. Pairs
 
@@ -152,11 +159,25 @@ points (A1).
    the WDI bodies (`Male`: 356, above the pelvis lines), while on vanilla they are well under the navel. They go **on the waistband
    line min(B,C)**, where the pelvis lines start under the navel, at 0.72 of the study's distance from the navel's x (Virginie's
    placement on `Male` south, validated 2026-11-07; to check on the other bodies).
+   A contour point snaps onto the garment's edge **only when the garment lies on the body's edge there** (within 12 px,
+   `SNAP_TOL`); elsewhere it stays a body point on both sides. `LabCoat` in profile: its open front runs behind the chest, the chest
+   points snapped onto it and dragged it to the WDI chest front (Virginie: "de côté, c'est catastrophique").
+   **Neck bases keep the vanilla order against the neck hole**: where the neck base is outside the hole on one body and above it on
+   the other (collar survey, `2026-11-07_collar-survey.txt`: `Male`, `Fat`, `Fat_Female`), the WDI neck base goes on the top edge at
+   the vanilla share between the shoulder tip and the hole edge. The WDI hole (the artist's, often wider) is kept.
+   **The jugular notch** sits on the top of the opening on both sides.
 2. **Added points get vanilla twins**: the same arc-length fraction between the same two snapped neighbours, along the shorter way of
-   the vanilla contour.
-3. **Front neckline**: the WDI opening's points paired with the vanilla neck hole, by arc-length fraction from its top, same
-   direction of travel. Without them the vanilla hole landed lower than the target's.
-4. **Room for the legs.** Start row y0: the navel, else the belly, else the hips, on both bodies; always 24 px above the lower limit.
+   the vanilla contour; none where a neighbour did not snap.
+3. **Front neckline**: the WDI opening's points paired with the vanilla neck hole **by angle around each hole's centre**, the vanilla
+   hole taken without its V slit (opening of radius 8). By arc length, the slit lengthened the vanilla contour and the pairs crossed.
+4. **Hips**: her contour points stop at the lowest of them; every 16 px down each side to the hem, the target's edge pixel is paired
+   with the nearest point of the vanilla fabric edge to where the warp without them samples it (Virginie: "il manque des marques pour
+   les hanches"). In profile, no fabric may cover the throat front (no ShirtBasic does: vanilla 0 to 80 px, the artist 0 to 4).
+5. **Fold check**: a triangle of WDI points (Delaunay) that turns over on vanilla folds the fabric. While one does, its least reliable
+   point leaves the warp (grey on the boards): detected extremes (top, bottom, leftmost, rightmost) first, then added twins, then
+   hip and hem pairs; her named points stay, a fold among them only is reported. Without legs (`nolegs`), the crotch, leg bottom and
+   bottom points do not drive the fabric.
+6. **Room for the legs** (left out for now, Virginie: "pour l'instant, SANS les jambes"; option without `nolegs`). Start row y0: the navel, else the belly, else the hips, on both bodies; always 24 px above the lower limit.
    Below it, each WDI point takes the share of height its **vanilla** partner has between that landmark and the vanilla body bottom
    of its column, laid between y0 and the **rule's lower limit** (A5: top alone min(B,C) + d_min, untucked max(B,C) + d_min).
    So the vanilla crotch and body bottom land on that limit (Virginie: "on suit ce qu'on a dit à la pré-étude avec d_min"; `Male`
@@ -171,9 +192,19 @@ and their twins, a blue ring where a point was before the press.
 
 - **Driven by the point pairs only.** Pulling every edge of the WDI silhouette onto the nearest garment edge (round 8, step 5 E)
   turned corsets, jackets and strap vests into full shirts; it is gone.
-- **Thin-plate spline** from WDI to vanilla coordinates (backward map), `lam = 2000`: misses the points by 1.5 to 2 vanilla px on
-  average; `lam = 1` hits every point but folds where close points move in opposite directions (crotch cluster, `Hulk_Female` top,
-  side chest and waist). Fix the contradictory pairs before going exact.
+- **Thin-plate spline** from WDI to vanilla coordinates (backward map), `lam = 20` (`LAM`). With 2000 it missed the points by
+  3.5 px (median) to 16 px at 512, and the fabric fell short of the outline on the flanks, the belly, the neck and the shoulders.
+  With 20: 0.2 px (median), 1.3 px at most, no fold left in the target once the fold check (B3, 5) has run.
+- Computed in chunks (the whole 512 x 512 grid at once ran out of memory).
+- **B4 is the result for now**: B5 and B6 are taken out (Virginie 2026-11-07, "enlève aussi l'étape 5"); `b56` shows them again.
+
+### Diagnostics: the grid
+
+A grid garment (lines every 16 px, every 4th red) drawn on the vanilla body and carried by the warp shows how it behaves where there
+is no point (`gridboard.py`, area change in colour). On `Male` with `ShirtBasic` pairs: the chest stretched x2 under the collar then
+squeezed under the pecs (her chest points sit just under the vanilla collar, much lower on WDI), the right flank pinched, the profile
+front and the back's shoulder corners not reached. With the contour pairs only, the chest is regular: the stretch comes from the
+inner points. Points alone do not settle the inside: hence Part C.
 
 ### B5. Clip
 
@@ -185,10 +216,48 @@ and their twins, a blue ring where a point was before the press.
 
 ### B6. Outline and layers
 
-- The outline on the outer edge, inward, 4 px in the tests (the artist's own is 10 to 12 px at 512).
+- The outline on every edge of the target (outside, neck hole, hem), inward, black, its inner side anti-aliased, at the WDI
+  artist's own width: 11 to 13 px at 512 (vanilla 14); his drawing, or the donor's for an undrawn body. The 4 px hard stroke of the
+  first tests was a third of it. Taken out with B5 for now.
 - Layers as in A5: trousers under, top over.
 
-`Male` validated by Virginie for the points and the warp (three facings).
+`Male` validated by Virginie for the points and the warp (three facings), before the changes of the afternoon of 2026-11-07.
+
+## Part C: the relief map (in progress, `Male`)
+
+Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en plate et la repasser sur le relief WDI".
+
+### C1. Relief (`relief3d.py`)
+
+- **Volume from the three views**: each row is a cross-section whose **width** comes from the front view and whose **depth** from the
+  profile (back edge to front edge, so the chest, the belly and the buttocks are in it). Rows of the views are matched by the
+  silhouette's top and bottom. Front: the front half of the section; back: the back half; profile: the side, its height the front
+  view's half width. Rows smoothed (the 128 px vanilla steps striped it).
+- **Chest lobes** (front): two lobes on her points (breast apex L/R, the cleavage between them lower, the under-breast fold as their
+  lower edge).
+- **Drawn volumes**: each zone the artist separates with his lines (pecs, abs blocks, shoulder blades) bulges on its own; the lines
+  are where two volumes meet. The shading as height made hollows of the shadows (Virginie: "les ombres font des dépressions plutôt
+  que de mettre en avant des différences de volume").
+- The body's black outline is removed, the drawn folds bridged (closing of radius 6).
+
+### C2. Relief map (`reliefmap.py`)
+
+- Surface coordinates on each body: **across**, the surface length from the row's middle divided by the row's half surface width on
+  that side (-1 at the left edge, +1 at the right); **down**, the surface length down each column.
+- **Down made comparable** between the two bodies by her landmarks common to both (same names): piecewise linear between their
+  surface heights (the row's median), top and bottom included.
+- Every WDI pixel takes the vanilla pixel with the same (across, down) (nearest in a k-d tree), smoothed (sigma 3): a dense map,
+  no point pairs, the whole WDI body covered.
+- On `Male`: front regular; back clean but a band of close lines at the waist; profile a band under the pecs.
+- **Why the bands** (2026-11-07): landmarks whose meaning differs on the two bodies. Profile "chest front" (detected, the most
+  forward point) is high on the flat vanilla chest (y 226) and at the pec apex on WDI (278): segment ratio x6.3 then x0.29. Back
+  "shoulder tip" (detected) at 226/234 on vanilla, 258 on WDI (sloped shoulders): x0.56. Front: the study's groin creases at the
+  navel's height on WDI (the fix of B3 is not applied here): navel to sex x2.5. And the profile mixes front and back landmarks in
+  one scale.
+- **Corrections proposed, not applied yet**: only her placed anatomical landmarks (no detected ones); heights shared between the
+  views (pec apex, under-breast fold, navel, sex taken from the front, row by row); in profile the front landmarks for the front half
+  and the back ones for the back half; the groin fix.
+- Still to do: carry the garment's ease (what lies outside the vanilla body), then use the map in B4 instead of the point warp.
 
 ## Other inputs
 
@@ -211,10 +280,12 @@ and their twins, a blue ring where a point was before the press.
 
 ## Open items
 
+- Part C: the four landmark corrections, the garment's ease, then the map in B4; then the seven other bodies.
 - Part B on the seven other bodies, then the other rules (tucked, untucked), then AB's Pants.
-- `Male` east: the neck front, where the warp leaves gaps; the vanilla inner collar stroke is kept on south.
-- Contradictory point pairs before an exact warp.
-- Outline width (4 px or the artist's 10 to 12 px).
+- `Male` south: the vanilla V slit stretched down the chest (her cleavage point is far lower on WDI): shorten or remove it.
+- The vanilla collar ring stays dark and thick after the warp.
+- Garments with an open front (`LabCoat`): the target is still a T-shirt's silhouette.
+- Whether B5 and B6 come back, and how.
 - Bound the slope extension of D (`hemshift_<Body>_<facing>.txt`, pink line minus the vanilla body bottom, centred) before using it
   on trousers.
 
@@ -222,7 +293,13 @@ and their twins, a blue ring where a point was before the press.
 
 | Script | Board in `Art/work/captures/` | What it shows |
 |---|---|---|
-| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | Part B, steps 1 to 6, three facings |
+| `fullpass.py [Body]` | `2026-11-07_fullpass-<Body>.png` | Part B, three facings. Options: `nolegs`, `garment=<core17 name>`, `b56`, `fulllen`, `nogroin` |
+| `stepboard.py [Body] nolegs [garment=X]` | `2026-11-07_steps-<Body>-<facing>[-<garment>].png` | Part A and Part B step by step, one board per facing |
+| `pointsboard.py [Body] nolegs [garment=X]` | `2026-11-07_points-<Body>-nolegs-groin[-<garment>].png` | the warp pairs, large, vanilla and WDI side by side |
+| `gridboard.py [Body] nolegs` | `2026-11-07_grid-<Body>.png` | the grid through the point warp, area change |
+| `reliefgrid.py [Body] nolegs` | `2026-11-07_relief-grid-<Body>.png` | contour-only warp against all pairs (first relief model, superseded) |
+| `relief3d.py [Body]` | `2026-11-07_relief3d-<Body>.png` | C1: the relief, lit, and a grid draped on it |
+| `reliefmap.py [Body] nolegs` | `2026-11-07_reliefmap-<Body>.png` | C2: vanilla grid, laid flat, on the WDI relief, against the point warp |
 | `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | A3 and A5: d_min (`dmin_of`), the four rules, untucked (`untucked_hem`), tucked (`tucked`) |
 | `pantsnap.py` | `2026-11-07_pants-snap-<facing>.png` | A2 lines (`lines`, `waist_line`), trousers outline |
 | `snapshirt.py`, `snapdraw.py` | `2026-11-07_snap-shirt.png`, `2026-11-07_snap-draw.png` | A4 top outline, points on the artist's shirt (`synth_art` for undrawn bodies) |
