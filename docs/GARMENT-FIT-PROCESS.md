@@ -44,7 +44,9 @@ certaines lignes sans extrapolation, d'où la redescente"):
 
 - each sprite's top edge loses its side walls first: a jump of 5 px or more in the 10 end columns (the rounded side pad of the
   panties: `Hulk_Female` 383 then 396 south, 377 then 397 north), then the columns that still step by more than 2 px, then a
-  gentle wall up to a real corner near the end (`Thin_Female` east back: 347 rising to 331 over 8 columns, then turning down);
+  gentle wall up to a real corner within 35 % of the line from its end (`Thin_Female` east back: 347 rising to 331 over 8
+  columns, then turning down; `Hulk_Female` east back: past the corner at column 164 the top edge is the buttock outline for 39
+  columns, and the hem followed it into a hook);
 - min and max per column on the span both sprites still cover, median of 3;
 - **both lines extended past that span with their own slope** (linear fit on their last 12 columns), max never under min.
 
@@ -75,7 +77,8 @@ span, **only in the columns where the
 boxers' bottom runs across** (slope of 0.3 px per column or less, the leg line). Not the leg line: the side walls of the sprite,
 where its bottom climbs to meet its top (counted, they gave 11.2 on `Thin_Female` east and 65.6 north, both wrong, Virginie,
 same day), and the slanted hip sides of the wide boxers (slope 0.7 to 1 on `Fat_Female`; counted, they gave 42 south, 13 east,
-44 north). Values at the 512 scale (validated by Virginie: `Thin_Female`, `Fat_Female`):
+44 north). Values at the 512 scale (validated by Virginie: `Thin_Female`, `Fat_Female`, `Hulk_Female`; on east the top alone
+and the untucked top follow the diagonal waistband, so they are short at the back, accepted):
 
 | Body | south | east | north |
 |---|---|---|---|
