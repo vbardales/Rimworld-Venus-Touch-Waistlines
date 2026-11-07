@@ -279,7 +279,16 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
      shared with the side and back views.
   Left: a mild general squeeze (the WDI torso is shorter on the surface than the vanilla one), the upper back in profile, the low
   front and the stretched rim along the outline.
-- Still to do: carry the garment's ease (what lies outside the vanilla body), then use the map in B4 instead of the point warp.
+- **The garment's ease**: past the body edge (up to `EASE` = 28 px) each pixel takes the coordinates of the nearest body pixel
+  plus its screen offset (across divided by the body's half width, down in px), on both bodies, so what the vanilla garment has
+  outside the vanilla body keeps its distance on WDI (`reliefmap.extend`, `reliefmap.build`).
+- **First garments through the map** (`garmentmap.py`, board `2026-11-08_garmentmap-Male.png`, `ShirtBasic` and `LabCoat`,
+  B2 prep, no clip, no outline): the garment stays on the WDI body in the three views, where the point warp spills past it
+  (shoulders, flanks, back); the blouse keeps its lapels and its open front in profile. The fabric edge stops where the vanilla
+  fabric stopped against the vanilla body (inside, the stroke peeled), so the WDI body's own outline shows around it; thin slivers of
+  bare body remain at the shoulders (the stretched rim).
+- Still to do: decide the garment's edge (the body's outline as its stroke, or a stroke of its own), the slivers, the other bodies,
+  then the map in B4 instead of the point warp.
 
 ## Other inputs
 
@@ -321,7 +330,8 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
 | `gridboard.py [Body] nolegs` | `2026-11-07_grid-<Body>.png` | the grid through the point warp, area change |
 | `reliefgrid.py [Body] nolegs` | `2026-11-07_relief-grid-<Body>.png` | contour-only warp against all pairs (first relief model, superseded) |
 | `relief3d.py [Body]` | `2026-11-07_relief3d-<Body>.png` | C1: the relief, lit, and a grid draped on it |
-| `reliefmap.py [Body] nolegs` | `2026-11-07_reliefmap-<Body>.png` | C2: vanilla grid, laid flat, on the WDI relief, against the point warp |
+| `reliefmap.py [Body] nolegs` | `2026-11-07_reliefmap-<Body>.png` | C2: vanilla grid, laid flat, on the WDI relief, weak zones, against the point warp |
+| `garmentmap.py [Body] nolegs` | `2026-11-08_garmentmap-<Body>.png` | C2: `ShirtBasic` and `LabCoat` through the relief map against the point warp |
 | `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | A3 and A5: d_min (`dmin_of`), the four rules, untucked (`untucked_hem`), tucked (`tucked`) |
 | `pantsnap.py` | `2026-11-07_pants-snap-<facing>.png` | A2 lines (`lines`, `waist_line`), trousers outline |
 | `snapshirt.py`, `snapdraw.py` | `2026-11-07_snap-shirt.png`, `2026-11-07_snap-draw.png` | A4 top outline, points on the artist's shirt (`synth_art` for undrawn bodies) |
