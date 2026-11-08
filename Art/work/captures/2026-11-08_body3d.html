@@ -73,7 +73,8 @@ function skeleton(rows,A,lm,legs){
     m.position.set(pos[0],pos[1],pos[2]);m.lookAt(pos[0]+Math.sin(ang)*10,pos[1],pos[2]+Math.cos(ang)*10);return m};
   // spine, a little under the back skin, vertebrae as short blocks
   const NS=26,ys=top-2,ye=crotch+6,spine=[];
-  for(let i=0;i<NS;i++){const t=i/(NS-1),y=ys+(ye-ys)*t,p=P(y,Math.PI,9+10*Math.sin(Math.PI*Math.min(1,t*1.2)*0.5));spine.push(p);
+  const zspan=y=>{const i=ix(y),f=info(i);const zb=f.cz-rad(i,Math.PI),zf=f.cz+rad(i,0);return{f,zb,zf}};
+  for(let i=0;i<NS;i++){const t=i/(NS-1),y=ys+(ye-ys)*t,q=zspan(y),p=[q.f.cx,y,q.zb+Math.max(14,0.30*(q.zf-q.zb))];spine.push(p);
     g.add(ball(p,4.4+3.2*t,2.6,4.4+3.2*t))}
   g.add(tube(spine,2.2));
   // ribcage: a RIGID barrel (narrow at the top, widest at 2/3, 12 ribs), scaled to fit INSIDE the skin at its tightest level,
@@ -81,13 +82,14 @@ function skeleton(rows,A,lm,legs){
   const apexW=lm.apex??fold,yRibT2=sh-10,yRibB2=apexW-0.85*(apexW-navel),NR=12;
   const wfun=t=>t<=0.65?0.45+0.55*Math.sin(t/0.65*Math.PI/2):1-0.12*((t-0.65)/0.35);
   const dfun=t=>t<=0.60?0.50+0.50*Math.sin(t/0.60*Math.PI/2):1-0.10*((t-0.60)/0.40);
-  const lev=[];let Sx=1e9,Sz=1e9;
-  for(let k=0;k<NR;k++){const t=k/(NR-1),y=yRibT2+(yRibB2-yRibT2)*t,i=ix(y),f=info(i),sp=P(y,Math.PI,11);
-    const ax=rad(i,Math.PI/2)-8,az=(f.cz+rad(i,0))-sp[2]-12;
-    lev.push({t,y,f,sp,ax,az,wf:wfun(t),df:dfun(t)})}
-  const q=(arr,p)=>{const s=[...arr].sort((a,b)=>a-b);return s[Math.floor(p*(s.length-1))]};
-  Sx=q(lev.map(L=>L.ax/L.wf),0.3);Sz=q(lev.map(L=>L.az/L.df),0.3);
-  for(const L of lev){L.a=Math.min(L.ax,Sx*L.wf);L.D=Math.min(L.az,Sz*L.df)}
+  const lev=[];
+  for(let k=0;k<NR;k++){const t=k/(NR-1),y=yRibT2+(yRibB2-yRibT2)*t,i=ix(y),f=info(i);
+    lev.push({t,y,f,ax:rad(i,Math.PI/2)-10,zf:f.cz+rad(i,0)-7,zb:f.cz-rad(i,Math.PI)+12,wf:wfun(t),df:dfun(t)})}
+  const sm=(key)=>{const v=lev.map(L=>L[key]);return v.map((_,k)=>{let s=0,n=0;for(let j=-2;j<=2;j++){const kk=Math.max(0,Math.min(NR-1,k+j));s+=v[kk];n++}return s/n})};
+  const zfS=sm('zf'),zbS=sm('zb'),axS=sm('ax');
+  const qs=(arr,p)=>{const v=[...arr].sort((a,b)=>a-b);return v[Math.floor(p*(v.length-1))]};
+  const Sx=qs(lev.map((L,k)=>axS[k]/L.wf),0.4);
+  lev.forEach((L,k)=>{L.sp=[0,0,zbS[k]];L.D=(zfS[k]-zbS[k])*L.df;L.a=Math.min(axS[k],Sx*L.wf)});
   for(const L of lev)for(const sg of [-1,1]){const pts=[];
     for(let s=0;s<=26;s++){const phi=0.14+(Math.PI-0.12-0.14)*s/26;
       pts.push([L.f.cx+sg*L.a*Math.sin(phi),L.y-14*(1+Math.cos(phi))/2,L.sp[2]+L.D/2+(L.D/2)*Math.cos(phi)])}
