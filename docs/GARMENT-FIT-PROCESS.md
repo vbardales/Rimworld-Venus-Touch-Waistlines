@@ -293,7 +293,77 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
   bare body remain at the shoulders (the stretched rim).
 - **In B4** since 2026-11-08 (`fullpass.py`, boards `2026-11-07_steps-<Body>-<facing>[-<garment>].png`, summary
   `2026-11-08_B4-relief-Male.png`).
-- Still to do: decide the garment's edge (the body's outline as its stroke, or a stroke of its own), the slivers, the other bodies.
+- Still to do: decide the garment's edge (the body's outline as its stroke, or a stroke of its own), the slivers.
+
+### C3. The seven other bodies, points at regular intervals, a point only where a weak zone resists (2026-11-08, cloud)
+
+Virginie 2026-11-08 (night, decisions left to me): "étudie surtout la manière d'obtenir des points à intervalles réguliers
+pour compléter la heatmap ... deux types de points : en bordure, les points clé et dans les zones vides ... lance la carte
+relief sur les 7 autres corps, puis ajoute des points seulement là où une zone de faiblesse résiste ... teste avec des
+vêtements".
+
+- **Stand-in WDI bodies.** The cloud container has no Steam folder and the WDI textures are in no branch. `wdi_from_study.py`
+  rebuilds them at 512 px from the study boards of 2026-11-03 (`[east-|north-]1-wdi-<Body>.png`, the body at 8x with her
+  points over it) registered on the `E_<Body>_<facing>.png` masks: the coloured marks are painted out (biharmonic), the
+  outline band re-blackened. Check board `2026-11-08_wdi-standin.png`; `relief3d.py Male` on the stand-in matches the board
+  made on the real texture. What they lack: the nipples, and the real grey of the outline's inner edge. Every board of
+  2026-11-08 below is on these stand-ins; rerun on the real textures before judging small details.
+- **Samples, not driving points** (`reliefstudy.py`, boards `2026-11-08_reliefstudy-<Body>.png`, `out/reliefstudy.json`). The
+  relief map is dense, so the regular points sample it: **border** samples at across -1 and +1 every 32 px of vanilla surface
+  height, **key** samples at her landmarks (the kept ones filled, the other placed ones hollow), **empty** samples on a lattice
+  inside (5 across, every 32 px down). Each sample is placed on the vanilla body (its surface coordinates) and on the WDI body
+  (the WDI pixel whose vanilla pixel is nearest) and reads the local area ratio, relative to the facing's median (the whole WDI
+  torso being smaller or larger on the surface is not a weakness): |log2| > 0.58 (x1.5) is weak. A border sample reads it 12
+  px inside the stroke (the stroke itself, 4 px on vanilla and 12 on WDI, is stretched by construction and redrawn later).
+  **Border check**: every WDI edge pixel takes a vanilla pixel inside the vanilla silhouette: 24 views, 96 to 100 % filled (the
+  misses are the crotch notch and the neck corners, 1 to 36 px per view).
+- **A point added only where a band resists.** A band between two consecutive height anchors resists when 35 % or more of its
+  samples are weak in one direction; then one extra anchor is added at the band's middle WDI row, its vanilla row the one
+  with the same **surface area** fraction between the two anchors (`reliefmap.EXTRA`). On the profile the bands are judged
+  per half (front, back). **Result: it does nothing** (Thin_Female 45 % weak before, 48 % after; Fat 38 % both; Male 4 %
+  both). The weak zones of the seven bodies are **whole bands between two anchors, uniformly squeezed or stretched**
+  (neck to armpits stretched, armpits to navel, navel to sex squeezed x2 to x3 on the female bodies, under the sex
+  stretched): splitting such a band in two leaves both halves as they were. What is wrong is not a missing point but the
+  height of an anchor that sits at a different share of the torso on the two bodies.
+- **Which anchor** (`anchortest.py`, `out/anchortest.json`): weak share of the map with each anchor dropped in turn, and with
+  the anchors' scale **softened** (`reliefmap.SOFT`: blended with the uniform top-to-bottom scale, 0.5 = half way, 1 = top
+  and bottom only).
+
+  | body | base | -neck | -armpit | -navel | -sex | soft 0.5 | soft 1 |
+  |---|---|---|---|---|---|---|---|
+  | Male | 4-7 % | 4-6 | 4-7 | 4-7 | 6-8 | 5-6 | 6-7 |
+  | Female | 16-23 % | 16-22 | 14-23 | 17-25 | 11-18 | 12-18 | 11-16 |
+  | Thin | 23-27 % | 23-24 | 23-34 | **8-11** | 26-28 | 13-18 | 6 |
+  | Fat | 22-38 % | 22-38 | 15-27 | **4-9** | 20-38 | 5-11 | 6-10 |
+  | Hulk | 7-13 % | 5-11 | 7-14 | 7-12 | 7-14 | **3-12** | 9-12 |
+  | Thin_Female | 45-47 % | 44-45 | 33-36 | 52-61 | 30-36 | **24-25** | 5-7 |
+  | Fat_Female | 36-42 % | 34-42 | 29-34 | **11-22** | 20-35 | 19-22 | 7-11 |
+  | Hulk_Female | 21-33 % | 19-31 | 20-27 | 21-36 | 13-34 | **13-24** | 14-19 |
+
+  On Thin, Fat and Fat_Female the **navel** makes the bands (the WDI navel sits high on a belly that bulges, the vanilla one
+  low on a flat torso); on Thin_Female every inner anchor conflicts (dropping the navel makes it worse) and only softening
+  helps; Male and Hulk are fine as they are. 'Top and bottom only' is always the least weak, by definition, and throws her
+  landmarks away: not retained.
+- **Height mode per body** (`heightmode.py`, `out/heightmode.json`, read by `reliefmap.mode_of`; boards
+  `2026-11-08_heightmode-<Body>.png`, grid and weak map before and after): the least weak of {as it is, navel dropped, sex
+  dropped, soft 0.5}, the anchors as they are kept when within 3 points. Chosen: Male base; Female -sex (21 to 16 %); Thin
+  -navel (24 to 9); Fat -navel (32 to 6); Hulk soft 0.5 (9 to 6); Thin_Female soft 0.5 (46 to 24); Fat_Female -navel (39 to
+  16); Hulk_Female soft 0.5 (26 to 17). **My decision for the night, hers to confirm**: the navel still exists as a landmark
+  (B3 pairs) but no longer sets the height scale on three bodies.
+- **What remains weak** after the mode: Thin_Female and Hulk_Female (a navel-to-sex band still squeezed), Female (the
+  breasts' lobes against the flat vanilla chest), the stretched band under the sex on every female body (the WDI crotch and
+  thighs are taller than the vanilla bottom). Those are not height anchors any more: either across (breasts) or the legs
+  region, which the rules cut off anyway (B5 hem).
+- **Garments on the eight bodies** (`garmentstudy.py`, boards `2026-11-08_garmentstudy-ShirtBasic.png` and `-LabCoat.png`,
+  three facings, height mode applied, ease 28 px, B2 prep, no clip, no outline): the shirt and the blouse cover every WDI
+  body in the three views; the blouse keeps its lapels, its buttons and its open front in profile on all of them; the
+  stand-in's lost nipple shows as a dark spot under the shirt on the female profiles (not a map defect). Not compared with
+  the point warp (needs the underwear sprites and the artist's garments, absent from the cloud).
+- **Tools of 2026-11-08**: all in `Art/work/transfer-proto/fable-crack/`, run through `run_linux.py` on Linux (it maps the
+  Windows paths, the WDI textures expected in `../ws/` beside the repository) or directly on Windows:
+  `wdi_from_study.py`, `reliefstudy.py [Body|all]`, `anchortest.py [Body|all]`, `heightmode.py [Body|all]`,
+  `garmentstudy.py [garment=A,B] [Body|all]`. `reliefmap.py` gained `EXTRA`, `SOFT`, `MODES`/`mode_of` (no change to the map
+  when `out/heightmode.json` is absent and `SOFT` is 0).
 
 ## Other inputs
 
@@ -316,8 +386,10 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
 
 ## Open items
 
-- Part C (now B4): the garment's edge, the slivers at the shoulders, then the seven other bodies.
-- Part B on the seven other bodies, then the other rules (tucked, untucked), then AB's Pants.
+- Part C (now B4): the garment's edge, the slivers at the shoulders. The seven other bodies are through it (C3) on stand-in
+  textures: rerun `heightmode.py all` and `garmentstudy.py all` on the real WDI textures, and Virginie's verdict on the
+  height modes (navel dropped on Thin, Fat, Fat_Female; softened on Hulk, Thin_Female, Hulk_Female; sex dropped on Female).
+- Part B on the seven other bodies with the rules (tucked, untucked), then AB's Pants.
 - `Male` south: the vanilla V slit stretched down the chest (her cleavage point is far lower on WDI): shorten or remove it.
 - The vanilla collar ring stays dark and thick after the warp.
 - Garments with an open front (`LabCoat`): the target is still a T-shirt's silhouette.
@@ -337,6 +409,11 @@ Virginie 2026-11-07: "partir d'une grille orthogonale SUR VANILLA, la passer en 
 | `relief3d.py [Body]` | `2026-11-07_relief3d-<Body>.png` | C1: the relief, lit, and a grid draped on it |
 | `reliefmap.py [Body] nolegs` | `2026-11-07_reliefmap-<Body>.png` | C2: vanilla grid, laid flat, on the WDI relief, weak zones, against the point warp |
 | `garmentmap.py [Body] nolegs` | `2026-11-08_garmentmap-<Body>.png` | C2: `ShirtBasic` and `LabCoat` through the relief map against the point warp |
+| `wdi_from_study.py` | `2026-11-08_wdi-standin.png` | C3: stand-in WDI bodies from the 2026-11-03 study boards (cloud only) |
+| `reliefstudy.py [Body|all]` | `2026-11-08_reliefstudy-<Body>.png` | C3: regular samples (border, key, empty) on the weak map, a point added where a band resists |
+| `anchortest.py [Body|all]` | `out/anchortest.json` | C3: weak share with each anchor dropped, softened |
+| `heightmode.py [Body|all]` | `2026-11-08_heightmode-<Body>.png` | C3: the height mode per body, grid and weak map before and after |
+| `garmentstudy.py [garment=A,B] [Body|all]` | `2026-11-08_garmentstudy-<Garment>.png` | C3: a garment through the relief map on the eight bodies |
 | `rules4.py [Body]` | `2026-11-07_four-rules[-<Body>].png` | A3 and A5: d_min (`dmin_of`), the four rules, untucked (`untucked_hem`), tucked (`tucked`) |
 | `pantsnap.py` | `2026-11-07_pants-snap-<facing>.png` | A2 lines (`lines`, `waist_line`), trousers outline |
 | `snapshirt.py`, `snapdraw.py` | `2026-11-07_snap-shirt.png`, `2026-11-07_snap-draw.png` | A4 top outline, points on the artist's shirt (`synth_art` for undrawn bodies) |
