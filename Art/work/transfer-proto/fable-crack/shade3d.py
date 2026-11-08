@@ -17,7 +17,9 @@ MU = float(os.environ.get("SHADE_MU", 0.003))   # pull back to the volume
 _height0 = r3.height
 NIPPLE = float(os.environ.get("NIPPLE", 7.0))   # px of height
 SEX = float(os.environ.get("SEX", 9.0))
-PEC = float(os.environ.get("PEC", 8.0))      # px of height of each pectoral lobe
+PEC = float(os.environ.get("PEC", 11.0))     # px of height of the pectoral muscle, male bodies
+PEC_F = float(os.environ.get("PEC_F", 5.0))   # the same under the breast tissue, female bodies
+BODY = [None]                                   # set by the views() wrapper below
 NAVEL = float(os.environ.get("NAVEL", 8.0))
 
 
@@ -91,25 +93,35 @@ def height_shade(view, M, pts, lum):
         b = D.T @ t + MU * hb
         out[y0:y1, x] = spsolve(A, b)
     out = ndi.gaussian_filter(out, (2, 4)) * m
-    # Virginie 2026-11-08: two pectorals that share the chest (like the two testes in one sac): two lobes from the
-    # sternum to the armpit, from under the collarbone to the fold, a groove on the midline
+    # Virginie 2026-11-08: the pectorals are muscles, not domes. Pectoralis major = a fan: it starts on the collarbone, the edge of
+    # the sternum and the upper ribs and converges on the armpit. Thin by the sternum (the bone is a floor: the cleavage cannot
+    # go deeper than it), thickest low and lateral, a crisp oblique lower border rising toward the armpit.
     need = ("armpit L", "armpit R", "shoulder tip L", "shoulder tip R", "under-breast fold L", "under-breast fold R")
     if view == "south" and all(k in pts for k in need):
         midx = 0.5 * (pts["breast apex L"][0] + pts["breast apex R"][0]) if "breast apex L" in pts else 0.5 * (pts["armpit L"][0] + pts["armpit R"][0])
         ysh = 0.5 * (pts["shoulder tip L"][1] + pts["shoulder tip R"][1])
         yfo = 0.5 * (pts["under-breast fold L"][1] + pts["under-breast fold R"][1])
+        amp = PEC if BODY[0] and "Female" not in BODY[0] else PEC_F
+        inc = np.zeros_like(out)
         for nm in ("armpit L", "armpit R"):
-            ax = pts[nm][0]
-            half = 0.5 * (abs(ax - midx) - 6)
-            if half < 8 or yfo - ysh < 30:
+            ax, ay_ = pts[nm]
+            w = abs(ax - midx) - 6
+            if w < 12 or yfo - ysh < 30:
                 continue
             sg = 1 if ax > midx else -1
-            cxp, cyp = midx + sg * (6 + half), 0.5 * (ysh + 12 + yfo)
-            ay = 0.5 * (yfo - ysh - 12)
-            rr = ((xx - cxp) / half) ** 2 + ((yy - cyp) / ay) ** 2
-            out = out + PEC * np.clip(1 - rr, 0, 1) ** 0.7 * m
-        band = np.exp(-(((yy - 0.5 * (ysh + yfo)) / (0.5 * (yfo - ysh))) ** 6))
-        out = out - 0.5 * PEC * np.exp(-(((xx - midx) / 5.0) ** 2)) * band * m
+            u = (np.abs(xx - midx) - 6) / w * ((xx - midx) * sg > 0)
+            ytop = ysh + 22 - 12 * np.clip(u, 0, 1)          # the collarbone climbs from the notch to the shoulder
+            ylow = (yfo + 4) + ((ay_ + 10) - (yfo + 4)) * np.clip(u, 0, 1.2) ** 1.2
+            v = (yy - ytop) / np.maximum(ylow - ytop, 1.0)
+            inside = (u > 0) & (u < 1.0) & (v > 0) & (v < 1.0)
+            Au = 0.30 + 0.70 * np.clip(u, 0, 1) ** 0.8
+            tv = np.clip(v / 0.70, 0, 1)
+            Av = tv * tv * (3 - 2 * tv)                      # smoothstep: no ridge along the collarbone
+            s_low = np.clip((1 - v) * (ylow - ytop) / (4.0 if amp == PEC else 14.0), 0, 1)
+            s_lat = np.clip((1 - u) * w / 10.0, 0, 1)
+            s_med = np.clip(u * w / 5.0, 0, 1)
+            inc = np.maximum(inc, amp * Au * Av * s_low * s_lat * s_med * inside)
+        out = out + ndi.gaussian_filter(inc, 1.2) * m
     if view == "south" and "sex" in pts:
         hull, cr = groin(m, lum, pts["sex"], ol)
         if hull is not None:
@@ -127,6 +139,15 @@ def height_shade(view, M, pts, lum):
     return np.clip(out, 0, None) if not any(a < 0 for _, _, a in feats) else np.clip(out, -20, None) * m
 
 
+_views0 = r3.views
+
+
+def _views(body, vanilla):
+    BODY[0] = body
+    return _views0(body, vanilla)
+
+
+r3.views = _views
 r3.height = height_shade
 r3.silhouette = silhouette_full
 
