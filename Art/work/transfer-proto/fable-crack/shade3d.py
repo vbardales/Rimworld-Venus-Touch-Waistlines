@@ -17,12 +17,35 @@ MU = float(os.environ.get("SHADE_MU", 0.003))   # pull back to the volume
 _height0 = r3.height
 
 
+def silhouette_full(img):
+    """the whole drawn body, black outline included (Virginie 2026-11-08: the outline is not to be removed, it is to be
+    integrated: it is the rim where the surface turns away from the eye)"""
+    a = img[..., 3] > 0.5
+    m = ndi.binary_fill_holes(a)
+    lab, n = ndi.label(m)
+    if n > 1:
+        m = lab == (1 + int(np.argmax(ndi.sum(m, lab, range(1, n + 1)))))
+    return m
+
+
+def outline_of(m, lum):
+    """the black stroke along the edge: dark pixels connected to the edge of the silhouette"""
+    dark = m & (lum < 0.2)
+    lab, n = ndi.label(dark)
+    if n == 0:
+        return dark
+    edge = m & ~ndi.binary_erosion(m, iterations=2)
+    keep = np.unique(lab[edge & dark]); keep = keep[keep > 0]
+    return np.isin(lab, keep)
+
+
 def height_shade(view, M, pts, lum):
     h0 = _height0(view, M, pts, lum)
     m = M[view]
     n = h0.shape[0]
-    ref = float(np.percentile(lum[m], 95))
-    dark = np.clip(1.0 - lum / max(ref, 1e-3), 0, 1) * m
+    ref = float(np.percentile(lum[m & (lum > 0.2)], 95))
+    ol = ndi.binary_dilation(outline_of(m, lum), iterations=2)
+    dark = np.clip(1.0 - lum / max(ref, 1e-3), 0, 1) * m * ~ol
     dark = ndi.gaussian_filter(dark, (1.0, 2.5)) * m
     out = h0.copy()
     for x in np.where(m.any(axis=0))[0]:
@@ -44,6 +67,7 @@ def height_shade(view, M, pts, lum):
 
 
 r3.height = height_shade
+r3.silhouette = silhouette_full
 
 if __name__ == "__main__":
     what = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] in ("overlay", "export") else "overlay"
