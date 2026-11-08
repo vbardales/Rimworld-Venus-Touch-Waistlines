@@ -1,0 +1,101 @@
+$tmp = 'C:\Users\nelim\AppData\Local\Temp\claude\C--Users-nelim-Documents-rimworld-VenusTouchWaistlines\bee87564-3e6f-4779-92f2-04aa7a22cc7b\scratchpad\'
+. ($tmp + 'lib.ps1')
+Add-Type -TypeDefinition $src -ReferencedAssemblies System.Drawing
+Add-Type -AssemblyName System.Drawing
+$wdi = 'C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\3527486510\Textures\Things\Pawn\Humanlike\Bodies\'
+function LoadPx($path) { $bm = New-Object System.Drawing.Bitmap $path; $w = $bm.Width; $h = $bm.Height
+  $d = $bm.LockBits((New-Object System.Drawing.Rectangle 0,0,$w,$h), [System.Drawing.Imaging.ImageLockMode]::ReadOnly, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+  $px = New-Object byte[] ($w*$h*4); [System.Runtime.InteropServices.Marshal]::Copy($d.Scan0, $px, 0, $px.Length); $bm.UnlockBits($d); $bm.Dispose(); return ,@($px, $w, $h) }
+[Layers]::Redraw = $true; [Layers]::InkLuma = 60; [Layers]::FillDilate = 3; [Layers]::TargetWidth = 0.0; [Layers]::CopyLine = $false; [Layers]::StrokeGray = 15; [S3]::Bridge = $false; [S3]::RadiusBias = 0.4; [Layers]::FillBlur = 6; [S3]::SourceBand = 0; [S3]::RingTopY = 0; [Layers]::HoleBoxL = $null; [S3]::RelativeInk = $false; [Layers]::Extra = $null
+if ($null -eq $biasOut) { $biasOut = 3 }; if ($null -eq $biasHem) { $biasHem = 5 }; if ($null -eq $biasSleeve) { $biasSleeve = 5 }
+if (-not $pairsToRun) { $pairsToRun = @(@('male','Male'), @('thin','Thin'), @('fat','Fat'), @('hulk','Hulk'), @('female','Female'), @('thin','Thin_Female'), @('fat','Fat_Female'), @('hulk','Hulk_Female')) }
+$idx = @('neckL','neckR','shL','shR','armL','armR','waistL','waistR','hipL','hipR','crotch','top','bottom')
+function LmOf($path) { $info = ''; $v = [Lm]::Detect($path, [ref]$info); return @{ v = $v; info = $info; ww = [Lm]::WeakWaist; wh = [Lm]::WeakHip; wa = [Lm]::WeakArm } }
+function Interp($x, $xs, $ys) { for ($j = 0; $j -lt $xs.Count - 1; $j++) { if ($x -le $xs[$j+1] -or $j -eq $xs.Count - 2) { $f = ($x - $xs[$j]) / [Math]::Max(1e-6, $xs[$j+1] - $xs[$j]); return $ys[$j] + $f * ($ys[$j+1] - $ys[$j]) } } }
+function Bbox($s) { if ($s -match 'bbox \((\d+),(\d+)\)-\((\d+),(\d+)\)') { return @([int]$Matches[1], [int]$Matches[2], [int]$Matches[3], [int]$Matches[4]) } return $null }
+foreach ($pr in $pairsToRun) {
+  $sk = $pr[0]; $tk = $pr[1]
+  $sBodyP = $tmp + "vbody512_$sk.png"; $sGarP = $tmp + "imo512_$sk.png"; $tBodyP = $wdi + "Naked_${tk}_south.png"
+  $Sg = LmOf $sBodyP; $Tg = LmOf $tBodyP
+  $weakNeck = (($Tg.v[1] - $Tg.v[23]) -lt 6) -or (($Sg.v[1] - $Sg.v[23]) -lt 6)
+  $use = New-Object System.Collections.Generic.List[int]; foreach ($i in 2,3,11,12) { $use.Add($i) }; if (-not $weakNeck) { $use.Add(0); $use.Add(1) }
+  if (-not $Sg.wa -and -not $Tg.wa) { $use.Add(4); $use.Add(5) }
+  if (-not $Sg.ww -and -not $Tg.ww) { $use.Add(6); $use.Add(7) }
+  if (-not $Sg.wh -and -not $Tg.wh) { $use.Add(8); $use.Add(9) }
+  $base = New-Object System.Collections.Generic.List[double]; $names = New-Object System.Collections.Generic.List[string]
+  foreach ($i in ($use | Sort-Object)) { $base.Add($Tg.v[2*$i]); $base.Add($Tg.v[2*$i+1]); $base.Add($Sg.v[2*$i]); $base.Add($Sg.v[2*$i+1]); $names.Add($idx[$i]) }
+  $nBody = $names.Count
+  $rowsT = @($Tg.v[23], $Tg.v[1], $Tg.v[5]); $rowsS = @($Sg.v[23], $Sg.v[1], $Sg.v[5]); if ($weakNeck) { $rowsT = @($Tg.v[23], $Tg.v[5]); $rowsS = @($Sg.v[23], $Sg.v[5]) }
+  if ($use.Contains(4)) { $rowsT += $Tg.v[9]; $rowsS += $Sg.v[9] }
+  if ($use.Contains(6)) { $rowsT += $Tg.v[13]; $rowsS += $Sg.v[13] }
+  if ($use.Contains(8)) { $rowsT += $Tg.v[17]; $rowsS += $Sg.v[17] }
+  $rowsT += $Tg.v[25]; $rowsS += $Sg.v[25]
+  $rp = New-Object System.Collections.Generic.List[double]
+  for ($j = 0; $j -lt $rowsT.Count - 1; $j++) { for ($q = 0; $q -lt 4; $q++) { $f = $q / 4.0; $rp.Add($rowsT[$j] + $f * ($rowsT[$j+1] - $rowsT[$j])); $rp.Add($rowsS[$j] + $f * ($rowsS[$j+1] - $rowsS[$j])) } }
+  $rp.Add($rowsT[$rowsT.Count-1] - 2); $rp.Add($rowsS[$rowsS.Count-1] - 2)
+  $sB = LoadPx $sBodyP; $srcGar = LoadPx $sGarP
+  $L = $null; $R = $null; $ot = 0; $ob = 0; $oo = 0; [S3]::Offsets($sB[0], $srcGar[0], 512, 512, [ref]$L, [ref]$R, [ref]$ot, [ref]$ob, [ref]$oo)
+  $band = [Math]::Max(15, $oo + 1); [Layers]::OutlineW = $oo
+  "== vanilla $sk garment (IMO) -> WDI $tk"
+  "  vanilla: " + $Sg.info; "  WDI    : " + $Tg.info
+  # garment features, placed on the target body by relation (row map between the landmark rows, x by the share of the half width at that row)
+  $ft = [Gl]::Features($srcGar[0], 512, 512, $band); $fn = [Gl]::Names -split ' '
+  $all = New-Object System.Collections.Generic.List[double]; $all.AddRange([double[]]$base.ToArray())
+  $fdesc = @()
+  for ($k = 0; $k -lt $ft.Count / 2; $k++) { $x = $ft[2*$k]; $y = $ft[2*$k+1]
+    $yt = Interp $y $rowsS $rowsT; $eS = [Lm]::Ext($sBodyP, [int][Math]::Round($y)); $eT = [Lm]::Ext($tBodyP, [int][Math]::Round($yt))
+    if ($eS[0] -lt 0 -or $eT[0] -lt 0) { continue }
+    $cxS = ($eS[0] + $eS[1]) / 2; $cxT = ($eT[0] + $eT[1]) / 2; $hS = ($eS[1] - $eS[0]) / 2; $hT = ($eT[1] - $eT[0]) / 2
+    $xt = $cxT + ($x - $cxS) * $hT / $hS
+    # round 3 (Virginie 2026-11-03: the cloth must come over the skin): hem down, hem corners and sleeve ends outward
+    if ($fn[$k] -like 'hem*') { $yt += $biasHem; $xt += [Math]::Sign($x - $cxS) * $biasOut }
+    if ($fn[$k] -like 'sleeve*') { $xt += [Math]::Sign($x - $cxS) * $biasSleeve }
+    $all.Add($xt); $all.Add($yt); $all.Add($x); $all.Add($y); $fdesc += ("{0}({1:0},{2:0})->({3:0},{4:0})" -f $fn[$k], $x, $y, $xt, $yt) }
+  # round 3: garment contour anchors, 12 rows from 6 % to 88 % of the garment height, edge placed at the target body edge + source offset x local scale + biasOut (outward)
+  $G = LmOf $sGarP; $gTop = $G.v[23]; $gBot = $G.v[25]; $nCont = 0
+  for ($i = 0; $i -lt 16; $i++) { $u = 0.03 + 0.94 * $i / 15; $ys = [int][Math]::Round($gTop + $u * ($gBot - $gTop)); $yt = Interp $ys $rowsS $rowsT
+    $eS = [Lm]::Ext($sBodyP, $ys); $eT = [Lm]::Ext($tBodyP, [int][Math]::Round($yt)); $gS = [Lm]::Ext($sGarP, $ys)
+    if ($eS[0] -lt 0 -or $eT[0] -lt 0 -or $gS[0] -lt 0) { continue }
+    $sc = ($eT[1] - $eT[0]) / [double]($eS[1] - $eS[0]); $offL = $eS[0] - $gS[0]; $offR = $gS[1] - $eS[1]
+    $all.Add($eT[0] - ($offL * $sc + $biasOut)); $all.Add($yt); $all.Add($gS[0]); $all.Add($ys)
+    $all.Add($eT[1] + $offR * $sc + $biasOut); $all.Add($yt); $all.Add($gS[1]); $all.Add($ys); $nCont += 2 }
+  # hem bottom middle, biased down
+  $gb = [Lm]::Ext($sGarP, [int]$gBot); $mx = ($gb[0] + $gb[1]) / 2.0; $ytb = (Interp $gBot $rowsS $rowsT) + $biasHem; $eS = [Lm]::Ext($sBodyP, [int]$gBot); $eT = [Lm]::Ext($tBodyP, [int][Math]::Round($ytb - $biasHem))
+  if ($eS[0] -ge 0 -and $eT[0] -ge 0) { $all.Add(($eT[0] + $eT[1]) / 2.0 + ($mx - ($eS[0] + $eS[1]) / 2.0) * ($eT[1] - $eT[0]) / ($eS[1] - $eS[0])); $all.Add($ytb); $all.Add($mx); $all.Add($gBot) }
+  "  contour anchors: $nCont, bias out $biasOut, hem down $biasHem, sleeves out $biasSleeve"
+  "  anchors (body): " + ($names -join ' ') + "; dropped as weak: " + ((0..9 | Where-Object { -not $use.Contains($_) } | ForEach-Object { $idx[$_] }) -join ' ')
+  "  anchors (garment features by relation): " + ($fdesc -join ' ')
+  # per-garment stroke radius calibration from the identity run (4x width estimator)
+  [Layers]::TargetWidth = 0.0
+  $srcMed = 0; [void][W4]::Measure($srcGar[0], 512, 512, $band, 'src'); $srcMed = [W4]::Med; $srcQ1 = [W4]::Q1; $srcQ3 = [W4]::Q3
+  $top = 0; $bot = 0; for ($y = 0; $y -lt 512; $y++) { $any = $false; for ($x = 0; $x -lt 512; $x++) { if ($sB[0][($y*512+$x)*4+3] -gt 40) { $any = $true; break } }; if ($any) { if ($top -eq 0) { $top = $y }; $bot = $y } }
+  $irp = New-Object System.Collections.Generic.List[double]; for ($y = $top + 2; $y -lt $bot - 1; $y += 12) { $irp.Add($y); $irp.Add($y) }
+  $c = 1.0; $mw = 0; $bestC = 1.0; $bestErr = 1e9
+  for ($it = 0; $it -lt 6; $it++) {
+    if ($it -gt 0) { [Layers]::TargetWidth = $c * $mw }
+    [void][Layers]::Single($sBodyP, $sGarP, $sBodyP, [double[]]@(), [double[]]$irp.ToArray(), ($tmp + 'cal.png'), 2.0, $band)
+    if ($it -eq 0 -and [Layers]::Info -match 'median width ([\d\.,]+)') { $mw = [double]($Matches[1] -replace ',', '.') }
+    $cal = LoadPx ($tmp + 'cal.png'); [void][W4]::Measure($cal[0], 512, 512, $band, 'id'); $idMed = [W4]::Med
+    "  radius calibration pass ${it}: source width4 median $([Math]::Round($srcMed,2)), identity $([Math]::Round($idMed,2)), factor c $([Math]::Round($c,2))"
+    if ($idMed -le 0) { break }
+    $err = [Math]::Abs($idMed / $srcMed - 1); if ($err -lt $bestErr) { $bestErr = $err; $bestC = $c }
+    if ($err -le 0.03) { break }
+    $c = [Math]::Max(0.6, [Math]::Min(3.0, $c * [Math]::Pow($srcMed / $idMed, 0.6))) }
+  $c = $bestC; "  radius factor kept: c $([Math]::Round($c,2)) (identity width error $([Math]::Round(100*$bestErr,1)) %)"
+  if ($c -ne 1.0) { [Layers]::TargetWidth = $c * $mw } else { [Layers]::TargetWidth = 0.0 }
+  $outP = $tmp + "s4b_${tk}.png"
+  $res = [Layers]::Single($sBodyP, $sGarP, $tBodyP, [double[]]$all.ToArray(), [double[]]$rp.ToArray(), $outP, 2.0, $band)
+  $out = LoadPx $outP
+  "  [round 3] $res"; "    " + [C1s]::Run($sBodyP, $sGarP, $tBodyP, $outP, "C1", 24)
+  "    " + [Layers]::MapCheck($sBodyP, $tBodyP, [double[]]$all.ToArray(), [double[]]$rp.ToArray(), 2.0, [string[]]$names.ToArray(), $nBody)
+  $c1 = $false; $c2 = $false; $c3 = $false; $c5 = $false
+  [Cm]::Compare($sBodyP, $sGarP, $tBodyP, $outP, [ref]$c1, [ref]$c2, [ref]$c3, [ref]$c5)
+  $sw = [Cm]::Measure($sBodyP, $sGarP); $tw2 = [Cm]::Measure($tBodyP, $outP)
+  $bs = Bbox ([S3]::RingBoxIn($srcGar[0], 512, 512, $band, 60, 150, 100, 360, 330)); $bt = Bbox ([S3]::RingBoxIn($out[0], 512, 512, $band, 60, 150, 100, 360, 330))
+  if ($bs -and $bt) { $sNw = ($bs[2]-$bs[0]+1) / $sw.ShoulderW; $tNw = ($bt[2]-$bt[0]+1) / $tw2.ShoulderW; $sNd = ($bs[3]-$bs[1]+1) / ($sw.Bot-$sw.Top); $tNd = ($bt[3]-$bt[1]+1) / ($tw2.Bot-$tw2.Top)
+    "    C2 (collar ring ink bbox): width/shoulders source $([Math]::Round($sNw,3)) result $([Math]::Round($tNw,3)) ($([Math]::Round(100*[Math]::Abs($tNw/$sNw-1),1)) %), height/torso source $([Math]::Round($sNd,3)) result $([Math]::Round($tNd,3)) ($([Math]::Round(100*[Math]::Abs($tNd/$sNd-1),1)) %), limit 5 %" }
+  $ws = [S3]::Widths($srcGar[0], 512, 512, $band, 60, 'src'); $wr = [S3]::Widths($out[0], 512, 512, $band, 60, 'res')
+  [void][W4]::Measure($out[0], 512, 512, $band, 'res'); $rMed = [W4]::Med; $rQ1 = [W4]::Q1; $rQ3 = [W4]::Q3
+  "    C4 topology: " + (($ws -split "`n")[0] -replace '^\s*src: ', 'source ') + " | " + (($wr -split "`n")[0] -replace '^\s*res: ', 'result ')
+  "    C4 width4: source median $([Math]::Round($srcMed,2)) IQR $([Math]::Round($srcQ1,2))-$([Math]::Round($srcQ3,2)); result median $([Math]::Round($rMed,2)) ($([Math]::Round(100*($rMed/$srcMed-1),1)) %) IQR $([Math]::Round($rQ1,2))-$([Math]::Round($rQ3,2)); limit 10 %"
+}

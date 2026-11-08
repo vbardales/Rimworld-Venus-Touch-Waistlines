@@ -1,0 +1,25 @@
+Male south : stroke 4 px (128), cloth rows 192..415 (512), E top 188, hem to 404, tail from 366 ; 17 landmarks
+Male east : stroke 4 px (128), cloth rows 192..411 (512), E top 188, hem to 408, tail from 363 ; 7 landmarks
+Male north : stroke 4 px (128), cloth rows 196..415 (512), E top 186, hem to 412, tail from 367 ; 10 landmarks
+Female south : stroke 4 px (128), cloth rows 172..435 (512), E top 177, hem to 400, tail from 377 ; 17 landmarks
+Female east : stroke 4 px (128), cloth rows 216..435 (512), E top 165, hem to 420, tail from 387 ; 7 landmarks
+Female north : stroke 4 px (128), cloth rows 228..435 (512), E top 171, hem to 420, tail from 389 ; 10 landmarks
+Thin south : stroke 4 px (128), cloth rows 200..415 (512), E top 177, hem to 404, tail from 368 ; 17 landmarks
+Thin east : stroke 3 px (128), cloth rows 216..415 (512), E top 187, hem to 436, tail from 371 ; 7 landmarks
+Thin north : stroke 4 px (128), cloth rows 228..415 (512), E top 178, hem to 432, tail from 374 ; 10 landmarks
+Thin_Female south : stroke 4 px (128), cloth rows 200..415 (512), E top 174, hem to 384, tail from 368 ; 17 landmarks
+Thin_Female east : stroke 3 px (128), cloth rows 216..415 (512), E top 181, hem to 404, tail from 371 ; 7 landmarks
+Thin_Female north : stroke 4 px (128), cloth rows 228..415 (512), E top 174, hem to 428, tail from 374 ; 10 landmarks
+Fat south : stroke 4 px (128), cloth rows 176..435 (512), E top 161, hem to 420, tail from 378 ; 17 landmarks
+Fat east : stroke 4 px (128), cloth rows 184..439 (512), E top 163, hem to 444, tail from 383 ; 7 landmarks
+Fat north : stroke 4 px (128), cloth rows 180..435 (512), E top 163, hem to 428, tail from 379 ; 10 landmarks
+Fat_Female south : stroke 4 px (128), cloth rows 176..435 (512), E top 161, hem to 396, tail from 378 ; 17 landmarks
+Fat_Female east : stroke 4 px (128), cloth rows 184..439 (512), E top 159, hem to 424, tail from 383 ; 7 landmarks
+Fat_Female north : stroke 4 px (128), cloth rows 180..435 (512), E top 159, hem to 428, tail from 379 ; 10 landmarks
+Hulk south : stroke 4 px (128), cloth rows 148..487 (512), E top 164, hem to 468, tail from 412 ; 17 landmarks
+Hulk east : stroke 4 px (128), cloth rows 164..483 (512), E top 156, hem to 484, tail from 413 ; 7 landmarks
+Hulk north : stroke 4 px (128), cloth rows 160..487 (512), E top 162, hem to 480, tail from 415 ; 10 landmarks
+Hulk_Female south : stroke 4 px (128), cloth rows 148..487 (512), E top 189, hem to 436, tail from 412 ; 17 landmarks
+Hulk_Female east : stroke 4 px (128), cloth rows 164..483 (512), E top 182, hem to 468, tail from 413 ; 7 landmarks
+Hulk_Female north : stroke 4 px (128), cloth rows 160..487 (512), E top 189, hem to 476, tail from 415 ; 10 landmarks
+C:\Users\nelim\Documents\rimworld\VenusTouchWaistlines\Art\work\captures\2026-11-06_simple-stretch-button-complex.png

@@ -1,0 +1,158 @@
+﻿{
+    "navel":  {
+                  "Fat_Female":  {
+                                     "north":  [
+                                                   256,
+                                                   260
+                                               ],
+                                     "south":  [
+                                                   316,
+                                                   344
+                                               ],
+                                     "east":  [
+                                                  260,
+                                                  324
+                                              ]
+                                 },
+                  "Thin":  {
+                               "north":  [
+                                             264,
+                                             300
+                                         ],
+                               "south":  [
+                                             316,
+                                             356
+                                         ],
+                               "east":  [
+                                            340,
+                                            340
+                                        ]
+                           },
+                  "Fat":  {
+                              "north":  [
+                                            256,
+                                            260
+                                        ],
+                              "south":  [
+                                            316,
+                                            348
+                                        ],
+                              "east":  [
+                                           260,
+                                           260
+                                       ]
+                          },
+                  "Thin_Female":  {
+                                      "north":  [
+                                                    264,
+                                                    288
+                                                ],
+                                      "south":  [
+                                                    316,
+                                                    344
+                                                ],
+                                      "east":  [
+                                                   340,
+                                                   336
+                                               ]
+                                  },
+                  "Female":  {
+                                 "north":  [
+                                               292,
+                                               296
+                                           ],
+                                 "south":  [
+                                               340,
+                                               340
+                                           ],
+                                 "east":  [
+                                              320,
+                                              320
+                                          ]
+                             },
+                  "Hulk_Female":  {
+                                      "north":  [
+                                                    360,
+                                                    380
+                                                ],
+                                      "south":  [
+                                                    404,
+                                                    396
+                                                ],
+                                      "east":  [
+                                                   372,
+                                                   384
+                                               ]
+                                  },
+                  "Male":  {
+                               "north":  [
+                                             332,
+                                             332
+                                         ],
+                               "south":  [
+                                             360,
+                                             356
+                                         ],
+                               "east":  [
+                                            336,
+                                            340
+                                        ]
+                           },
+                  "Hulk":  {
+                               "north":  [
+                                             360,
+                                             368
+                                         ],
+                               "south":  [
+                                             404,
+                                             400
+                                         ],
+                               "east":  [
+                                            372,
+                                            376
+                                        ]
+                           }
+              },
+    "pubis":  {
+                  "Fat_Female":  {
+                                     "north":  428,
+                                     "south":  396,
+                                     "east":  424
+                                 },
+                  "Thin":  {
+                               "north":  432,
+                               "south":  404,
+                               "east":  436
+                           },
+                  "Fat":  {
+                              "north":  428,
+                              "south":  420,
+                              "east":  444
+                          },
+                  "Thin_Female":  {
+                                      "north":  428,
+                                      "south":  384,
+                                      "east":  404
+                                  },
+                  "Female":  {
+                                 "north":  420,
+                                 "south":  400,
+                                 "east":  420
+                             },
+                  "Hulk_Female":  {
+                                      "north":  476,
+                                      "south":  436,
+                                      "east":  468
+                                  },
+                  "Male":  {
+                               "north":  412,
+                               "south":  404,
+                               "east":  408
+                           },
+                  "Hulk":  {
+                               "north":  480,
+                               "south":  468,
+                               "east":  484
+                           }
+              }
+}

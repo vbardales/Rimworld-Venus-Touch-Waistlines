@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the basic shirt tucked into the trousers on WDI's bodies" tests="1" failures="0" skipped="0" flakes="0" time="121.097">
+    <testcase name="the basic shirt, then the shirt with trousers, Male and Female (South, East, North)" classname="the basic shirt tucked into the trousers on WDI's bodies" time="121.097">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: basic shirt alone -&gt; /repo/pickle-reports/screenshots/manual--basic-shirt-alone--step0.png
+Attachment: basic shirt with trousers -&gt; /repo/pickle-reports/screenshots/manual--basic-shirt-with-trousers--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

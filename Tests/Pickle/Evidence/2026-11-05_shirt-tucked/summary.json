@@ -1,0 +1,1 @@
+{"total":1,"passed":1,"failed":0,"skipped":0,"flaky":0,"exitReason":"passed","setName":"shirt-tucked","scenarios":[{"name":"the basic shirt, then the shirt with trousers, Male and Female (South, East, North)","outcome":"Passed","durationMs":121097,"attempts":1,"tickCost":{"ticks":240,"meanMs":14.603,"maxMs":605.176}}]}

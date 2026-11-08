@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the vanilla body and shirt textures saved as PNG" tests="1" failures="0" skipped="0" flakes="0" time="62.116">
+    <testcase name="the six vanilla bodies, three facings, and the Core shirt, front" classname="the vanilla body and shirt textures saved as PNG" time="62.116">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Male_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-male-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Male_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-male-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Male_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-male-east/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Female_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-female-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Female_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-female-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Female_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-female-east/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Thin_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-thin-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Thin_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-thin-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Thin_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-thin-east/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Fat_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-fat-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Fat_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-fat-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Fat_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-fat-east/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Hulk_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-hulk-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Hulk_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-hulk-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Hulk_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-hulk-east/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Child_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-child-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Child_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-child-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Bodies/Naked_Child_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-child-east/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Male_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-shirt-male-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Female_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-shirt-female-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Thin_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-shirt-thin-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Fat_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-shirt-fat-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/ShirtBasic/ShirtBasic_Hulk_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-shirt-hulk-south/0000.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

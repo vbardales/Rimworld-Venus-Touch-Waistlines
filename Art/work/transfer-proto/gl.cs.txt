@@ -1,0 +1,48 @@
+public static class Gl {
+  public static string Names = "", NeckKind = ""; public static double AsymLimit = 0.70; public static string Facing = "south"; public static string LastBlack = "";
+  // Garment's own feature points (x,y): hem corners, sleeve ends, collar ring (8 points of the ring skeleton).
+  // a neckline ring piece: at least 40 px, both sides of its box at least 10 px (a 5 px tall piece is the garment outline, not a collar), aspect between 1/8 and 8, and not a filled blob (pixels under 45 % of its box)
+  public static int TopLim = 100000; static bool TopOk(string info) { var m = System.Text.RegularExpressions.Regex.Match(info, "bbox [(][0-9]+,([0-9]+)[)]"); return m.Success && int.Parse(m.Groups[1].Value) <= TopLim; }
+  static bool RingOk(string info) { var m = System.Text.RegularExpressions.Regex.Match(info, "piece ([0-9]+) px, bbox [(]([0-9]+),([0-9]+)[)]-[(]([0-9]+),([0-9]+)[)]"); if (!m.Success) return false;
+    int n = int.Parse(m.Groups[1].Value), bw = int.Parse(m.Groups[4].Value) - int.Parse(m.Groups[2].Value) + 1, bh = int.Parse(m.Groups[5].Value) - int.Parse(m.Groups[3].Value) + 1;
+    return n >= 40 && bw >= 10 && bh >= 10 && bw <= 8 * bh && bh <= 8 * bw && n < 0.45 * bw * bh; }
+  public static double[] Features(byte[] a, int w, int h, int band) {
+    List<double> pts = new List<double>(); List<string> nm = new List<string>();
+    int[] l = new int[h], r = new int[h], wd = new int[h]; int top = -1, bot = -1;
+    for (int y = 0; y < h; y++) { l[y] = -1; r[y] = -1; for (int x = 0; x < w; x++) if (a[(y*w+x)*4+3] > 40) { if (l[y] < 0) l[y] = x; r[y] = x; } if (l[y] >= 0) { wd[y] = r[y] - l[y] + 1; if (top < 0) top = y; bot = y; } }
+    int H = bot - top; int hy = bot - 3; pts.Add(l[hy]); pts.Add(hy); nm.Add("hemL"); pts.Add(r[hy] + 1); pts.Add(hy); nm.Add("hemR");
+    int maxW = 0; for (int y = top; y <= top + (int)(0.55 * H); y++) if (wd[y] > maxW) maxW = wd[y];
+    int sr = top; for (int y = top; y <= top + (int)(0.55 * H); y++) if (wd[y] >= 0.97 * maxW) sr = y;
+    pts.Add(l[sr]); pts.Add(sr); nm.Add("sleeveL"); pts.Add(r[sr] + 1); pts.Add(sr); nm.Add("sleeveR");
+    int mid = (l[top + H / 3] + r[top + H / 3]) / 2; int gw = wd[top + H / 3];
+    // top of the central band (mid +- 30 % of the width): shoulder spikes, horns and backpacks above it do not move the neckline search
+    int cb0 = mid - (int)(0.30 * gw), cb1 = mid + (int)(0.30 * gw), ctop = top; for (int y = top; y <= bot; y++) { bool any = false; for (int x = Math.Max(0, cb0); x <= Math.Min(w - 1, cb1); x++) if (a[(y*w+x)*4+3] > 40) { any = true; break; } if (any) { ctop = y; break; } }
+    // asymmetric garment (one shoulder or diagonal: TribalA, Cape, Sash, Bandolier): mirror overlap of the top 40 % under 70 % over the full width AND under 90 % on the central band
+    // (measured on 50 garments: those four 23-63 % full / 40-87 % central; FlakVest, Overalls, TankTop, JacketSpikecore at least 80 / 78; spiky DusterSpikecore and backpack GrenadierArmor fall in between and go to place)
+    Func<int, int, int, int, double> mir = (y0, y1, x0, x1) => { int bo = 0, ei = 0; for (int y = y0; y <= y1; y++) for (int x = Math.Max(0, x0); x <= Math.Min(w - 1, x1); x++) { int xm = 2 * mid - x; bool p = a[(y*w+x)*4+3] > 40, q = xm >= 0 && xm < w && a[(y*w+xm)*4+3] > 40; if (p || q) ei++; if (p && q) bo++; } return ei > 0 ? (double)bo / ei : 1.0; };
+    double mFull = mir(top, top + (int)(0.40 * H), 0, w - 1), mCen = mir(ctop, ctop + (int)(0.40 * H), cb0, cb1);
+    if (Facing != "east" && mFull < AsymLimit && mCen < 0.90) { NeckKind = "asymmetric, neckline to place (mirror " + (100 * mFull).ToString("0") + " / " + (100 * mCen).ToString("0") + " %)"; Names = string.Join(" ", nm.ToArray()); return pts.ToArray(); }
+    // open front (jacket, coat, cape): the middle column is bare on more than half of the garment's rows while the garment exists on both sides; neckline = the inner edges of the opening, 4 rows x L/R in the top 40 %
+    int bare = 0, rowsBoth = 0; for (int y = top; y <= bot; y++) { if (l[y] < 0 || l[y] >= mid || r[y] <= mid) continue; rowsBoth++; if (a[(y*w+mid)*4+3] <= 40) bare++; }
+    if (Facing != "east" && rowsBoth > 0 && bare > 0.5 * rowsBoth) { for (int k = 0; k < 4; k++) { int y = ctop + (int)((k + 1) * 0.40 * H / 5); int xl = mid; while (xl > 0 && a[(y*w+xl)*4+3] <= 40) xl--; int xr = mid; while (xr < w - 1 && a[(y*w+xr)*4+3] <= 40) xr++;
+        if (xr - xl < 12) continue; if (xl > 0) { pts.Add(xl + 1); pts.Add(y); nm.Add("neck" + (2*k)); } if (xr < w - 1) { pts.Add(xr); pts.Add(y); nm.Add("neck" + (2*k+1)); } }
+      if (nm.FindAll(s => s.StartsWith("neck")).Count < 4) { NeckKind = "open front, neckline to place"; Names = string.Join(" ", nm.ToArray()); return pts.ToArray(); }
+      NeckKind = "open front"; Names = string.Join(" ", nm.ToArray()); return pts.ToArray(); }
+    string info = S3.RingBoxIn(a, w, h, band, 60, mid - (int)(0.30 * gw), ctop, mid + (int)(0.30 * gw), ctop + (int)(0.40 * H));
+    // side and back: a ring or line counts as the collar only when its box starts in the top 12 % (lower dark pieces are plates, straps or pockets)
+    TopLim = Facing == "south" ? 100000 : ctop + (int)(0.12 * H); LastBlack = info; int piece = RingOk(info) && TopOk(info) ? 1000 : 0;
+    // neckline, three kinds: a black ring (ink under 60), a grey line (40 levels darker than the 15 px local mean), or an opening cut in the garment (dip of its top contour)
+    int bx0 = mid - (int)(0.30 * gw), bx1 = mid + (int)(0.30 * gw), by1 = ctop + (int)(0.40 * H); string kind = "";
+    if (piece < 40) { S3.RelativeInk = true; string gi = S3.RingBoxIn(a, w, h, band, 60, bx0, ctop, bx1, by1); piece = RingOk(gi) && TopOk(gi) ? 1000 : 0; if (piece >= 40) kind = "grey"; else S3.RelativeInk = false; } else kind = "black";
+    if (piece >= 40) { double[] ring = S3.RingPointsBox(a, w, h, band, 60, bx0, ctop, bx1, by1, 16); S3.RelativeInk = false; for (int k = 0; k < 16; k += 2) { pts.Add(ring[2*k]); pts.Add(ring[2*k+1]); nm.Add("ring" + k); } }
+    else { int[] tc = new int[w]; int mn = h, cl = -1, cr = -1; for (int x = bx0; x <= bx1; x++) { tc[x] = -1; for (int y = ctop; y <= ctop + (int)(0.7 * H); y++) if (a[(y*w+x)*4+3] > 40) { tc[x] = y; break; } if (tc[x] >= 0 && tc[x] < mn) mn = tc[x]; }
+      int deep = mid; for (int x = bx0; x <= bx1; x++) if (tc[x] > tc[deep]) deep = x;
+      // side and back: a dip whose deepest column sits near the band edge is the rounded top of the garment, not an opening
+      if (tc[deep] - mn > 8 && (Facing == "south" || (deep > bx0 + (bx1 - bx0) / 5 && deep < bx1 - (bx1 - bx0) / 5))) { kind = "opening"; cl = deep; while (cl > bx0 && tc[cl - 1] > mn + 2) cl--; cr = deep; while (cr < bx1 && tc[cr + 1] > mn + 2) cr++;
+        for (int k = 0; k < 8; k++) { int x = cl + (int)Math.Round((cr - cl) * k / 7.0); pts.Add(x); pts.Add(tc[x] < 0 ? mn : tc[x]); nm.Add("neck" + k); } } }
+    // side and back views: no ring, line or opening found -> 8 points on the garment top contour across the central band (the collar seen from the side)
+    if (Facing != "south" && kind == "") { kind = Facing + ": top edge"; for (int k = 0; k < 8; k++) { int x = cb0 + (int)Math.Round((cb1 - cb0) * (k + 0.5) / 8.0); int yy = ctop; while (yy < bot && a[(yy*w+x)*4+3] <= 40) yy++; if (yy < bot) { pts.Add(x); pts.Add(yy); nm.Add("neck" + k); } } }
+    NeckKind = kind;
+    Names = string.Join(" ", nm.ToArray()); return pts.ToArray();
+  }
+}

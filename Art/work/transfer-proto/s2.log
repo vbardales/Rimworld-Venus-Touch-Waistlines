@@ -1,0 +1,164 @@
+== vanilla male garment (IMO) -> WDI Male
+  vanilla: top 172 bottom 431 neck 180 shoulders 236 armpits 296(min) waist 332 hips 343 crotch 431(bottom) weakWaist weakHip
+  WDI    : top 184 bottom 430 neck 185 shoulders 253 armpits 294(min) waist 334 hips 346 crotch 425(notch)
+  control pairs: shL shR armL armR top bottom; dropped as weak: neckL neckR waistL waistR hipL hipR
+  [breast layer off] control pairs 32, worst control residual 0,04 px at t(161,284) s(156,281), dropped paths 0
+    source edge to target edge: mean 1,23 95th 3,6 max 5,4 | target edge to source edge: mean 1,28 95th 4,0 max 7,0
+    leave-one-out (landmark and its rows +-10 left out): shL 2,8; shR 2,8; armL 4,0; armR 2,5; top 2,4; bottom 0,3; 
+    worst leave-one-out 4,0 px (armL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 4,9 px at ray 13 (limit 2) FAIL; source offsets min -61,0 max -2,0, result min -55,0 max 2,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,772 result 0,756 (diff 1,6 points, limit 3) PASS
+    C5 garment area / body area: source 0,560 result 0,553 (1,3 %, limit 5) PASS
+
+    C4 source: src: ink 252 px, components 1, loops 0       all strokes: n 112, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,35
+    C4 result: res: ink 148 px, components 2, loops 0       all strokes: n 96, median 1,0, IQR 1,0-1,0, max 1,8, CV 0,25
+== vanilla thin garment (IMO) -> WDI Thin
+  vanilla: top 172 bottom 435 neck 176 shoulders 236 armpits 247(share) waist 264 hips 316 crotch 435(bottom) weakWaist weakHip
+  WDI    : top 173 bottom 430 neck 177 shoulders 202 armpits 254(min) waist 311 hips 362 crotch 430(bottom) weakHip
+  control pairs: shL shR top bottom; dropped as weak: neckL neckR armL armR waistL waistR hipL hipR
+  [breast layer off] control pairs 22, worst control residual 0,04 px at t(309,195) s(308,220), dropped paths 0
+    source edge to target edge: mean 2,23 95th 11,3 max 17,0 | target edge to source edge: mean 1,25 95th 4,0 max 8,6
+    leave-one-out (landmark and its rows +-10 left out): shL 12,2; shR 12,1; top 1,4; bottom 3,9; 
+    worst leave-one-out 12,2 px (shL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 13,1 px at ray 5 (limit 2) FAIL; source offsets min -68,0 max 4,0, result min -75,0 max 5,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,741 result 0,708 (diff 3,3 points, limit 3) FAIL
+    C5 garment area / body area: source 0,652 result 0,640 (1,9 %, limit 5) PASS
+
+    C4 source: src: ink 148 px, components 1, loops 0       all strokes: n 70, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,36
+    C4 result: res: ink 1 px, components 0, loops 0       all strokes: n 1, median 1,0, IQR 1,0-1,0, max 1,0, CV 0,00
+== vanilla fat garment (IMO) -> WDI Fat
+  vanilla: top 152 bottom 451 neck 168 shoulders 240 armpits 246(share) waist 257 hips 316 crotch 451(bottom) weakWaist weakHip
+  WDI    : top 157 bottom 448 neck 173 shoulders 240 armpits 247(share) waist 259 hips 317 crotch 442(notch) weakWaist weakHip
+  control pairs: neckL neckR shL shR top bottom; dropped as weak: armL armR waistL waistR hipL hipR
+  [breast layer off] control pairs 32, worst control residual 0,05 px at t(206,165) s(192,160), dropped paths 0
+    source edge to target edge: mean 1,29 95th 3,6 max 5,7 | target edge to source edge: mean 1,29 95th 4,0 max 8,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 2,4; neckR 3,1; shL 3,6; shR 0,7; top 2,1; bottom 1,0; 
+    worst leave-one-out 3,6 px (shL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 6,3 px at ray 1 (limit 2) FAIL; source offsets min -29,0 max 0,0, result min -30,0 max 0,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,913 result 0,911 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,736 result 0,730 (0,8 %, limit 5) PASS
+
+    C4 source: src: ink 463 px, components 1, loops 0       all strokes: n 200, median 1,8, IQR 1,0-1,8, max 3,0, CV 0,40
+    C4 result: res: ink 257 px, components 2, loops 0       all strokes: n 143, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,41
+== vanilla hulk garment (IMO) -> WDI Hulk
+  vanilla: top 128 bottom 507 neck 152 shoulders 240 armpits 312(min) waist 360 hips 375 crotch 507(bottom) weakHip
+  WDI    : top 160 bottom 501 neck 161 shoulders 257 armpits 311(min) waist 371 hips 386 crotch 501(bottom) weakWaist
+  control pairs: shL shR armL armR top bottom; dropped as weak: neckL neckR waistL waistR hipL hipR
+  [breast layer off] control pairs 32, worst control residual 0,03 px at t(384,284) s(404,276), dropped paths 0
+    source edge to target edge: mean 1,46 95th 4,1 max 7,1 | target edge to source edge: mean 1,41 95th 5,0 max 7,0
+    leave-one-out (landmark and its rows +-10 left out): shL 2,4; shR 3,3; armL 4,6; armR 4,1; top 4,2; bottom 1,8; 
+    worst leave-one-out 4,6 px (armL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 7,8 px at ray 14 (limit 2) FAIL; source offsets min -86,0 max -2,5, result min -83,0 max -2,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,773 result 0,757 (diff 1,6 points, limit 3) PASS
+    C5 garment area / body area: source 0,633 result 0,593 (6,3 %, limit 5) FAIL
+
+    C4 source: src: ink 607 px, components 1, loops 0       all strokes: n 227, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,41
+    C4 result: res: ink 456 px, components 1, loops 0       all strokes: n 206, median 1,0, IQR 1,0-1,8, max 3,5, CV 0,45
+== vanilla female garment (IMO) -> WDI Female
+  vanilla: top 152 bottom 451 neck 160 shoulders 236 armpits 280(min) waist 292 hips 351 crotch 451(bottom) weakHip
+  WDI    : top 173 bottom 443 neck 179 shoulders 252 armpits 271(share) waist 300 hips 354 crotch 436(notch) weakHip
+  control pairs: neckL neckR shL shR waistL waistR top bottom; dropped as weak: armL armR hipL hipR
+  [breast layer off] control pairs 42, worst control residual 1,49 px at t(220,178) s(220,158), dropped paths 0
+    source edge to target edge: mean 1,04 95th 3,0 max 6,4 | target edge to source edge: mean 1,05 95th 3,0 max 10,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 0,5; neckR 0,5; shL 0,5; shR 1,3; waistL 4,1; waistR 3,8; top 1,7; bottom 0,3; 
+    worst leave-one-out 4,1 px (waistL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 3,1 px at ray 8 (limit 2) FAIL; source offsets min -76,0 max -4,0, result min -67,0 max -5,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,746 result 0,744 (diff 0,1 points, limit 3) PASS
+    C5 garment area / body area: source 0,482 result 0,465 (3,4 %, limit 5) PASS
+
+    C4 source: src: ink 290 px, components 1, loops 0       all strokes: n 82, median 3,0, IQR 3,0-3,0, max 3,5, CV 0,21
+    C4 result: res: ink 170 px, components 1, loops 0       all strokes: n 59, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,43
+  [breast layer on] control pairs 45, worst control residual 1,49 px at t(220,178) s(220,158), dropped paths 0
+    source edge to target edge: mean 1,05 95th 3,0 max 6,4 | target edge to source edge: mean 1,07 95th 3,0 max 10,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 0,6; neckR 0,6; shL 0,5; shR 1,4; waistL 2,3; waistR 2,4; top 1,8; bottom 0,2; nipL 4,6; nipR 3,5; navel 2,3; 
+    worst leave-one-out 4,6 px (nipL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 3,8 px at ray 4 (limit 2) FAIL; source offsets min -76,0 max -4,0, result min -66,0 max -5,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,746 result 0,748 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,482 result 0,474 (1,6 %, limit 5) PASS
+
+    C4 source: src: ink 290 px, components 1, loops 0       all strokes: n 82, median 3,0, IQR 3,0-3,0, max 3,5, CV 0,21
+    C4 result: res: ink 173 px, components 1, loops 0       all strokes: n 57, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,43
+== vanilla thin garment (IMO) -> WDI Thin_Female
+  vanilla: top 172 bottom 435 neck 176 shoulders 236 armpits 247(share) waist 264 hips 316 crotch 435(bottom) weakWaist weakHip
+  WDI    : top 170 bottom 429 neck 176 shoulders 246 armpits 274(min) waist 285 hips 336 crotch 429(bottom) weakHip
+  control pairs: shL shR top bottom; dropped as weak: neckL neckR armL armR waistL waistR hipL hipR
+  [breast layer off] control pairs 22, worst control residual 0,02 px at t(305,227) s(308,220), dropped paths 0
+    source edge to target edge: mean 3,19 95th 14,4 max 21,0 | target edge to source edge: mean 1,51 95th 5,4 max 10,8
+    leave-one-out (landmark and its rows +-10 left out): shL 8,8; shR 11,5; top 3,2; bottom 3,9; 
+    worst leave-one-out 11,5 px (shR)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 7,1 px at ray 13 (limit 2) FAIL; source offsets min -68,0 max 4,0, result min -63,0 max 2,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,004 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,741 result 0,757 (diff 1,5 points, limit 3) PASS
+    C5 garment area / body area: source 0,652 result 0,603 (7,5 %, limit 5) FAIL
+
+    C4 source: src: ink 148 px, components 1, loops 0       all strokes: n 70, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,36
+    C4 result: res: ink 131 px, components 1, loops 0       all strokes: n 70, median 1,0, IQR 1,0-1,8, max 1,8, CV 0,30
+  [breast layer on] control pairs 25, worst control residual 0,03 px at t(305,227) s(308,220), dropped paths 0
+    source edge to target edge: mean 3,24 95th 15,6 max 22,8 | target edge to source edge: mean 1,47 95th 5,8 max 10,8
+    leave-one-out (landmark and its rows +-10 left out): shL 6,4; shR 8,9; top 4,2; bottom 5,0; nipL 17,6; nipR 18,0; navel 26,0; 
+    worst leave-one-out 26,0 px (navel)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 26,4 px at ray 5 (limit 2) FAIL; source offsets min -68,0 max 4,0, result min -92,0 max 1,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,741 result 0,703 (diff 3,9 points, limit 3) FAIL
+    C5 garment area / body area: source 0,652 result 0,566 (13,2 %, limit 5) FAIL
+
+    C4 source: src: ink 148 px, components 1, loops 0       all strokes: n 70, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,36
+    C4 result: res: ink 105 px, components 1, loops 0       all strokes: n 55, median 1,0, IQR 1,0-1,0, max 3,0, CV 0,38
+== vanilla fat garment (IMO) -> WDI Fat_Female
+  vanilla: top 152 bottom 451 neck 168 shoulders 240 armpits 246(share) waist 257 hips 316 crotch 451(bottom) weakWaist weakHip
+  WDI    : top 157 bottom 448 neck 175 shoulders 243 armpits 249(share) waist 259 hips 317 crotch 442(notch) weakWaist weakHip
+  control pairs: neckL neckR shL shR top bottom; dropped as weak: armL armR waistL waistR hipL hipR
+  [breast layer off] control pairs 32, worst control residual 0,05 px at t(272,157) s(284,152), dropped paths 0
+    source edge to target edge: mean 1,24 95th 3,2 max 5,7 | target edge to source edge: mean 1,23 95th 3,2 max 8,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 3,3; neckR 3,9; shL 1,0; shR 5,2; top 2,0; bottom 0,9; 
+    worst leave-one-out 5,2 px (shR)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 6,2 px at ray 1 (limit 2) FAIL; source offsets min -29,0 max 0,0, result min -30,0 max 0,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,913 result 0,911 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,736 result 0,727 (1,1 %, limit 5) PASS
+
+    C4 source: src: ink 463 px, components 1, loops 0       all strokes: n 200, median 1,8, IQR 1,0-1,8, max 3,0, CV 0,40
+    C4 result: res: ink 330 px, components 2, loops 0       all strokes: n 158, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,43
+  [breast layer on] control pairs 35, worst control residual 0,05 px at t(272,157) s(284,152), dropped paths 0
+    source edge to target edge: mean 1,26 95th 3,2 max 5,7 | target edge to source edge: mean 1,26 95th 3,2 max 8,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 3,3; neckR 3,9; shL 0,8; shR 4,7; top 2,0; bottom 0,5; nipL 2,0; nipR 3,5; navel 1,8; 
+    worst leave-one-out 4,7 px (shR)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 6,7 px at ray 2 (limit 2) FAIL; source offsets min -29,0 max 0,0, result min -30,0 max 0,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,913 result 0,911 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,736 result 0,729 (0,9 %, limit 5) PASS
+
+    C4 source: src: ink 463 px, components 1, loops 0       all strokes: n 200, median 1,8, IQR 1,0-1,8, max 3,0, CV 0,40
+    C4 result: res: ink 349 px, components 1, loops 0       all strokes: n 174, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,41
+== vanilla hulk garment (IMO) -> WDI Hulk_Female
+  vanilla: top 128 bottom 507 neck 152 shoulders 240 armpits 312(min) waist 360 hips 375 crotch 507(bottom) weakHip
+  WDI    : top 185 bottom 499 neck 189 shoulders 277 armpits 313(min) waist 378 hips 440 crotch 499(bottom) weakHip
+  control pairs: shL shR armL armR waistL waistR top bottom; dropped as weak: neckL neckR hipL hipR
+  [breast layer off] control pairs 42, worst control residual 0,08 px at t(379,286) s(408,258), dropped paths 0
+    source edge to target edge: mean 1,29 95th 3,6 max 6,0 | target edge to source edge: mean 1,51 95th 4,2 max 8,0
+    leave-one-out (landmark and its rows +-10 left out): shL 5,9; shR 6,2; armL 8,5; armR 7,7; waistL 5,8; waistR 6,7; top 3,1; bottom 4,0; 
+    worst leave-one-out 8,5 px (armL)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 15,0 px at ray 6 (limit 2) FAIL; source offsets min -86,0 max -2,5, result min -66,0 max -5,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,773 result 0,790 (diff 1,7 points, limit 3) PASS
+    C5 garment area / body area: source 0,633 result 0,594 (6,2 %, limit 5) FAIL
+
+    C4 source: src: ink 607 px, components 1, loops 0       all strokes: n 227, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,41
+    C4 result: res: ink 270 px, components 1, loops 0       all strokes: n 87, median 3,0, IQR 1,8-3,0, max 3,5, CV 0,37
+  [breast layer on] control pairs 45, worst control residual 0,09 px at t(379,286) s(408,258), dropped paths 0
+    source edge to target edge: mean 1,32 95th 3,2 max 6,0 | target edge to source edge: mean 1,46 95th 5,0 max 7,0
+    leave-one-out (landmark and its rows +-10 left out): shL 6,3; shR 6,6; armL 8,6; armR 7,8; waistL 5,7; waistR 6,8; top 2,6; bottom 3,8; nipL 15,7; nipR 16,9; navel 8,1; 
+    worst leave-one-out 16,9 px (nipR)
+    C1 outline offset vs source offset x local scale, 16 rays: worst 15,0 px at ray 6 (limit 2) FAIL; source offsets min -86,0 max -2,5, result min -69,0 max -6,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,773 result 0,780 (diff 0,7 points, limit 3) PASS
+    C5 garment area / body area: source 0,633 result 0,582 (8,0 %, limit 5) FAIL
+
+    C4 source: src: ink 607 px, components 1, loops 0       all strokes: n 227, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,41
+    C4 result: res: ink 485 px, components 1, loops 0       all strokes: n 179, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,42

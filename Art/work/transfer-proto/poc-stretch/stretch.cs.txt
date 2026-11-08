@@ -1,0 +1,261 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
+using System.Runtime.InteropServices;
+
+// POC 2026-11-06: stretch a vanilla top garment onto the WDI body (E mask, D hem shift). Offline, images only.
+// Img = RGBA bytes, top row first. Every PNG is read through WPF (System.Drawing chokes on some of them).
+public class Img {
+    public int W, H; public byte[] P;
+    public Img(int w, int h) { W = w; H = h; P = new byte[w * h * 4]; }
+    public static Img Read(string path) {
+        var dec = new System.Windows.Media.Imaging.PngBitmapDecoder(new Uri(path), System.Windows.Media.Imaging.BitmapCreateOptions.PreservePixelFormat, System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+        var src = new System.Windows.Media.Imaging.FormatConvertedBitmap(dec.Frames[0], System.Windows.Media.PixelFormats.Bgra32, null, 0);
+        var im = new Img(src.PixelWidth, src.PixelHeight);
+        var bgra = new byte[im.W * im.H * 4]; src.CopyPixels(bgra, im.W * 4, 0);
+        for (int i = 0; i < bgra.Length; i += 4) { im.P[i] = bgra[i + 2]; im.P[i + 1] = bgra[i + 1]; im.P[i + 2] = bgra[i]; im.P[i + 3] = bgra[i + 3]; }
+        return im;
+    }
+    public int A(int x, int y) { return P[(y * W + x) * 4 + 3]; }
+    public int Lum(int x, int y) { int i = (y * W + x) * 4; return (P[i] + P[i + 1] + P[i + 2]) / 3; }
+    public void Set(int x, int y, int r, int g, int b, int a) { int i = (y * W + x) * 4; P[i] = (byte)r; P[i + 1] = (byte)g; P[i + 2] = (byte)b; P[i + 3] = (byte)a; }
+    public Img Clone() { var c = new Img(W, H); Array.Copy(P, c.P, P.Length); return c; }
+    public Bitmap ToBitmap() {
+        var b = new Bitmap(W, H, PixelFormat.Format32bppArgb);
+        var d = b.LockBits(new Rectangle(0, 0, W, H), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+        var row = new byte[W * 4];
+        for (int y = 0; y < H; y++) { for (int x = 0; x < W; x++) { int i = (y * W + x) * 4; row[x * 4] = P[i + 2]; row[x * 4 + 1] = P[i + 1]; row[x * 4 + 2] = P[i]; row[x * 4 + 3] = P[i + 3]; } Marshal.Copy(row, 0, IntPtr.Add(d.Scan0, y * d.Stride), W * 4); }
+        b.UnlockBits(d); return b;
+    }
+    public void Save(string path) { using (var b = ToBitmap()) b.Save(path, ImageFormat.Png); }
+    // nearest upscale to 512
+    public Img Up512() { var o = new Img(512, 512); for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int sx = x * W / 512, sy = y * H / 512; Array.Copy(P, (sy * W + sx) * 4, o.P, (y * 512 + x) * 4, 4); } return o; }
+    // this over other (straight alpha)
+    public static Img Over(Img under, Img over) { var o = under.Clone(); for (int i = 0; i < o.P.Length; i += 4) { double a = over.P[i + 3] / 255.0, ua = o.P[i + 3] / 255.0, oa = a + ua * (1 - a); if (oa <= 0) continue; for (int c = 0; c < 3; c++) o.P[i + c] = (byte)Math.Round((over.P[i + c] * a + o.P[i + c] * ua * (1 - a)) / oa); o.P[i + 3] = (byte)Math.Round(oa * 255); } return o; }
+}
+
+public static class Poc {
+    public static string Log = "";
+    static void L(string s) { Log += s + "\n"; }
+
+    // ---- step 2: cut out. Peel the dark outline layer by layer from the outside (at most `layers` layers at the source size),
+    // drop specks (opaque pixel with fewer than 3 opaque neighbours, twice), keep the largest 4-connected opaque piece.
+    public static Img Strip(Img s, int layers, int darkLum) {
+        var a = s.Clone(); int W = a.W, H = a.H;
+        var outside = new bool[W * H]; var st = new Stack<int>();
+        for (int i = 0; i < W; i++) { st.Push(i); st.Push((H - 1) * W + i); } for (int j = 0; j < H; j++) { st.Push(j * W); st.Push(j * W + W - 1); }
+        while (st.Count > 0) { int p = st.Pop(); if (outside[p] || a.P[p * 4 + 3] >= 26) continue; outside[p] = true; int px = p % W, py = p / W;
+            if (px > 0) st.Push(p - 1); if (px < W - 1) st.Push(p + 1); if (py > 0) st.Push(p - W); if (py < H - 1) st.Push(p + W); }
+        int peeled = 0;
+        for (int layer = 0; layer < layers; layer++) { var peel = new List<int>();
+            for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { int p = y * W + x; if (outside[p] || a.P[p * 4 + 3] < 26 || a.Lum(x, y) >= darkLum) continue;
+                if ((x == 0 || outside[p - 1]) || (x == W - 1 || outside[p + 1]) || (y == 0 || outside[p - W]) || (y == H - 1 || outside[p + W])) peel.Add(p); }
+            if (peel.Count == 0) break; foreach (int p in peel) { a.P[p * 4 + 3] = 0; outside[p] = true; peeled++; } }
+        for (int pass = 0; pass < 2; pass++) { var drop = new List<int>();
+            for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { if (a.A(x, y) < 26) continue; int n = 0;
+                for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x + dx, yy = y + dy; if ((dx != 0 || dy != 0) && xx >= 0 && yy >= 0 && xx < W && yy < H && a.A(xx, yy) >= 26) n++; }
+                if (n < 3) drop.Add(y * W + x); }
+            foreach (int p in drop) a.P[p * 4 + 3] = 0; }
+        // largest piece
+        var lab = new int[W * H]; int best = 0, bestN = 0, n0 = 0;
+        for (int p0 = 0; p0 < W * H; p0++) { if (lab[p0] != 0 || a.P[p0 * 4 + 3] < 26) continue; n0++; int cnt = 0; st.Push(p0); lab[p0] = n0;
+            while (st.Count > 0) { int p = st.Pop(); cnt++; int px = p % W, py = p / W; int[] nb = { px > 0 ? p - 1 : -1, px < W - 1 ? p + 1 : -1, py > 0 ? p - W : -1, py < H - 1 ? p + W : -1 };
+                foreach (int q in nb) if (q >= 0 && lab[q] == 0 && a.P[q * 4 + 3] >= 26) { lab[q] = n0; st.Push(q); } }
+            if (cnt > bestN) { bestN = cnt; best = n0; } }
+        int dropped = 0; for (int p = 0; p < W * H; p++) if (a.P[p * 4 + 3] >= 26 && lab[p] != best) { a.P[p * 4 + 3] = 0; dropped++; }
+        L("strip: peeled " + peeled + " px, pieces " + n0 + ", dropped " + dropped + " px of smaller pieces");
+        return a;
+    }
+
+    // ---- row extents of an opaque mask at 512 (any source size, scaled), averaged over +-R rows (TailorMade style)
+    public static void Edges(Img a, int minA, int R, out double[] L, out double[] Rr) {
+        int k = 512 / a.W; var l = new double[512]; var r = new double[512]; var ok = new bool[512];
+        for (int y = 0; y < 512; y++) { int sy = y / k; int lo = -1, hi = -1; for (int x = 0; x < a.W; x++) if (a.A(x, sy) >= minA) { if (lo < 0) lo = x; hi = x; }
+            if (lo >= 0) { l[y] = lo * k; r[y] = (hi + 1) * k; ok[y] = true; } }
+        L = new double[512]; Rr = new double[512];
+        for (int y = 0; y < 512; y++) { if (!ok[y]) { L[y] = -1; Rr[y] = -1; continue; } double sl = 0, sr = 0; int n = 0;
+            for (int d = -R; d <= R; d++) { int yy = y + d; if (yy < 0 || yy > 511 || !ok[yy]) continue; sl += l[yy]; sr += r[yy]; n++; }
+            L[y] = sl / n; Rr[y] = sr / n; }
+    }
+    public static int Top(double[] L) { for (int y = 0; y < 512; y++) if (L[y] >= 0) return y; return -1; }
+    public static int Bottom(double[] L) { for (int y = 511; y >= 0; y--) if (L[y] >= 0) return y; return -1; }
+    // bottom of the opaque cloth per 512 column (row below the last opaque pixel, i.e. the hem edge), -1 when the column is empty
+    public static double[] Hem(Img a, int minA) { int k = 512 / a.W; var h = new double[512];
+        for (int x = 0; x < 512; x++) { int sx = x / k; h[x] = -1; for (int y = a.H - 1; y >= 0; y--) if (a.A(sx, y) >= minA) { h[x] = (y + 1) * k; break; } } return h; }
+
+    public static bool[] Mask(Img e, int minA) { var m = new bool[512 * 512]; for (int i = 0; i < m.Length; i++) m[i] = e.P[i * 4 + 3] >= minA; return m; }
+    public static void MaskEdges(bool[] m, int R, out double[] L, out double[] Rr) { var im = new Img(512, 512); for (int i = 0; i < m.Length; i++) im.P[i * 4 + 3] = (byte)(m[i] ? 255 : 0); Edges(im, 128, R, out L, out Rr); }
+    public static double[] ReadTable(string path) { var s = File.ReadAllText(path).Trim().Split(';'); var d = new double[s.Length]; for (int i = 0; i < s.Length; i++) d[i] = double.Parse(s[i], CultureInfo.InvariantCulture); return d; }
+
+    // ---- step 3: the warp.
+    // vB/wB: vertical landmarks, vanilla row -> WDI row (512 units), increasing, the hem not included.
+    // vHem: the vanilla cloth bottom per vanilla column; D: hem shift per WDI column; hemRow: WDI row of the hem at the centre column.
+    // collarEndV: last vanilla row of the collar block; the rows above move with the top landmark, scaled by collarScale in x and y.
+    // Output: 512 RGBA; HemW = the hem curve actually used per WDI column; SrcRowMid = the row map at the centre column (for the board).
+    public static double[] HemW, SrcRowMid; public static double[] SL, SR, EL, ER; public static double TopDelta; public static string Bands;
+    public static bool OwnHem = false; // true: the garment's own hem shape per column is kept (bias flap, notches) and D added; false: hem = hemRow + D
+    public static Img Warp(Img src, bool[] E, double[] vB, double[] wB, double[] vHem, double[] D, double hemRow, int collarEndV, double collarScale, int blendRows, int smoothRows, double collarScaleY) {
+        Edges(src, 26, 6, out SL, out SR); MaskEdges(E, 6, out EL, out ER);
+        int vTop = Top(SL), wTop = Top(EL); TopDelta = wTop - vTop;
+        // full landmark lists: top (cloth top -> E top), collar end (translated, scaled by collarScaleY), then the given pairs
+        var v = new List<double>(); var w = new List<double>();
+        v.Add(vTop); w.Add(wTop);
+        double wCollarEnd = wTop + (collarEndV - vTop) * collarScaleY; v.Add(collarEndV); w.Add(wCollarEnd);
+        for (int i = 0; i < vB.Length; i++) { v.Add(vB[i]); w.Add(wB[i]); }
+        Bands = ""; for (int i = 1; i < v.Count; i++) Bands += string.Format(CultureInfo.InvariantCulture, "{0}->{1} x{2:0.00}; ", v[i], Math.Round(w[i], 1), (w[i] - w[i - 1]) / (v[i] - v[i - 1]));
+        int kNav = v.Count - 1; double vNav = v[kNav], wNav = w[kNav];
+        // the lowest point of the vanilla hem over the middle 60 % of the cloth width at the hem rows = the row that lands on hemRow
+        double vHemC = -1; { int yb = Bottom(SL); int yq = Math.Max(0, yb - 20); double cl = SL[yq], cr = SR[yq]; int x0 = (int)(cl + 0.2 * (cr - cl)), x1 = (int)(cl + 0.8 * (cr - cl));
+            for (int x = x0; x <= x1; x++) if (vHem[x] > vHemC) vHemC = vHem[x]; if (vHemC < 0) vHemC = yb + 1; }
+        // the vanilla column of a WDI column is read through the edge map half way between the navel and the hem (not at the navel:
+        // the vanilla cloth narrows towards its rounded bottom corners, and a side column would read the side edge as the hem)
+        // (the x map of the last cloth row onto the hem row itself, so the hem lookup and the sampling agree)
+        int rH = (int)Math.Round(hemRow) - 1, vrH = (int)Math.Round(vHemC) - 1;
+        vrH = Math.Max(0, Math.Min(511, vrH)); rH = Math.Max(0, Math.Min(511, rH)); if (EL[rH] < 0) { rH = Bottom(EL); } if (SL[vrH] < 0) vrH = Bottom(SL);
+        var o = new Img(512, 512); HemW = new double[512]; SrcRowMid = null;
+        var rowMap = new double[512]; var hemRaw = new double[512]; var vhArr = new double[512];
+        for (int xw = 0; xw < 512; xw++) {
+            double xs = xw; if (EL[rH] >= 0 && SL[vrH] >= 0 && ER[rH] > EL[rH]) xs = SL[vrH] + (xw - EL[rH]) * (SR[vrH] - SL[vrH]) / (ER[rH] - EL[rH]);
+            int xsi = (int)Math.Max(0, Math.Min(511, Math.Round(xs)));
+            double vh = OwnHem && vHem[xsi] > 0 ? vHem[xsi] : vHemC;
+            double hw = hemRow + (vh - vHemC) + D[xw]; if (hw < wNav + 2) hw = wNav + 2; hemRaw[xw] = hw; vhArr[xw] = vh; }
+        // hem curve smoothed over +-6 columns (the 128 px vanilla hem steps every 4 px)
+        for (int xw = 0; xw < 512; xw++) { double s = 0; int n = 0; for (int d = -6; d <= 6; d++) { int q = xw + d; if (q < 0 || q > 511) continue; s += hemRaw[q]; n++; } HemW[xw] = s / n; }
+        for (int xw = 0; xw < 512; xw++) {
+            double hw = HemW[xw], vh = vhArr[xw];
+            // piecewise linear WDI row -> vanilla row, slope 1 beyond the ends
+            var vv = new List<double>(v); var ww = new List<double>(w); vv.Add(vh); ww.Add(hw);
+            for (int yw = 0; yw < 512; yw++) {
+                double yv;
+                if (yw <= ww[0]) yv = vv[0] + (yw - ww[0]);
+                else if (yw >= ww[ww.Count - 1]) yv = vv[vv.Count - 1] + (yw - ww[ww.Count - 1]);
+                else { int i = 1; while (ww[i] < yw) i++; yv = vv[i - 1] + (yw - ww[i - 1]) * (vv[i] - vv[i - 1]) / (ww[i] - ww[i - 1]); }
+                rowMap[yw] = yv;
+            }
+            if (smoothRows > 0) { var sm = new double[512]; for (int yw = 0; yw < 512; yw++) { double s = 0; int n = 0; for (int d = -smoothRows; d <= smoothRows; d++) { int q = yw + d; double val = q < 0 ? rowMap[0] + q : q > 511 ? rowMap[511] + (q - 511) : rowMap[q]; s += val; n++; } sm[yw] = s / n; } rowMap = sm; }
+            if (xw == 256) SrcRowMid = (double[])rowMap.Clone();
+            for (int yw = 0; yw < 512; yw++) {
+                if (!E[yw * 512 + xw]) continue;
+                double yv = rowMap[yw]; int yi = (int)Math.Round(yv); if (yi < 0 || yi > 511 || SL[yi] < 0 || EL[yw] < 0) continue;
+                // source edges at the fractional row
+                int y0 = (int)Math.Floor(yv), y1 = Math.Min(511, y0 + 1); double f = yv - y0; if (y0 < 0) { y0 = 0; f = 0; }
+                double sl = SL[y0], sr = SR[y0]; if (SL[y1] >= 0 && y1 != y0) { sl = sl * (1 - f) + SL[y1] * f; sr = sr * (1 - f) + SR[y1] * f; }
+                double xEdge = sl + (xw - EL[yw]) * (sr - sl) / Math.Max(1, ER[yw] - EL[yw]);
+                double x = xEdge;
+                if (collarScale > 0 && yw < wCollarEnd + blendRows) { double t = Math.Max(0, Math.Min(1, (yw - wCollarEnd) / Math.Max(1.0, blendRows)));
+                    double cS = (sl + sr) / 2, cT = (EL[yw] + ER[yw]) / 2; double xUni = cS + (xw - cT) / collarScale; x = xUni * (1 - t) + xEdge * t; }
+                Sample(src, x, yv, o, xw, yw);
+            }
+            // the hem is the curve: nothing below it (1 px soft)
+            for (int yw = (int)Math.Floor(hw); yw < 512; yw++) { if (yw < 0) continue; double f = Math.Max(0, Math.Min(1, hw - yw)); o.P[(yw * 512 + xw) * 4 + 3] = (byte)Math.Round(o.P[(yw * 512 + xw) * 4 + 3] * f); }
+        }
+        return o;
+    }
+    // Sharpness (Virginie 2026-11-06: the garment must not be blurry): Nearest = true samples the 128 px source pixel under the
+    // warped position without blending (lines, buttons and shading steps stay as drawn, each source pixel becomes a slightly
+    // deformed block of about 4 x 4); a transparent source pixel takes its nearest opaque neighbour (3 x 3) so the alpha contour,
+    // not the colour, decides the edge. Nearest = false is the old bilinear (soft) sampling, kept for the before/after board.
+    public static bool Nearest = true;
+    static void Sample(Img s, double x512, double y512, Img o, int ox, int oy) {
+        if (Nearest) { double kk = 512.0 / s.W; int sx = (int)Math.Floor(x512 / kk), sy = (int)Math.Floor(y512 / kk);
+            if (sx < 0 || sy < 0 || sx >= s.W || sy >= s.H) return; int p = (sy * s.W + sx) * 4;
+            if (s.P[p + 3] >= 128) { o.Set(ox, oy, s.P[p], s.P[p + 1], s.P[p + 2], 255); return; }
+            int bp = -1; double bd = 9; for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = sx + dx, yy = sy + dy; if (xx < 0 || yy < 0 || xx >= s.W || yy >= s.H) continue; int q = (yy * s.W + xx) * 4; if (s.P[q + 3] < 128) continue;
+                double cx = (xx + 0.5) * kk - x512, cy = (yy + 0.5) * kk - y512, d = cx * cx + cy * cy; if (d < bd) { bd = d; bp = q; } }
+            if (bp < 0) return; o.Set(ox, oy, s.P[bp], s.P[bp + 1], s.P[bp + 2], 255); return; }
+        double k = 512.0 / s.W; double x = x512 / k - 0.5, y = y512 / k - 0.5; int x0 = (int)Math.Floor(x), y0 = (int)Math.Floor(y); double fx = x - x0, fy = y - y0;
+        double r = 0, g = 0, b = 0, a = 0;
+        for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) { int xx = x0 + i, yy = y0 + j; if (xx < 0 || yy < 0 || xx >= s.W || yy >= s.H) continue; double wgt = (i == 0 ? 1 - fx : fx) * (j == 0 ? 1 - fy : fy);
+            int p = (yy * s.W + xx) * 4; double pa = s.P[p + 3] / 255.0 * wgt; r += s.P[p] * pa; g += s.P[p + 1] * pa; b += s.P[p + 2] * pa; a += pa; }
+        if (a <= 0.001) return; o.Set(ox, oy, (int)Math.Round(r / a), (int)Math.Round(g / a), (int)Math.Round(b / a), (int)Math.Round(Math.Min(1, a) * 255));
+    }
+
+    // ---- step 4: TailorMade-style edge, square t px inside the opaque region, colour 15/15/18
+    public static Img Edge(Img a, int t) { var m = Mask(a, 128); var o = a.Clone();
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { if (!m[y * 512 + x]) continue; bool edge = false;
+            for (int dy = -t; dy <= t && !edge; dy++) for (int dx = -t; dx <= t; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511 || !m[yy * 512 + xx]) { edge = true; break; } }
+            if (edge) o.Set(x, y, 15, 15, 18, a.A(x, y)); }
+        return o; }
+    // Crisp finish: M = alpha >= 128 (the contour: E, the hem). Colours are never blurred. Stroke: every M pixel whose euclidean
+    // distance to the nearest non-M pixel is under t + 0.5 turns dark (15/15/18), with a one pixel ramp on its inner border
+    // (weight = t + 0.5 - d, clamped to 0..1). Alpha = M blurred by a gaussian (sigma), so only the outer contour is anti-aliased;
+    // pixels just outside M that get alpha from the blur take the colour of the nearest M pixel (never a blend).
+    // Before the stroke, the contour M is rounded: gaussian (ContourSigma) on the 0/1 mask, threshold 0.5, then intersected with E
+    // (E is already smooth and must stay exact): the 4 px staircase of the nearest sampled neck hole and hem goes away.
+    public static double ContourSigma = 2.0; public static bool[] EClip;
+    static bool[] Blur01(bool[] m, double sigma) { int r = (int)Math.Ceiling(sigma * 3); var k = new double[2 * r + 1]; double sum = 0; for (int i = -r; i <= r; i++) { k[i + r] = Math.Exp(-i * i / (2 * sigma * sigma)); sum += k[i + r]; } for (int i = 0; i < k.Length; i++) k[i] /= sum;
+        var f = new double[512 * 512]; var tmp = new double[512 * 512]; for (int i = 0; i < f.Length; i++) f[i] = m[i] ? 1 : 0;
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double s = 0; for (int i = -r; i <= r; i++) s += k[i + r] * f[y * 512 + Math.Max(0, Math.Min(511, x + i))]; tmp[y * 512 + x] = s; }
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double s = 0; for (int i = -r; i <= r; i++) s += k[i + r] * tmp[Math.Max(0, Math.Min(511, y + i)) * 512 + x]; f[y * 512 + x] = s; }
+        var o = new bool[512 * 512]; for (int i = 0; i < o.Length; i++) o[i] = f[i] >= 0.5; return o; }
+    public static Img Finish(Img a, int t, double sigma) {
+        var m0 = Mask(a, 128); var m = ContourSigma > 0 ? Blur01(m0, ContourSigma) : m0; if (EClip != null) for (int i = 0; i < m.Length; i++) m[i] = m[i] && EClip[i];
+        var o = a.Clone(); int R = t + 2;
+        // pixels the rounding added take the nearest original colour (radius 4)
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int i = y * 512 + x; if (!m[i] || m0[i]) continue; int bp = -1; double bd = 99;
+            for (int dy = -4; dy <= 4; dy++) for (int dx = -4; dx <= 4; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511 || !m0[yy * 512 + xx]) continue; double d = dx * dx + dy * dy; if (d < bd) { bd = d; bp = yy * 512 + xx; } }
+            if (bp >= 0) { o.P[i * 4] = a.P[bp * 4]; o.P[i * 4 + 1] = a.P[bp * 4 + 1]; o.P[i * 4 + 2] = a.P[bp * 4 + 2]; o.P[i * 4 + 3] = 255; } else m[i] = false; }
+        var dist = new double[512 * 512];
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int i = y * 512 + x; if (!m[i]) { dist[i] = 0; continue; } double best = R + 1;
+            for (int dy = -R; dy <= R; dy++) for (int dx = -R; dx <= R; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511 || !m[yy * 512 + xx]) { double d = Math.Sqrt(dx * dx + dy * dy); if (d < best) best = d; } }
+            dist[i] = best; }
+        if (t > 0) for (int i = 0; i < m.Length; i++) { if (!m[i]) continue; double w = Math.Max(0, Math.Min(1, t + 0.5 - dist[i])); if (w <= 0) continue;
+            o.P[i * 4] = (byte)Math.Round(o.P[i * 4] * (1 - w) + 15 * w); o.P[i * 4 + 1] = (byte)Math.Round(o.P[i * 4 + 1] * (1 - w) + 15 * w); o.P[i * 4 + 2] = (byte)Math.Round(o.P[i * 4 + 2] * (1 - w) + 18 * w); }
+        // alpha = blurred mask; colour outside M = nearest M pixel (search radius 3)
+        int r = (int)Math.Ceiling(sigma * 3); var k = new double[2 * r + 1]; double sum = 0; for (int i = -r; i <= r; i++) { k[i + r] = Math.Exp(-i * i / (2 * sigma * sigma)); sum += k[i + r]; } for (int i = 0; i < k.Length; i++) k[i] /= sum;
+        var f = new double[512 * 512]; var tmp = new double[512 * 512]; for (int i = 0; i < f.Length; i++) f[i] = m[i] ? 1 : 0;
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double s = 0; for (int i = -r; i <= r; i++) s += k[i + r] * f[y * 512 + Math.Max(0, Math.Min(511, x + i))]; tmp[y * 512 + x] = s; }
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double s = 0; for (int i = -r; i <= r; i++) s += k[i + r] * tmp[Math.Max(0, Math.Min(511, y + i)) * 512 + x]; f[y * 512 + x] = s; }
+        for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int i = y * 512 + x; int al = (int)Math.Round(Math.Max(0, Math.Min(1, f[i])) * 255);
+            if (!m[i]) { if (al == 0) { o.P[i * 4 + 3] = 0; continue; } int bp = -1; double bd = 99;
+                for (int dy = -3; dy <= 3; dy++) for (int dx = -3; dx <= 3; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511 || !m[yy * 512 + xx]) continue; double d = dx * dx + dy * dy; if (d < bd) { bd = d; bp = yy * 512 + xx; } }
+                if (bp < 0) { o.P[i * 4 + 3] = 0; continue; } o.P[i * 4] = o.P[bp * 4]; o.P[i * 4 + 1] = o.P[bp * 4 + 1]; o.P[i * 4 + 2] = o.P[bp * 4 + 2]; }
+            o.P[i * 4 + 3] = (byte)al; }
+        return o;
+    }
+    // 4x nearest crop for the sharpness zooms
+    public static Img Zoom(Img a, int x0, int y0, int w, int h, int s) { var o = new Img(w * s, h * s); for (int y = 0; y < h * s; y++) for (int x = 0; x < w * s; x++) { int sx = x0 + x / s, sy = y0 + y / s; if (sx < 0 || sy < 0 || sx > 511 || sy > 511) continue; Array.Copy(a.P, (sy * 512 + sx) * 4, o.P, (y * o.W + x) * 4, 4); } return o; }
+    public static void Sheet(string dest, string title, string[] labels, Img[] cells, int cols) {
+        int pad = 8, hh = 44, tt = 26, cw = 0; foreach (var c in cells) cw = Math.Max(cw, c.W);
+        int rows = (cells.Length + cols - 1) / cols; var rh = new int[rows]; var ry = new int[rows]; int total = tt;
+        for (int rI = 0; rI < rows; rI++) { for (int c = 0; c < cols; c++) { int i = rI * cols + c; if (i < cells.Length) rh[rI] = Math.Max(rh[rI], cells[i].H); } ry[rI] = total; total += hh + rh[rI] + pad; }
+        var bmp = new Bitmap(pad + cols * (cw + pad), total, PixelFormat.Format32bppArgb);
+        using (var g = Graphics.FromImage(bmp)) using (var f = new Font("Segoe UI", 9)) using (var ft = new Font("Segoe UI", 10, FontStyle.Bold)) {
+            g.Clear(Color.White); g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias; g.DrawString(title, ft, Brushes.Black, 4, 2);
+            for (int i = 0; i < cells.Length; i++) { int cx = pad + (i % cols) * (cw + pad), cy = ry[i / cols];
+                g.DrawString(labels[i], f, Brushes.Black, new RectangleF(cx, cy, cw, hh));
+                g.FillRectangle(new SolidBrush(Color.FromArgb(88, 105, 88)), cx, cy + hh, cells[i].W, cells[i].H);
+                using (var b = cells[i].ToBitmap()) { g.InterpolationMode = InterpolationMode.NearestNeighbor; g.PixelOffsetMode = PixelOffsetMode.Half; g.DrawImage(b, cx, cy + hh, cells[i].W, cells[i].H); } } }
+        bmp.Save(dest, ImageFormat.Png); bmp.Dispose();
+    }
+    // hard alpha at 128 (cloth edge)
+    public static Img Hard(Img a) { var o = a.Clone(); for (int i = 3; i < o.P.Length; i += 4) o.P[i] = (byte)(o.P[i] >= 128 ? 255 : 0); return o; }
+    public static Img Clip(Img a, bool[] m) { var o = a.Clone(); for (int i = 0; i < m.Length; i++) if (!m[i]) o.P[i * 4 + 3] = 0; return o; }
+
+    // ---- board helpers
+    public static Img Ring(bool[] m) { var o = new Img(512, 512); for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { if (!m[y * 512 + x]) continue; bool e = false;
+            for (int dy = -1; dy <= 1 && !e; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511 || !m[yy * 512 + xx]) { e = true; break; } }
+            if (e) o.Set(x, y, 255, 255, 255, 255); } return o; }
+    public static void Tint(Img a, int r, int g, int b) { for (int i = 0; i < a.P.Length; i += 4) if (a.P[i + 3] > 0) { a.P[i] = (byte)r; a.P[i + 1] = (byte)g; a.P[i + 2] = (byte)b; } }
+    public static void Curve(Img a, double[] c, int r, int g, int b, int x0, int x1) { for (int x = Math.Max(0, x0); x <= Math.Min(511, x1); x++) { if (c[x] < 0) continue; int y = (int)Math.Round(c[x]); if (y >= 0 && y < 512) a.Set(x, y, r, g, b, 255); if (y + 1 < 512 && y + 1 >= 0) a.Set(x, y + 1, r, g, b, 255); } }
+    public static void EdgesCurve(Img a, double[] L, double[] R, int r, int g, int b) { for (int y = 0; y < 512; y++) { if (L[y] < 0) continue; int xl = (int)Math.Round(L[y]), xr = (int)Math.Round(R[y]) - 1; if (xl >= 0 && xl < 512) a.Set(xl, y, r, g, b, 255); if (xr >= 0 && xr < 512) a.Set(xr, y, r, g, b, 255); } }
+    public static void HLine(Img a, double row, int r, int g, int b, int x0, int x1, int step) { int y = (int)Math.Round(row); if (y < 0 || y > 511) return; for (int x = x0; x <= x1; x++) if ((x / step) % 2 == 0) a.Set(x, y, r, g, b, 255); }
+
+    public static void Board(string dest, string title, string[] labels, Img[] cells, int size, int crop0, int crop1) {
+        int pad = 6, hh = 120, tt = 40; int ch = (int)Math.Round(size * (crop1 - crop0) / 512.0);
+        var bmp = new Bitmap(pad + cells.Length * (size + pad), hh + ch + pad, PixelFormat.Format32bppArgb);
+        using (var g = Graphics.FromImage(bmp)) using (var f = new Font("Segoe UI", 9)) using (var ft = new Font("Segoe UI", 10, FontStyle.Bold)) {
+            g.Clear(Color.White); g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+            g.DrawString(title, ft, Brushes.Black, new RectangleF(4, 2, bmp.Width - 8, tt));
+            for (int c = 0; c < cells.Length; c++) { int x0 = pad + c * (size + pad);
+                g.DrawString(labels[c], f, Brushes.Black, new RectangleF(x0, tt + 4, size, hh - tt - 4));
+                g.FillRectangle(new SolidBrush(Color.FromArgb(88, 105, 88)), x0, hh, size, ch);
+                using (var b = cells[c].ToBitmap()) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(b, new Rectangle(x0, hh, size, ch), 0, crop0, 512, crop1 - crop0, GraphicsUnit.Pixel); } }
+        }
+        bmp.Save(dest, ImageFormat.Png); bmp.Dispose();
+    }
+}

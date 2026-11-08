@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the red outline top over underwear on every WDI silhouette" tests="1" failures="0" skipped="0" flakes="0" time="125.136">
+    <testcase name="the red outline top over underwear, front (South)" classname="the red outline top over underwear on every WDI silhouette" time="125.136">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline underwear, front, slip-trousers -&gt; /repo/pickle-reports/screenshots/manual--outline-underwear--front--slip-trousers--step0.png
+Attachment: outline underwear, front, boxers-trousers -&gt; /repo/pickle-reports/screenshots/manual--outline-underwear--front--boxers-trousers--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="the ten WDI silhouettes with nothing worn, front" tests="1" failures="0" skipped="0" flakes="0" time="84.948">
+    <testcase name="nothing worn, front (South)" classname="the ten WDI silhouettes with nothing worn, front" time="84.948">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: nothing worn, front -&gt; /repo/pickle-reports/screenshots/manual--nothing-worn--front--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,25 @@
+Male south : stroke 4 px (128), cloth rows 192..415 (512), E top 188, hem to 404, tail from 366
+Male east : stroke 4 px (128), cloth rows 188..411 (512), E top 188, hem to 408, tail from 362
+Male north : stroke 4 px (128), cloth rows 188..415 (512), E top 186, hem to 412, tail from 365
+Female south : stroke 4 px (128), cloth rows 172..435 (512), E top 177, hem to 400, tail from 377
+Female east : stroke 4 px (128), cloth rows 172..435 (512), E top 165, hem to 420, tail from 377
+Female north : stroke 4 px (128), cloth rows 172..435 (512), E top 171, hem to 420, tail from 377
+Thin south : stroke 4 px (128), cloth rows 188..415 (512), E top 177, hem to 404, tail from 365
+Thin east : stroke 3 px (128), cloth rows 188..415 (512), E top 187, hem to 436, tail from 365
+Thin north : stroke 2 px (128), cloth rows 188..419 (512), E top 178, hem to 432, tail from 368
+Thin_Female south : stroke 4 px (128), cloth rows 188..415 (512), E top 174, hem to 384, tail from 365
+Thin_Female east : stroke 3 px (128), cloth rows 188..415 (512), E top 181, hem to 404, tail from 365
+Thin_Female north : stroke 2 px (128), cloth rows 188..419 (512), E top 174, hem to 428, tail from 368
+Fat south : stroke 4 px (128), cloth rows 168..435 (512), E top 161, hem to 420, tail from 376
+Fat east : stroke 4 px (128), cloth rows 168..439 (512), E top 163, hem to 444, tail from 379
+Fat north : stroke 3 px (128), cloth rows 168..435 (512), E top 163, hem to 428, tail from 376
+Fat_Female south : stroke 4 px (128), cloth rows 168..435 (512), E top 161, hem to 396, tail from 376
+Fat_Female east : stroke 4 px (128), cloth rows 168..439 (512), E top 159, hem to 424, tail from 379
+Fat_Female north : stroke 3 px (128), cloth rows 168..435 (512), E top 159, hem to 428, tail from 376
+Hulk south : stroke 5 px (128), cloth rows 168..483 (512), E top 164, hem to 468, tail from 414
+Hulk east : stroke 4 px (128), cloth rows 160..483 (512), E top 156, hem to 484, tail from 412
+Hulk north : stroke 3 px (128), cloth rows 144..487 (512), E top 162, hem to 480, tail from 412
+Hulk_Female south : stroke 5 px (128), cloth rows 168..483 (512), E top 189, hem to 436, tail from 414
+Hulk_Female east : stroke 4 px (128), cloth rows 160..483 (512), E top 182, hem to 468, tail from 412
+Hulk_Female north : stroke 3 px (128), cloth rows 144..487 (512), E top 189, hem to 476, tail from 412
+C:\Users\nelim\Documents\rimworld\VenusTouchWaistlines\Art\work\captures\2026-11-06_simple-stretch-all-landmarks.png

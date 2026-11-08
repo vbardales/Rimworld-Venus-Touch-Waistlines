@@ -1,0 +1,40 @@
+== imo male : offsets L0 R top 0 bot 0 outline 8; control pairs 44, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 252 px, components 1, loops 0       all strokes: n 112, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,35
+  output: out: ink 153 px, components 2, loops 0       all strokes: n 117, median 1,0, IQR 1,0-1,0, max 1,8, CV 0,19
+  skeleton ours->WDI: 117 pts, mean 0,2 px, 95th 1,0, max 1,0 | WDI->ours: 112 pts, mean 0,2 px, 95th 1,0, max 2,8 | ink IoU 60,7% (both 153, output only 0, input only 99)
+== vshirt male : offsets L0 R top 0 bot 0 outline 16; control pairs 44, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 9 px, components 0, loops 0       all strokes: n 1, median 3,0, IQR 3,0-3,0, max 3,0, CV 0,00
+  output: out: ink 0 px, components 0, loops 0       all strokes: none
+  skeleton ours->WDI: no skeleton | WDI->ours: 1 pts, mean 1000000,0 px, 95th 1000000,0, max 1000000,0 | ink IoU 0,0% (both 0, output only 0, input only 9)
+== imo thin : offsets L1 R top 0 bot 0 outline 9; control pairs 44, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 148 px, components 1, loops 0       all strokes: n 70, median 1,0, IQR 1,0-1,8, max 3,0, CV 0,36
+  output: out: ink 107 px, components 1, loops 0       all strokes: n 68, median 1,0, IQR 1,0-1,0, max 1,8, CV 0,24
+  skeleton ours->WDI: 68 pts, mean 0,1 px, 95th 1,0, max 1,0 | WDI->ours: 70 pts, mean 0,1 px, 95th 1,0, max 1,4 | ink IoU 72,3% (both 107, output only 0, input only 41)
+== vshirt thin : offsets L0 R top 0 bot 0 outline 16; control pairs 44, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 18 px, components 1, loops 0       all strokes: n 3, median 3,0, IQR 3,0-3,0, max 3,0, CV 0,00
+  output: out: ink 0 px, components 0, loops 0       all strokes: none
+  skeleton ours->WDI: no skeleton | WDI->ours: 3 pts, mean 1000000,0 px, 95th 1000000,0, max 1000000,0 | ink IoU 0,0% (both 0, output only 0, input only 18)
+== imo fat : offsets L0 R top 0 bot 0 outline 9; control pairs 50, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 463 px, components 1, loops 0       all strokes: n 200, median 1,8, IQR 1,0-1,8, max 3,0, CV 0,40
+  output: out: ink 370 px, components 1, loops 0       all strokes: n 183, median 1,0, IQR 1,0-1,8, max 1,8, CV 0,30
+  skeleton ours->WDI: 183 pts, mean 0,1 px, 95th 1,0, max 1,0 | WDI->ours: 200 pts, mean 0,2 px, 95th 1,0, max 5,0 | ink IoU 79,1% (both 368, output only 2, input only 95)
+== vshirt fat : offsets L0 R top 0 bot 0 outline 16; control pairs 50, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 371 px, components 2, loops 0       all strokes: n 70, median 3,0, IQR 3,0-4,7, max 7,2, CV 0,32
+  output: out: ink 283 px, components 2, loops 0       all strokes: n 40, median 4,7, IQR 3,5-5,0, max 7,5, CV 0,26
+  skeleton ours->WDI: 40 pts, mean 0,1 px, 95th 1,0, max 1,0 | WDI->ours: 70 pts, mean 2,1 px, 95th 9,2, max 11,7 | ink IoU 69,4% (both 268, output only 15, input only 103)
+== imo hulk : offsets L0 R top 0 bot 0 outline 10; control pairs 64, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 607 px, components 1, loops 0       all strokes: n 227, median 1,8, IQR 1,0-3,0, max 3,5, CV 0,41
+  output: out: ink 499 px, components 1, loops 0       all strokes: n 220, median 1,8, IQR 1,0-1,8, max 3,0, CV 0,44
+  skeleton ours->WDI: 220 pts, mean 0,1 px, 95th 1,0, max 1,0 | WDI->ours: 227 pts, mean 0,2 px, 95th 1,0, max 3,6 | ink IoU 81,3% (both 496, output only 3, input only 111)
+== vshirt hulk : offsets L0 R top 0 bot 0 outline 16; control pairs 64, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 0 px, components 0, loops 0       all strokes: none
+  output: out: ink 0 px, components 0, loops 0       all strokes: none
+  skeleton ours->WDI: no skeleton | WDI->ours: no skeleton | ink IoU 0,0% (both 0, output only 0, input only 0)
+== imo female : offsets L0 R top 0 bot 0 outline 8; control pairs 50, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 290 px, components 1, loops 0       all strokes: n 82, median 3,0, IQR 3,0-3,0, max 3,5, CV 0,21
+  output: out: ink 247 px, components 1, loops 0       all strokes: n 75, median 3,0, IQR 1,8-3,0, max 3,5, CV 0,28
+  skeleton ours->WDI: 75 pts, mean 0,1 px, 95th 1,0, max 1,0 | WDI->ours: 82 pts, mean 0,2 px, 95th 1,0, max 2,8 | ink IoU 84,5% (both 246, output only 1, input only 44)
+== vshirt female : offsets L0 R top 0 bot 0 outline 16; control pairs 50, worst control residual 0,00 px, dropped paths 0
+  input : in: ink 0 px, components 0, loops 0       all strokes: none
+  output: out: ink 0 px, components 0, loops 0       all strokes: none
+  skeleton ours->WDI: no skeleton | WDI->ours: no skeleton | ink IoU 0,0% (both 0, output only 0, input only 0)

@@ -1,0 +1,43 @@
+{
+ "method": "boxers leg line = boxers bottom where slope <= 0.3, over the shared span; d_min = smallest gap from min(B,C) (pink); top alone on min + d_min, untucked on max + the same d_min, 2026-11-07",
+ "Thin_Female": {
+  "south": 40.0,
+  "east": 45.0,
+  "north": 75.0
+ },
+ "Fat_Female": {
+  "south": 56.0,
+  "east": 38.0,
+  "north": 91.0
+ },
+ "Hulk_Female": {
+  "south": 45.0,
+  "east": 34.0,
+  "north": 81.0
+ },
+ "Male": {
+  "south": 42.0,
+  "east": 29.0,
+  "north": 48.0
+ },
+ "Female": {
+  "south": 31.0,
+  "east": 34.0,
+  "north": 72.0
+ },
+ "Thin": {
+  "south": 50.0,
+  "east": 43.0,
+  "north": 52.0
+ },
+ "Fat": {
+  "south": 56.0,
+  "east": 26.9,
+  "north": 91.0
+ },
+ "Hulk": {
+  "south": 53.0,
+  "east": 42.0,
+  "north": 68.0
+ }
+}

@@ -1,0 +1,168 @@
+﻿WDI Male (east)|extremes|top|233|188|detected
+WDI Male (east)|extremes|bottom|242|423|detected
+WDI Male (east)|head/neck|neck front|274|194|detected
+WDI Male (east)|head/neck|neck back|210|194|detected
+WDI Male (east)|shoulders|upper back (shoulder blade)|188|224|detected
+WDI Male (east)|chest|chest front|332|274|detected
+WDI Male (east)|chest|breast apex|312|306|detected
+WDI Male (east)|torso|waist front|311|339|to place
+WDI Male (east)|torso|waist back (small of the back)|198|294|detected
+WDI Male (east)|torso|belly front|324|304|to place
+WDI Male (east)|pelvis|buttock back|188|353|detected
+WDI Male (east)|legs|leg bottom front|248|421|detected
+WDI Male (east)|legs|leg bottom back|234|421|detected
+WDI Male (east)|pelvis|navel|||not in texture
+WDI Male (east)|pelvis|sex|||not in texture
+WDI Male (east)|pelvis|crotch point|||not in texture
+WDI Male (east)|pelvis|elbow|||not in texture
+WDI Male (east)|pelvis|wrist|||not in texture
+WDI Male (east)|pelvis|hand end|||not in texture
+WDI Male (east)|pelvis|knee|||not in texture
+WDI Male (east)|pelvis|ankle|||not in texture
+WDI Thin (east)|extremes|top|260|189|detected
+WDI Thin (east)|extremes|bottom|218|427|detected
+WDI Thin (east)|head/neck|neck front|278|194|detected
+WDI Thin (east)|head/neck|neck back|240|194|detected
+WDI Thin (east)|shoulders|upper back (shoulder blade)|204|280|to place
+WDI Thin (east)|chest|chest front|304|231|detected
+WDI Thin (east)|chest|breast apex|278|286|detected
+WDI Thin (east)|torso|waist front|274|339|detected
+WDI Thin (east)|torso|waist back (small of the back)|206|268|to place
+WDI Thin (east)|torso|belly front|282|305|to place
+WDI Thin (east)|pelvis|buttock back|176|371|detected
+WDI Thin (east)|legs|leg bottom front|226|425|detected
+WDI Thin (east)|legs|leg bottom back|210|425|detected
+WDI Thin (east)|pelvis|navel|||not in texture
+WDI Thin (east)|pelvis|sex|||not in texture
+WDI Thin (east)|pelvis|crotch point|||not in texture
+WDI Thin (east)|pelvis|elbow|||not in texture
+WDI Thin (east)|pelvis|wrist|||not in texture
+WDI Thin (east)|pelvis|hand end|||not in texture
+WDI Thin (east)|pelvis|knee|||not in texture
+WDI Thin (east)|pelvis|ankle|||not in texture
+WDI Fat (east)|extremes|top|250|165|detected
+WDI Fat (east)|extremes|bottom|252|450|detected
+WDI Fat (east)|head/neck|neck front|304|176|detected
+WDI Fat (east)|head/neck|neck back|202|176|detected
+WDI Fat (east)|shoulders|upper back (shoulder blade)|144|274|to place
+WDI Fat (east)|chest|chest front|372|299|detected
+WDI Fat (east)|chest|breast apex|356|297|detected
+WDI Fat (east)|torso|waist front|364|261|to place
+WDI Fat (east)|torso|waist back (small of the back)|148|261|to place
+WDI Fat (east)|torso|belly front|376|335|detected
+WDI Fat (east)|pelvis|buttock back|111|341|detected
+WDI Fat (east)|legs|leg bottom front|288|448|detected
+WDI Fat (east)|legs|leg bottom back|220|448|detected
+WDI Fat (east)|pelvis|navel|||not in texture
+WDI Fat (east)|pelvis|sex|||not in texture
+WDI Fat (east)|pelvis|crotch point|||not in texture
+WDI Fat (east)|pelvis|elbow|||not in texture
+WDI Fat (east)|pelvis|wrist|||not in texture
+WDI Fat (east)|pelvis|hand end|||not in texture
+WDI Fat (east)|pelvis|knee|||not in texture
+WDI Fat (east)|pelvis|ankle|||not in texture
+WDI Hulk (east)|extremes|top|236|158|detected
+WDI Hulk (east)|extremes|bottom|196|500|detected
+WDI Hulk (east)|head/neck|neck front|290|167|detected
+WDI Hulk (east)|head/neck|neck back|198|167|detected
+WDI Hulk (east)|shoulders|upper back (shoulder blade)|162|219|detected
+WDI Hulk (east)|chest|chest front|355|255|detected
+WDI Hulk (east)|chest|breast apex|318|332|detected
+WDI Hulk (east)|torso|waist front|310|376|detected
+WDI Hulk (east)|torso|waist back (small of the back)|164|283|detected
+WDI Hulk (east)|torso|belly front|338|326|to place
+WDI Hulk (east)|pelvis|buttock back|126|418|detected
+WDI Hulk (east)|legs|leg bottom front|208|498|detected
+WDI Hulk (east)|legs|leg bottom back|188|498|detected
+WDI Hulk (east)|pelvis|navel|||not in texture
+WDI Hulk (east)|pelvis|sex|||not in texture
+WDI Hulk (east)|pelvis|crotch point|||not in texture
+WDI Hulk (east)|pelvis|elbow|||not in texture
+WDI Hulk (east)|pelvis|wrist|||not in texture
+WDI Hulk (east)|pelvis|hand end|||not in texture
+WDI Hulk (east)|pelvis|knee|||not in texture
+WDI Hulk (east)|pelvis|ankle|||not in texture
+WDI Female (east)|extremes|top|257|166|detected
+WDI Female (east)|extremes|bottom|225|445|detected
+WDI Female (east)|head/neck|neck front|283|176|detected
+WDI Female (east)|head/neck|neck back|230|176|detected
+WDI Female (east)|shoulders|upper back (shoulder blade)|195|242|detected
+WDI Female (east)|chest|chest front|310|265|detected
+WDI Female (east)|chest|breast apex|289|285|detected
+WDI Female (east)|torso|waist front|283|320|detected
+WDI Female (east)|torso|waist back (small of the back)|196|275|detected
+WDI Female (east)|torso|belly front|298|303|to place
+WDI Female (east)|pelvis|buttock back|155|366|detected
+WDI Female (east)|legs|leg bottom front|238|443|detected
+WDI Female (east)|legs|leg bottom back|216|443|detected
+WDI Female (east)|pelvis|navel|||not in texture
+WDI Female (east)|pelvis|sex|||not in texture
+WDI Female (east)|pelvis|crotch point|||not in texture
+WDI Female (east)|pelvis|elbow|||not in texture
+WDI Female (east)|pelvis|wrist|||not in texture
+WDI Female (east)|pelvis|hand end|||not in texture
+WDI Female (east)|pelvis|knee|||not in texture
+WDI Female (east)|pelvis|ankle|||not in texture
+WDI Thin_Female (east)|extremes|top|258|183|detected
+WDI Thin_Female (east)|extremes|bottom|228|429|detected
+WDI Thin_Female (east)|head/neck|neck front|274|187|detected
+WDI Thin_Female (east)|head/neck|neck back|236|187|detected
+WDI Thin_Female (east)|shoulders|upper back (shoulder blade)|202|275|detected
+WDI Thin_Female (east)|chest|chest front|299|263|detected
+WDI Thin_Female (east)|chest|breast apex|282|269|detected
+WDI Thin_Female (east)|torso|waist front|267|337|detected
+WDI Thin_Female (east)|torso|waist back (small of the back)|204|265|to place
+WDI Thin_Female (east)|torso|belly front|276|303|to place
+WDI Thin_Female (east)|pelvis|buttock back|172|357|detected
+WDI Thin_Female (east)|legs|leg bottom front|230|427|detected
+WDI Thin_Female (east)|legs|leg bottom back|220|427|detected
+WDI Thin_Female (east)|pelvis|navel|||not in texture
+WDI Thin_Female (east)|pelvis|sex|||not in texture
+WDI Thin_Female (east)|pelvis|crotch point|||not in texture
+WDI Thin_Female (east)|pelvis|elbow|||not in texture
+WDI Thin_Female (east)|pelvis|wrist|||not in texture
+WDI Thin_Female (east)|pelvis|hand end|||not in texture
+WDI Thin_Female (east)|pelvis|knee|||not in texture
+WDI Thin_Female (east)|pelvis|ankle|||not in texture
+WDI Fat_Female (east)|extremes|top|254|161|detected
+WDI Fat_Female (east)|extremes|bottom|241|456|detected
+WDI Fat_Female (east)|head/neck|neck front|308|175|detected
+WDI Fat_Female (east)|head/neck|neck back|202|175|detected
+WDI Fat_Female (east)|shoulders|upper back (shoulder blade)|142|273|detected
+WDI Fat_Female (east)|chest|chest front|377|269|detected
+WDI Fat_Female (east)|chest|breast apex|351|284|detected
+WDI Fat_Female (east)|torso|waist front|346|323|detected
+WDI Fat_Female (east)|torso|waist back (small of the back)|147|260|to place
+WDI Fat_Female (east)|torso|belly front|370|305|to place
+WDI Fat_Female (east)|pelvis|buttock back|109|340|detected
+WDI Fat_Female (east)|legs|leg bottom front|296|454|detected
+WDI Fat_Female (east)|legs|leg bottom back|212|454|detected
+WDI Fat_Female (east)|pelvis|navel|||not in texture
+WDI Fat_Female (east)|pelvis|sex|||not in texture
+WDI Fat_Female (east)|pelvis|crotch point|||not in texture
+WDI Fat_Female (east)|pelvis|elbow|||not in texture
+WDI Fat_Female (east)|pelvis|wrist|||not in texture
+WDI Fat_Female (east)|pelvis|hand end|||not in texture
+WDI Fat_Female (east)|pelvis|knee|||not in texture
+WDI Fat_Female (east)|pelvis|ankle|||not in texture
+WDI Hulk_Female (east)|extremes|top|256|184|detected
+WDI Hulk_Female (east)|extremes|bottom|196|498|detected
+WDI Hulk_Female (east)|head/neck|neck front|298|193|detected
+WDI Hulk_Female (east)|head/neck|neck back|228|193|detected
+WDI Hulk_Female (east)|shoulders|upper back (shoulder blade)|192|306|to place
+WDI Hulk_Female (east)|chest|chest front|352|309|detected
+WDI Hulk_Female (east)|chest|breast apex|322|330|detected
+WDI Hulk_Female (east)|torso|waist front|306|382|detected
+WDI Hulk_Female (east)|torso|waist back (small of the back)|200|290|to place
+WDI Hulk_Female (east)|torso|belly front|344|338|to place
+WDI Hulk_Female (east)|pelvis|buttock back|123|406|detected
+WDI Hulk_Female (east)|legs|leg bottom front|206|496|detected
+WDI Hulk_Female (east)|legs|leg bottom back|186|496|detected
+WDI Hulk_Female (east)|pelvis|navel|||not in texture
+WDI Hulk_Female (east)|pelvis|sex|||not in texture
+WDI Hulk_Female (east)|pelvis|crotch point|||not in texture
+WDI Hulk_Female (east)|pelvis|elbow|||not in texture
+WDI Hulk_Female (east)|pelvis|wrist|||not in texture
+WDI Hulk_Female (east)|pelvis|hand end|||not in texture
+WDI Hulk_Female (east)|pelvis|knee|||not in texture
+WDI Hulk_Female (east)|pelvis|ankle|||not in texture

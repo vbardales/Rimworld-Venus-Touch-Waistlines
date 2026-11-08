@@ -1,0 +1,195 @@
+﻿vanilla Male (north)|extremes|top|254|180|detected
+vanilla Male (north)|extremes|bottom|256|424|detected
+vanilla Male (north)|extremes|leftmost|162|216|detected
+vanilla Male (north)|extremes|rightmost|350|232|detected
+vanilla Male (north)|head/neck|neck base L|200|180|detected
+vanilla Male (north)|head/neck|neck base R|308|180|detected
+vanilla Male (north)|head/neck|jugular notch|||not in view
+vanilla Male (north)|shoulders|shoulder tip L|160|232|detected
+vanilla Male (north)|shoulders|shoulder tip R|350|232|detected
+vanilla Male (north)|shoulders|armpit L|166|296|detected
+vanilla Male (north)|shoulders|armpit R|344|296|detected
+vanilla Male (north)|chest|breast apex L|||not in view
+vanilla Male (north)|chest|breast apex R|||not in view
+vanilla Male (north)|chest|cleavage|||not in view
+vanilla Male (north)|chest|under-breast fold L|||not in view
+vanilla Male (north)|chest|under-breast fold R|||not in view
+vanilla Male (north)|torso|waist L|176|332|to place
+vanilla Male (north)|torso|waist R|332|332|to place
+vanilla Male (north)|torso|navel|||not in view
+vanilla Male (north)|torso|hip L|180|347|detected
+vanilla Male (north)|torso|hip R|330|347|detected
+vanilla Male (north)|pelvis|groin crease L|||not in view
+vanilla Male (north)|pelvis|groin crease R|||not in view
+vanilla Male (north)|pelvis|sex|||not in view
+vanilla Male (north)|pelvis|crotch point|256|431|to place
+vanilla Male (north)|legs|leg bottom L|238|424|detected
+vanilla Male (north)|legs|leg bottom R|274|424|detected
+vanilla Male (north)|arms|elbow L|||not in texture
+vanilla Male (north)|arms|elbow R|||not in texture
+vanilla Male (north)|arms|wrist L|||not in texture
+vanilla Male (north)|arms|wrist R|||not in texture
+vanilla Male (north)|arms|hand end L|||not in texture
+vanilla Male (north)|arms|hand end R|||not in texture
+vanilla Male (north)|legs|knee L|||not in texture
+vanilla Male (north)|legs|knee R|||not in texture
+vanilla Male (north)|legs|ankle L|||not in texture
+vanilla Male (north)|legs|ankle R|||not in texture
+vanilla Male (north)|axis|midline top|256|180|detected
+vanilla Male (north)|axis|midline crotch|256|431|to place
+vanilla Thin (north)|extremes|top|256|182|detected
+vanilla Thin (north)|extremes|bottom|258|426|detected
+vanilla Thin (north)|extremes|leftmost|210|232|detected
+vanilla Thin (north)|extremes|rightmost|298|216|detected
+vanilla Thin (north)|head/neck|neck base L|236|176|to place
+vanilla Thin (north)|head/neck|neck base R|272|176|to place
+vanilla Thin (north)|head/neck|jugular notch|||not in view
+vanilla Thin (north)|shoulders|shoulder tip L|210|232|detected
+vanilla Thin (north)|shoulders|shoulder tip R|300|232|detected
+vanilla Thin (north)|shoulders|armpit L|208|244|to place
+vanilla Thin (north)|shoulders|armpit R|300|244|to place
+vanilla Thin (north)|chest|breast apex L|||not in view
+vanilla Thin (north)|chest|breast apex R|||not in view
+vanilla Thin (north)|chest|cleavage|||not in view
+vanilla Thin (north)|chest|under-breast fold L|||not in view
+vanilla Thin (north)|chest|under-breast fold R|||not in view
+vanilla Thin (north)|torso|waist L|208|264|to place
+vanilla Thin (north)|torso|waist R|300|264|to place
+vanilla Thin (north)|torso|navel|||not in view
+vanilla Thin (north)|torso|hip L|208|316|to place
+vanilla Thin (north)|torso|hip R|300|316|to place
+vanilla Thin (north)|pelvis|groin crease L|||not in view
+vanilla Thin (north)|pelvis|groin crease R|||not in view
+vanilla Thin (north)|pelvis|sex|||not in view
+vanilla Thin (north)|pelvis|crotch point|254|435|to place
+vanilla Thin (north)|legs|leg bottom L|251|424|detected
+vanilla Thin (north)|legs|leg bottom R|261|424|detected
+vanilla Thin (north)|arms|elbow L|||not in texture
+vanilla Thin (north)|arms|elbow R|||not in texture
+vanilla Thin (north)|arms|wrist L|||not in texture
+vanilla Thin (north)|arms|wrist R|||not in texture
+vanilla Thin (north)|arms|hand end L|||not in texture
+vanilla Thin (north)|arms|hand end R|||not in texture
+vanilla Thin (north)|legs|knee L|||not in texture
+vanilla Thin (north)|legs|knee R|||not in texture
+vanilla Thin (north)|legs|ankle L|||not in texture
+vanilla Thin (north)|legs|ankle R|||not in texture
+vanilla Thin (north)|axis|midline top|254|182|detected
+vanilla Thin (north)|axis|midline crotch|254|435|to place
+vanilla Fat (north)|extremes|top|254|160|detected
+vanilla Fat (north)|extremes|bottom|256|444|detected
+vanilla Fat (north)|extremes|leftmost|104|304|detected
+vanilla Fat (north)|extremes|rightmost|406|312|detected
+vanilla Fat (north)|head/neck|neck base L|188|168|detected
+vanilla Fat (north)|head/neck|neck base R|320|168|detected
+vanilla Fat (north)|head/neck|jugular notch|||not in view
+vanilla Fat (north)|shoulders|shoulder tip L|128|240|detected
+vanilla Fat (north)|shoulders|shoulder tip R|380|240|detected
+vanilla Fat (north)|shoulders|armpit L|128|246|to place
+vanilla Fat (north)|shoulders|armpit R|380|246|to place
+vanilla Fat (north)|chest|breast apex L|||not in view
+vanilla Fat (north)|chest|breast apex R|||not in view
+vanilla Fat (north)|chest|cleavage|||not in view
+vanilla Fat (north)|chest|under-breast fold L|||not in view
+vanilla Fat (north)|chest|under-breast fold R|||not in view
+vanilla Fat (north)|torso|waist L|124|257|to place
+vanilla Fat (north)|torso|waist R|384|257|to place
+vanilla Fat (north)|torso|navel|||not in view
+vanilla Fat (north)|torso|hip L|104|316|to place
+vanilla Fat (north)|torso|hip R|408|316|to place
+vanilla Fat (north)|pelvis|groin crease L|||not in view
+vanilla Fat (north)|pelvis|groin crease R|||not in view
+vanilla Fat (north)|pelvis|sex|||not in view
+vanilla Fat (north)|pelvis|crotch point|256|451|to place
+vanilla Fat (north)|legs|leg bottom L|228|442|detected
+vanilla Fat (north)|legs|leg bottom R|284|442|detected
+vanilla Fat (north)|arms|elbow L|||not in texture
+vanilla Fat (north)|arms|elbow R|||not in texture
+vanilla Fat (north)|arms|wrist L|||not in texture
+vanilla Fat (north)|arms|wrist R|||not in texture
+vanilla Fat (north)|arms|hand end L|||not in texture
+vanilla Fat (north)|arms|hand end R|||not in texture
+vanilla Fat (north)|legs|knee L|||not in texture
+vanilla Fat (north)|legs|knee R|||not in texture
+vanilla Fat (north)|legs|ankle L|||not in texture
+vanilla Fat (north)|legs|ankle R|||not in texture
+vanilla Fat (north)|axis|midline top|256|160|detected
+vanilla Fat (north)|axis|midline crotch|256|451|to place
+vanilla Hulk (north)|extremes|top|256|136|detected
+vanilla Hulk (north)|extremes|bottom|256|498|detected
+vanilla Hulk (north)|extremes|leftmost|110|260|detected
+vanilla Hulk (north)|extremes|rightmost|400|244|detected
+vanilla Hulk (north)|head/neck|neck base L|184|152|detected
+vanilla Hulk (north)|head/neck|neck base R|328|152|detected
+vanilla Hulk (north)|head/neck|jugular notch|||not in view
+vanilla Hulk (north)|shoulders|shoulder tip L|114|236|detected
+vanilla Hulk (north)|shoulders|shoulder tip R|396|236|detected
+vanilla Hulk (north)|shoulders|armpit L|122|312|detected
+vanilla Hulk (north)|shoulders|armpit R|386|312|detected
+vanilla Hulk (north)|chest|breast apex L|||not in view
+vanilla Hulk (north)|chest|breast apex R|||not in view
+vanilla Hulk (north)|chest|cleavage|||not in view
+vanilla Hulk (north)|chest|under-breast fold L|||not in view
+vanilla Hulk (north)|chest|under-breast fold R|||not in view
+vanilla Hulk (north)|torso|waist L|144|360|detected
+vanilla Hulk (north)|torso|waist R|362|360|detected
+vanilla Hulk (north)|torso|navel|||not in view
+vanilla Hulk (north)|torso|hip L|150|375|to place
+vanilla Hulk (north)|torso|hip R|356|375|to place
+vanilla Hulk (north)|pelvis|groin crease L|||not in view
+vanilla Hulk (north)|pelvis|groin crease R|||not in view
+vanilla Hulk (north)|pelvis|sex|||not in view
+vanilla Hulk (north)|pelvis|crotch point|252|507|to place
+vanilla Hulk (north)|legs|leg bottom L|244|496|detected
+vanilla Hulk (north)|legs|leg bottom R|264|505|detected
+vanilla Hulk (north)|arms|elbow L|||not in texture
+vanilla Hulk (north)|arms|elbow R|||not in texture
+vanilla Hulk (north)|arms|wrist L|||not in texture
+vanilla Hulk (north)|arms|wrist R|||not in texture
+vanilla Hulk (north)|arms|hand end L|||not in texture
+vanilla Hulk (north)|arms|hand end R|||not in texture
+vanilla Hulk (north)|legs|knee L|||not in texture
+vanilla Hulk (north)|legs|knee R|||not in texture
+vanilla Hulk (north)|legs|ankle L|||not in texture
+vanilla Hulk (north)|legs|ankle R|||not in texture
+vanilla Hulk (north)|axis|midline top|252|136|detected
+vanilla Hulk (north)|axis|midline crotch|252|507|to place
+vanilla Female (north)|extremes|top|256|160|detected
+vanilla Female (north)|extremes|bottom|256|444|detected
+vanilla Female (north)|extremes|leftmost|170|348|detected
+vanilla Female (north)|extremes|rightmost|342|348|detected
+vanilla Female (north)|head/neck|neck base L|224|160|detected
+vanilla Female (north)|head/neck|neck base R|288|160|detected
+vanilla Female (north)|head/neck|jugular notch|||not in view
+vanilla Female (north)|shoulders|shoulder tip L|190|236|detected
+vanilla Female (north)|shoulders|shoulder tip R|322|236|detected
+vanilla Female (north)|shoulders|armpit L|192|280|detected
+vanilla Female (north)|shoulders|armpit R|320|280|detected
+vanilla Female (north)|chest|breast apex L|||not in view
+vanilla Female (north)|chest|breast apex R|||not in view
+vanilla Female (north)|chest|cleavage|||not in view
+vanilla Female (north)|chest|under-breast fold L|||not in view
+vanilla Female (north)|chest|under-breast fold R|||not in view
+vanilla Female (north)|torso|waist L|200|292|detected
+vanilla Female (north)|torso|waist R|312|292|detected
+vanilla Female (north)|torso|navel|||not in view
+vanilla Female (north)|torso|hip L|170|351|to place
+vanilla Female (north)|torso|hip R|342|351|to place
+vanilla Female (north)|pelvis|groin crease L|||not in view
+vanilla Female (north)|pelvis|groin crease R|||not in view
+vanilla Female (north)|pelvis|sex|||not in view
+vanilla Female (north)|pelvis|crotch point|256|451|to place
+vanilla Female (north)|legs|leg bottom L|242|442|detected
+vanilla Female (north)|legs|leg bottom R|270|442|detected
+vanilla Female (north)|arms|elbow L|||not in texture
+vanilla Female (north)|arms|elbow R|||not in texture
+vanilla Female (north)|arms|wrist L|||not in texture
+vanilla Female (north)|arms|wrist R|||not in texture
+vanilla Female (north)|arms|hand end L|||not in texture
+vanilla Female (north)|arms|hand end R|||not in texture
+vanilla Female (north)|legs|knee L|||not in texture
+vanilla Female (north)|legs|knee R|||not in texture
+vanilla Female (north)|legs|ankle L|||not in texture
+vanilla Female (north)|legs|ankle R|||not in texture
+vanilla Female (north)|axis|midline top|256|160|detected
+vanilla Female (north)|axis|midline crotch|256|451|to place

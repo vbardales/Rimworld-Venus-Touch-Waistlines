@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Venus Touch Waistlines - shirt tail prototype (test only)</name>
+  <author>Nelim</author>
+  <packageId>nelim.venustouch.waistlines.shirttailproto</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <description>Development only, never published. Replaces the vanilla button shirt for the Male body (south, east, north) with the vanilla to WDI transfer of 2026-11-05 (TailorMade's method, bands, C' shirt tail), to see it in game. The textures are computed from Ludeon's, so the folder stays out of the public repository.</description>
+  <loadAfter>
+    <li>Ludeon.RimWorld</li>
+    <li>wdi.realistic.bodies</li>
+    <li>ab.vplrf</li>
+  </loadAfter>
+</ModMetaData>

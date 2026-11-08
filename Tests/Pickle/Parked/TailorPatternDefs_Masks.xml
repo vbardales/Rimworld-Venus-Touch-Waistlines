@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- TailorMade matches a pattern on race, body type, apparel layer and the
+       apparel def name, which it reads as a regular expression. Giving a mask
+       here replaces the body silhouette TailorMade would otherwise clip the
+       garment against - and with it the band it stretches leg garments into,
+       which on a legless body covers the whole lower belly.
+
+       The masks come from WDI's own body art: see _tools/make-masks.js. -->
+
+  <TailorMade.TailorPatternDef Name="NelimTailoredPantsBase" Abstract="True">
+    <raceName>Human</raceName>
+    <apparelLayer>OnSkin</apparelLayer>
+    <targetApparelDefs>
+      <li>^Apparel_Pants$</li>
+      <li>^Apparel_FlakPants$</li>
+      <li>^Apparel_KidPants$</li>
+    </targetApparelDefs>
+  </TailorMade.TailorPatternDef>
+
+  <TailorMade.TailorPatternDef ParentName="NelimTailoredPantsBase">
+    <defName>NelimTailoredPants_Human_Female</defName>
+    <bodyType>Female</bodyType>
+    <maskPath>Things/TailoredPants/Female/Pants_mask</maskPath>
+  </TailorMade.TailorPatternDef>
+
+  <TailorMade.TailorPatternDef ParentName="NelimTailoredPantsBase">
+    <defName>NelimTailoredPants_Human_Male</defName>
+    <bodyType>Male</bodyType>
+    <maskPath>Things/TailoredPants/Male/Pants_mask</maskPath>
+  </TailorMade.TailorPatternDef>
+
+  <TailorMade.TailorPatternDef ParentName="NelimTailoredPantsBase">
+    <defName>NelimTailoredPants_Human_Thin</defName>
+    <bodyType>Thin</bodyType>
+    <maskPath>Things/TailoredPants/Thin/Pants_mask</maskPath>
+  </TailorMade.TailorPatternDef>
+
+  <TailorMade.TailorPatternDef ParentName="NelimTailoredPantsBase">
+    <defName>NelimTailoredPants_Human_Fat</defName>
+    <bodyType>Fat</bodyType>
+    <maskPath>Things/TailoredPants/Fat/Pants_mask</maskPath>
+  </TailorMade.TailorPatternDef>
+
+  <TailorMade.TailorPatternDef ParentName="NelimTailoredPantsBase">
+    <defName>NelimTailoredPants_Human_Hulk</defName>
+    <bodyType>Hulk</bodyType>
+    <maskPath>Things/TailoredPants/Hulk/Pants_mask</maskPath>
+  </TailorMade.TailorPatternDef>
+
+  <TailorMade.TailorPatternDef ParentName="NelimTailoredPantsBase" MayRequire="ludeon.rimworld.biotech">
+    <defName>NelimTailoredPants_Human_Child</defName>
+    <bodyType>Child</bodyType>
+    <maskPath>Things/TailoredPants/Child/Pants_mask</maskPath>
+  </TailorMade.TailorPatternDef>
+
+</Defs>

@@ -1,0 +1,263 @@
+using System; using System.Drawing; using System.Drawing.Imaging; using System.Runtime.InteropServices;
+// Vanilla to WDI shirt transfer, TailorMade's method (TexBake.BakeFitted) with Virginie's vertical bands and the C' shirt tail.
+// Pixel access goes through LockBits (whole image copied at once), never GetPixel/SetPixel: a face renders in seconds.
+// Dropped on 2026-11-05: piste 2 (exact edges, smoothed scale: the 128 px vanilla edges step every 4 rows) and the clean-edge
+// experiment (vanilla outline removed, WDI outline as edge): Virginie judged it a regression.
+public static class TmFit {
+  // whole image as ARGB ints, at its own size
+  public static int[] Raw(string p, out int W, out int H) { using (Bitmap s0 = new Bitmap(p)) using (Bitmap s = s0.Clone(new Rectangle(0, 0, s0.Width, s0.Height), PixelFormat.Format32bppArgb)) {
+      W = s.Width; H = s.Height; BitmapData d = s.LockBits(new Rectangle(0, 0, W, H), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+      int[] a = new int[W * H]; for (int y = 0; y < H; y++) Marshal.Copy(IntPtr.Add(d.Scan0, y * d.Stride), a, y * W, W); s.UnlockBits(d); return a; } }
+  // nearest resample to 512 x 512
+  public static Color[] Px(string p) { int W, H; int[] r = Raw(p, out W, out H); Color[] a = new Color[512 * 512]; double kx = W / 512.0, ky = H / 512.0;
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) a[y * 512 + x] = Color.FromArgb(r[(int)(y * ky) * W + (int)(x * kx)]); return a; }
+  public static void Write(Color[] a, string p) { using (Bitmap b = new Bitmap(512, 512, PixelFormat.Format32bppArgb)) {
+      BitmapData d = b.LockBits(new Rectangle(0, 0, 512, 512), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb); int[] row = new int[512];
+      for (int y = 0; y < 512; y++) { for (int x = 0; x < 512; x++) row[x] = a[y * 512 + x].ToArgb(); Marshal.Copy(row, 0, IntPtr.Add(d.Scan0, y * d.Stride), 512); }
+      b.UnlockBits(d); b.Save(p); } }
+  static bool Row(Color[] a, int y, out int l, out int r) { l = r = -1; if (y < 0 || y > 511) return false;
+    for (int x = 0; x < 512; x++) if (a[y * 512 + x].A >= 25) { if (l < 0) l = x; r = x + 1; } return l >= 0; }
+  // TryGetExtent, widened (Virginie 2026-11-05): the row and its R neighbours each side, averaged
+  public static int R = 6;
+  static bool Ext(Color[] a, int y, out double l, out double r) { l = r = 0; int n = 0, L, Rr; if (!Row(a, y, out L, out Rr)) return false;
+    for (int j = -R; j <= R; j++) if (Row(a, y + j, out L, out Rr)) { l += L; r += Rr; n++; } l /= n; r /= n; return r > l + 0.5; }
+  // inner edge of the WDI black outline (Virginie 2026-11-05: with the vanilla outline removed, the cloth goes to the INSIDE of
+  // WDI's stroke, not its outside): per row, from the first opaque pixel inwards while dark (mean RGB under InnerLum)
+  // the walk stops after InnerMax pixels: inner strokes of the WDI art (under the breasts, folds) touch the outline and the walk ran into
+  // them, notching the edge (first try, 2026-11-05); the outline itself is 10 to 12 px at 512
+  public static int InnerLum = 90, InnerMax = 40;
+  static bool RowIn(Color[] a, int y, out int l, out int r) { int L, Rr; l = r = -1; if (!Row(a, y, out L, out Rr)) return false;
+    int il = L, ir = Rr - 1; while (il < ir && il - L < InnerMax && (a[y * 512 + il].R + a[y * 512 + il].G + a[y * 512 + il].B) / 3 < InnerLum) il++;
+    while (ir > il && Rr - 1 - ir < InnerMax && (a[y * 512 + ir].R + a[y * 512 + ir].G + a[y * 512 + ir].B) / 3 < InnerLum) ir--; if (ir <= il) return false; l = il; r = ir + 1; return true; }
+  static bool ExtIn(Color[] a, int y, out double l, out double r) { l = r = 0; int n = 0, L, Rr; if (!RowIn(a, y, out L, out Rr)) return false;
+    for (int j = -R; j <= R; j++) if (RowIn(a, y + j, out L, out Rr)) { l += L; r += Rr; n++; } l /= n; r /= n; return r > l + 0.5; }
+  // second try (2026-11-05): the walked inner edge still notched where WDI's inner strokes meet the outline, so the inner edge is now
+  // the outer edge moved in by the MEDIAN stroke width of the body (left and right apart), measured once per body in Bake
+  public static double InL, InR, VInL, VInR;
+  // BodyEdges (Virginie 2026-11-05): in Trim mode the VANILLA BODY's inner stroke edge is stretched onto the WDI inner stroke edge, not the
+  // cloth edge: drawn details that stick out (the collar flap of the side view) stayed part of the silhouette and squeezed the front
+  public static bool BodyEdges = true;
+  // CoverStroke (Virginie 2026-11-05, "façon TailorMade"): in Trim mode the cloth, which ends at the vanilla inner silhouette once the
+  // vanilla outline is peeled, is stretched onto the WDI OUTER edge (TailorMade maps outer edge to outer edge, TexBake.GetRowExtents,
+  // alpha >= 25), so it covers the WDI stroke; the outline is then painted again by Save.
+  public static bool CoverStroke = false;
+  // inner silhouette in 2D (Virginie 2026-11-05: 'le cyan ne va pas au niveau des pieds et du cou'): the row walk only removed the stroke
+  // at the sides; the body mask is now shrunk by the stroke width in every direction (chamfer 3-4 distance to the outside), so the
+  // stroke at the neck and at the bottom goes too. Rows are then read on that inner mask.
+  public static Color[] Inner(Color[] a, double t) { int[] d = new int[512 * 512]; const int B = 1 << 20;
+    for (int i = 0; i < d.Length; i++) d[i] = a[i].A >= 25 ? B : 0;
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int i = y * 512 + x; if (d[i] == 0) continue; int m = d[i];
+        if (x > 0) m = Math.Min(m, d[i - 1] + 3); if (y > 0) { m = Math.Min(m, d[i - 512] + 3); if (x > 0) m = Math.Min(m, d[i - 513] + 4); if (x < 511) m = Math.Min(m, d[i - 511] + 4); }
+        if (x == 0 || y == 0 || x == 511 || y == 511) m = Math.Min(m, 3); d[i] = m; }
+    for (int y = 511; y >= 0; y--) for (int x = 511; x >= 0; x--) { int i = y * 512 + x; if (d[i] == 0) continue; int m = d[i];
+        if (x < 511) m = Math.Min(m, d[i + 1] + 3); if (y < 511) { m = Math.Min(m, d[i + 512] + 3); if (x < 511) m = Math.Min(m, d[i + 513] + 4); if (x > 0) m = Math.Min(m, d[i + 511] + 4); } d[i] = m; }
+    Color[] o = new Color[512 * 512]; for (int i = 0; i < o.Length; i++) o[i] = d[i] >= 3 * t ? Color.White : Color.Transparent;
+    // straight bottom (Virginie 2026-11-05: "en bas, mieux vaut que ce soit droit"): below the widest row of the lower half, every row keeps
+    // that row's left and right edges down to the lowest inner row, so the bottom is a flat line and the sides go straight down
+    if (FlatBottom) { int top = -1, bot = -1; for (int y = 0; y < 512; y++) { int L, R; if (Row(o, y, out L, out R)) { if (top < 0) top = y; bot = y; } }
+      if (top >= 0) { int best = -1, bw = -1, bl = 0, br = 0; for (int y = (top + bot) / 2; y <= bot; y++) { int L, R; if (Row(o, y, out L, out R) && R - L > bw) { bw = R - L; best = y; bl = L; br = R; } }
+        for (int y = best + 1; y <= bot; y++) for (int x = 0; x < 512; x++) o[y * 512 + x] = x >= bl && x < br ? Color.White : Color.Transparent; } }
+    return o; }
+  public static bool FlatBottom = true;
+  static bool ExtMedV(Color[] a, int y, out double l, out double r) { if (!Ext(a, y, out l, out r)) return false; l += VInL; r -= VInR; return r > l + 0.5; }
+  static void MeasureIn(Color[] a) { var ls = new System.Collections.Generic.List<int>(); var rs = new System.Collections.Generic.List<int>();
+    for (int y = 0; y < 512; y++) { int L, Rr, il, ir; if (!Row(a, y, out L, out Rr) || !RowIn(a, y, out il, out ir)) continue; ls.Add(il - L); rs.Add(Rr - ir); }
+    ls.Sort(); rs.Sort(); InL = ls.Count > 0 ? ls[ls.Count / 2] : 0; InR = rs.Count > 0 ? rs[rs.Count / 2] : 0; }
+  static bool ExtMed(Color[] a, int y, out double l, out double r) { if (!Ext(a, y, out l, out r)) return false; l += InL; r -= InR; return r > l + 0.5; }
+  // bilinear, alpha-weighted, on the garment at its own resolution (coordinates in 512 space)
+  static int[] sr; static int sW, sH;
+  static Color Bil(double x512, double y512) { double kx = sW / 512.0, ky = sH / 512.0, fx = (x512 + 0.5) * kx - 0.5, fy = (y512 + 0.5) * ky - 0.5;
+    int x0 = (int)Math.Floor(fx), y0 = (int)Math.Floor(fy); double tx = fx - x0, ty = fy - y0, a = 0, r = 0, g = 0, b = 0;
+    for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) { int xx = x0 + i, yy = y0 + j; if (xx < 0 || yy < 0 || xx >= sW || yy >= sH) continue;
+      double wt = (i == 0 ? 1 - tx : tx) * (j == 0 ? 1 - ty : ty); Color c = Color.FromArgb(sr[yy * sW + xx]); double wa = wt * c.A; a += wa; r += wa * c.R; g += wa * c.G; b += wa * c.B; }
+    return a < 1 ? Color.Transparent : Color.FromArgb((int)Math.Min(255, a), (int)(r / a), (int)(g / a), (int)(b / a)); }
+  // The vanilla outline is not warped (Virginie 2026-11-05: "tu travailles avec les rebords, plutôt que de les ignorer et de les
+  // retracer à la fin"; then "fais-moi un contour de 4px"): before the warp, only the DARK pixels (lum < DarkLum) within
+  // OutlineFrac of the width (5 px at 128) of the transparent border are replaced, each by an exact copy of the nearest clean
+  // cloth pixel (no averaging, no smoothing: the first try averaged a whole band and flattened the shading). The only outline
+  // left is the 4 px one Save draws at the end. Inner lines (collar, placket, folds) are further from the border and stay.
+  // OFF (Virginie 2026-11-05: "on reste en mode pas trim"): refill, copy and trim all tried, the vanilla outline is kept
+  public static bool StripOutline = false; public static double OutlineFrac = 5.0 / 128; public static int DarkLum = 160;
+  public static bool Trim = true; public static int ClothTop; public static double ShoulderFrac = 0.6;
+  static void Strip(int[] a, int W, int H) { int d = Math.Max(1, (int)Math.Ceiling(OutlineFrac * W)); bool[] bad = new bool[W * H];
+    // outside = transparent pixels reached from the image border (flood fill); the neck hole is enclosed, so its rim and the collar lines stay
+    bool[] outside = new bool[W * H]; var st = new System.Collections.Generic.Stack<int>();
+    for (int i = 0; i < W; i++) { st.Push(i); st.Push((H - 1) * W + i); } for (int j = 0; j < H; j++) { st.Push(j * W); st.Push(j * W + W - 1); }
+    while (st.Count > 0) { int p = st.Pop(); if (outside[p] || ((a[p] >> 24) & 255) >= 26) continue; outside[p] = true; int px = p % W, py = p / W;
+      if (px > 0) st.Push(p - 1); if (px < W - 1) st.Push(p + 1); if (py > 0) st.Push(p - W); if (py < H - 1) st.Push(p + W); }
+    for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { int c = a[y * W + x]; if (((c >> 24) & 255) < 26) continue;
+        if ((((c >> 16) & 255) + ((c >> 8) & 255) + (c & 255)) / 3 >= DarkLum) continue; bool near = false;
+        for (int dy = -d; dy <= d && !near; dy++) for (int dx = -d; dx <= d; dx++) { int xx = x + dx, yy = y + dy;
+            if (xx < 0 || yy < 0 || xx >= W || yy >= H || outside[yy * W + xx]) { near = true; break; } }
+        bad[y * W + x] = near; }
+    bool[] fill = (bool[])bad.Clone();
+    // TRIM mode (Virginie 2026-11-05: "enlever le contour, puis TRIM les zones transparentes"): the outline turns transparent, nothing
+    // is invented; Bake then stretches the CLOTH edges (not the vanilla body edges) onto the WDI body edges
+    // Peeled layer by layer from the outside (2026-11-05): a dark pixel goes only if it touches the outside or a pixel already
+    // peeled, at most d layers, so no hole is ever punched inside the cloth (the radius test left square islands at the neck).
+    if (Trim) { for (int layer = 0; layer < d; layer++) { var peel = new System.Collections.Generic.List<int>();
+        for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { int p = y * W + x, c = a[p]; if (outside[p] || ((c >> 24) & 255) < 26) continue;
+            if ((((c >> 16) & 255) + ((c >> 8) & 255) + (c & 255)) / 3 >= DarkLum) continue;
+            if ((x == 0 || outside[p - 1]) || (x == W - 1 || outside[p + 1]) || (y == 0 || outside[p - W]) || (y == H - 1 || outside[p + W])) peel.Add(p); }
+        if (peel.Count == 0) break; foreach (int p in peel) { a[p] = 0; outside[p] = true; } }
+      // stray specks left by the peel (2026-11-05, Female east: they set the cloth edge of their row and notched the fit): an opaque pixel
+      // with fewer than 3 opaque neighbours goes, twice
+      for (int pass = 0; pass < 2; pass++) { var drop = new System.Collections.Generic.List<int>();
+        for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { int p = y * W + x; if (((a[p] >> 24) & 255) < 26) continue; int n = 0;
+            for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x + dx, yy = y + dy; if ((dx != 0 || dy != 0) && xx >= 0 && yy >= 0 && xx < W && yy < H && ((a[yy * W + xx] >> 24) & 255) >= 26) n++; }
+            if (n < 3) drop.Add(p); }
+        foreach (int p in drop) a[p] = 0; }
+      return; }
+    // rings from the clean cloth outwards: a marked pixel next to clean cloth copies one clean neighbour (4-neighbours first), keeps its alpha
+    int[] ox = { 0, 0, -1, 1, -1, 1, -1, 1 }, oy = { -1, 1, 0, 0, -1, -1, 1, 1 };
+    for (int pass = 0; pass < 4 * d + 4; pass++) { bool any = false; int[] na = (int[])a.Clone(); bool[] nb = (bool[])bad.Clone();
+      for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { if (!bad[y * W + x]) continue;
+          for (int k = 0; k < 8; k++) { int xx = x + ox[k], yy = y + oy[k]; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; int q = yy * W + xx;
+            if (bad[q] || ((a[q] >> 24) & 255) < 26) continue; na[y * W + x] = (a[y * W + x] & unchecked((int)0xFF000000)) | (a[q] & 0xFFFFFF); nb[y * W + x] = false; any = true; break; } }
+      Array.Copy(na, a, a.Length); bad = nb; if (!any) break; }
+    // soften only the copied pixels (FillSmooth passes, 3x3 mean of opaque neighbours): exact copies at 128 px stepped into teeth at 512
+    for (int pass = 0; pass < FillSmooth; pass++) { int[] na = (int[])a.Clone();
+      for (int y = 0; y < H; y++) for (int x = 0; x < W; x++) { if (!fill[y * W + x]) continue; int n = 0, r = 0, g = 0, b = 0;
+          for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+              int q = yy * W + xx; if (((a[q] >> 24) & 255) < 26) continue; r += (a[q] >> 16) & 255; g += (a[q] >> 8) & 255; b += a[q] & 255; n++; }
+          na[y * W + x] = (a[y * W + x] & unchecked((int)0xFF000000)) | ((r / n) << 16) | ((g / n) << 8) | (b / n); }
+      Array.Copy(na, a, a.Length); } }
+  public static int FillSmooth = 3;
+  // hard limit: nothing below the boxers bottom (per column, -1 = no limit)
+  public static Color[] CutBelow(Color[] a, int[] lim) { Color[] o = (Color[])a.Clone(); for (int x = 0; x < 512; x++) { if (lim[x] < 0) continue; for (int y = lim[x] + 1; y < 512; y++) o[y * 512 + x] = Color.Transparent; } return o; }
+  // shirt tail: TailPink = pink line per column; Shift = C' table (hemshift_<body>_<facing>.txt), faded in over FadeRows
+  public static int[] TailPink; public static int TailLen; public static double[] Shift; public static double FadeRows = 15;
+  // tail scale per column (<= 1): the shirt must not cover the legs, its bottom stays at or above the bottom of WDI's boxers
+  // (Virginie 2026-11-05: "la ligne du bas du caleçon, c'est la ligne minimale pour le bas de la chemise ... ça ne doit pas
+  // couvrir les jambes")
+  public static double[] TailScale;
+  public static int[] Bottoms(Color[] a) { int[] b = new int[512]; for (int x = 0; x < 512; x++) { b[x] = -1; for (int y = 511; y >= 0; y--) if (a[y * 512 + x].A >= 26) { b[x] = y; break; } } return b; }
+  // ONE factor for the whole tail (Virginie 2026-11-05: "on retaille entre X et jusqu'à Y ... la taille MAX arrive à Y et ne le
+  // dépasse pas, mais on garde toutes les variations et jamais de trait droit"): no crop, no per-column squash. X = pink line,
+  // Y = boxers bottom; the factor is the smallest one any column needs, so the lowest point of the hem lands on Y and the hem
+  // keeps its shape. Columns where the boxers bottom curves up close to the pink line (the leg openings' sides, under
+  // SideDepth of the deepest column) are left out, or they would shrink the whole tail to nothing (0.11 on Male north).
+  public static double SideDepth = 0.4; public static double LastScale; public static int LastScaleCol;
+  public static double[] Stretch(Color[] shirt, string boxers, int smooth) { int[] sb = Bottoms(shirt), bb = Bottoms(Px(boxers)); double deep = 0, K = double.MaxValue; LastScaleCol = -1;
+    for (int x = 0; x < 512; x++) if (bb[x] >= 0) deep = Math.Max(deep, bb[x] - TailPink[x]);
+    for (int x = 0; x < 512; x++) { double P = TailPink[x]; if (bb[x] < 0 || bb[x] - P < SideDepth * deep || sb[x] <= P) continue;
+      double k = (bb[x] - P) / (sb[x] - P); if (k < K) { K = k; LastScaleCol = x; } }
+    if (K == double.MaxValue) K = 1; LastScale = K; double[] o = new double[512]; for (int x = 0; x < 512; x++) o[x] = K; return o; }
+  static double Map(double Y, int[] v, int[] w) { int n = w.Length - 1; if (Y <= w[0]) return Y - w[0] + v[0]; if (Y >= w[n]) return Y - w[n] + v[n];
+    int i = 0; while (Y > w[i + 1]) i++; return v[i] + (Y - w[i]) * (double)(v[i + 1] - v[i]) / (w[i + 1] - w[i]); }
+  public static Color[] Bake(string gar, string vBody, string wBody, int[] v, int[] w) {
+    Color[] vb = Px(vBody), wb = Px(wBody), o = new Color[512 * 512]; Color[] wbi = wb, vbi = vb; if (StripOutline && Trim) { MeasureIn(vb); VInL = InL; VInR = InR; MeasureIn(wb); wbi = Inner(wb, (InL + InR) / 2); vbi = Inner(vb, (VInL + VInR) / 2); } sr = Raw(gar, out sW, out sH); if (StripOutline) Strip(sr, sW, sH);
+    // CoverStroke: the peeled cloth starts at the vanilla INNER top, so the first band runs from there (Virginie 2026-11-05: "le resize a
+    // un souci sur la partie du haut"; from the outer top, WDI rows 172-187 read vanilla rows above the inner silhouette, the shirt top was cut)
+    if (StripOutline && Trim && BodyEdges && CoverStroke) { v = (int[])v.Clone(); for (int i = 0; i < vbi.Length; i++) if (vbi[i].A >= 26) { v[0] = i / 512; break; } }
+    // with Trim, the column map runs on the cloth left after the outline is removed (nearest copy at 512), and its top row is the band top
+    Color[] src = vb; if (StripOutline && Trim && !BodyEdges) { src = new Color[512 * 512]; double kx = sW / 512.0, ky = sH / 512.0; ClothTop = -1;
+      for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { src[y * 512 + x] = Color.FromArgb(sr[(int)(y * ky) * sW + (int)(x * kx)]); if (ClothTop < 0 && src[y * 512 + x].A >= 25) ClothTop = y; }
+      // band top = the shoulder line, the first row as wide as ShoulderFrac of the widest cloth row (the collar tip above it made
+      // the first WDI rows map onto collar-only rows, and the shirt top came out flat, 2026-11-05)
+      int maxW = 0; int[] rw = new int[512]; for (int y = 0; y < 512; y++) { int L, Rr; if (Row(src, y, out L, out Rr)) { rw[y] = Rr - L; maxW = Math.Max(maxW, rw[y]); } }
+      for (int y = 0; y < 512; y++) if (rw[y] >= ShoulderFrac * maxW) { ClothTop = y; break; }
+      v = (int[])v.Clone(); v[0] = ClothTop; }
+    double[] sp = null; if (TailPink != null) { sp = new double[512]; for (int x = 0; x < 512; x++) { double s = 0; int c = 0; for (int j = -6; j <= 6; j++) { int q = x + j; if (q < 0 || q > 511) continue; s += TailPink[q]; c++; } sp[x] = s / c; } }
+    for (int Y = 0; Y < 512; Y++) {
+      double y = Map(Y, v, w);
+      // the source row of the shirt body may fall past the vanilla body (below w[n]); only the tail rows need it then, and they
+      // find their own (fix of 2026-11-05: the tail was cut flat where the vanilla body ends)
+      double wl, wr, vl, vr; if (!(StripOutline && Trim && !CoverStroke ? Ext(wbi, Y, out wl, out wr) : Ext(wb, Y, out wl, out wr))) continue; bool okMain = StripOutline && Trim && BodyEdges ? Ext(vbi, (int)Math.Round(y), out vl, out vr) : Ext(src, (int)Math.Round(y), out vl, out vr);
+      for (int X = 0; X < 512; X++) { int ma = wb[Y * 512 + X].A; if (ma == 0) continue;
+        bool inTail = sp != null && Y >= sp[X]; if (!inTail && !okMain) continue;
+        double xs = okMain ? vl + (X + 0.5 - wl) * (vr - vl) / (wr - wl) - 0.5 : X, yy = y;
+        if (inTail) {
+          // C' (Virginie 2026-11-05): the vanilla rows below the pink line keep their height and each column moves down by Shift
+          double P = sp[X], u = (Y - P) / (TailScale == null ? 1.0 : TailScale[X]), t = Math.Min(1.0, u / FadeRows); yy = Map(P, v, w) + u - (Shift == null ? 0 : Shift[X] * t);
+          // x map from the unshifted tail row (2026-11-05, Virginie: "les noirs bavent"): with the row of each column moved by its own
+          // Shift, neighbouring columns read rows with different body edges, and the side outline and the hem smeared sideways
+          // with the vanilla outline peeled (Trim) there is no black stroke to smear, and with the round inner bottom the unshifted row and
+          // the row moved by C' differ in width (triangular notches at the Female back hips, 2026-11-05): the x map then reads the moved row
+          double y0 = StripOutline && Trim ? yy : Map(P, v, w) + u; double vl3, vr3; if (!(StripOutline && Trim && BodyEdges ? Ext(vbi, (int)Math.Round(y0), out vl3, out vr3) : Ext(src, (int)Math.Round(y0), out vl3, out vr3))) continue; xs = vl3 + (X + 0.5 - wl) * (vr3 - vl3) / (wr - wl) - 0.5;
+        }
+        Color c = Bil(xs, yy); o[Y * 512 + X] = Color.FromArgb(c.A * ma / 255, c.R, c.G, c.B); } }
+    return o; }
+  // Silhouette smoothing after the fit (Virginie 2026-11-05, south and north): the per-row fit leaves the edges jagged from one
+  // row to the next. Gaussian blur of the alpha alone (sigma px), threshold at half: the outline rounds off, small notches close,
+  // specks go; the colours inside are kept. A pixel the blur adds takes the colour of the nearest pixel that had one.
+  public static double SmoothSigma = 0;
+  public static Color[] SmoothEdge(Color[] a, double s) { int r = (int)Math.Ceiling(3 * s); double[] k = new double[2 * r + 1]; double ks = 0;
+    for (int i = -r; i <= r; i++) { k[i + r] = Math.Exp(-i * i / (2 * s * s)); ks += k[i + r]; } for (int i = 0; i < k.Length; i++) k[i] /= ks;
+    double[] h = new double[512 * 512], b = new double[512 * 512];
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double t = 0; for (int i = -r; i <= r; i++) { int q = x + i; if (q < 0 || q > 511) continue; t += k[i + r] * a[y * 512 + q].A; } h[y * 512 + x] = t; }
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double t = 0; for (int i = -r; i <= r; i++) { int q = y + i; if (q < 0 || q > 511) continue; t += k[i + r] * h[q * 512 + x]; } b[y * 512 + x] = t; }
+    Color[] o = new Color[512 * 512];
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int p = y * 512 + x; if (b[p] < 127.5) { o[p] = Color.Transparent; continue; }
+      Color c = a[p]; if (c.A < 26) { int best = int.MaxValue; for (int dy = -r; dy <= r; dy++) for (int dx = -r; dx <= r; dx++) { int xx = x + dx, yy = y + dy;
+            if (xx < 0 || yy < 0 || xx > 511 || yy > 511) continue; Color n = a[yy * 512 + xx]; int dd = dx * dx + dy * dy; if (n.A >= 26 && dd < best) { best = dd; c = n; } } }
+      o[p] = Color.FromArgb(255, c.R, c.G, c.B); }
+    return o; }
+  // Board helpers (2026-11-05): the per-pixel loops of the board scripts, moved out of PowerShell (minutes per board) into C#.
+  // Rim: pixels of a mask (alpha >= 26) with a 4-neighbour outside it, as a flat list of indices (y * 512 + x).
+  public static int[] Rim(Color[] a) { var l = new System.Collections.Generic.List<int>(); for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int k = y * 512 + x; if (a[k].A < 26) continue;
+      if ((x > 0 && a[k - 1].A < 26) || (x < 511 && a[k + 1].A < 26) || (y > 0 && a[k - 512].A < 26) || (y < 511 && a[k + 512].A < 26) || x == 0 || y == 0 || x == 511 || y == 511) l.Add(k); } return l.ToArray(); }
+  // WdiStroke: the body's stroke ring (body minus its inner silhouette, the inner edge smoothed with SmoothEdge(sigma)) painted over
+  // the shirt where the shirt covers it, in the median colour of the ring's dark pixels, with the body's alpha.
+  public static Color[] WdiStroke(Color[] shirt, Color[] body, double sigma) { MeasureIn(body); Color[] inn = SmoothEdge(Inner(body, (InL + InR) / 2), sigma);
+    var lum = new System.Collections.Generic.List<int>(); for (int i = 0; i < body.Length; i++) { Color c = body[i]; if (c.A >= 200 && inn[i].A == 0) { int l = (c.R + c.G + c.B) / 3; if (l < 90) lum.Add(l); } }
+    lum.Sort(); int k = lum.Count > 0 ? lum[lum.Count / 2] : 0; Color[] o = (Color[])shirt.Clone();
+    for (int i = 0; i < o.Length; i++) if (o[i].A >= 26 && inn[i].A == 0 && body[i].A > 0) o[i] = Color.FromArgb(body[i].A, k, k, k); return o; }
+  public static Color[] InnerOf(Color[] body) { MeasureIn(body); return Inner(body, (InL + InR) / 2); }
+  // Tension flats (Virginie 2026-11-06: stretch once, then lay the body's flat shading zones over the shirt): inside each zone
+  // (ellipse cx, cy, rx, ry at 512, feathered from 0.8 to 1.2 of its radius), the shirt is multiplied by the body's luminance
+  // relative to white, scaled by strength; the body's dark strokes (luminance under 100) are left out.
+  public static Color[] Tension(Color[] shirt, Color[] body, double[] ell, double strength) { Color[] o = (Color[])shirt.Clone();
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { int i = y * 512 + x; if (o[i].A < 26 || body[i].A < 250) continue; double m = 0;
+      for (int e = 0; e + 3 < ell.Length; e += 4) { double dx = (x - ell[e]) / ell[e + 2], dy = (y - ell[e + 1]) / ell[e + 3], d = Math.Sqrt(dx * dx + dy * dy); m = Math.Max(m, Math.Min(1, Math.Max(0, (1.2 - d) / 0.4))); }
+      if (m <= 0) continue; Color b = body[i]; double l = (b.R + b.G + b.B) / 3.0; if (l < 100) continue;
+      double k = 1 - strength * m * (1 - l / 255.0); Color c = o[i]; o[i] = Color.FromArgb(c.A, (int)(c.R * k), (int)(c.G * k), (int)(c.B * k)); }
+    return o; }
+  public static Color[] Zones(double[] ell) { Color[] o = new Color[512 * 512]; for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) for (int e = 0; e + 3 < ell.Length; e += 4) {
+      double dx = (x - ell[e]) / ell[e + 2], dy = (y - ell[e + 1]) / ell[e + 3], d = Math.Sqrt(dx * dx + dy * dy); if (Math.Abs(d - 1) < 0.04) o[y * 512 + x] = Color.Lime; } return o; }
+  // Shade components of a body (2026-11-06): pixels inside the inner silhouette whose luminance lies in [lo, hi] (shaded, not white,
+  // not stroke), grouped 8-connected; returns per component "label minX minY maxX maxY count", and Label holds the label map.
+  public static int[] Label;
+  public static string[] ShadeParts(Color[] body, int lo, int hi, int minCount) { Color[] inn = InnerOf(body); int[] lab = new int[512 * 512]; var res = new System.Collections.Generic.List<string>(); int n = 0;
+    Func<int, bool> ok = i => { if (inn[i].A < 26) return false; Color c = body[i]; int l = (c.R + c.G + c.B) / 3; return l >= lo && l <= hi; };
+    for (int s = 0; s < lab.Length; s++) { if (lab[s] != 0 || !ok(s)) continue; n++; var st = new System.Collections.Generic.Stack<int>(); st.Push(s); lab[s] = n; int x0 = 511, y0 = 511, x1 = 0, y1 = 0, cnt = 0;
+      while (st.Count > 0) { int i = st.Pop(); int x = i % 512, y = i / 512; cnt++; x0 = Math.Min(x0, x); x1 = Math.Max(x1, x); y0 = Math.Min(y0, y); y1 = Math.Max(y1, y);
+        for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511) continue; int j = yy * 512 + xx; if (lab[j] == 0 && ok(j)) { lab[j] = n; st.Push(j); } } }
+      if (cnt >= minCount) res.Add(n + " " + x0 + " " + y0 + " " + x1 + " " + y1 + " " + cnt); }
+    Label = lab; return res.ToArray(); }
+  // Tension flats on the body's own shade parts (2026-11-06, Virginie: zones set on the real WDI shading): mask = the chosen
+  // ShadeParts labels, dilated and blurred (gaussian sigma), then the same luminance multiply as Tension.
+  // Clip (optional, ellipses cx, cy, rx, ry): only the part pixels inside one of them count (2026-11-06, the buttocks band split into
+  // two rounds, one ellipse per buttock either side of the middle).
+  public static double[] Clip;
+  public static Color[] TensionParts(Color[] shirt, Color[] body, int[] labels, double strength, double sigma) {
+    var set = new System.Collections.Generic.HashSet<int>(labels); double[] m = new double[512 * 512]; for (int i = 0; i < m.Length; i++) { m[i] = set.Contains(Label[i]) ? 1 : 0; if (m[i] > 0 && Clip != null) { bool inside = false; int x = i % 512, y = i / 512; for (int e = 0; e + 3 < Clip.Length; e += 4) { double dx = (x - Clip[e]) / Clip[e + 2], dy = (y - Clip[e + 1]) / Clip[e + 3]; if (dx * dx + dy * dy <= 1) inside = true; } if (!inside) m[i] = 0; } }
+    int r = (int)Math.Ceiling(3 * sigma); double[] k = new double[2 * r + 1]; double ks = 0; for (int i = -r; i <= r; i++) { k[i + r] = Math.Exp(-i * i / (2 * sigma * sigma)); ks += k[i + r]; } for (int i = 0; i < k.Length; i++) k[i] /= ks;
+    double[] h = new double[m.Length]; for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double t = 0; for (int i = -r; i <= r; i++) { int q = x + i; if (q >= 0 && q < 512) t += k[i + r] * m[y * 512 + q]; } h[y * 512 + x] = t; }
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { double t = 0; for (int i = -r; i <= r; i++) { int q = y + i; if (q >= 0 && q < 512) t += k[i + r] * h[q * 512 + x]; } m[y * 512 + x] = Math.Min(1, 2 * t); }
+    Color[] o = (Color[])shirt.Clone();
+    for (int i = 0; i < o.Length; i++) { if (o[i].A < 26 || body[i].A < 250 || m[i] <= 0) continue; Color b = body[i]; double l = (b.R + b.G + b.B) / 3.0; if (l < 100) continue;
+      double f = 1 - strength * m[i] * (1 - l / 255.0); Color c = o[i]; o[i] = Color.FromArgb(c.A, (int)(c.R * f), (int)(c.G * f), (int)(c.B * f)); }
+    return o; }
+  public static Color[] PartsPic(int[] labels) { var set = new System.Collections.Generic.HashSet<int>(labels); Color[] o = new Color[512 * 512]; for (int i = 0; i < o.Length; i++) if (set.Contains(Label[i])) { bool inside = Clip == null; int x = i % 512, y = i / 512; for (int e = 0; Clip != null && e + 3 < Clip.Length; e += 4) { double dx = (x - Clip[e]) / Clip[e + 2], dy = (y - Clip[e + 1]) / Clip[e + 3]; if (dx * dx + dy * dy <= 1) inside = true; } if (inside) o[i] = Color.FromArgb(150, 0, 255, 0); } return o; }
+  public static Color[] Cut(Color[] a, int[] pink, bool below) { Color[] o = (Color[])a.Clone();
+    for (int i = 0; i < o.Length; i++) if ((i / 512 >= pink[i % 512]) != below) o[i] = Color.Transparent; return o; }
+  // ApplyOutline: square neighbourhood of radius t, in TailorMade's edge colour. The dark patch under the front right flap is
+  // not a shirt artefact: the WDI crotch shows below the shorter vanilla flap, trousers cover it (Virginie 2026-11-05: left as is)
+  public static void Save(Color[] a, int t, string p) { bool[] m = new bool[a.Length]; for (int i = 0; i < a.Length; i++) m[i] = a[i].A >= 26; Color[] o = (Color[])a.Clone();
+    for (int y = 0; y < 512; y++) for (int x = 0; x < 512; x++) { if (!m[y * 512 + x]) continue; bool edge = false;
+      for (int dy = -t; dy <= t && !edge; dy++) for (int dx = -t; dx <= t; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx > 511 || yy > 511 || !m[yy * 512 + xx]) { edge = true; break; } }
+      if (edge) o[y * 512 + x] = Color.FromArgb(a[y * 512 + x].A, 15, 15, 18); }
+    Write(o, p); }
+  // helpers the scripts used to loop over in PowerShell
+  // first opaque row (alpha >= 41) from the top or the bottom, in one column (x >= 0) or over the whole width (x < 0)
+  public static int Edge(string p, bool fromTop, int x) { Color[] a = Px(p); int x0 = x < 0 ? 0 : x, x1 = x < 0 ? 511 : x;
+    for (int k = 0; k < 512; k++) { int y = fromTop ? k : 511 - k; for (int xx = x0; xx <= x1; xx++) if (a[y * 512 + xx].A >= 41) return y; } return -1; }
+  // middle column of the opaque area
+  public static int Mid(string p) { Color[] a = Px(p); int l = 511, r = 0; for (int i = 0; i < a.Length; i++) if (a[i].A >= 41) { int x = i % 512; if (x < l) l = x; if (x > r) r = x; } return (l + r) / 2; }
+  // trousers stand-in: the body under the higher of the two underwear tops (per column), light parts in denim blue
+  public static void Pants(string body, string bx, string pt, string outp) { Color[] b = Px(body), xa = Px(bx), pa = Px(pt), o = new Color[512 * 512];
+    for (int x = 0; x < 512; x++) { int t = 9999; for (int y = 0; y < 512; y++) if (xa[y * 512 + x].A >= 41 || pa[y * 512 + x].A >= 41) { t = y; break; }
+      for (int y = t; y < 512; y++) { Color c = b[y * 512 + x]; if (c.A >= 25) o[y * 512 + x] = c.R < 60 ? c : Color.FromArgb(c.A, 70, 90, 140); } }
+    Write(o, outp); }
+}

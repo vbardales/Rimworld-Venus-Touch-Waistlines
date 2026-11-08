@@ -1,0 +1,195 @@
+﻿vanilla male (no garment)|extremes|top|254|180|detected
+vanilla male (no garment)|extremes|bottom|254|424|detected
+vanilla male (no garment)|extremes|leftmost|162|224|detected
+vanilla male (no garment)|extremes|rightmost|350|236|detected
+vanilla male (no garment)|head/neck|neck base L|204|180|detected
+vanilla male (no garment)|head/neck|neck base R|308|180|detected
+vanilla male (no garment)|head/neck|jugular notch|256|180|to place
+vanilla male (no garment)|shoulders|shoulder tip L|160|236|detected
+vanilla male (no garment)|shoulders|shoulder tip R|350|236|detected
+vanilla male (no garment)|shoulders|armpit L|166|296|detected
+vanilla male (no garment)|shoulders|armpit R|344|296|detected
+vanilla male (no garment)|chest|breast apex L|194|279|to place
+vanilla male (no garment)|chest|breast apex R|318|279|to place
+vanilla male (no garment)|chest|cleavage|256|279|to place
+vanilla male (no garment)|chest|under-breast fold L|194|298|to place
+vanilla male (no garment)|chest|under-breast fold R|318|298|to place
+vanilla male (no garment)|torso|waist L|176|332|to place
+vanilla male (no garment)|torso|waist R|332|332|to place
+vanilla male (no garment)|torso|navel|256|362|to place
+vanilla male (no garment)|torso|hip L|180|343|to place
+vanilla male (no garment)|torso|hip R|332|343|to place
+vanilla male (no garment)|pelvis|groin crease L|214|387|to place
+vanilla male (no garment)|pelvis|groin crease R|298|387|to place
+vanilla male (no garment)|pelvis|sex|256|405|to place
+vanilla male (no garment)|pelvis|crotch point|256|431|to place
+vanilla male (no garment)|legs|leg bottom L|238|422|detected
+vanilla male (no garment)|legs|leg bottom R|272|422|detected
+vanilla male (no garment)|arms|elbow L|||not in texture
+vanilla male (no garment)|arms|elbow R|||not in texture
+vanilla male (no garment)|arms|wrist L|||not in texture
+vanilla male (no garment)|arms|wrist R|||not in texture
+vanilla male (no garment)|arms|hand end L|||not in texture
+vanilla male (no garment)|arms|hand end R|||not in texture
+vanilla male (no garment)|legs|knee L|||not in texture
+vanilla male (no garment)|legs|knee R|||not in texture
+vanilla male (no garment)|legs|ankle L|||not in texture
+vanilla male (no garment)|legs|ankle R|||not in texture
+vanilla male (no garment)|axis|midline top|256|180|detected
+vanilla male (no garment)|axis|midline crotch|256|431|to place
+vanilla thin (no garment)|extremes|top|256|182|detected
+vanilla thin (no garment)|extremes|bottom|258|426|detected
+vanilla thin (no garment)|extremes|leftmost|208|236|detected
+vanilla thin (no garment)|extremes|rightmost|298|216|detected
+vanilla thin (no garment)|head/neck|neck base L|236|176|to place
+vanilla thin (no garment)|head/neck|neck base R|272|176|to place
+vanilla thin (no garment)|head/neck|jugular notch|254|176|to place
+vanilla thin (no garment)|shoulders|shoulder tip L|208|236|detected
+vanilla thin (no garment)|shoulders|shoulder tip R|300|236|detected
+vanilla thin (no garment)|shoulders|armpit L|208|247|to place
+vanilla thin (no garment)|shoulders|armpit R|300|247|to place
+vanilla thin (no garment)|chest|breast apex L|222|249|to place
+vanilla thin (no garment)|chest|breast apex R|286|249|to place
+vanilla thin (no garment)|chest|cleavage|254|249|to place
+vanilla thin (no garment)|chest|under-breast fold L|222|258|to place
+vanilla thin (no garment)|chest|under-breast fold R|286|258|to place
+vanilla thin (no garment)|torso|waist L|208|264|to place
+vanilla thin (no garment)|torso|waist R|302|264|to place
+vanilla thin (no garment)|torso|navel|254|315|to place
+vanilla thin (no garment)|torso|hip L|208|316|to place
+vanilla thin (no garment)|torso|hip R|300|316|to place
+vanilla thin (no garment)|pelvis|groin crease L|227|376|to place
+vanilla thin (no garment)|pelvis|groin crease R|281|376|to place
+vanilla thin (no garment)|pelvis|sex|254|409|to place
+vanilla thin (no garment)|pelvis|crotch point|254|435|to place
+vanilla thin (no garment)|legs|leg bottom L|251|424|detected
+vanilla thin (no garment)|legs|leg bottom R|261|424|detected
+vanilla thin (no garment)|arms|elbow L|||not in texture
+vanilla thin (no garment)|arms|elbow R|||not in texture
+vanilla thin (no garment)|arms|wrist L|||not in texture
+vanilla thin (no garment)|arms|wrist R|||not in texture
+vanilla thin (no garment)|arms|hand end L|||not in texture
+vanilla thin (no garment)|arms|hand end R|||not in texture
+vanilla thin (no garment)|legs|knee L|||not in texture
+vanilla thin (no garment)|legs|knee R|||not in texture
+vanilla thin (no garment)|legs|ankle L|||not in texture
+vanilla thin (no garment)|legs|ankle R|||not in texture
+vanilla thin (no garment)|axis|midline top|254|182|detected
+vanilla thin (no garment)|axis|midline crotch|254|435|to place
+vanilla fat (no garment)|extremes|top|252|160|detected
+vanilla fat (no garment)|extremes|bottom|252|446|detected
+vanilla fat (no garment)|extremes|leftmost|100|304|detected
+vanilla fat (no garment)|extremes|rightmost|404|312|detected
+vanilla fat (no garment)|head/neck|neck base L|184|168|detected
+vanilla fat (no garment)|head/neck|neck base R|316|168|detected
+vanilla fat (no garment)|head/neck|jugular notch|252|168|to place
+vanilla fat (no garment)|shoulders|shoulder tip L|124|240|detected
+vanilla fat (no garment)|shoulders|shoulder tip R|376|240|detected
+vanilla fat (no garment)|shoulders|armpit L|124|246|to place
+vanilla fat (no garment)|shoulders|armpit R|376|246|to place
+vanilla fat (no garment)|chest|breast apex L|172|248|to place
+vanilla fat (no garment)|chest|breast apex R|332|248|to place
+vanilla fat (no garment)|chest|cleavage|252|248|to place
+vanilla fat (no garment)|chest|under-breast fold L|172|272|to place
+vanilla fat (no garment)|chest|under-breast fold R|332|272|to place
+vanilla fat (no garment)|torso|waist L|122|257|to place
+vanilla fat (no garment)|torso|waist R|378|257|to place
+vanilla fat (no garment)|torso|navel|252|315|to place
+vanilla fat (no garment)|torso|hip L|98|316|to place
+vanilla fat (no garment)|torso|hip R|404|316|to place
+vanilla fat (no garment)|pelvis|groin crease L|172|384|to place
+vanilla fat (no garment)|pelvis|groin crease R|332|384|to place
+vanilla fat (no garment)|pelvis|sex|252|421|to place
+vanilla fat (no garment)|pelvis|crotch point|252|451|to place
+vanilla fat (no garment)|legs|leg bottom L|224|442|detected
+vanilla fat (no garment)|legs|leg bottom R|280|444|detected
+vanilla fat (no garment)|arms|elbow L|||not in texture
+vanilla fat (no garment)|arms|elbow R|||not in texture
+vanilla fat (no garment)|arms|wrist L|||not in texture
+vanilla fat (no garment)|arms|wrist R|||not in texture
+vanilla fat (no garment)|arms|hand end L|||not in texture
+vanilla fat (no garment)|arms|hand end R|||not in texture
+vanilla fat (no garment)|legs|knee L|||not in texture
+vanilla fat (no garment)|legs|knee R|||not in texture
+vanilla fat (no garment)|legs|ankle L|||not in texture
+vanilla fat (no garment)|legs|ankle R|||not in texture
+vanilla fat (no garment)|axis|midline top|252|160|detected
+vanilla fat (no garment)|axis|midline crotch|252|451|to place
+vanilla hulk (no garment)|extremes|top|256|136|detected
+vanilla hulk (no garment)|extremes|bottom|256|498|detected
+vanilla hulk (no garment)|extremes|leftmost|110|264|detected
+vanilla hulk (no garment)|extremes|rightmost|400|244|detected
+vanilla hulk (no garment)|head/neck|neck base L|184|152|detected
+vanilla hulk (no garment)|head/neck|neck base R|328|152|detected
+vanilla hulk (no garment)|head/neck|jugular notch|252|152|to place
+vanilla hulk (no garment)|shoulders|shoulder tip L|114|240|detected
+vanilla hulk (no garment)|shoulders|shoulder tip R|398|240|detected
+vanilla hulk (no garment)|shoulders|armpit L|120|312|detected
+vanilla hulk (no garment)|shoulders|armpit R|388|312|detected
+vanilla hulk (no garment)|chest|breast apex L|162|294|to place
+vanilla hulk (no garment)|chest|breast apex R|342|294|to place
+vanilla hulk (no garment)|chest|cleavage|252|294|to place
+vanilla hulk (no garment)|chest|under-breast fold L|162|321|to place
+vanilla hulk (no garment)|chest|under-breast fold R|342|321|to place
+vanilla hulk (no garment)|torso|waist L|144|360|detected
+vanilla hulk (no garment)|torso|waist R|360|360|detected
+vanilla hulk (no garment)|torso|navel|252|404|to place
+vanilla hulk (no garment)|torso|hip L|150|375|to place
+vanilla hulk (no garment)|torso|hip R|356|375|to place
+vanilla hulk (no garment)|pelvis|groin crease L|196|441|to place
+vanilla hulk (no garment)|pelvis|groin crease R|308|441|to place
+vanilla hulk (no garment)|pelvis|sex|252|469|to place
+vanilla hulk (no garment)|pelvis|crotch point|252|507|to place
+vanilla hulk (no garment)|legs|leg bottom L|244|496|detected
+vanilla hulk (no garment)|legs|leg bottom R|264|496|detected
+vanilla hulk (no garment)|arms|elbow L|||not in texture
+vanilla hulk (no garment)|arms|elbow R|||not in texture
+vanilla hulk (no garment)|arms|wrist L|||not in texture
+vanilla hulk (no garment)|arms|wrist R|||not in texture
+vanilla hulk (no garment)|arms|hand end L|||not in texture
+vanilla hulk (no garment)|arms|hand end R|||not in texture
+vanilla hulk (no garment)|legs|knee L|||not in texture
+vanilla hulk (no garment)|legs|knee R|||not in texture
+vanilla hulk (no garment)|legs|ankle L|||not in texture
+vanilla hulk (no garment)|legs|ankle R|||not in texture
+vanilla hulk (no garment)|axis|midline top|252|136|detected
+vanilla hulk (no garment)|axis|midline crotch|252|507|to place
+vanilla female (no garment)|extremes|top|256|160|detected
+vanilla female (no garment)|extremes|bottom|256|444|detected
+vanilla female (no garment)|extremes|leftmost|170|352|detected
+vanilla female (no garment)|extremes|rightmost|342|352|detected
+vanilla female (no garment)|head/neck|neck base L|224|160|detected
+vanilla female (no garment)|head/neck|neck base R|288|160|detected
+vanilla female (no garment)|head/neck|jugular notch|256|160|to place
+vanilla female (no garment)|shoulders|shoulder tip L|190|236|detected
+vanilla female (no garment)|shoulders|shoulder tip R|322|236|detected
+vanilla female (no garment)|shoulders|armpit L|192|280|detected
+vanilla female (no garment)|shoulders|armpit R|320|280|detected
+vanilla female (no garment)|chest|breast apex L|210|261|to place
+vanilla female (no garment)|chest|breast apex R|302|261|to place
+vanilla female (no garment)|chest|cleavage|256|261|to place
+vanilla female (no garment)|chest|under-breast fold L|210|275|to place
+vanilla female (no garment)|chest|under-breast fold R|302|275|to place
+vanilla female (no garment)|torso|waist L|200|292|detected
+vanilla female (no garment)|torso|waist R|312|292|detected
+vanilla female (no garment)|torso|navel|256|340|to place
+vanilla female (no garment)|torso|hip L|172|351|to place
+vanilla female (no garment)|torso|hip R|340|351|to place
+vanilla female (no garment)|pelvis|groin crease L|210|401|to place
+vanilla female (no garment)|pelvis|groin crease R|302|401|to place
+vanilla female (no garment)|pelvis|sex|256|421|to place
+vanilla female (no garment)|pelvis|crotch point|256|451|to place
+vanilla female (no garment)|legs|leg bottom L|242|442|detected
+vanilla female (no garment)|legs|leg bottom R|270|442|detected
+vanilla female (no garment)|arms|elbow L|||not in texture
+vanilla female (no garment)|arms|elbow R|||not in texture
+vanilla female (no garment)|arms|wrist L|||not in texture
+vanilla female (no garment)|arms|wrist R|||not in texture
+vanilla female (no garment)|arms|hand end L|||not in texture
+vanilla female (no garment)|arms|hand end R|||not in texture
+vanilla female (no garment)|legs|knee L|||not in texture
+vanilla female (no garment)|legs|knee R|||not in texture
+vanilla female (no garment)|legs|ankle L|||not in texture
+vanilla female (no garment)|legs|ankle R|||not in texture
+vanilla female (no garment)|axis|midline top|256|160|detected
+vanilla female (no garment)|axis|midline crotch|256|451|to place

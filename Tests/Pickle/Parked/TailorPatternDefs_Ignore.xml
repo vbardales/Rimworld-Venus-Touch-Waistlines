@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- The pants this mod supplies are already fitted: each texture was cut to
+       one body type's silhouette at build time, by _tools/make-garment.js.
+
+       Left alone, TailorMade would fit them a second time. It classifies a
+       garment covering only Legs as pants and stretches it into its PantsBand,
+       the bottom 58% of the body's alpha bounds. On a body drawn without legs
+       that band reaches above the navel, which is exactly the waistline these
+       textures were made to avoid.
+
+       `ignore` is TailorMade's own way out: ResolveFor returns null as soon as
+       a matching pattern has it, and the garment is drawn as it was authored.
+
+       Only Apparel_Pants. Flak pants and kid pants keep their stock art, and
+       still want refitting. -->
+
+  <TailorMade.TailorPatternDef>
+    <defName>NelimTailoredPants_Ignore</defName>
+    <raceName>Human</raceName>
+    <apparelLayer>OnSkin</apparelLayer>
+    <targetApparelDefs>
+      <li>^Apparel_Pants$</li>
+      <li>^Apparel_KidPants$</li>
+    </targetApparelDefs>
+    <ignore>true</ignore>
+  </TailorMade.TailorPatternDef>
+
+</Defs>

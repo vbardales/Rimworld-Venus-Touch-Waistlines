@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <packageId>nelim.private.lewd-wdi-textures</packageId>
+  <name>PRIVATE — LEWD WDI Textures</name>
+  <author>Nelim; original apparel art by GilieArt</author>
+  <supportedVersions><li>1.6</li></supportedVersions>
+  <modDependencies>
+    <li><packageId>WDI.Realistic.Bodies</packageId><displayName>WDI's Realistic Bodies</displayName></li>
+  </modDependencies>
+  <description>Private local WDI texture adaptation for the three LEWD Hooman Apparel garments. No code and no Hooman Cute dependency. Do not publish or redistribute: the original LEWD art has no bundled redistribution licence.</description>
+</ModMetaData>

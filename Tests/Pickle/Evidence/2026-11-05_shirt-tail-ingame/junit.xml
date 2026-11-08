@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the transferred button shirt on the WDI Male body, three facings" tests="1" failures="0" skipped="0" flakes="0" time="60.735">
+    <testcase name="the button shirt, then the shirt with trousers (South, East, North)" classname="the transferred button shirt on the WDI Male body, three facings" time="60.735">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: button shirt alone -&gt; /repo/pickle-reports/screenshots/manual--button-shirt-alone--step0.png
+Attachment: button shirt with trousers -&gt; /repo/pickle-reports/screenshots/manual--button-shirt-with-trousers--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

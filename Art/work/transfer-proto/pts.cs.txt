@@ -1,0 +1,147 @@
+public class Pt { public string Name, Zone, Status; public double X, Y; public Pt(string n, string z, double x, double y, string s) { Name = n; Zone = z; X = x; Y = y; Status = s; } }
+public static class Pts {
+  public static bool MaleBody; public static string Kept = "";
+  // outline middle: from the edge pixel (x + xo, xo = -1 on the right side where x = last pixel + 1) walk inward (dx,dy), through at most skip transparent pixels (top row gap, notch), then while opaque and dark (mean RGB < 60), at most 24 px (an outline is 8-20 px across; longer = the walk runs along a slanted stroke or into a drawn line, capped and logged); the point is the middle of that run; a run under 2 px (no outline) keeps the edge and is logged in Kept
+  static int Run(Func<int,int,bool> on, Func<int,int,double> lum, int px, int py, int dx, int dy) { int n = 0; while (n < 24 && on(px + n*dx, py + n*dy) && lum(px + n*dx, py + n*dy) < 60) n++; return n; }
+  static Pt Q(Func<int,int,bool> on, Func<int,int,double> lum, string name, string zone, double x, double y, int xo, int dx, int dy, int skip, string st) { int px = (int)Math.Floor(x) + xo, py = (int)Math.Floor(y); int k = 0; while (k < skip && !on(px + k*dx, py + k*dy)) k++; int n = Run(on, lum, px + k*dx, py + k*dy, dx, dy); if (n < 2) { Kept += (Kept.Length > 0 ? ", " : "") + name + " (run " + n + ")"; return new Pt(name, zone, x, y, st); } if (n == 24) Kept += (Kept.Length > 0 ? ", " : "") + name + " (run capped at 24)"; return new Pt(name, zone, x + dx * (k + (n - 1) / 2.0), y + dy * (k + (n - 1) / 2.0), st); }
+  static byte[] Ld(string p, out int w, out int h) { using (Bitmap b = new Bitmap(p)) { w = b.Width; h = b.Height; BitmapData d = b.LockBits(new Rectangle(0,0,w,h), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb); byte[] x = new byte[w*h*4]; System.Runtime.InteropServices.Marshal.Copy(d.Scan0, x, 0, x.Length); b.UnlockBits(d); return x; } }
+  // Points of attention of a body texture (south). Status: detected, to place (estimate shown, weak or missing detection), not in texture.
+  // Side view (east, the body faces right): front = right edge, back = left edge of each row. An extreme that lands on the edge of its search range is 'to place'.
+  public static List<Pt> Side(string path) { Kept = "";
+    int w, h; byte[] a = Ld(path, out w, out h); List<Pt> P = new List<Pt>();
+    Func<int, int, bool> on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && a[(y*w+x)*4+3] > 40;
+    Func<int, int, double> lum = (x, y) => (a[(y*w+x)*4] + a[(y*w+x)*4+1] + a[(y*w+x)*4+2]) / 3.0;
+    int[] l = new int[h], r = new int[h]; int top = -1, bot = -1;
+    for (int y = 0; y < h; y++) { l[y] = -1; r[y] = -1; for (int x = 0; x < w; x++) if (on(x, y)) { if (l[y] < 0) l[y] = x; r[y] = x; } if (l[y] >= 0) { if (top < 0) top = y; bot = y; } }
+    int H = bot - top; Func<double, int> row = f => top + (int)Math.Round(f * H);
+    // extreme of the front (max r) or back (min l) between two shares of the height
+    Action<string, string, double, double, bool, bool> add = (name, zone, f0, f1, front, most) => {
+      int y0 = row(f0), y1 = row(f1), best = -1; for (int y = y0; y <= y1; y++) { if (l[y] < 0) continue; int v = front ? r[y] : -l[y]; if (best < 0 || (most ? v > (front ? r[best] : -l[best]) : v < (front ? r[best] : -l[best]))) best = y; }
+      if (best < 0) { P.Add(new Pt(name, zone, -1, -1, "not in texture")); return; }
+      bool edge = best <= y0 + 1 || best >= y1 - 1; double x = front ? r[best] + 1 : l[best];
+      P.Add(Q(on, lum, name, zone, x, best, front ? -1 : 0, front ? -1 : 1, 0, 0, edge ? "to place" : "detected")); };
+    P.Add(Q(on, lum, "top", "extremes", (l[top] + r[top] + 1) / 2.0, top, 0, 0, 1, 16, "detected"));
+    P.Add(new Pt("bottom", "extremes", (l[bot] + r[bot] + 1) / 2.0, bot, "detected"));
+    int maxW = 0; for (int y = top; y < row(0.30); y++) if (r[y] - l[y] > maxW) maxW = r[y] - l[y];
+    int neck = top; for (int y = top; y < row(0.30); y++) if (r[y] - l[y] >= 0.55 * maxW) { neck = y; break; }
+    P.Add(Q(on, lum, "neck front", "head/neck", r[neck] + 1, neck, -1, -1, 0, 0, neck - top < 6 ? "to place" : "detected"));
+    P.Add(Q(on, lum, "neck back", "head/neck", l[neck], neck, 0, 1, 0, 0, neck - top < 6 ? "to place" : "detected"));
+    add("upper back (shoulder blade)", "shoulders", 0.10, 0.40, false, true);
+    add("chest front", "chest", 0.15, 0.50, true, true);
+    // breast apex: pink pixels (nipple) if any, near the front
+    double sx = 0, sy = 0; int sn = 0; for (int y = top; y < row(0.6); y++) for (int x = 0; x < w; x++) { if (!on(x, y)) continue; int i = (y*w+x)*4; int R = a[i+2], G = a[i+1], B = a[i]; if (R > 150 && R - G > 12 && R - B > 10) { sx += x; sy += y; sn++; } }
+    if (sn > 5) P.Add(new Pt("breast apex", "chest", sx / sn, sy / sn, "detected")); else P.Add(new Pt("breast apex", "chest", -1, -1, "not in texture"));
+    add("waist front", "torso", 0.35, 0.65, true, false);
+    add("waist back (small of the back)", "torso", 0.35, 0.65, false, false);
+    add("belly front", "torso", 0.50, 0.85, true, true);
+    add("buttock back", "pelvis", 0.55, 0.92, false, true);
+    int lb = bot - 2; P.Add(Q(on, lum, "leg bottom front", "legs", r[lb] + 1, lb, -1, -1, 0, 0, "detected")); P.Add(Q(on, lum, "leg bottom back", "legs", l[lb], lb, 0, 1, 0, 0, "detected"));
+    foreach (string s in new string[] { "navel", "sex", "crotch point", "elbow", "wrist", "hand end", "knee", "ankle" }) P.Add(new Pt(s, "pelvis", -1, -1, "not in texture"));
+    return P;
+  }
+  // Back view: points that only exist on the front are 'not in view'.
+  static readonly string[] FrontOnly = { "breast apex L", "breast apex R", "cleavage", "under-breast fold L", "under-breast fold R", "navel", "sex", "groin crease L", "groin crease R", "jugular notch" };
+  public static List<Pt> Body(string path) {
+    if (Gl.Facing == "east") return Side(path);
+    int w, h; byte[] a = Ld(path, out w, out h); List<Pt> P = new List<Pt>();
+    Func<int, int, bool> on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && a[(y*w+x)*4+3] > 40;
+    Func<int, int, double> lum = (x, y) => (a[(y*w+x)*4] + a[(y*w+x)*4+1] + a[(y*w+x)*4+2]) / 3.0;
+    int[] l = new int[h], r = new int[h]; int top = -1, bot = -1, minX = w, maxX = -1, minXy = 0, maxXy = 0;
+    for (int y = 0; y < h; y++) { l[y] = -1; r[y] = -1; for (int x = 0; x < w; x++) if (on(x, y)) { if (l[y] < 0) l[y] = x; r[y] = x; } if (l[y] >= 0) { if (top < 0) top = y; bot = y; if (l[y] < minX) { minX = l[y]; minXy = y; } if (r[y] > maxX) { maxX = r[y]; maxXy = y; } } }
+    string info; double[] v = Lm.Detect(path, out info); bool ww = Lm.WeakWaist, wh = Lm.WeakHip, wa = Lm.WeakArm;
+    int H = bot - top; double mid = (l[top + H / 2] + r[top + H / 2] + 1) / 2.0;
+    Kept = "";
+    P.Add(Q(on, lum, "top", "extremes", (l[top] + r[top] + 1) / 2.0, top, 0, 0, 1, 16, "detected")); P.Add(Q(on, lum, "bottom", "extremes", (l[bot] + r[bot] + 1) / 2.0, bot, 0, 0, -1, 0, "detected"));
+    P.Add(Q(on, lum, "leftmost", "extremes", minX, minXy, 0, 1, 0, 0, "detected")); P.Add(Q(on, lum, "rightmost", "extremes", maxX + 1, maxXy, -1, -1, 0, 0, "detected"));
+    bool weakNeck = v[1] - v[23] < 6;
+    P.Add(Q(on, lum, "neck base L", "head/neck", v[0], v[1], 0, 1, 0, 0, weakNeck ? "to place" : "detected")); P.Add(Q(on, lum, "neck base R", "head/neck", v[2], v[3], -1, -1, 0, 0, weakNeck ? "to place" : "detected"));
+    P.Add(new Pt("jugular notch", "head/neck", mid, v[1], "to place"));
+    P.Add(Q(on, lum, "shoulder tip L", "shoulders", v[4], v[5], 0, 1, 0, 0, "detected")); P.Add(Q(on, lum, "shoulder tip R", "shoulders", v[6], v[7], -1, -1, 0, 0, "detected"));
+    P.Add(Q(on, lum, "armpit L", "shoulders", v[8], v[9], 0, 1, 0, 0, wa ? "to place" : "detected")); P.Add(Q(on, lum, "armpit R", "shoulders", v[10], v[11], -1, -1, 0, 0, wa ? "to place" : "detected"));
+    // nipples: pink pixels (red well above green and blue) in the upper 60 % of the body, one cluster each side of the midline
+    double[] sx = new double[2], sy = new double[2]; int[] sn = new int[2];
+    for (int y = top; y < top + (int)(0.6 * H); y++) for (int x = 0; x < w; x++) { if (!on(x, y)) continue; int i = (y*w+x)*4; int R = a[i+2], G = a[i+1], B = a[i]; if (R > 150 && R - G > 12 && R - B > 10) { int s = x < mid ? 0 : 1; sx[s] += x; sy[s] += y; sn[s]++; } }
+    bool nip = sn[0] > 5 && sn[1] > 5;
+    double nlx = nip ? sx[0] / sn[0] : mid - 0.3 * (v[6] - v[4]), nly = nip ? sy[0] / sn[0] : v[5] + 0.45 * (v[13] - v[5]), nrx = nip ? sx[1] / sn[1] : mid + 0.3 * (v[6] - v[4]), nry = nip ? sy[1] / sn[1] : nly;
+    P.Add(new Pt("breast apex L", "chest", nlx, nly, nip ? "detected" : "to place")); P.Add(new Pt("breast apex R", "chest", nrx, nry, nip ? "detected" : "to place"));
+    P.Add(new Pt("cleavage", "chest", mid, (nly + nry) / 2, "to place"));
+    double fold = 0.15 * (nrx - nlx); P.Add(new Pt("under-breast fold L", "chest", nlx, (nly + nry) / 2 + fold, "to place")); P.Add(new Pt("under-breast fold R", "chest", nrx, (nly + nry) / 2 + fold, "to place"));
+    P.Add(Q(on, lum, "waist L", "torso", v[12], v[13], 0, 1, 0, 0, ww ? "to place" : "detected")); P.Add(Q(on, lum, "waist R", "torso", v[14], v[15], -1, -1, 0, 0, ww ? "to place" : "detected"));
+    // sex: top of the dark stem on the middle column, going up from the bottom - 30 (drawn crotch); crotch point: silhouette notch between the legs
+    int mc = (int)Math.Round(mid); int yy = bot - 30; Func<int, bool> dk = y2 => on(mc, y2) && lum(mc, y2) < 60; while (yy > top + H / 2 && !dk(yy)) yy--; bool stem = yy > top + H / 2; int sexY = yy; if (stem) { while (yy > top && dk(yy)) yy--; sexY = yy + 1; }
+    // on the men the dark stem is the pubic line under the navel, not the drawn sex: sex left to place there
+    bool sexOk = stem && !MaleBody;
+    // navel: first dark run on the middle column between the waist minus 30 and 25 px above the stem top
+    int navY = -1; int yEnd = stem ? sexY - 25 : bot - 40; for (int y = (int)v[13] - 30; y < yEnd; y++) if (on(mc, y) && lum(mc, y) < 110) { int y2 = y; while (y2 < yEnd && on(mc, y2) && lum(mc, y2) < 110) y2++; navY = (y + y2) / 2; break; }
+    if (MaleBody && stem && navY < 0) navY = sexY - 8;
+    P.Add(new Pt("navel", "torso", mid, navY > 0 ? navY : v[13] + 0.3 * (bot - v[13]), navY > 0 ? "detected" : "to place"));
+    P.Add(Q(on, lum, "hip L", "torso", v[16], v[17], 0, 1, 0, 0, wh ? "to place" : "detected")); P.Add(Q(on, lum, "hip R", "torso", v[18], v[19], -1, -1, 0, 0, wh ? "to place" : "detected"));
+    double crY = v[21]; bool notch = info.Contains("(notch)");
+    P.Add(new Pt("groin crease L", "pelvis", (v[16] + mid) / 2, (v[17] + (stem ? sexY : crY)) / 2, "to place")); P.Add(new Pt("groin crease R", "pelvis", (v[18] + mid) / 2, (v[19] + (stem ? sexY : crY)) / 2, "to place"));
+    P.Add(new Pt("sex", "pelvis", mid, sexOk ? sexY : bot - 0.10 * H, sexOk ? "detected" : "to place"));
+    if (notch) P.Add(Q(on, lum, "crotch point", "pelvis", mid, crY, 0, 0, -1, 6, "detected")); else P.Add(new Pt("crotch point", "pelvis", mid, stem ? sexY + 0.5 * (bot - sexY) : bot, "to place"));
+    // legs: bottom of each leg = centre of the left and right halves of the bottom rows
+    int lb = bot - 2; P.Add(Q(on, lum, "leg bottom L", "legs", (l[lb] + mid) / 2, lb, 0, 0, -1, 0, "detected")); P.Add(Q(on, lum, "leg bottom R", "legs", (r[lb] + 1 + mid) / 2, lb, 0, 0, -1, 0, "detected"));
+    foreach (string s in new string[] { "elbow L", "elbow R", "wrist L", "wrist R", "hand end L", "hand end R" }) P.Add(new Pt(s, "arms", -1, -1, "not in texture"));
+    foreach (string s in new string[] { "knee L", "knee R", "ankle L", "ankle R" }) P.Add(new Pt(s, "legs", -1, -1, "not in texture"));
+    int t0 = top; while (t0 < bot && !on(mc, t0)) t0++; int t1 = t0; while (t1 < bot && on(mc, t1) && lum(mc, t1) < 60) t1++; bool line = t1 - t0 >= 2; P.Add(new Pt("midline top", "axis", mid, line ? (t0 + t1 - 1) / 2.0 : t0, line ? "detected" : "to place")); P.Add(new Pt("midline crotch", "axis", mid, stem ? sexY : crY, stem || notch ? "detected" : "to place"));
+    if (Gl.Facing == "north") foreach (Pt p in P) if (Array.IndexOf(FrontOnly, p.Name) >= 0) { p.Status = "not in view"; p.X = -1; p.Y = -1; }
+    return P;
+  }
+  public static List<Pt> Garment(string garPath, int band) {
+    int w, h; byte[] a = Ld(garPath, out w, out h); List<Pt> P = new List<Pt>(); double[] f = Gl.Features(a, w, h, band); string[] nm = Gl.Names.Split(' ');
+    Func<int, int, bool> on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && a[(y*w+x)*4+3] > 40;
+    Func<int, int, double> lum = (x, y) => (a[(y*w+x)*4] + a[(y*w+x)*4+1] + a[(y*w+x)*4+2]) / 3.0;
+    // hem corners and sleeve ends on the garment's own outline middle (hem: upward, sleeves: horizontal inward); ring points stay on the ring skeleton
+    for (int k = 0; k < f.Length / 2; k++) { string n = nm[k]; int dx = n == "sleeveL" ? 1 : n == "sleeveR" ? -1 : 0, dy = n == "hemL" || n == "hemR" ? -1 : 0; P.Add(dx != 0 || dy != 0 ? Q(on, lum, "garment " + n, "garment", f[2*k], f[2*k+1], n.EndsWith("R") ? -1 : 0, dx, dy, 0, "detected") : new Pt("garment " + n, "garment", f[2*k], f[2*k+1], "detected")); }
+    int bot = -1; int[] l = new int[h], r = new int[h]; for (int y = 0; y < h; y++) { l[y] = -1; for (int x = 0; x < w; x++) if (a[(y*w+x)*4+3] > 40) { if (l[y] < 0) l[y] = x; r[y] = x; } if (l[y] >= 0) bot = y; }
+    // hem middle: the column nearest the middle that has fabric in the bottom 10 % of the garment, at its lowest fabric row; none when that column is more than 15 % of the width away (open front)
+    int gtop = -1; for (int y = 0; y < h; y++) if (l[y] >= 0) { gtop = y; break; } int cxh = (l[bot] + r[bot] + 1) / 2, ylim = bot - (int)(0.10 * (bot - gtop)), best = -1, by = -1;
+    for (int d = 0; d < w / 2 && best < 0; d++) foreach (int x in new int[] { cxh - d, cxh + d }) { if (x < 0 || x >= w || best >= 0) continue; for (int y = bot; y >= ylim; y--) if (on(x, y)) { best = x; by = y; break; } }
+    if (best >= 0 && Math.Abs(best - cxh) <= 0.15 * (r[bot] - l[bot] + 1)) P.Add(Q(on, lum, "garment hem middle", "garment", best + 0.5, by, 0, 0, -1, 0, "detected")); else P.Add(new Pt("garment hem middle", "garment", -1, -1, "not in texture"));
+    return P;
+  }
+  // Garment points with the body known. Sleeve end = last row where the garment's side edge still lies on the body outline (gap <= 2 px) before it leaves it inward for at least 6 rows,
+  // searched from the shoulders down to 60 % of the body height; none when the garment is cut on the body silhouette (no sleeve drawn in the south view).
+  public static List<Pt> Garment(string garPath, int band, string bodyPath) {
+    List<Pt> P = Garment(garPath, band); P.RemoveAll(p => p.Name.Contains("sleeve")); string nk = Gl.NeckKind;
+    int w, h; byte[] g = Ld(garPath, out w, out h), b = Ld(bodyPath, out w, out h);
+    int[] gl = new int[h], gr = new int[h], bl = new int[h], br = new int[h]; int bt = -1, bb = -1;
+    for (int y = 0; y < h; y++) { gl[y] = gr[y] = bl[y] = br[y] = -1; for (int x = 0; x < w; x++) { int i = (y*w+x)*4 + 3; if (g[i] > 40) { if (gl[y] < 0) gl[y] = x; gr[y] = x; } if (b[i] > 40) { if (bl[y] < 0) bl[y] = x; br[y] = x; } } if (bl[y] >= 0) { if (bt < 0) bt = y; bb = y; } }
+    int sh = bt; for (int y = bt; y < bt + (int)(0.30 * (bb - bt)); y++) if (br[y] - bl[y] > br[sh] - bl[sh]) sh = y;
+    int gt = -1; for (int y = 0; y < h; y++) if (gl[y] >= 0) { gt = y; break; } if (gt > bt + 0.35 * (bb - bt)) { foreach (Pt p in P) if (p.Name.Contains("neck") || p.Name.Contains("ring")) p.Name = p.Name.Replace("garment neck", "garment top edge ").Replace("garment ring", "garment top edge "); nk = "lower body: top edge"; if (!P.Exists(p => p.Name.Contains("top edge"))) { int x0 = w, x1 = -1; for (int x = 0; x < w; x++) for (int y = gt; y < gt + 40 && y < h; y++) if (g[(y*w+x)*4+3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; break; } for (int k = 0; k < 8; k++) { int x = x0 + (int)Math.Round((x1 - x0) * (k + 0.5) / 8.0); int yy = gt; while (yy < h - 1 && g[(yy*w+x)*4+3] <= 40) yy++; P.Add(new Pt("garment top edge " + k, "garment", x, yy, "detected")); } } } Gl.NeckKind = nk;
+    int yEnd = bt + (int)(0.60 * (bb - bt));
+    for (int side = 0; side < 2; side++) { int found = -1;
+      Func<int, int> gap = y => gl[y] < 0 ? 999 : (side == 0 ? gl[y] - bl[y] : br[y] - gr[y]);
+      for (int y = sh; y < yEnd - 6; y++) { if (gap(y) > 2) continue; bool leaves = true; for (int k = 1; k <= 6; k++) if (gap(y + k) <= 4) { leaves = false; break; } if (leaves) { found = y; break; } }
+      string n = "garment sleeve end " + (side == 0 ? "L" : "R");
+      if (found < 0) P.Add(new Pt(n, "garment", -1, -1, "not in texture")); else P.Add(new Pt(n, "garment", side == 0 ? gl[found] : gr[found] + 1, found, "detected")); }
+    return P;
+  }
+  static Color ZoneColor(string z) { switch (z) { case "extremes": return Color.FromArgb(120,120,120); case "head/neck": return Color.FromArgb(150,60,200); case "shoulders": return Color.FromArgb(0,110,220); case "chest": return Color.FromArgb(230,40,120); case "torso": return Color.FromArgb(0,160,80); case "pelvis": return Color.FromArgb(230,120,0); case "legs": return Color.FromArgb(140,90,40); case "axis": return Color.FromArgb(0,170,190); default: return Color.FromArgb(200,20,20); } }
+  // Picture: body (and garment) at 2x, crop around the body, filled dot = detected, ring = to place, short label.
+  public static void Draw(string bodyPath, string garPath, List<Pt> P, string title, string outPath) {
+    using (Bitmap body = new Bitmap(bodyPath)) {
+      int x0 = 56, y0 = 96, cw = 400, ch = 416, s = 2, lab = 30; using (Bitmap pic = new Bitmap(cw * s + 260, ch * s + lab)) using (Graphics g = Graphics.FromImage(pic)) {
+        g.Clear(Color.FromArgb(200,196,182)); g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor; g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+        Rectangle dst = new Rectangle(0, lab, cw * s, ch * s), src = new Rectangle(x0, y0, cw, ch); g.DrawImage(body, dst, src, GraphicsUnit.Pixel);
+        if (!string.IsNullOrEmpty(garPath)) using (Bitmap gar = new Bitmap(garPath)) g.DrawImage(gar, dst, src, GraphicsUnit.Pixel);
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (Font tf = new Font("Arial", 13, FontStyle.Bold)) g.DrawString(title, tf, Brushes.Black, 6, 6);
+        using (Font f = new Font("Arial", 8, FontStyle.Bold)) {
+          Pt mt = P.Find(p => p.Name == "midline top"), mc = P.Find(p => p.Name == "midline crotch");
+          if (mt != null && mc != null) using (Pen pen = new Pen(ZoneColor("axis"), 1.5f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash }) g.DrawLine(pen, (float)((mt.X - x0) * s), (float)((mt.Y - y0) * s + lab), (float)((mc.X - x0) * s), (float)((mc.Y - y0) * s + lab));
+          int ly = lab; foreach (Pt p in P) { Color c = ZoneColor(p.Zone);
+            if (p.Status.StartsWith("not in")) continue;
+            float px = (float)((p.X - x0) * s), py = (float)((p.Y - y0) * s + lab);
+            using (SolidBrush b = new SolidBrush(c)) using (Pen pen = new Pen(c, 2f)) {
+              if (p.Status == "detected") g.FillEllipse(b, px - 4, py - 4, 8, 8); else { g.DrawEllipse(pen, px - 6, py - 6, 12, 12); g.DrawLine(pen, px - 3, py, px + 3, py); }
+              string t = p.Name.Replace("garment ", "g.") + (p.Status == "to place" ? " ?" : "");
+              using (SolidBrush bg = new SolidBrush(Color.FromArgb(170, 255, 255, 255))) { SizeF sz = g.MeasureString(t, f); float tx = p.X < 256 ? px - sz.Width - 6 : px + 6; g.FillRectangle(bg, tx, py - 7, sz.Width, sz.Height); g.DrawString(t, f, b, tx, py - 7); } } }
+          // legend
+          float lx = cw * s + 10; float yy2 = lab + 4; foreach (string z in new string[] { "extremes", "head/neck", "shoulders", "chest", "torso", "pelvis", "legs", "axis", "garment" }) { using (SolidBrush b = new SolidBrush(ZoneColor(z))) { g.FillEllipse(b, lx, yy2 + 3, 9, 9); g.DrawString(z, f, Brushes.Black, lx + 14, yy2 + 1); } yy2 += 16; }
+          yy2 += 8; g.DrawString("filled dot = detected", f, Brushes.Black, lx, yy2); yy2 += 16; g.DrawString("ring + ? = to place by eye", f, Brushes.Black, lx, yy2); yy2 += 16;
+          string nit = ""; foreach (Pt p in P) if (p.Status.StartsWith("not in")) nit += (nit.Length > 0 ? ", " : "") + p.Name; g.DrawString("not in the texture / not in view:", f, Brushes.Black, lx, yy2 + 8); RectangleF rr = new RectangleF(lx, yy2 + 24, 245, 200); g.DrawString(nit, f, Brushes.Black, rr); }
+        pic.Save(outPath, ImageFormat.Png); } }
+  }
+}

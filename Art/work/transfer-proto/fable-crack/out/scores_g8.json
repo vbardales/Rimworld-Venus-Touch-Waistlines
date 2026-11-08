@@ -1,0 +1,283 @@
+{
+ "results": {
+  "Thin_Female_south_CorsetRoyal": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 0,
+   "iou": 0.455,
+   "edge_px": 22.89,
+   "lum_mae": 0.186
+  },
+  "Thin_Female_south_TribalA": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 3668,
+   "iou": 0.619,
+   "edge_px": 10.17,
+   "lum_mae": 0.318
+  },
+  "Thin_Female_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Thin_Female_south_FlakVest": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Fat_Female_south_CorsetRoyal": {
+   "kind": "V",
+   "block": true,
+   "d": 5,
+   "hole_px": 1641,
+   "iou": 0.624,
+   "edge_px": 18.69,
+   "lum_mae": 0.156
+  },
+  "Fat_Female_south_TribalA": {
+   "kind": "V",
+   "block": true,
+   "d": 5,
+   "hole_px": 6971,
+   "iou": 0.432,
+   "edge_px": 25.45,
+   "lum_mae": 0.305
+  },
+  "Fat_Female_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 5,
+   "hole_px": 0
+  },
+  "Fat_Female_south_FlakVest": {
+   "kind": "V",
+   "block": true,
+   "d": 5,
+   "hole_px": 10477
+  },
+  "Hulk_Female_south_CorsetRoyal": {
+   "kind": "V",
+   "block": true,
+   "d": 1,
+   "hole_px": 417,
+   "iou": 0.426,
+   "edge_px": 29.02,
+   "lum_mae": 0.161
+  },
+  "Hulk_Female_south_TribalA": {
+   "kind": "round",
+   "block": true,
+   "d": 1,
+   "hole_px": 6866,
+   "iou": 0.475,
+   "edge_px": 20.91,
+   "lum_mae": 0.293
+  },
+  "Hulk_Female_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 1,
+   "hole_px": 0
+  },
+  "Hulk_Female_south_FlakVest": {
+   "kind": "V",
+   "block": true,
+   "d": 1,
+   "hole_px": 5542
+  },
+  "Male_south_CorsetRoyal": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 715
+  },
+  "Male_south_TribalA": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 6268
+  },
+  "Male_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Male_south_FlakVest": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Female_south_CorsetRoyal": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 416,
+   "iou": 0.553,
+   "edge_px": 18.24,
+   "lum_mae": 0.184
+  },
+  "Female_south_TribalA": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 2287
+  },
+  "Female_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Female_south_FlakVest": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Thin_south_CorsetRoyal": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 287
+  },
+  "Thin_south_TribalA": {
+   "kind": "round",
+   "block": true,
+   "d": 0,
+   "hole_px": 3430
+  },
+  "Thin_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Thin_south_FlakVest": {
+   "kind": "none",
+   "block": false,
+   "d": 0,
+   "hole_px": 0
+  },
+  "Fat_south_CorsetRoyal": {
+   "kind": "V",
+   "block": true,
+   "d": 5,
+   "hole_px": 1725
+  },
+  "Fat_south_TribalA": {
+   "kind": "V",
+   "block": true,
+   "d": 5,
+   "hole_px": 7142
+  },
+  "Fat_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 5,
+   "hole_px": 0
+  },
+  "Fat_south_FlakVest": {
+   "kind": "V",
+   "block": true,
+   "d": 5,
+   "hole_px": 11539
+  },
+  "Hulk_south_CorsetRoyal": {
+   "kind": "V",
+   "block": true,
+   "d": 1,
+   "hole_px": 568
+  },
+  "Hulk_south_TribalA": {
+   "kind": "round",
+   "block": true,
+   "d": 1,
+   "hole_px": 7492
+  },
+  "Hulk_south_Jacket": {
+   "kind": "none",
+   "block": false,
+   "d": 1,
+   "hole_px": 0
+  },
+  "Hulk_south_FlakVest": {
+   "kind": "V",
+   "block": true,
+   "d": 1,
+   "hole_px": 6202
+  }
+ },
+ "errors": {
+  "Thin_Female_east_CorsetRoyal": "KeyError(('Thin_Female', 'east', 'CorsetRoyal'))",
+  "Thin_Female_east_TribalA": "KeyError(('Thin_Female', 'east', 'TribalA'))",
+  "Thin_Female_east_Jacket": "KeyError(('Thin_Female', 'east', 'Jacket'))",
+  "Thin_Female_east_FlakVest": "KeyError(('Thin_Female', 'east', 'FlakVest'))",
+  "Thin_Female_north_CorsetRoyal": "KeyError(('Thin_Female', 'north', 'CorsetRoyal'))",
+  "Thin_Female_north_TribalA": "KeyError(('Thin_Female', 'north', 'TribalA'))",
+  "Thin_Female_north_Jacket": "KeyError(('Thin_Female', 'north', 'Jacket'))",
+  "Thin_Female_north_FlakVest": "KeyError(('Thin_Female', 'north', 'FlakVest'))",
+  "Fat_Female_east_CorsetRoyal": "KeyError(('Fat_Female', 'east', 'CorsetRoyal'))",
+  "Fat_Female_east_TribalA": "KeyError(('Fat_Female', 'east', 'TribalA'))",
+  "Fat_Female_east_Jacket": "KeyError(('Fat_Female', 'east', 'Jacket'))",
+  "Fat_Female_east_FlakVest": "KeyError(('Fat_Female', 'east', 'FlakVest'))",
+  "Fat_Female_north_CorsetRoyal": "KeyError(('Fat_Female', 'north', 'CorsetRoyal'))",
+  "Fat_Female_north_TribalA": "KeyError(('Fat_Female', 'north', 'TribalA'))",
+  "Fat_Female_north_Jacket": "KeyError(('Fat_Female', 'north', 'Jacket'))",
+  "Fat_Female_north_FlakVest": "KeyError(('Fat_Female', 'north', 'FlakVest'))",
+  "Hulk_Female_east_CorsetRoyal": "KeyError(('Hulk_Female', 'east', 'CorsetRoyal'))",
+  "Hulk_Female_east_TribalA": "KeyError(('Hulk_Female', 'east', 'TribalA'))",
+  "Hulk_Female_east_Jacket": "KeyError(('Hulk_Female', 'east', 'Jacket'))",
+  "Hulk_Female_east_FlakVest": "KeyError(('Hulk_Female', 'east', 'FlakVest'))",
+  "Hulk_Female_north_CorsetRoyal": "KeyError(('Hulk_Female', 'north', 'CorsetRoyal'))",
+  "Hulk_Female_north_TribalA": "KeyError(('Hulk_Female', 'north', 'TribalA'))",
+  "Hulk_Female_north_Jacket": "KeyError(('Hulk_Female', 'north', 'Jacket'))",
+  "Hulk_Female_north_FlakVest": "KeyError(('Hulk_Female', 'north', 'FlakVest'))",
+  "Male_east_CorsetRoyal": "KeyError(('east', 'CorsetRoyal'))",
+  "Male_east_TribalA": "KeyError(('east', 'TribalA'))",
+  "Male_east_Jacket": "KeyError(('east', 'Jacket'))",
+  "Male_east_FlakVest": "KeyError(('east', 'FlakVest'))",
+  "Male_north_CorsetRoyal": "KeyError(('north', 'CorsetRoyal'))",
+  "Male_north_TribalA": "KeyError(('north', 'TribalA'))",
+  "Male_north_Jacket": "KeyError(('north', 'Jacket'))",
+  "Male_north_FlakVest": "KeyError(('north', 'FlakVest'))",
+  "Female_east_CorsetRoyal": "KeyError(('east', 'CorsetRoyal'))",
+  "Female_east_TribalA": "KeyError(('east', 'TribalA'))",
+  "Female_east_Jacket": "KeyError(('east', 'Jacket'))",
+  "Female_east_FlakVest": "KeyError(('east', 'FlakVest'))",
+  "Female_north_CorsetRoyal": "KeyError(('north', 'CorsetRoyal'))",
+  "Female_north_TribalA": "KeyError(('north', 'TribalA'))",
+  "Female_north_Jacket": "KeyError(('north', 'Jacket'))",
+  "Female_north_FlakVest": "KeyError(('north', 'FlakVest'))",
+  "Thin_east_CorsetRoyal": "KeyError(('east', 'CorsetRoyal'))",
+  "Thin_east_TribalA": "KeyError(('east', 'TribalA'))",
+  "Thin_east_Jacket": "KeyError(('east', 'Jacket'))",
+  "Thin_east_FlakVest": "KeyError(('east', 'FlakVest'))",
+  "Thin_north_CorsetRoyal": "KeyError(('north', 'CorsetRoyal'))",
+  "Thin_north_TribalA": "KeyError(('north', 'TribalA'))",
+  "Thin_north_Jacket": "KeyError(('north', 'Jacket'))",
+  "Thin_north_FlakVest": "KeyError(('north', 'FlakVest'))",
+  "Fat_east_CorsetRoyal": "KeyError(('east', 'CorsetRoyal'))",
+  "Fat_east_TribalA": "KeyError(('east', 'TribalA'))",
+  "Fat_east_Jacket": "KeyError(('east', 'Jacket'))",
+  "Fat_east_FlakVest": "KeyError(('east', 'FlakVest'))",
+  "Fat_north_CorsetRoyal": "KeyError(('north', 'CorsetRoyal'))",
+  "Fat_north_TribalA": "KeyError(('north', 'TribalA'))",
+  "Fat_north_Jacket": "KeyError(('north', 'Jacket'))",
+  "Fat_north_FlakVest": "KeyError(('north', 'FlakVest'))",
+  "Hulk_east_CorsetRoyal": "KeyError(('east', 'CorsetRoyal'))",
+  "Hulk_east_TribalA": "KeyError(('east', 'TribalA'))",
+  "Hulk_east_Jacket": "KeyError(('east', 'Jacket'))",
+  "Hulk_east_FlakVest": "KeyError(('east', 'FlakVest'))",
+  "Hulk_north_CorsetRoyal": "KeyError(('north', 'CorsetRoyal'))",
+  "Hulk_north_TribalA": "KeyError(('north', 'TribalA'))",
+  "Hulk_north_Jacket": "KeyError(('north', 'Jacket'))",
+  "Hulk_north_FlakVest": "KeyError(('north', 'FlakVest'))"
+ }
+}

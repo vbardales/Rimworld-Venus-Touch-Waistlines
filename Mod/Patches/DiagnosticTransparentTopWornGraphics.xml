@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+  <!-- Graphic_Multi appends the pawn body type.  The base therefore remains Top. -->
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_Female"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_Thin"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_Hulk"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_Fat"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_ThinFemale"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_HulkFemale"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_FatFemale"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+  <Operation Class="PatchOperationAdd"><xpath>Defs/ThingDef[defName="Apparel_VenusDiagnosticTop_Child"]/apparel</xpath><value><wornGraphicPath>Venus/Diagnostics/TransparentTop/Top</wornGraphicPath></value></Operation>
+</Patch>

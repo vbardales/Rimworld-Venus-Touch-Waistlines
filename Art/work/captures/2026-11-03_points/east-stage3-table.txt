@@ -1,0 +1,105 @@
+﻿vanilla Male (east)|extremes|top|246|180|detected
+vanilla Male (east)|extremes|bottom|248|427|detected
+vanilla Male (east)|head/neck|neck front|292|180|detected
+vanilla Male (east)|head/neck|neck back|204|180|detected
+vanilla Male (east)|shoulders|upper back (shoulder blade)|178|216|detected
+vanilla Male (east)|chest|chest front|334|224|detected
+vanilla Male (east)|chest|breast apex|||not in texture
+vanilla Male (east)|torso|waist front|308|336|detected
+vanilla Male (east)|torso|waist back (small of the back)|188|304|detected
+vanilla Male (east)|torso|belly front|326|300|to place
+vanilla Male (east)|pelvis|buttock back|186|368|detected
+vanilla Male (east)|legs|leg bottom front|264|425|detected
+vanilla Male (east)|legs|leg bottom back|232|425|detected
+vanilla Male (east)|pelvis|navel|||not in texture
+vanilla Male (east)|pelvis|sex|||not in texture
+vanilla Male (east)|pelvis|crotch point|||not in texture
+vanilla Male (east)|pelvis|elbow|||not in texture
+vanilla Male (east)|pelvis|wrist|||not in texture
+vanilla Male (east)|pelvis|hand end|||not in texture
+vanilla Male (east)|pelvis|knee|||not in texture
+vanilla Male (east)|pelvis|ankle|||not in texture
+vanilla Thin (east)|extremes|top|256|184|detected
+vanilla Thin (east)|extremes|bottom|224|431|detected
+vanilla Thin (east)|head/neck|neck front|276|184|detected
+vanilla Thin (east)|head/neck|neck back|240|184|detected
+vanilla Thin (east)|shoulders|upper back (shoulder blade)|202|264|detected
+vanilla Thin (east)|chest|chest front|300|214|to place
+vanilla Thin (east)|chest|breast apex|||not in texture
+vanilla Thin (east)|torso|waist front|272|340|detected
+vanilla Thin (east)|torso|waist back (small of the back)|202|265|to place
+vanilla Thin (east)|torso|belly front|284|304|to place
+vanilla Thin (east)|pelvis|buttock back|178|388|detected
+vanilla Thin (east)|legs|leg bottom front|224|429|detected
+vanilla Thin (east)|legs|leg bottom back|224|429|detected
+vanilla Thin (east)|pelvis|navel|||not in texture
+vanilla Thin (east)|pelvis|sex|||not in texture
+vanilla Thin (east)|pelvis|crotch point|||not in texture
+vanilla Thin (east)|pelvis|elbow|||not in texture
+vanilla Thin (east)|pelvis|wrist|||not in texture
+vanilla Thin (east)|pelvis|hand end|||not in texture
+vanilla Thin (east)|pelvis|knee|||not in texture
+vanilla Thin (east)|pelvis|ankle|||not in texture
+vanilla Fat (east)|extremes|top|252|160|detected
+vanilla Fat (east)|extremes|bottom|270|459|detected
+vanilla Fat (east)|head/neck|neck front|320|172|detected
+vanilla Fat (east)|head/neck|neck back|184|172|detected
+vanilla Fat (east)|shoulders|upper back (shoulder blade)|108|264|detected
+vanilla Fat (east)|chest|chest front|376|304|detected
+vanilla Fat (east)|chest|breast apex|||not in texture
+vanilla Fat (east)|torso|waist front|376|259|to place
+vanilla Fat (east)|torso|waist back (small of the back)|112|259|to place
+vanilla Fat (east)|torso|belly front|390|336|detected
+vanilla Fat (east)|pelvis|buttock back|96|321|to place
+vanilla Fat (east)|legs|leg bottom front|292|457|detected
+vanilla Fat (east)|legs|leg bottom back|248|457|detected
+vanilla Fat (east)|pelvis|navel|||not in texture
+vanilla Fat (east)|pelvis|sex|||not in texture
+vanilla Fat (east)|pelvis|crotch point|||not in texture
+vanilla Fat (east)|pelvis|elbow|||not in texture
+vanilla Fat (east)|pelvis|wrist|||not in texture
+vanilla Fat (east)|pelvis|hand end|||not in texture
+vanilla Fat (east)|pelvis|knee|||not in texture
+vanilla Fat (east)|pelvis|ankle|||not in texture
+vanilla Hulk (east)|extremes|top|242|150|detected
+vanilla Hulk (east)|extremes|bottom|208|499|detected
+vanilla Hulk (east)|head/neck|neck front|304|160|detected
+vanilla Hulk (east)|head/neck|neck back|184|160|detected
+vanilla Hulk (east)|shoulders|upper back (shoulder blade)|142|252|detected
+vanilla Hulk (east)|chest|chest front|370|248|detected
+vanilla Hulk (east)|chest|breast apex|||not in texture
+vanilla Hulk (east)|torso|waist front|326|372|detected
+vanilla Hulk (east)|torso|waist back (small of the back)|142|268|to place
+vanilla Hulk (east)|torso|belly front|358|322|to place
+vanilla Hulk (east)|pelvis|buttock back|118|424|detected
+vanilla Hulk (east)|legs|leg bottom front|232|497|detected
+vanilla Hulk (east)|legs|leg bottom back|184|497|detected
+vanilla Hulk (east)|pelvis|navel|||not in texture
+vanilla Hulk (east)|pelvis|sex|||not in texture
+vanilla Hulk (east)|pelvis|crotch point|||not in texture
+vanilla Hulk (east)|pelvis|elbow|||not in texture
+vanilla Hulk (east)|pelvis|wrist|||not in texture
+vanilla Hulk (east)|pelvis|hand end|||not in texture
+vanilla Hulk (east)|pelvis|knee|||not in texture
+vanilla Hulk (east)|pelvis|ankle|||not in texture
+vanilla Female (east)|extremes|top|258|164|detected
+vanilla Female (east)|extremes|bottom|234|451|detected
+vanilla Female (east)|head/neck|neck front|284|172|detected
+vanilla Female (east)|head/neck|neck back|232|172|detected
+vanilla Female (east)|shoulders|upper back (shoulder blade)|198|220|detected
+vanilla Female (east)|chest|chest front|318|268|detected
+vanilla Female (east)|chest|breast apex|||not in texture
+vanilla Female (east)|torso|waist front|288|320|detected
+vanilla Female (east)|torso|waist back (small of the back)|196|259|to place
+vanilla Female (east)|torso|belly front|300|304|to place
+vanilla Female (east)|pelvis|buttock back|154|348|detected
+vanilla Female (east)|legs|leg bottom front|244|449|detected
+vanilla Female (east)|legs|leg bottom back|224|449|detected
+vanilla Female (east)|pelvis|navel|||not in texture
+vanilla Female (east)|pelvis|sex|||not in texture
+vanilla Female (east)|pelvis|crotch point|||not in texture
+vanilla Female (east)|pelvis|elbow|||not in texture
+vanilla Female (east)|pelvis|wrist|||not in texture
+vanilla Female (east)|pelvis|hand end|||not in texture
+vanilla Female (east)|pelvis|knee|||not in texture
+vanilla Female (east)|pelvis|ankle|||not in texture

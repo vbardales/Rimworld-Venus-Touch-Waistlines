@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the red outline top worn over a shirt and trousers on every WDI silhouette" tests="3" failures="0" skipped="0" flakes="0" time="381.954">
+    <testcase name="the red outline top bare, over a shirt, over a shirt and trousers, front (South)" classname="the red outline top worn over a shirt and trousers on every WDI silhouette" time="159.663">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline layers, front, bare torso -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--front--bare-torso--step0.png
+Attachment: outline layers, front, t-shirt -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--front--t-shirt--step0.png
+Attachment: outline layers, front, t-shirt and trousers -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--front--t-shirt-and-trousers--step0.png
+</system-out>
+    </testcase>
+    <testcase name="the red outline top bare, over a shirt, over a shirt and trousers, side (East)" classname="the red outline top worn over a shirt and trousers on every WDI silhouette" time="123.770">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline layers, side, bare torso -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--side--bare-torso--step0.png
+Attachment: outline layers, side, t-shirt -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--side--t-shirt--step0.png
+Attachment: outline layers, side, t-shirt and trousers -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--side--t-shirt-and-trousers--step0.png
+</system-out>
+    </testcase>
+    <testcase name="the red outline top bare, over a shirt, over a shirt and trousers, back (North)" classname="the red outline top worn over a shirt and trousers on every WDI silhouette" time="98.521">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: outline layers, back, bare torso -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--back--bare-torso--step0.png
+Attachment: outline layers, back, t-shirt -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--back--t-shirt--step0.png
+Attachment: outline layers, back, t-shirt and trousers -&gt; /repo/pickle-reports/screenshots/manual--outline-layers--back--t-shirt-and-trousers--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+  <testsuite name="the outline on a child with and without the Children Wear Anything rescaling" tests="2" failures="0" skipped="0" flakes="0" time="83.785">
+    <testcase name="an adult and two children, shirt, trousers and outline top, front (South)" classname="the outline on a child with and without the Children Wear Anything rescaling" time="42.300">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: cwa kids, front, shirt and trousers and outline top -&gt; /repo/pickle-reports/screenshots/manual--cwa-kids--front--shirt-and-trousers-and-outline-top--step0.png
+</system-out>
+    </testcase>
+    <testcase name="an adult and two children, shirt, trousers and outline top, side (East)" classname="the outline on a child with and without the Children Wear Anything rescaling" time="41.485">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: cwa kids, side, shirt and trousers and outline top -&gt; /repo/pickle-reports/screenshots/manual--cwa-kids--side--shirt-and-trousers-and-outline-top--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

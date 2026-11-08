@@ -1,0 +1,35 @@
+  // Side view (east, the body faces right): front = right edge, back = left edge of each row. An extreme that lands on the edge of its search range is 'to place'.
+  public static List<Pt> Side(string path) {
+    int w, h; byte[] a = Ld(path, out w, out h); List<Pt> P = new List<Pt>();
+    Func<int, int, bool> on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && a[(y*w+x)*4+3] > 40;
+    Func<int, int, double> lum = (x, y) => (a[(y*w+x)*4] + a[(y*w+x)*4+1] + a[(y*w+x)*4+2]) / 3.0;
+    int[] l = new int[h], r = new int[h]; int top = -1, bot = -1;
+    for (int y = 0; y < h; y++) { l[y] = -1; r[y] = -1; for (int x = 0; x < w; x++) if (on(x, y)) { if (l[y] < 0) l[y] = x; r[y] = x; } if (l[y] >= 0) { if (top < 0) top = y; bot = y; } }
+    int H = bot - top; Func<double, int> row = f => top + (int)Math.Round(f * H);
+    // extreme of the front (max r) or back (min l) between two shares of the height
+    Action<string, string, double, double, bool, bool> add = (name, zone, f0, f1, front, most) => {
+      int y0 = row(f0), y1 = row(f1), best = -1; for (int y = y0; y <= y1; y++) { if (l[y] < 0) continue; int v = front ? r[y] : -l[y]; if (best < 0 || (most ? v > (front ? r[best] : -l[best]) : v < (front ? r[best] : -l[best]))) best = y; }
+      if (best < 0) { P.Add(new Pt(name, zone, -1, -1, "not in texture")); return; }
+      bool edge = best <= y0 + 1 || best >= y1 - 1; double x = front ? r[best] + 1 : l[best];
+      P.Add(Q(on, lum, name, zone, x, best, front ? -1 : 0, front ? -1 : 1, 0, 0, edge ? "to place" : "detected")); };
+    P.Add(Q(on, lum, "top", "extremes", (l[top] + r[top] + 1) / 2.0, top, 0, 0, 1, 16, "detected"));
+    P.Add(new Pt("bottom", "extremes", (l[bot] + r[bot] + 1) / 2.0, bot, "detected"));
+    int maxW = 0; for (int y = top; y < row(0.30); y++) if (r[y] - l[y] > maxW) maxW = r[y] - l[y];
+    int neck = top; for (int y = top; y < row(0.30); y++) if (r[y] - l[y] >= 0.55 * maxW) { neck = y; break; }
+    P.Add(Q(on, lum, "neck front", "head/neck", r[neck] + 1, neck, -1, -1, 0, 0, neck - top < 6 ? "to place" : "detected"));
+    P.Add(Q(on, lum, "neck back", "head/neck", l[neck], neck, 0, 1, 0, 0, neck - top < 6 ? "to place" : "detected"));
+    add("upper back (shoulder blade)", "shoulders", 0.10, 0.40, false, true);
+    add("chest front", "chest", 0.15, 0.50, true, true);
+    // breast apex: pink pixels (nipple) if any, near the front
+    double sx = 0, sy = 0; int sn = 0; for (int y = top; y < row(0.6); y++) for (int x = 0; x < w; x++) { if (!on(x, y)) continue; int i = (y*w+x)*4; int R = a[i+2], G = a[i+1], B = a[i]; if (R > 150 && R - G > 12 && R - B > 10) { sx += x; sy += y; sn++; } }
+    if (sn > 5) P.Add(new Pt("breast apex", "chest", sx / sn, sy / sn, "detected")); else P.Add(new Pt("breast apex", "chest", -1, -1, "not in texture"));
+    add("waist front", "torso", 0.35, 0.65, true, false);
+    add("waist back (small of the back)", "torso", 0.35, 0.65, false, false);
+    add("belly front", "torso", 0.50, 0.85, true, true);
+    add("buttock back", "pelvis", 0.55, 0.92, false, true);
+    int lb = bot - 2; P.Add(Q(on, lum, "leg bottom front", "legs", r[lb] + 1, lb, -1, -1, 0, 0, "detected")); P.Add(Q(on, lum, "leg bottom back", "legs", l[lb], lb, 0, 1, 0, 0, "detected"));
+    foreach (string s in new string[] { "navel", "sex", "crotch point", "elbow", "wrist", "hand end", "knee", "ankle" }) P.Add(new Pt(s, "pelvis", -1, -1, "not in texture"));
+    return P;
+  }
+  // Back view: points that only exist on the front are 'not in view'.
+  static readonly string[] FrontOnly = { "breast apex L", "breast apex R", "cleavage", "under-breast fold L", "under-breast fold R", "navel", "sex", "groin crease L", "groin crease R", "jugular notch" };

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+
+  <!-- Vanilla pants have no worn graphic at all, so the game draws nothing on
+       the pawn. Every "visible pants" mod exists to fill that one field.
+
+       We fill it with our own art: one texture per body type, each cut to that
+       body's silhouette at build time by _tools/make-garment.js.
+
+       Conditional rather than a plain add, because something else has usually
+       filled it first and we have to replace, not duplicate. In particular
+       Female Apparel for Beautiful Bodies fills it unconditionally, and its
+       pants exist only for the Female body: the textures for Male, Thin, Fat
+       and Hulk are present but completely empty, 0 opaque pixels, so a pawn
+       wearing pants is drawn bare. Loading after it is what makes this work. -->
+
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/ThingDef[defName="Apparel_Pants"]/apparel/wornGraphicPath</xpath>
+    <nomatch Class="PatchOperationAdd">
+      <xpath>Defs/ThingDef[defName="Apparel_Pants"]/apparel</xpath>
+      <value>
+        <wornGraphicPath>Things/TailoredPants/Apparel/Pants/Pants</wornGraphicPath>
+      </value>
+    </nomatch>
+    <match Class="PatchOperationReplace">
+      <xpath>Defs/ThingDef[defName="Apparel_Pants"]/apparel/wornGraphicPath</xpath>
+      <value>
+        <wornGraphicPath>Things/TailoredPants/Apparel/Pants/Pants</wornGraphicPath>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- Biotech children wear their own garment, Apparel_KidPants, which is a
+       separate def with no worn graphic of its own - so a child in trousers was
+       drawn bare however well the adult pants worked. It gets the same path:
+       only a child can wear them, so the only texture the game will ever ask
+       for is Pants_Child_<facing>, which is generated like all the others. -->
+
+  <Operation Class="PatchOperationConditional" MayRequire="ludeon.rimworld.biotech">
+    <xpath>Defs/ThingDef[defName="Apparel_KidPants"]/apparel/wornGraphicPath</xpath>
+    <nomatch Class="PatchOperationAdd">
+      <xpath>Defs/ThingDef[defName="Apparel_KidPants"]/apparel</xpath>
+      <value>
+        <wornGraphicPath>Things/TailoredPants/Apparel/Pants/Pants</wornGraphicPath>
+      </value>
+    </nomatch>
+    <match Class="PatchOperationReplace">
+      <xpath>Defs/ThingDef[defName="Apparel_KidPants"]/apparel/wornGraphicPath</xpath>
+      <value>
+        <wornGraphicPath>Things/TailoredPants/Apparel/Pants/Pants</wornGraphicPath>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- The same mod does the same to flak pants, and we have no art for those.
+       An empty texture is worse than none: the pawn looks bare either way, but
+       the game keeps resolving files that hold nothing. So the field goes back
+       to being absent - and only when it is that mod's path, so a real set of
+       flak pants from somewhere else is left alone. -->
+
+  <Operation Class="PatchOperationConditional">
+    <xpath>Defs/ThingDef[defName="Apparel_FlakPants"]/apparel/wornGraphicPath[text()="Things/Pawn/Humanlike/Apparel/FlakPants/FlakPants"]</xpath>
+    <match Class="PatchOperationRemove">
+      <xpath>Defs/ThingDef[defName="Apparel_FlakPants"]/apparel/wornGraphicPath</xpath>
+    </match>
+  </Operation>
+
+</Patch>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="LTS sweatpants drawn as trousers on WDI's bodies" tests="2" failures="0" skipped="0" flakes="0" time="141.189">
+    <testcase name="AB gives the sweatpants the trousers path through the lowercase keyword" classname="LTS sweatpants drawn as trousers on WDI's bodies" time="59.295">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+</system-out>
+    </testcase>
+    <testcase name="the sweatpants, then the basic shirt tucked into them, Male and Female (South, East, North)" classname="LTS sweatpants drawn as trousers on WDI's bodies" time="81.894">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: sweatpants alone -&gt; /repo/pickle-reports/screenshots/manual--sweatpants-alone--step0.png
+Attachment: basic shirt tucked into the sweatpants -&gt; /repo/pickle-reports/screenshots/manual--basic-shirt-tucked-into-the-sweatpants--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

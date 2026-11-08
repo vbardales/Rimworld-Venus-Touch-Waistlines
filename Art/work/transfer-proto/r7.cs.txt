@@ -1,0 +1,59 @@
+﻿using System;
+public static class R7 {
+  // px: RGBA NxN (remapped garment). wOut: outline stroke width. Rebuilt image: fill without ink, smoothed mask, one outline ring of width wOut, interior ink kept and closed (gaps up to 2 px).
+  public static byte[] Rebuild(byte[] px, int N, int wOut, int inkLuma, double wSrc, out string info) {
+    int n = N * N; bool[] A = new bool[n]; bool[] I = new bool[n];
+    for (int i = 0; i < n; i++) { A[i] = px[i*4+3] > 40; if (A[i]) { int l = (px[i*4] + px[i*4+1] + px[i*4+2]) / 3; I[i] = l < inkLuma; } }
+    float[] f = new float[n]; for (int i = 0; i < n; i++) f[i] = A[i] ? 1f : 0f;
+    for (int pass = 0; pass < 3; pass++) { f = Box(f, N, 2); }
+    bool[] M = new bool[n]; for (int i = 0; i < n; i++) M[i] = f[i] > 0.5f;
+    int[] dOld = Dist(FillHoles(A, N), N); int[] dNew = Dist(FillHoles(M, N), N);
+    bool[] Ii = new bool[n]; for (int i = 0; i < n; i++) Ii[i] = I[i] && dOld[i] > wOut + 6 && M[i];
+    bool[] C = Erode(Dilate(Ii, N), N); for (int i = 0; i < n; i++) C[i] = (C[i] && M[i] && dNew[i] > wOut) || Ii[i];
+    // drop interior-ink fragments of the old edge stroke: components under 15 % of the largest, or with half their pixels within wOut+thr of the new edge; thr 14, then 8 if nothing is left
+    { bool[] C0 = (bool[])C.Clone(); int[] lab = new int[n]; var sizes = new System.Collections.Generic.List<int>(); var st = new System.Collections.Generic.Stack<int>();
+      for (int s0 = 0; s0 < n; s0++) { if (!C0[s0] || lab[s0] != 0) continue; sizes.Add(0); int id = sizes.Count; st.Push(s0); lab[s0] = id;
+        while (st.Count > 0) { int i = st.Pop(); sizes[id-1]++; int x = i % N, y = i / N; for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x+dx, yy = y+dy; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; int j = yy*N+xx; if (C0[j] && lab[j] == 0) { lab[j] = id; st.Push(j); } } } }
+      int mx = 0; foreach (int z in sizes) if (z > mx) mx = z;
+      foreach (int thr in new int[] { 14, 8 }) { int[] near = new int[sizes.Count]; for (int i = 0; i < n; i++) if (C0[i] && dNew[i] <= wOut + thr) near[lab[i]-1]++;
+        int kept = 0; double minSz = Math.Max(30.0, 25.0 * wSrc * wSrc); for (int i = 0; i < n; i++) { C[i] = C0[i] && !(sizes[lab[i]-1] < 0.15 * mx || sizes[lab[i]-1] < minSz || near[lab[i]-1] * 2 >= sizes[lab[i]-1]); if (C[i]) kept++; }
+        if (kept >= 50) break; } }    byte[] F = (byte[])px.Clone();
+    for (int y = 0; y < N; y++) { for (int x = 0; x < N; x++) { int i = y*N+x; if (!A[i] || !I[i]) continue;
+        int xl = x, xr = x; while (xl >= 0 && A[y*N+xl] && I[y*N+xl]) xl--; while (xr < N && A[y*N+xr] && I[y*N+xr]) xr++;
+        int src = -1; bool okL = xl >= 0 && A[y*N+xl], okR = xr < N && A[y*N+xr];
+        if (okL && okR) src = (x - xl <= xr - x) ? y*N+xl : y*N+xr; else if (okL) src = y*N+xl; else if (okR) src = y*N+xr;
+        if (src >= 0) { F[i*4] = px[src*4]; F[i*4+1] = px[src*4+1]; F[i*4+2] = px[src*4+2]; } } }
+    byte[] O = new byte[n * 4]; int ring = 0, inner = 0;
+    for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) { int i = y*N+x; if (!M[i]) continue;
+      byte r, g, b;
+      if (A[i]) { r = F[i*4]; g = F[i*4+1]; b = F[i*4+2]; }
+      else { int st = (x > N/2) ? -1 : 1; int xs = x; int k = 0; while (k < 40 && xs >= 0 && xs < N && !(A[y*N+xs] && !I[y*N+xs])) { xs += st; k++; }
+        if (xs >= 0 && xs < N && A[y*N+xs]) { r = F[(y*N+xs)*4]; g = F[(y*N+xs)*4+1]; b = F[(y*N+xs)*4+2]; } else { r = 200; g = 200; b = 200; } }
+      bool ink = false; if (dNew[i] <= wOut) { ink = true; ring++; } else if (C[i]) { ink = true; inner++; }
+      if (ink) { r = 15; g = 15; b = 15; }
+      O[i*4] = r; O[i*4+1] = g; O[i*4+2] = b; O[i*4+3] = 255; }
+    info = "ring px " + ring + ", interior ink px " + inner;
+    return O;
+  }
+  static bool[] FillHoles(bool[] m, int N) { bool[] bg = new bool[N*N]; var q = new System.Collections.Generic.Queue<int>(); for (int x = 0; x < N; x++) { q.Enqueue(x); q.Enqueue((N-1)*N+x); } for (int y = 0; y < N; y++) { q.Enqueue(y*N); q.Enqueue(y*N+N-1); }
+    while (q.Count > 0) { int i = q.Dequeue(); if (bg[i] || m[i]) continue; bg[i] = true; int x = i % N, y = i / N; if (x > 0) q.Enqueue(i-1); if (x < N-1) q.Enqueue(i+1); if (y > 0) q.Enqueue(i-N); if (y < N-1) q.Enqueue(i+N); }
+    bool[] o = new bool[N*N]; for (int i = 0; i < N*N; i++) o[i] = !bg[i]; return o; }
+  static float[] Box(float[] a, int N, int r) { float[] t = new float[N*N]; float[] o = new float[N*N];
+    for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) { float s = 0; int c = 0; for (int k = -r; k <= r; k++) { int xx = x + k; if (xx >= 0 && xx < N) { s += a[y*N+xx]; c++; } } t[y*N+x] = s / c; }
+    for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) { float s = 0; int c = 0; for (int k = -r; k <= r; k++) { int yy = y + k; if (yy >= 0 && yy < N) { s += t[yy*N+x]; c++; } } o[y*N+x] = s / c; }
+    return o; }
+  static int[] Dist(bool[] m, int N) { int[] d = new int[N*N]; int INF = 1 << 20;
+    for (int i = 0; i < N*N; i++) d[i] = m[i] ? INF : 0;
+    for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) { int i = y*N+x; if (d[i] == 0) continue; int v = d[i];
+      if (x == 0 || y == 0) v = 3; else { v = Math.Min(v, d[i-1] + 3); v = Math.Min(v, d[i-N] + 3); v = Math.Min(v, d[i-N-1] + 4); if (x < N-1) v = Math.Min(v, d[i-N+1] + 4); } d[i] = v; }
+    for (int y = N-1; y >= 0; y--) for (int x = N-1; x >= 0; x--) { int i = y*N+x; if (d[i] == 0) continue; int v = d[i];
+      if (x == N-1 || y == N-1) v = Math.Min(v, 3); else { v = Math.Min(v, d[i+1] + 3); v = Math.Min(v, d[i+N] + 3); v = Math.Min(v, d[i+N+1] + 4); if (x > 0) v = Math.Min(v, d[i+N-1] + 4); } d[i] = v; }
+    for (int i = 0; i < N*N; i++) d[i] = (d[i] + 2) / 3; return d; }
+  static bool[] Dilate(bool[] a, int N) { bool[] o = new bool[N*N]; for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) { bool v = false; for (int dy = -1; dy <= 1 && !v; dy++) for (int dx = -1; dx <= 1; dx++) { int yy = y+dy, xx = x+dx; if (yy >= 0 && yy < N && xx >= 0 && xx < N && a[yy*N+xx]) { v = true; break; } } o[y*N+x] = v; } return o; }
+  static bool[] Erode(bool[] a, int N) { bool[] o = new bool[N*N]; for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) { bool v = true; for (int dy = -1; dy <= 1 && v; dy++) for (int dx = -1; dx <= 1; dx++) { int yy = y+dy, xx = x+dx; if (yy < 0 || yy >= N || xx < 0 || xx >= N || !a[yy*N+xx]) { v = false; break; } } o[y*N+x] = v; } return o; }
+}
+
+
+
+
+

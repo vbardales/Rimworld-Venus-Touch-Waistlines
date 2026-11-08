@@ -1,0 +1,182 @@
+{
+ "Thin_Female_south_ShirtButton": {
+  "iou": 0.943,
+  "edge_px": 1.47,
+  "lum_mae": 0.101,
+  "r5_iou": 0.954,
+  "r5_lum": 0.107,
+  "block": true,
+  "d": 0,
+  "hole_px": 3229
+ },
+ "Thin_Female_south_ShirtBasic": {
+  "iou": 0.941,
+  "edge_px": 1.65,
+  "lum_mae": 0.095,
+  "r5_iou": 0.954,
+  "r5_lum": 0.082,
+  "block": true,
+  "d": 0,
+  "hole_px": 2615
+ },
+ "Thin_Female_east_ShirtButton": {
+  "iou": 0.915,
+  "edge_px": 3.11,
+  "lum_mae": 0.143,
+  "r5_iou": 0.915,
+  "r5_lum": 0.092,
+  "block": false,
+  "d": 2,
+  "hole_px": 1536
+ },
+ "Thin_Female_east_ShirtBasic": {
+  "iou": 0.916,
+  "edge_px": 3.05,
+  "lum_mae": 0.126,
+  "r5_iou": 0.916,
+  "r5_lum": 0.095,
+  "block": false,
+  "d": 2,
+  "hole_px": 1470
+ },
+ "Thin_Female_north_ShirtButton": {
+  "iou": 0.968,
+  "edge_px": 1.03,
+  "lum_mae": 0.128,
+  "r5_iou": 0.968,
+  "r5_lum": 0.08,
+  "block": false,
+  "d": 0,
+  "hole_px": 396
+ },
+ "Thin_Female_north_ShirtBasic": {
+  "iou": 0.968,
+  "edge_px": 1.03,
+  "lum_mae": 0.104,
+  "r5_iou": 0.968,
+  "r5_lum": 0.072,
+  "block": false,
+  "d": 0,
+  "hole_px": 395
+ },
+ "Fat_Female_south_ShirtButton": {
+  "iou": 0.876,
+  "edge_px": 5.52,
+  "lum_mae": 0.196,
+  "r5_iou": 0.88,
+  "r5_lum": 0.136,
+  "block": true,
+  "d": 5,
+  "hole_px": 12857
+ },
+ "Fat_Female_south_ShirtBasic": {
+  "iou": 0.878,
+  "edge_px": 5.95,
+  "lum_mae": 0.149,
+  "r5_iou": 0.916,
+  "r5_lum": 0.116,
+  "block": true,
+  "d": 5,
+  "hole_px": 8596
+ },
+ "Fat_Female_east_ShirtButton": {
+  "iou": 0.905,
+  "edge_px": 6.51,
+  "lum_mae": 0.158,
+  "r5_iou": 0.894,
+  "r5_lum": 0.113,
+  "block": false,
+  "d": 7,
+  "hole_px": 4689
+ },
+ "Fat_Female_east_ShirtBasic": {
+  "iou": 0.902,
+  "edge_px": 6.79,
+  "lum_mae": 0.134,
+  "r5_iou": 0.891,
+  "r5_lum": 0.115,
+  "block": false,
+  "d": 7,
+  "hole_px": 4657
+ },
+ "Fat_Female_north_ShirtButton": {
+  "iou": 0.954,
+  "edge_px": 2.83,
+  "lum_mae": 0.127,
+  "r5_iou": 0.942,
+  "r5_lum": 0.134,
+  "block": false,
+  "d": 7,
+  "hole_px": 2284
+ },
+ "Fat_Female_north_ShirtBasic": {
+  "iou": 0.958,
+  "edge_px": 2.6,
+  "lum_mae": 0.126,
+  "r5_iou": 0.945,
+  "r5_lum": 0.126,
+  "block": false,
+  "d": 7,
+  "hole_px": 2276
+ },
+ "Hulk_Female_south_ShirtButton": {
+  "iou": 0.892,
+  "edge_px": 4.0,
+  "lum_mae": 0.129,
+  "r5_iou": 0.889,
+  "r5_lum": 0.115,
+  "block": true,
+  "d": 1,
+  "hole_px": 6097
+ },
+ "Hulk_Female_south_ShirtBasic": {
+  "iou": 0.91,
+  "edge_px": 3.57,
+  "lum_mae": 0.121,
+  "r5_iou": 0.914,
+  "r5_lum": 0.101,
+  "block": true,
+  "d": 1,
+  "hole_px": 6162
+ },
+ "Hulk_Female_east_ShirtButton": {
+  "iou": 0.959,
+  "edge_px": 2.24,
+  "lum_mae": 0.142,
+  "r5_iou": 0.959,
+  "r5_lum": 0.097,
+  "block": false,
+  "d": 0,
+  "hole_px": 2533
+ },
+ "Hulk_Female_east_ShirtBasic": {
+  "iou": 0.956,
+  "edge_px": 2.34,
+  "lum_mae": 0.137,
+  "r5_iou": 0.956,
+  "r5_lum": 0.086,
+  "block": false,
+  "d": 0,
+  "hole_px": 2386
+ },
+ "Hulk_Female_north_ShirtButton": {
+  "iou": 0.94,
+  "edge_px": 3.43,
+  "lum_mae": 0.121,
+  "r5_iou": 0.94,
+  "r5_lum": 0.125,
+  "block": false,
+  "d": 1,
+  "hole_px": 1216
+ },
+ "Hulk_Female_north_ShirtBasic": {
+  "iou": 0.941,
+  "edge_px": 3.39,
+  "lum_mae": 0.119,
+  "r5_iou": 0.941,
+  "r5_lum": 0.127,
+  "block": false,
+  "d": 1,
+  "hole_px": 1605
+ }
+}

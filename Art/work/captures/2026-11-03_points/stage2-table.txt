@@ -1,0 +1,260 @@
+﻿vanilla male + VAE CasualTShirt|extremes|top|254|180|detected
+vanilla male + VAE CasualTShirt|extremes|bottom|254|424|detected
+vanilla male + VAE CasualTShirt|extremes|leftmost|162|224|detected
+vanilla male + VAE CasualTShirt|extremes|rightmost|350|236|detected
+vanilla male + VAE CasualTShirt|head/neck|neck base L|204|180|detected
+vanilla male + VAE CasualTShirt|head/neck|neck base R|308|180|detected
+vanilla male + VAE CasualTShirt|head/neck|jugular notch|256|180|to place
+vanilla male + VAE CasualTShirt|shoulders|shoulder tip L|160|236|detected
+vanilla male + VAE CasualTShirt|shoulders|shoulder tip R|350|236|detected
+vanilla male + VAE CasualTShirt|shoulders|armpit L|166|296|detected
+vanilla male + VAE CasualTShirt|shoulders|armpit R|344|296|detected
+vanilla male + VAE CasualTShirt|chest|breast apex L|194|279|to place
+vanilla male + VAE CasualTShirt|chest|breast apex R|318|279|to place
+vanilla male + VAE CasualTShirt|chest|cleavage|256|279|to place
+vanilla male + VAE CasualTShirt|chest|under-breast fold L|194|298|to place
+vanilla male + VAE CasualTShirt|chest|under-breast fold R|318|298|to place
+vanilla male + VAE CasualTShirt|torso|waist L|176|332|to place
+vanilla male + VAE CasualTShirt|torso|waist R|332|332|to place
+vanilla male + VAE CasualTShirt|torso|navel|256|362|to place
+vanilla male + VAE CasualTShirt|torso|hip L|180|343|to place
+vanilla male + VAE CasualTShirt|torso|hip R|332|343|to place
+vanilla male + VAE CasualTShirt|pelvis|groin crease L|214|387|to place
+vanilla male + VAE CasualTShirt|pelvis|groin crease R|298|387|to place
+vanilla male + VAE CasualTShirt|pelvis|sex|256|405|to place
+vanilla male + VAE CasualTShirt|pelvis|crotch point|256|431|to place
+vanilla male + VAE CasualTShirt|legs|leg bottom L|238|422|detected
+vanilla male + VAE CasualTShirt|legs|leg bottom R|272|422|detected
+vanilla male + VAE CasualTShirt|arms|elbow L|||not in texture
+vanilla male + VAE CasualTShirt|arms|elbow R|||not in texture
+vanilla male + VAE CasualTShirt|arms|wrist L|||not in texture
+vanilla male + VAE CasualTShirt|arms|wrist R|||not in texture
+vanilla male + VAE CasualTShirt|arms|hand end L|||not in texture
+vanilla male + VAE CasualTShirt|arms|hand end R|||not in texture
+vanilla male + VAE CasualTShirt|legs|knee L|||not in texture
+vanilla male + VAE CasualTShirt|legs|knee R|||not in texture
+vanilla male + VAE CasualTShirt|legs|ankle L|||not in texture
+vanilla male + VAE CasualTShirt|legs|ankle R|||not in texture
+vanilla male + VAE CasualTShirt|axis|midline top|256|180|detected
+vanilla male + VAE CasualTShirt|axis|midline crotch|256|431|to place
+vanilla male + VAE CasualTShirt|garment|garment hemL|220|422|detected
+vanilla male + VAE CasualTShirt|garment|garment hemR|285|422|detected
+vanilla male + VAE CasualTShirt|garment|garment ring0|290|226|detected
+vanilla male + VAE CasualTShirt|garment|garment ring2|276|202|detected
+vanilla male + VAE CasualTShirt|garment|garment ring4|252|194|detected
+vanilla male + VAE CasualTShirt|garment|garment ring6|230|202|detected
+vanilla male + VAE CasualTShirt|garment|garment ring8|214|226|detected
+vanilla male + VAE CasualTShirt|garment|garment ring10|222|256|detected
+vanilla male + VAE CasualTShirt|garment|garment ring12|252|270|detected
+vanilla male + VAE CasualTShirt|garment|garment ring14|282|256|detected
+vanilla male + VAE CasualTShirt|garment|garment hem middle|252|426|detected
+vanilla male + VAE CasualTShirt|garment|garment sleeve end L|||not in texture
+vanilla male + VAE CasualTShirt|garment|garment sleeve end R|||not in texture
+vanilla thin + VAE CasualTShirt|extremes|top|256|182|detected
+vanilla thin + VAE CasualTShirt|extremes|bottom|258|426|detected
+vanilla thin + VAE CasualTShirt|extremes|leftmost|208|236|detected
+vanilla thin + VAE CasualTShirt|extremes|rightmost|298|216|detected
+vanilla thin + VAE CasualTShirt|head/neck|neck base L|236|176|to place
+vanilla thin + VAE CasualTShirt|head/neck|neck base R|272|176|to place
+vanilla thin + VAE CasualTShirt|head/neck|jugular notch|254|176|to place
+vanilla thin + VAE CasualTShirt|shoulders|shoulder tip L|208|236|detected
+vanilla thin + VAE CasualTShirt|shoulders|shoulder tip R|300|236|detected
+vanilla thin + VAE CasualTShirt|shoulders|armpit L|208|247|to place
+vanilla thin + VAE CasualTShirt|shoulders|armpit R|300|247|to place
+vanilla thin + VAE CasualTShirt|chest|breast apex L|222|249|to place
+vanilla thin + VAE CasualTShirt|chest|breast apex R|286|249|to place
+vanilla thin + VAE CasualTShirt|chest|cleavage|254|249|to place
+vanilla thin + VAE CasualTShirt|chest|under-breast fold L|222|258|to place
+vanilla thin + VAE CasualTShirt|chest|under-breast fold R|286|258|to place
+vanilla thin + VAE CasualTShirt|torso|waist L|208|264|to place
+vanilla thin + VAE CasualTShirt|torso|waist R|302|264|to place
+vanilla thin + VAE CasualTShirt|torso|navel|254|315|to place
+vanilla thin + VAE CasualTShirt|torso|hip L|208|316|to place
+vanilla thin + VAE CasualTShirt|torso|hip R|300|316|to place
+vanilla thin + VAE CasualTShirt|pelvis|groin crease L|227|376|to place
+vanilla thin + VAE CasualTShirt|pelvis|groin crease R|281|376|to place
+vanilla thin + VAE CasualTShirt|pelvis|sex|254|409|to place
+vanilla thin + VAE CasualTShirt|pelvis|crotch point|254|435|to place
+vanilla thin + VAE CasualTShirt|legs|leg bottom L|251|424|detected
+vanilla thin + VAE CasualTShirt|legs|leg bottom R|261|424|detected
+vanilla thin + VAE CasualTShirt|arms|elbow L|||not in texture
+vanilla thin + VAE CasualTShirt|arms|elbow R|||not in texture
+vanilla thin + VAE CasualTShirt|arms|wrist L|||not in texture
+vanilla thin + VAE CasualTShirt|arms|wrist R|||not in texture
+vanilla thin + VAE CasualTShirt|arms|hand end L|||not in texture
+vanilla thin + VAE CasualTShirt|arms|hand end R|||not in texture
+vanilla thin + VAE CasualTShirt|legs|knee L|||not in texture
+vanilla thin + VAE CasualTShirt|legs|knee R|||not in texture
+vanilla thin + VAE CasualTShirt|legs|ankle L|||not in texture
+vanilla thin + VAE CasualTShirt|legs|ankle R|||not in texture
+vanilla thin + VAE CasualTShirt|axis|midline top|254|182|detected
+vanilla thin + VAE CasualTShirt|axis|midline crotch|254|435|to place
+vanilla thin + VAE CasualTShirt|garment|garment hemL|231|419|detected
+vanilla thin + VAE CasualTShirt|garment|garment hemR|279|418|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring0|278|226|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring2|268|212|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring4|254|206|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring6|240|212|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring8|230|226|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring10|232|250|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring12|254|266|detected
+vanilla thin + VAE CasualTShirt|garment|garment ring14|276|250|detected
+vanilla thin + VAE CasualTShirt|garment|garment hem middle|254|423|detected
+vanilla thin + VAE CasualTShirt|garment|garment sleeve end L|||not in texture
+vanilla thin + VAE CasualTShirt|garment|garment sleeve end R|||not in texture
+vanilla fat + VAE CasualTShirt|extremes|top|252|160|detected
+vanilla fat + VAE CasualTShirt|extremes|bottom|252|446|detected
+vanilla fat + VAE CasualTShirt|extremes|leftmost|100|304|detected
+vanilla fat + VAE CasualTShirt|extremes|rightmost|404|312|detected
+vanilla fat + VAE CasualTShirt|head/neck|neck base L|184|168|detected
+vanilla fat + VAE CasualTShirt|head/neck|neck base R|316|168|detected
+vanilla fat + VAE CasualTShirt|head/neck|jugular notch|252|168|to place
+vanilla fat + VAE CasualTShirt|shoulders|shoulder tip L|124|240|detected
+vanilla fat + VAE CasualTShirt|shoulders|shoulder tip R|376|240|detected
+vanilla fat + VAE CasualTShirt|shoulders|armpit L|124|246|to place
+vanilla fat + VAE CasualTShirt|shoulders|armpit R|376|246|to place
+vanilla fat + VAE CasualTShirt|chest|breast apex L|172|248|to place
+vanilla fat + VAE CasualTShirt|chest|breast apex R|332|248|to place
+vanilla fat + VAE CasualTShirt|chest|cleavage|252|248|to place
+vanilla fat + VAE CasualTShirt|chest|under-breast fold L|172|272|to place
+vanilla fat + VAE CasualTShirt|chest|under-breast fold R|332|272|to place
+vanilla fat + VAE CasualTShirt|torso|waist L|122|257|to place
+vanilla fat + VAE CasualTShirt|torso|waist R|378|257|to place
+vanilla fat + VAE CasualTShirt|torso|navel|252|315|to place
+vanilla fat + VAE CasualTShirt|torso|hip L|98|316|to place
+vanilla fat + VAE CasualTShirt|torso|hip R|404|316|to place
+vanilla fat + VAE CasualTShirt|pelvis|groin crease L|172|384|to place
+vanilla fat + VAE CasualTShirt|pelvis|groin crease R|332|384|to place
+vanilla fat + VAE CasualTShirt|pelvis|sex|252|421|to place
+vanilla fat + VAE CasualTShirt|pelvis|crotch point|252|451|to place
+vanilla fat + VAE CasualTShirt|legs|leg bottom L|224|442|detected
+vanilla fat + VAE CasualTShirt|legs|leg bottom R|280|444|detected
+vanilla fat + VAE CasualTShirt|arms|elbow L|||not in texture
+vanilla fat + VAE CasualTShirt|arms|elbow R|||not in texture
+vanilla fat + VAE CasualTShirt|arms|wrist L|||not in texture
+vanilla fat + VAE CasualTShirt|arms|wrist R|||not in texture
+vanilla fat + VAE CasualTShirt|arms|hand end L|||not in texture
+vanilla fat + VAE CasualTShirt|arms|hand end R|||not in texture
+vanilla fat + VAE CasualTShirt|legs|knee L|||not in texture
+vanilla fat + VAE CasualTShirt|legs|knee R|||not in texture
+vanilla fat + VAE CasualTShirt|legs|ankle L|||not in texture
+vanilla fat + VAE CasualTShirt|legs|ankle R|||not in texture
+vanilla fat + VAE CasualTShirt|axis|midline top|252|160|detected
+vanilla fat + VAE CasualTShirt|axis|midline crotch|252|451|to place
+vanilla fat + VAE CasualTShirt|garment|garment hemL|215|442|detected
+vanilla fat + VAE CasualTShirt|garment|garment hemR|304|442|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring0|298|214|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring2|280|188|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring4|254|182|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring6|230|190|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring8|212|214|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring10|218|250|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring12|254|268|detected
+vanilla fat + VAE CasualTShirt|garment|garment ring14|290|250|detected
+vanilla fat + VAE CasualTShirt|garment|garment hem middle|258|446|detected
+vanilla fat + VAE CasualTShirt|garment|garment sleeve end L|||not in texture
+vanilla fat + VAE CasualTShirt|garment|garment sleeve end R|||not in texture
+vanilla hulk + VAE CasualTShirt|extremes|top|256|136|detected
+vanilla hulk + VAE CasualTShirt|extremes|bottom|256|498|detected
+vanilla hulk + VAE CasualTShirt|extremes|leftmost|110|264|detected
+vanilla hulk + VAE CasualTShirt|extremes|rightmost|400|244|detected
+vanilla hulk + VAE CasualTShirt|head/neck|neck base L|184|152|detected
+vanilla hulk + VAE CasualTShirt|head/neck|neck base R|328|152|detected
+vanilla hulk + VAE CasualTShirt|head/neck|jugular notch|252|152|to place
+vanilla hulk + VAE CasualTShirt|shoulders|shoulder tip L|114|240|detected
+vanilla hulk + VAE CasualTShirt|shoulders|shoulder tip R|398|240|detected
+vanilla hulk + VAE CasualTShirt|shoulders|armpit L|120|312|detected
+vanilla hulk + VAE CasualTShirt|shoulders|armpit R|388|312|detected
+vanilla hulk + VAE CasualTShirt|chest|breast apex L|162|294|to place
+vanilla hulk + VAE CasualTShirt|chest|breast apex R|342|294|to place
+vanilla hulk + VAE CasualTShirt|chest|cleavage|252|294|to place
+vanilla hulk + VAE CasualTShirt|chest|under-breast fold L|162|321|to place
+vanilla hulk + VAE CasualTShirt|chest|under-breast fold R|342|321|to place
+vanilla hulk + VAE CasualTShirt|torso|waist L|144|360|detected
+vanilla hulk + VAE CasualTShirt|torso|waist R|360|360|detected
+vanilla hulk + VAE CasualTShirt|torso|navel|252|404|to place
+vanilla hulk + VAE CasualTShirt|torso|hip L|150|375|to place
+vanilla hulk + VAE CasualTShirt|torso|hip R|356|375|to place
+vanilla hulk + VAE CasualTShirt|pelvis|groin crease L|196|441|to place
+vanilla hulk + VAE CasualTShirt|pelvis|groin crease R|308|441|to place
+vanilla hulk + VAE CasualTShirt|pelvis|sex|252|469|to place
+vanilla hulk + VAE CasualTShirt|pelvis|crotch point|252|507|to place
+vanilla hulk + VAE CasualTShirt|legs|leg bottom L|244|496|detected
+vanilla hulk + VAE CasualTShirt|legs|leg bottom R|264|496|detected
+vanilla hulk + VAE CasualTShirt|arms|elbow L|||not in texture
+vanilla hulk + VAE CasualTShirt|arms|elbow R|||not in texture
+vanilla hulk + VAE CasualTShirt|arms|wrist L|||not in texture
+vanilla hulk + VAE CasualTShirt|arms|wrist R|||not in texture
+vanilla hulk + VAE CasualTShirt|arms|hand end L|||not in texture
+vanilla hulk + VAE CasualTShirt|arms|hand end R|||not in texture
+vanilla hulk + VAE CasualTShirt|legs|knee L|||not in texture
+vanilla hulk + VAE CasualTShirt|legs|knee R|||not in texture
+vanilla hulk + VAE CasualTShirt|legs|ankle L|||not in texture
+vanilla hulk + VAE CasualTShirt|legs|ankle R|||not in texture
+vanilla hulk + VAE CasualTShirt|axis|midline top|252|136|detected
+vanilla hulk + VAE CasualTShirt|axis|midline crotch|252|507|to place
+vanilla hulk + VAE CasualTShirt|garment|garment hemL|225|490|detected
+vanilla hulk + VAE CasualTShirt|garment|garment hemR|288|490|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring0|308|206|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring2|290|170|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring4|254|154|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring6|218|170|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring8|200|206|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring10|214|246|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring12|254|262|detected
+vanilla hulk + VAE CasualTShirt|garment|garment ring14|294|246|detected
+vanilla hulk + VAE CasualTShirt|garment|garment hem middle|256|494|detected
+vanilla hulk + VAE CasualTShirt|garment|garment sleeve end L|||not in texture
+vanilla hulk + VAE CasualTShirt|garment|garment sleeve end R|402|243|detected
+vanilla female + VAE CasualTShirt|extremes|top|256|160|detected
+vanilla female + VAE CasualTShirt|extremes|bottom|256|444|detected
+vanilla female + VAE CasualTShirt|extremes|leftmost|170|352|detected
+vanilla female + VAE CasualTShirt|extremes|rightmost|342|352|detected
+vanilla female + VAE CasualTShirt|head/neck|neck base L|224|160|detected
+vanilla female + VAE CasualTShirt|head/neck|neck base R|288|160|detected
+vanilla female + VAE CasualTShirt|head/neck|jugular notch|256|160|to place
+vanilla female + VAE CasualTShirt|shoulders|shoulder tip L|190|236|detected
+vanilla female + VAE CasualTShirt|shoulders|shoulder tip R|322|236|detected
+vanilla female + VAE CasualTShirt|shoulders|armpit L|192|280|detected
+vanilla female + VAE CasualTShirt|shoulders|armpit R|320|280|detected
+vanilla female + VAE CasualTShirt|chest|breast apex L|210|261|to place
+vanilla female + VAE CasualTShirt|chest|breast apex R|302|261|to place
+vanilla female + VAE CasualTShirt|chest|cleavage|256|261|to place
+vanilla female + VAE CasualTShirt|chest|under-breast fold L|210|275|to place
+vanilla female + VAE CasualTShirt|chest|under-breast fold R|302|275|to place
+vanilla female + VAE CasualTShirt|torso|waist L|200|292|detected
+vanilla female + VAE CasualTShirt|torso|waist R|312|292|detected
+vanilla female + VAE CasualTShirt|torso|navel|256|340|to place
+vanilla female + VAE CasualTShirt|torso|hip L|172|351|to place
+vanilla female + VAE CasualTShirt|torso|hip R|340|351|to place
+vanilla female + VAE CasualTShirt|pelvis|groin crease L|210|401|to place
+vanilla female + VAE CasualTShirt|pelvis|groin crease R|302|401|to place
+vanilla female + VAE CasualTShirt|pelvis|sex|256|421|to place
+vanilla female + VAE CasualTShirt|pelvis|crotch point|256|451|to place
+vanilla female + VAE CasualTShirt|legs|leg bottom L|242|442|detected
+vanilla female + VAE CasualTShirt|legs|leg bottom R|270|442|detected
+vanilla female + VAE CasualTShirt|arms|elbow L|||not in texture
+vanilla female + VAE CasualTShirt|arms|elbow R|||not in texture
+vanilla female + VAE CasualTShirt|arms|wrist L|||not in texture
+vanilla female + VAE CasualTShirt|arms|wrist R|||not in texture
+vanilla female + VAE CasualTShirt|arms|hand end L|||not in texture
+vanilla female + VAE CasualTShirt|arms|hand end R|||not in texture
+vanilla female + VAE CasualTShirt|legs|knee L|||not in texture
+vanilla female + VAE CasualTShirt|legs|knee R|||not in texture
+vanilla female + VAE CasualTShirt|legs|ankle L|||not in texture
+vanilla female + VAE CasualTShirt|legs|ankle R|||not in texture
+vanilla female + VAE CasualTShirt|axis|midline top|256|160|detected
+vanilla female + VAE CasualTShirt|axis|midline crotch|256|451|to place
+vanilla female + VAE CasualTShirt|garment|garment hemL|227|440|detected
+vanilla female + VAE CasualTShirt|garment|garment hemR|283|440|detected
+vanilla female + VAE CasualTShirt|garment|garment ring0|278|214|detected
+vanilla female + VAE CasualTShirt|garment|garment ring2|262|204|detected
+vanilla female + VAE CasualTShirt|garment|garment ring4|254|202|detected
+vanilla female + VAE CasualTShirt|garment|garment ring6|246|204|detected
+vanilla female + VAE CasualTShirt|garment|garment ring8|232|214|detected
+vanilla female + VAE CasualTShirt|garment|garment ring10|226|240|detected
+vanilla female + VAE CasualTShirt|garment|garment ring12|254|262|detected
+vanilla female + VAE CasualTShirt|garment|garment ring14|282|242|detected
+vanilla female + VAE CasualTShirt|garment|garment hem middle|254|443|detected
+vanilla female + VAE CasualTShirt|garment|garment sleeve end L|||not in texture
+vanilla female + VAE CasualTShirt|garment|garment sleeve end R|||not in texture

@@ -1,0 +1,250 @@
+== vanilla male garment (IMO) -> WDI Male
+  vanilla: top 172 bottom 431 neck 180 shoulders 236 armpits 296(min) waist 332 hips 343 crotch 431(bottom) weakWaist weakHip
+  WDI    : top 184 bottom 430 neck 185 shoulders 253 armpits 294(min) waist 334 hips 346 crotch 425(notch)
+  outline: tight (body outline + 1 px)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): shL shR armL armR top bottom; dropped as weak: neckL neckR waistL waistR hipL hipR
+  anchors (garment features by relation): hemL(227,369)->(231,371) hemR(281,369)->(281,371) sleeveL(172,267)->(178,274) sleeveR(336,267)->(331,274) ring0(286,214)->(283,223) ring2(285,203)->(285,213) ring4(285,203)->(285,213) ring6(224,204)->(226,214) ring8(222,214)->(225,223) ring10(233,235)->(236,243) ring12(254,241)->(254,249) ring14(275,235)->(275,243)
+  radius calibration pass 0: source width4 median 1.99, identity 1.16, factor c 1
+  radius calibration pass 1: source width4 median 1.99, identity 1.55, factor c 1.38
+  radius calibration pass 2: source width4 median 1.99, identity 1.75, factor c 1.6
+  radius calibration pass 3: source width4 median 1.99, identity 1.75, factor c 1.72
+  radius calibration pass 4: source width4 median 1.99, identity 1.75, factor c 1.86
+  radius calibration pass 5: source width4 median 1.99, identity 1.75, factor c 2.01
+  radius factor kept: c 1.6 (identity width error 11.9 %)
+  [round 6 remap] rows remapped 189, sleeve rows kept as is 0; stretch factor min 1.19 median 1.29 max 29; rows over 1.5: 19 FLAG
+  [round 7 rebuild] outline stroke width 8 px (source outline), ink luma 60, ring px 5194, interior ink px 276
+  [round 5 clip] unclipped: garment area 29382 px, outside the body edge 387 px, UNCLIPPED overshoot: 11 edge samples beyond body+profile, worst 4 px; clip removed 19 px (0.1 % of the garment, 4.9 % of the part outside the body edge)
+  [round 3] control pairs 77, worst control residual 3,67 px at t(160,253) s(152,236), dropped paths 0
+    C1 signed C1, 48 samples: torso 16 (shortfall worst 0,0, 0 over 2; overshoot worst 22,4, 16 over 8), slanted 32 (shortfall worst 0,0, 0 over 2; overshoot worst 38,8, 30 over 8), hem row +0,0 px against expected -> shortfall 0,0 overshoot 38,8 FAIL
+    source edge to target edge: mean 1,16 95th 4,0 max 6,3 | target edge to source edge: mean 1,34 95th 5,0 max 7,8
+    leave-one-out (landmark and its rows +-10 left out): shL 8,6; shR 8,6; armL 8,2; armR 9,2; top 1,3; bottom 3,5; 
+    worst leave-one-out 9,2 px (armR)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 25,5 px at ray 0 (limit 2) FAIL; source offsets min -61,0 max -2,0, result min -49,0 max 2,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,772 result 0,772 (diff 0,0 points, limit 3) PASS
+    C5 garment area / body area: source 0,560 result 0,760 (35,7 %, limit 5) FAIL
+
+    C2 (collar ring ink bbox): width/shoulders source 0.317 result 0.453 (42.8 %), height/torso source 0.154 result 0.159 (2.7 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.9, source ratio (garment / body, rows with garment) 0.684, required >= 0.65 -> PASS
+    C4 topology: source ink 252 px, components 1, loops 0 | result ink 276 px, components 1, loops 0
+    C4 width4: source median 1.99 IQR 1.75-2.25; result median 1.75 (-11.9 %) IQR 1.25-2.25; limit 10 %
+== vanilla thin garment (IMO) -> WDI Thin
+  vanilla: top 172 bottom 435 neck 176 shoulders 236 armpits 247(share) waist 264 hips 316 crotch 435(bottom) weakWaist weakHip
+  WDI    : top 173 bottom 430 neck 177 shoulders 202 armpits 254(min) waist 311 hips 362 crotch 430(bottom) weakHip
+  outline: tight (body outline + 1 px)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): shL shR top bottom; dropped as weak: neckL neckR armL armR waistL waistR hipL hipR
+  anchors (garment features by relation): hemL(226,364)->(228,361) hemR(281,364)->(280,361) sleeveL(199,284)->(204,282) sleeveR(309,284)->(309,282) ring0(275,221)->(276,220) ring2(275,217)->(276,216) ring4(234,217)->(232,216) ring6(234,217)->(232,216) ring8(233,221)->(231,220) ring10(240,235)->(239,234) ring12(253,239)->(255,238) ring14(268,235)->(269,234)
+  radius calibration pass 0: source width4 median 1.87, identity 1.25, factor c 1
+  radius calibration pass 1: source width4 median 1.87, identity 1.33, factor c 1.27
+  radius calibration pass 2: source width4 median 1.87, identity 1.75, factor c 1.56
+  radius calibration pass 3: source width4 median 1.87, identity 1.75, factor c 1.63
+  radius calibration pass 4: source width4 median 1.87, identity 1.75, factor c 1.69
+  radius calibration pass 5: source width4 median 1.87, identity 1.75, factor c 1.76
+  radius factor kept: c 1.56 (identity width error 6.5 %)
+  [round 6 remap] rows remapped 174, sleeve rows kept as is 0; stretch factor min 0.9 median 1.03 max 20.63; rows over 1.5: 30 FLAG
+  [round 7 rebuild] outline stroke width 9 px (source outline), ink luma 60, ring px 4662, interior ink px 442
+  [round 5 clip] unclipped: garment area 16394 px, outside the body edge 338 px, UNCLIPPED overshoot: 0 edge samples beyond body+profile, worst 0 px; clip removed 0 px (0 % of the garment, 0 % of the part outside the body edge)
+  [round 3] control pairs 75, worst control residual 4,12 px at t(201,202) s(200,236), dropped paths 0
+    C1 signed C1, 48 samples: torso 37 (shortfall worst 8,5, 5 over 2; overshoot worst 20,0, 2 over 8), slanted 11 (shortfall worst 3,6, 1 over 2; overshoot worst 15,7, 7 over 8), hem row -0,6 px against expected -> shortfall 8,5 overshoot 20,0 FAIL
+    source edge to target edge: mean 2,69 95th 13,6 max 19,9 | target edge to source edge: mean 1,34 95th 5,4 max 10,6
+    leave-one-out (landmark and its rows +-10 left out): shL 35,2; shR 34,6; top 6,4; bottom 10,3; 
+    worst leave-one-out 35,2 px (shL)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 11,4 px at ray 13 (limit 2) FAIL; source offsets min -68,0 max 4,0, result min -67,0 max 1,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,741 result 0,739 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,652 result 0,648 (0,5 %, limit 5) PASS
+
+    C2 (collar ring ink bbox): width/shoulders source 0.398 result 0.73 (83.3 %), height/torso source 0.095 result 0.121 (26.9 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.891, source ratio (garment / body, rows with garment) 0.873, required >= 0.83 -> PASS
+    C4 topology: source ink 148 px, components 1, loops 0 | result ink 353 px, components 1, loops 0
+    C4 width4: source median 1.87 IQR 1.33-2.25; result median 2.25 (20.2 %) IQR 1.75-4.25; limit 10 %
+== vanilla fat garment (IMO) -> WDI Fat
+  vanilla: top 152 bottom 451 neck 168 shoulders 240 armpits 246(share) waist 257 hips 316 crotch 451(bottom) weakWaist weakHip
+  WDI    : top 157 bottom 448 neck 173 shoulders 240 armpits 247(share) waist 259 hips 317 crotch 442(notch) weakWaist weakHip
+  outline: tight (body outline + 1 px)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): neckL neckR shL shR top bottom; dropped as weak: armL armR waistL waistR hipL hipR
+  anchors (garment features by relation): hemL(212,422)->(226,420) hemR(296,422)->(293,420) sleeveL(113,302)->(121,303) sleeveR(395,302)->(394,303) ring0(305,207)->(305,210) ring2(297,185)->(298,189) ring4(211,185)->(220,189) ring6(211,185)->(220,189) ring8(203,207)->(213,210) ring10(228,233)->(234,235) ring12(253,240)->(258,242) ring14(280,233)->(281,235)
+  radius calibration pass 0: source width4 median 2.44, identity 1.87, factor c 1
+  radius calibration pass 1: source width4 median 2.44, identity 1.87, factor c 1.17
+  radius calibration pass 2: source width4 median 2.44, identity 2.25, factor c 1.38
+  radius calibration pass 3: source width4 median 2.44, identity 2.25, factor c 1.45
+  radius calibration pass 4: source width4 median 2.44, identity 2.44, factor c 1.52
+  radius factor kept: c 1.52 (identity width error 0 %)
+  [round 6 remap] rows remapped 266, sleeve rows kept as is 0; stretch factor min 1.09 median 1.15 max 6.13; rows over 1.5: 24 FLAG
+  [round 7 rebuild] outline stroke width 9 px (source outline), ink luma 60, ring px 8111, interior ink px 533
+  [round 5 clip] unclipped: garment area 59829 px, outside the body edge 571 px, UNCLIPPED overshoot: 20 edge samples beyond body+profile, worst 11 px; clip removed 50 px (0.1 % of the garment, 8.8 % of the part outside the body edge)
+  [round 3] control pairs 77, worst control residual 1,35 px at t(136,240) s(116,240), dropped paths 0
+    C1 signed C1, 48 samples: torso 11 (shortfall worst 0,0, 0 over 2; overshoot worst 18,9, 11 over 8), slanted 37 (shortfall worst 0,0, 0 over 2; overshoot worst 22,6, 31 over 8), hem row -0,7 px against expected -> shortfall 0,7 overshoot 22,6 FAIL
+    source edge to target edge: mean 0,81 95th 2,2 max 5,7 | target edge to source edge: mean 0,85 95th 3,0 max 8,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 3,0; neckR 2,5; shL 4,8; shR 2,7; top 1,0; bottom 0,4; 
+    worst leave-one-out 4,8 px (shL)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 20,0 px at ray 7 (limit 2) FAIL; source offsets min -29,0 max 0,0, result min -25,0 max 1,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,913 result 0,911 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,736 result 0,870 (18,3 %, limit 5) FAIL
+
+    C2 (collar ring ink bbox): width/shoulders source 0.392 result 0.483 (23.4 %), height/torso source 0.191 result 0.196 (2.7 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.915, source ratio (garment / body, rows with garment) 0.783, required >= 0.744 -> PASS
+    C4 topology: source ink 463 px, components 1, loops 0 | result ink 533 px, components 1, loops 0
+    C4 width4: source median 2.44 IQR 2.25-2.67; result median 2.3 (-5.9 %) IQR 2.25-2.75; limit 10 %
+== vanilla hulk garment (IMO) -> WDI Hulk
+  vanilla: top 128 bottom 507 neck 152 shoulders 240 armpits 312(min) waist 360 hips 375 crotch 507(bottom) weakHip
+  WDI    : top 160 bottom 501 neck 161 shoulders 257 armpits 311(min) waist 371 hips 386 crotch 501(bottom) weakWaist
+  outline: tight (body outline + 1 px)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): shL shR armL armR top bottom; dropped as weak: neckL neckR waistL waistR hipL hipR
+  anchors (garment features by relation): hemL(203,418)->(210,421) hemR(305,418)->(302,421) sleeveL(114,294)->(142,309) sleeveR(394,294)->(370,309) ring0(307,198)->(304,223) ring2(299,178)->(301,205) ring4(299,178)->(301,205) ring6(209,179)->(206,205) ring8(201,198)->(203,223) ring10(216,236)->(221,257) ring12(253,251)->(253,270) ring14(292,236)->(286,257)
+  radius calibration pass 0: source width4 median 2.58, identity 2.25, factor c 1
+  radius calibration pass 1: source width4 median 2.58, identity 2.25, factor c 1.09
+  radius calibration pass 2: source width4 median 2.58, identity 2.3, factor c 1.18
+  radius calibration pass 3: source width4 median 2.58, identity 2.58, factor c 1.26
+  radius factor kept: c 1.26 (identity width error 0 %)
+  [round 6 remap] rows remapped 251, sleeve rows kept as is 0; stretch factor min 1.04 median 1.13 max 7.1; rows over 1.5: 23 FLAG
+  [round 7 rebuild] outline stroke width 10 px (source outline), ink luma 60, ring px 8545, interior ink px 607
+  [round 5 clip] unclipped: garment area 46877 px, outside the body edge 502 px, UNCLIPPED overshoot: 4 edge samples beyond body+profile, worst 2 px; clip removed 5 px (0 % of the garment, 1 % of the part outside the body edge)
+  [round 3] control pairs 77, worst control residual 1,19 px at t(377,311) s(396,312), dropped paths 0
+    C1 signed C1, 48 samples: torso 5 (shortfall worst 0,0, 0 over 2; overshoot worst 11,0, 2 over 8), slanted 43 (shortfall worst 0,0, 0 over 2; overshoot worst 24,3, 27 over 8), hem row -0,6 px against expected -> shortfall 0,6 overshoot 24,3 FAIL
+    source edge to target edge: mean 1,13 95th 3,6 max 6,7 | target edge to source edge: mean 1,27 95th 5,0 max 7,0
+    leave-one-out (landmark and its rows +-10 left out): shL 4,6; shR 4,3; armL 16,8; armR 16,9; top 1,4; bottom 6,7; 
+    worst leave-one-out 16,9 px (armR)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 23,2 px at ray 14 (limit 2) FAIL; source offsets min -86,0 max -2,5, result min -78,0 max 1,5
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,773 result 0,771 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,633 result 0,698 (10,2 %, limit 5) FAIL
+
+    C2 (collar ring ink bbox): width/shoulders source 0.363 result 0.579 (59.3 %), height/torso source 0.201 result 0.202 (0.9 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.84, source ratio (garment / body, rows with garment) 0.756, required >= 0.718 -> PASS
+    C4 topology: source ink 607 px, components 1, loops 0 | result ink 607 px, components 1, loops 0
+    C4 width4: source median 2.58 IQR 2.25-3.1; result median 2.44 (-5.3 %) IQR 1.99-2.79; limit 10 %
+== vanilla female garment (IMO) -> WDI Female
+  vanilla: top 152 bottom 451 neck 160 shoulders 236 armpits 280(min) waist 292 hips 351 crotch 451(bottom) weakHip
+  WDI    : top 173 bottom 443 neck 179 shoulders 252 armpits 271(share) waist 300 hips 354 crotch 436(notch) weakHip
+  outline: tight (body outline + 1 px)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): neckL neckR shL shR waistL waistR top bottom; dropped as weak: armL armR hipL hipR
+  anchors (garment features by relation): hemL(218,372)->(222,372) hemR(290,372)->(287,372) sleeveL(189,286)->(199,294) sleeveR(318,286)->(309,294) ring0(277,222)->(273,236) ring2(276,216)->(271,230) ring4(234,213)->(239,228) ring6(234,213)->(239,228) ring8(231,222)->(236,236) ring10(240,236)->(242,248) ring12(253,241)->(253,253) ring14(268,237)->(266,249)
+  radius calibration pass 0: source width4 median 3.36, identity 2.75, factor c 1
+  radius calibration pass 1: source width4 median 3.36, identity 2.75, factor c 1.13
+  radius calibration pass 2: source width4 median 3.36, identity 3.25, factor c 1.27
+  radius calibration pass 3: source width4 median 3.36, identity 3.25, factor c 1.29
+  radius calibration pass 4: source width4 median 3.36, identity 3.25, factor c 1.32
+  radius calibration pass 5: source width4 median 3.36, identity 3.25, factor c 1.34
+  radius factor kept: c 1.27 (identity width error 3.1 %)
+  [round 6 remap] rows remapped 172, sleeve rows kept as is 0; stretch factor min 1.04 median 1.29 max 8; rows over 1.5: 29 FLAG
+  [round 7 rebuild] outline stroke width 8 px (source outline), ink luma 60, ring px 4974, interior ink px 347
+  [round 5 clip] unclipped: garment area 22081 px, outside the body edge 349 px, UNCLIPPED overshoot: 17 edge samples beyond body+profile, worst 1 px; clip removed 17 px (0.1 % of the garment, 4.9 % of the part outside the body edge)
+  [round 3] control pairs 79, worst control residual 0,64 px at t(313,299) s(324,291), dropped paths 0
+    C1 signed C1, 48 samples: torso 8 (shortfall worst 0,0, 0 over 2; overshoot worst 46,8, 6 over 8), slanted 40 (shortfall worst 0,0, 0 over 2; overshoot worst 30,3, 31 over 8), hem row -0,4 px against expected -> shortfall 0,4 overshoot 46,8 FAIL
+    source edge to target edge: mean 1,19 95th 4,1 max 6,4 | target edge to source edge: mean 1,00 95th 3,0 max 10,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 4,4; neckR 2,8; shL 3,5; shR 3,5; waistL 2,6; waistR 3,3; top 1,9; bottom 2,4; 
+    worst leave-one-out 4,4 px (neckL)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 26,4 px at ray 1 (limit 2) FAIL; source offsets min -76,0 max -4,0, result min -65,0 max 2,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,746 result 0,744 (diff 0,1 points, limit 3) PASS
+    C5 garment area / body area: source 0,482 result 0,625 (29,8 %, limit 5) FAIL
+
+    C2 (collar ring ink bbox): width/shoulders source 0.329 result 0.451 (37.1 %), height/torso source 0.104 result 0.1 (3.5 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.942, source ratio (garment / body, rows with garment) 0.72, required >= 0.684 -> PASS
+    C4 topology: source ink 290 px, components 1, loops 0 | result ink 347 px, components 1, loops 0
+    C4 width4: source median 3.36 IQR 3.1-3.75; result median 3.29 (-2.1 %) IQR 2.79-4.02; limit 10 %
+== vanilla thin garment (IMO) -> WDI Thin_Female
+  vanilla: top 172 bottom 435 neck 176 shoulders 236 armpits 247(share) waist 264 hips 316 crotch 435(bottom) weakWaist weakHip
+  WDI    : top 170 bottom 429 neck 176 shoulders 246 armpits 274(min) waist 285 hips 336 crotch 429(bottom) weakHip
+  outline: WDI offset profile of ShirtBasic_Thin_Female (width 14, row 300 L0 R0)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): shL shR top bottom; dropped as weak: neckL neckR armL armR waistL waistR hipL hipR
+  anchors (garment features by relation): hemL(226,364)->(224,359) hemR(281,364)->(282,359) sleeveL(199,284)->(204,280) sleeveR(309,284)->(308,280) ring0(275,221)->(274,218) ring2(275,217)->(274,214) ring4(234,217)->(234,214) ring6(234,217)->(234,214) ring8(233,221)->(233,218) ring10(240,235)->(240,232) ring12(253,239)->(255,235) ring14(268,235)->(267,232)
+  radius calibration pass 0: source width4 median 1.87, identity 1.25, factor c 1
+  radius calibration pass 1: source width4 median 1.87, identity 1.33, factor c 1.27
+  radius calibration pass 2: source width4 median 1.87, identity 1.75, factor c 1.56
+  radius calibration pass 3: source width4 median 1.87, identity 1.75, factor c 1.63
+  radius calibration pass 4: source width4 median 1.87, identity 1.75, factor c 1.69
+  radius calibration pass 5: source width4 median 1.87, identity 1.75, factor c 1.76
+  radius factor kept: c 1.56 (identity width error 6.5 %)
+  [round 6 remap] rows remapped 180, sleeve rows kept as is 0; stretch factor min 0.86 median 1.03 max 6.19; rows over 1.5: 18 FLAG
+  [round 7 rebuild] outline stroke width 9 px (source outline), ink luma 60, ring px 4761, interior ink px 149
+  [round 5 clip] unclipped: garment area 17147 px, outside the body edge 120 px, UNCLIPPED overshoot: 15 edge samples beyond body+profile, worst 2 px; clip removed 16 px (0.1 % of the garment, 13.3 % of the part outside the body edge)
+  [round 3] control pairs 75, worst control residual 6,30 px at t(198,246) s(200,236), dropped paths 0
+    C1 signed C1, 48 samples: torso 37 (shortfall worst 10,4, 8 over 2; overshoot worst 21,2, 2 over 8), slanted 11 (shortfall worst 4,9, 1 over 2; overshoot worst 13,6, 5 over 8), hem row 0,0 px against expected -> shortfall 10,4 overshoot 21,2 FAIL
+    source edge to target edge: mean 3,43 95th 18,2 max 25,6 | target edge to source edge: mean 1,26 95th 7,0 max 12,8
+    leave-one-out (landmark and its rows +-10 left out): shL 13,2; shR 13,2; top 1,7; bottom 0,7; 
+    worst leave-one-out 13,2 px (shL)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 16,4 px at ray 13 (limit 2) FAIL; source offsets min -68,0 max 4,0, result min -67,0 max 2,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,741 result 0,741 (diff 0,0 points, limit 3) PASS
+    C5 garment area / body area: source 0,652 result 0,666 (2,2 %, limit 5) PASS
+
+    C2 (collar ring ink bbox): width/shoulders source 0.398 result 0.448 (12.6 %), height/torso source 0.095 result 0.093 (2.5 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.915, source ratio (garment / body, rows with garment) 0.873, required >= 0.83 -> PASS
+    C4 topology: source ink 148 px, components 1, loops 0 | result ink 149 px, components 1, loops 0
+    C4 width4: source median 1.87 IQR 1.33-2.25; result median 1.75 (-6.5 %) IQR 1.33-1.99; limit 10 %
+== vanilla fat garment (IMO) -> WDI Fat_Female
+  vanilla: top 152 bottom 451 neck 168 shoulders 240 armpits 246(share) waist 257 hips 316 crotch 451(bottom) weakWaist weakHip
+  WDI    : top 157 bottom 448 neck 175 shoulders 243 armpits 249(share) waist 259 hips 317 crotch 442(notch) weakWaist weakHip
+  outline: WDI offset profile of ShirtBasic_Fat_Female (width 14, row 300 L8 R6)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): neckL neckR shL shR top bottom; dropped as weak: armL armR waistL waistR hipL hipR
+  anchors (garment features by relation): hemL(212,422)->(226,420) hemR(296,422)->(294,420) sleeveL(113,302)->(122,303) sleeveR(395,302)->(395,303) ring0(305,207)->(306,210) ring2(297,185)->(299,189) ring4(211,185)->(220,189) ring6(211,185)->(220,189) ring8(203,207)->(214,210) ring10(228,233)->(234,235) ring12(253,240)->(259,242) ring14(280,233)->(281,235)
+  radius calibration pass 0: source width4 median 2.44, identity 1.87, factor c 1
+  radius calibration pass 1: source width4 median 2.44, identity 1.87, factor c 1.17
+  radius calibration pass 2: source width4 median 2.44, identity 2.25, factor c 1.38
+  radius calibration pass 3: source width4 median 2.44, identity 2.25, factor c 1.45
+  radius calibration pass 4: source width4 median 2.44, identity 2.44, factor c 1.52
+  radius factor kept: c 1.52 (identity width error 0 %)
+  [round 6 remap] rows remapped 266, sleeve rows kept as is 0; stretch factor min 1.16 median 1.21 max 8.89; rows over 1.5: 31 FLAG
+  [round 7 rebuild] outline stroke width 9 px (source outline), ink luma 60, ring px 8379, interior ink px 555
+  [round 5 clip] unclipped: garment area 63441 px, outside the body edge 4036 px, UNCLIPPED overshoot: 47 edge samples beyond body+profile, worst 14 px; clip removed 87 px (0.1 % of the garment, 2.2 % of the part outside the body edge)
+  [round 3] control pairs 77, worst control residual 0,79 px at t(327,175) s(328,171), dropped paths 0
+    C1 signed C1, 48 samples: torso 11 (shortfall worst 0,0, 0 over 2; overshoot worst 25,4, 11 over 8), slanted 37 (shortfall worst 0,0, 0 over 2; overshoot worst 27,0, 37 over 8), hem row -0,7 px against expected -> shortfall 0,7 overshoot 27,0 FAIL
+    source edge to target edge: mean 0,73 95th 2,2 max 5,7 | target edge to source edge: mean 0,84 95th 3,0 max 8,0
+    leave-one-out (landmark and its rows +-10 left out): neckL 2,5; neckR 2,5; shL 3,4; shR 0,5; top 1,5; bottom 1,3; 
+    worst leave-one-out 3,4 px (shL)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 26,5 px at ray 7 (limit 2) FAIL; source offsets min -29,0 max 0,0, result min -25,0 max 8,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,913 result 0,911 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,736 result 0,915 (24,3 %, limit 5) FAIL
+
+    C2 (collar ring ink bbox): width/shoulders source 0.392 result 0.486 (24.1 %), height/torso source 0.191 result 0.196 (2.7 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.913, source ratio (garment / body, rows with garment) 0.783, required >= 0.744 -> PASS
+    C4 topology: source ink 463 px, components 1, loops 0 | result ink 555 px, components 1, loops 0
+    C4 width4: source median 2.44 IQR 2.25-2.67; result median 2.44 (0 %) IQR 1.99-3.1; limit 10 %
+== vanilla hulk garment (IMO) -> WDI Hulk_Female
+  vanilla: top 128 bottom 507 neck 152 shoulders 240 armpits 312(min) waist 360 hips 375 crotch 507(bottom) weakHip
+  WDI    : top 185 bottom 499 neck 189 shoulders 277 armpits 313(min) waist 378 hips 440 crotch 499(bottom) weakHip
+  outline: WDI offset profile of ShirtBasic_Hulk_Female (width 14, row 300 L1 R0)
+  contour anchors: 48, bias out 0, hem down 0, sleeves out 0
+  anchors (body): shL shR armL armR waistL waistR top bottom; dropped as weak: neckL neckR hipL hipR
+  anchors (garment features by relation): hemL(203,418)->(210,425) hemR(305,418)->(302,425) sleeveL(114,294)->(151,323) sleeveR(394,294)->(361,323) ring0(307,198)->(297,243) ring2(299,178)->(295,226) ring4(299,178)->(295,226) ring6(209,179)->(213,227) ring8(201,198)->(211,243) ring10(216,236)->(223,274) ring12(253,251)->(253,286) ring14(292,236)->(285,274)
+  radius calibration pass 0: source width4 median 2.58, identity 2.25, factor c 1
+  radius calibration pass 1: source width4 median 2.58, identity 2.25, factor c 1.09
+  radius calibration pass 2: source width4 median 2.58, identity 2.3, factor c 1.18
+  radius calibration pass 3: source width4 median 2.58, identity 2.58, factor c 1.26
+  radius factor kept: c 1.26 (identity width error 0 %)
+  [round 6 remap] rows remapped 231, sleeve rows kept as is 0; stretch factor min 1.02 median 1.17 max 5.59; rows over 1.5: 23 FLAG
+  [round 7 rebuild] outline stroke width 10 px (source outline), ink luma 60, ring px 8094, interior ink px 556
+  [round 5 clip] unclipped: garment area 38224 px, outside the body edge 456 px, UNCLIPPED overshoot: 41 edge samples beyond body+profile, worst 2 px; clip removed 43 px (0.1 % of the garment, 9.4 % of the part outside the body edge)
+  [round 3] control pairs 79, worst control residual 1,86 px at t(138,313) s(112,312), dropped paths 0
+    C1 signed C1, 48 samples: torso 5 (shortfall worst 0,0, 0 over 2; overshoot worst 9,6, 3 over 8), slanted 43 (shortfall worst 0,0, 0 over 2; overshoot worst 19,7, 27 over 8), hem row -0,7 px against expected -> shortfall 0,7 overshoot 19,7 FAIL
+    source edge to target edge: mean 1,43 95th 5,0 max 8,1 | target edge to source edge: mean 1,62 95th 7,0 max 9,9
+    leave-one-out (landmark and its rows +-10 left out): shL 0,9; shR 0,9; armL 30,6; armR 30,6; waistL 2,3; waistR 1,8; top 2,1; bottom 1,7; 
+    worst leave-one-out 30,6 px (armL)
+    C1 round 4 (garment edge vs body edge + profile), 48 samples: shortfall over 2: 0 (worst 0), overshoot over 8: 0 (worst 0) -> PASS
+    C1 outline offset vs source offset x local scale, 16 rays: worst 20,3 px at ray 14 (limit 2) FAIL; source offsets min -86,0 max -2,5, result min -72,0 max 5,0
+    C2 neckline in the alpha: width/shoulders source 0,000 result 0,000 (0,0 %), depth/torso source 0,000 result 0,000 (0,0 %), limit 5 % n/a (no opening in the alpha)
+    C3 hem at fraction of torso length: source 0,773 result 0,771 (diff 0,2 points, limit 3) PASS
+    C5 garment area / body area: source 0,633 result 0,684 (8,0 %, limit 5) FAIL
+
+    C2 (collar ring ink bbox): width/shoulders source 0.363 result 0.516 (42.1 %), height/torso source 0.201 result 0.201 (0.1 %), limit 5 %
+    C5 REBASED (Audit 2026-11-03): result garment / target outline area 0.84, source ratio (garment / body, rows with garment) 0.756, required >= 0.718 -> PASS
+    C4 topology: source ink 607 px, components 1, loops 0 | result ink 556 px, components 1, loops 0
+    C4 width4: source median 2.58 IQR 2.25-3.1; result median 2.58 (0 %) IQR 1.99-2.91; limit 10 %

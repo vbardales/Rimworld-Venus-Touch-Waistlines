@@ -1,0 +1,123 @@
+using System;
+using System.Linq;
+using System.Drawing;
+using System.Drawing.Imaging;
+public static class Nav {
+  public static byte[] Ld(string p, out int w, out int h) { using (Bitmap b = new Bitmap(p)) { w = b.Width; h = b.Height; BitmapData d = b.LockBits(new Rectangle(0,0,w,h), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb); byte[] x = new byte[w*h*4]; System.Runtime.InteropServices.Marshal.Copy(d.Scan0, x, 0, x.Length); b.UnlockBits(d); return x; } }
+  public static void Sv(byte[] a, int w, int h, string p) { using (Bitmap b = new Bitmap(w, h, PixelFormat.Format32bppArgb)) { BitmapData d = b.LockBits(new Rectangle(0,0,w,h), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb); System.Runtime.InteropServices.Marshal.Copy(a, 0, d.Scan0, a.Length); b.UnlockBits(d); b.Save(p); } }
+  static bool On(byte[] a, int w, int h, int x, int y) { return x >= 0 && y >= 0 && x < w && y < h && a[(y*w+x)*4+3] > 40; }
+  static void Edges(byte[] a, int w, int h, out int[] L, out int[] R, out int top) { L = new int[h]; R = new int[h]; top = -1;
+    for (int y = 0; y < h; y++) { L[y] = -1; R[y] = -1; for (int x = 0; x < w; x++) if (On(a, w, h, x, y)) { if (L[y] < 0) L[y] = x; R[y] = x + 1; } if (L[y] >= 0 && top < 0) top = y; }
+    for (int y = 1; y < h; y++) if (L[y] < 0 && L[y-1] >= 0) { L[y] = L[y-1]; R[y] = R[y-1]; } for (int y = h - 2; y >= 0; y--) if (L[y] < 0 && L[y+1] >= 0) { L[y] = L[y+1]; R[y] = R[y+1]; } }
+  static int[] Bottoms(byte[] a, int w, int h) { int[] b = new int[w]; for (int x = 0; x < w; x++) { b[x] = -1; for (int y = h - 1; y >= 0; y--) if (On(a, w, h, x, y)) { b[x] = y; break; } } return b; }
+  // Pink line (Virginie: the top garment stops on it): per column the LOWER of the top edges of WDI's boxers and panties, both
+  // sprites scaled to the body size; columns with neither take the nearest column that has one. Approximation of the DLL's
+  // WaistLines (no gap closing, no smoothing, no per-body swap).
+  public static int[] Pink; public static double TAnchor = -1, SAnchor = -1;
+  public static void SetPink(string boxersP, string pantiesP, int w, int h) {
+    int[] a = TopLine(boxersP, w, h), b = TopLine(pantiesP, w, h); Pink = new int[w];
+    // only where both sprites are drawn: past the end of one, "the lower of the two" is just the other's side corner (Fat: panties
+    // alone at 314 beside 329, a notch in the hem); the gap fill below carries the last shared value out flat
+    for (int x = 0; x < w; x++) Pink[x] = a[x] >= 0 && b[x] >= 0 ? Math.Max(a[x], b[x]) : -1;
+    for (int x = 1; x < w; x++) if (Pink[x] < 0) Pink[x] = Pink[x-1]; for (int x = w - 2; x >= 0; x--) if (Pink[x] < 0) Pink[x] = Pink[x+1];
+    // median of 3: the waistband corner of one sprite pokes up one column (Fat: x 101 at 314 between 322 and 328), which cut a
+    // one-column slot up the side stroke (the holes in the Fat corner)
+    int[] m = (int[])Pink.Clone(); for (int x = 1; x < w - 1; x++) { int p = m[x-1], q = m[x], r = m[x+1]; Pink[x] = Math.Max(Math.Min(p, q), Math.Min(Math.Max(p, q), r)); } }
+  // Child, front (DLL SmoothChildFundoshiLine): one horizontal line, the median of the fundoshi's top edge + 1, not its frayed pixels
+  public static void SetPinkFlat(string loinclothP, int w, int h) {
+    int[] l = TopLine(loinclothP, w, h); int[] v = l.Where(y => y >= 0).OrderBy(y => y).ToArray(); int line = v[v.Length / 2] + 1;
+    SetPinkRow(line, w); }
+  // Virginie, 2026-11-03: the fundoshi line is too high for the child shirt; aim under the navel instead
+  public static void SetPinkRow(int row, int w) { Pink = new int[w]; for (int x = 0; x < w; x++) Pink[x] = row; }
+  static int[] TopLine(string p, int w, int h) { int sw, sh; byte[] a = Ld(p, out sw, out sh); int[] l = new int[w];
+    for (int x = 0; x < w; x++) { l[x] = -1; int sx = Math.Min(sw - 1, x * sw / w); for (int y = 0; y < h; y++) { int sy = Math.Min(sh - 1, y * sh / h); if (a[(sy*sw+sx)*4+3] > 40) { l[x] = y; break; } } }
+    // the outermost columns of a sprite are its side edge, not its top line (Hulk boxers: x 175 at 414 between nothing and 409),
+    // and the gap fill spread that value outwards: drop 2 columns at each end
+    for (int s = 0; s < 2; s++) { int a0 = Array.FindIndex(l, v => v >= 0), a1 = Array.FindLastIndex(l, v => v >= 0); if (a0 < 0) break; l[a0] = -1; l[a1] = -1; }
+    return l; }
+  // Bottom of the resized garment (Virginie: smudges at the bottom corners that spill out of the silhouette; the hem line redrawn
+  // straddling the edge, TailorMade's width). Near the side edges the outline is cut from the target garment as drawn (resizing each
+  // column of a slanted outline left spikes); the resized band keeps its fill, its dark ink cleared near the new bottom; the hem
+  // line is drawn only along the CUT (rows where the garment used to go on below), HemPx thick, half in, half out, and clipped to
+  // the garment's own silhouette, so nothing is drawn outside it. Also where the pink line rises above the navel (hip sides).
+  public static int HemPx = 0, SidePx = 14;
+  static void Fix(byte[] o, byte[] g, int w, int h, int nav, int[] bot) {
+    int[] din = new int[w*h]; var q = new System.Collections.Generic.Queue<int>();
+    for (int i = 0; i < w*h; i++) { if (g[i*4+3] <= 40) { din[i] = 0; q.Enqueue(i); } else din[i] = int.MaxValue; }
+    while (q.Count > 0) { int i = q.Dequeue(); int x = i % w, y = i / w; for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x+dx, yy = y+dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; int j = yy*w+xx; if (din[j] > din[i] + 1) { din[j] = din[i] + 1; q.Enqueue(j); } } }
+    for (int x = 0; x < w; x++) { if (bot[x] < 0) continue;
+      for (int y = Math.Min(nav, bot[x] - HemPx - 4); y <= bot[x] && y < h; y++) { if (y < 0) continue; int i = y*w+x;
+        // a column squeezed hard (Hulk side: 60 source rows into 10) brings up the slanted side outline from below, outside the
+        // garment's silhouette at that row: nothing stays outside it
+        if (g[i*4+3] <= 40) { o[i*4+3] = 0; continue; }
+        if (din[i] <= SidePx && g[i*4+3] > 40) { for (int c = 0; c < 4; c++) o[i*4+c] = g[i*4+c]; continue; }
+        if (o[i*4+3] <= 40 || y < bot[x] - HemPx - 4) continue; int l = (o[i*4] + o[i*4+1] + o[i*4+2]) / 3;
+        if (l < 90) { int k = y - 1; while (k > 0 && (o[(k*w+x)*4] + o[(k*w+x)*4+1] + o[(k*w+x)*4+2]) / 3 < 90) k--; for (int c = 0; c < 3; c++) o[i*4+c] = o[(k*w+x)*4+c]; } } }
+    var cut = new System.Collections.Generic.List<int>();
+    for (int y = 0; y < h - 1; y++) for (int x = 0; x < w; x++) { int i = y*w+x, j = i + w; if (o[i*4+3] > 40 && o[j*4+3] <= 40 && g[j*4+3] > 40) cut.Add(i); }
+    int up = HemPx / 2, down = HemPx - up;
+    foreach (int i in cut) { int x = i % w, y = i / w;
+      for (int dy = -up + 1; dy <= down; dy++) for (int dx = -1; dx <= 1; dx++) { int xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; int k = yy*w+xx;
+        if (g[k*4+3] <= 40) continue; if (dy > 0 && o[k*4+3] > 40 && din[k] <= SidePx) continue;
+        o[k*4] = 18; o[k*4+1] = 15; o[k*4+2] = 15; o[k*4+3] = 255; } } } // BGRA 18/15/15 = TailorMade's 0.06/0.06/0.07
+  // Origin of the corner smudges: WDI's shirt is wider than its body (ease), so once cut on the pink line its side edge hangs out
+  // past the narrower body below. Over the last TaperPx rows above the garment's bottom at that side, each row is squeezed so
+  // its outer edge moves from the garment's edge to the body's edge (linear in the row), and the corner meets the body outline.
+  public static int TaperPx = 0;
+  static void Taper(byte[] o, byte[] b, byte[] g, int w, int h) {
+    // Edges smoothed over rows (a per-row taper on a slanted edge left a comb), the new edge cut on that curve, and the side stroke
+    // redrawn by 2D distance from the new boundary (horizontal runs on a slanted edge also comb), at WDI's own width measured above.
+    int[] bot = Bottoms(o, w, h); byte[] src = (byte[])o.Clone(); int mid = w / 2;
+    Func<int, bool> dark = i => src[i*4+3] > 40 && (src[i*4] + src[i*4+1] + src[i*4+2]) / 3 < 90;
+    int[,] eo = new int[2, h], eb = new int[2, h];
+    for (int y = 0; y < h; y++) { eo[0, y] = eo[1, y] = eb[0, y] = eb[1, y] = -1;
+      for (int x = 0; x < w; x++) { if (src[(y*w+x)*4+3] > 40) { if (eo[0, y] < 0) eo[0, y] = x; eo[1, y] = x; } if (b[(y*w+x)*4+3] > 40) { if (eb[0, y] < 0) eb[0, y] = x; eb[1, y] = x; } } }
+    int[] wsSide = new int[2];
+    for (int side = 0; side < 2; side++) { int dir = side == 0 ? 1 : -1;
+      for (int y = 0; y < h; y++) { if (eo[side, y] < 0 || eb[side, y] < 0) continue; int bc = bot[eb[side, y]];
+        // only where that column was CUT (Hulk: WDI's own shirt ends at 353 under the waist notch, not a hem, and was tapered)
+        if (bc < 0 || bc + 1 >= h || g[((bc+1)*w + eb[side, y])*4+3] <= 40 || bc - y >= TaperPx || y - bc > TaperPx) continue;
+        if (wsSide[side] == 0) { int ry = Math.Max(0, y - 4), x = eo[side, ry], skip = 0, ws = 0; if (x >= 0) { while (skip < 3 && x >= 0 && x < w && !dark(ry*w+x)) { x += dir; skip++; } for (; ws < 16 && x >= 0 && x < w && dark(ry*w+x); x += dir) ws++; } wsSide[side] = Math.Max(2, ws); }
+        double so = 0, sb = 0; int n = 0; for (int k = -3; k <= 3; k++) { int yy = y + k; if (yy < 0 || yy >= h || eo[side, yy] < 0 || eb[side, yy] < 0) continue; so += eo[side, yy]; sb += eb[side, yy]; n++; } so /= n; sb /= n;
+        double t = y > bc ? 1.0 : Math.Min(1.0, 1.0 - (bc - y) / (double)TaperPx); if (side == 0 ? so >= sb : so <= sb) t = 0;
+        if (t <= 0) continue;
+        // Cutting the edge and redrawing a stroke left the inner side of the stroke stepping (old stroke remains + new one): the
+        // strip from the edge to a few stroke widths in is resampled instead, squeezed so the edge lands on e (on the smoothed
+        // curve), stroke carried whole from the raw edge ro.
+        int ro = eo[side, y]; double e = so + (sb - so) * t, L = ro + dir * 4 * wsSide[side];
+        if (side == 0 ? e <= ro : e >= ro) continue;
+        for (int x = 0; x < w; x++) { if (side == 0 ? x >= mid : x < mid) continue; int di = (y*w+x)*4;
+          if (side == 0 ? x < e : x > e) { o[di+3] = 0; continue; } if (side == 0 ? x >= L : x <= L) continue;
+          int sx = (int)Math.Round(ro + (x - e) * (L - ro) / (L - e)); sx = Math.Max(0, Math.Min(w - 1, sx));
+          for (int c = 0; c < 4; c++) o[di+c] = src[(y*w+sx)*4+c]; } } } }
+  static double Row(double ty, double tTop, double tNav, double tBot, double sTop, double sNav, double sBot) {
+    // TAnchor >= 0 (Virginie: compress only from the bust, or from under the breasts, to the navel): above the anchor the band
+    // top..anchor is scaled as the bodies are (SAnchor placed by relation on the vanilla body), so the neckline keeps its
+    // proportion; the extra compression is only between the anchor and the navel.
+    if (TAnchor >= 0) { if (ty <= TAnchor) return sTop + (ty - tTop) * (SAnchor - sTop) / Math.Max(1.0, TAnchor - tTop);
+      if (ty <= tNav) return SAnchor + (ty - TAnchor) * (sNav - SAnchor) / Math.Max(1.0, tNav - TAnchor); }
+    if (ty <= tNav) return sTop + (ty - tTop) * (sNav - sTop) / Math.Max(1.0, tNav - tTop);
+    return sNav + (ty - tNav) * (sBot - sNav) / Math.Max(1.0, tBot - tNav); }
+  // Vertical: above the navel the source band top..navel maps onto the target band top..navel; below it, per column, the source band
+  // navel..own hem maps onto target navel..WDI hem, so the stretch varies with the column (hem lines not straight). Horizontal: per row,
+  // position between the body edges carried over (rows paired by the vertical map).
+  public static string Run(string sBodyP, string sGarP, string tBodyP, string tGarP, double sNav, double tNav, string outP) {
+    int w, h, w2, h2; byte[] sB = Ld(sBodyP, out w, out h), sG = Ld(sGarP, out w2, out h2), tB = Ld(tBodyP, out w2, out h2), tG = Ld(tGarP, out w2, out h2);
+    int[] sL, sR, tL, tR; int sTop, tTop, gTop; Edges(sB, w, h, out sL, out sR, out sTop); Edges(tB, w, h, out tL, out tR, out tTop);
+    { int[] a, b; Edges(sG, w, h, out a, out b, out gTop); } int tgTop; { int[] a, b; Edges(tG, w, h, out a, out b, out tgTop); }
+    int[] sBot = Bottoms(sG, w, h), tBot = Bottoms(tG, w, h);
+    if (Pink != null) for (int x = 0; x < w; x++) if (tBot[x] >= 0) tBot[x] = Math.Min(tBot[x], Pink[x]);
+    int sMidBot = sBot[w/2], tMidBot = tBot[w/2];
+    byte[] o = new byte[w*h*4]; int n = 0;
+    for (int x = 0; x < w; x++) { if (tBot[x] < 0) continue;
+      for (int y = Math.Min(tTop, tgTop); y <= tBot[x]; y++) {
+        double sy = Row(y, tTop, tNav, tBot[x], sTop, sNav, sMidBot), sx = 0;
+        for (int it = 0; it < 2; it++) { int ry = Math.Max(0, Math.Min(h - 1, (int)Math.Round(sy))); int yy = Math.Max(0, Math.Min(h - 1, y));
+          double u = (x + 0.5 - tL[yy]) / Math.Max(1.0, tR[yy] - tL[yy]); sx = sL[ry] + u * (sR[ry] - sL[ry]);
+          int cx = Math.Max(0, Math.Min(w - 1, (int)sx)); int sb = sBot[cx] >= 0 ? sBot[cx] : sMidBot; sy = Row(y, tTop, tNav, tBot[x], sTop, sNav, sb); }
+        int ix = (int)Math.Floor(sx), iy = (int)Math.Floor(sy); if (!On(sG, w, h, ix, iy)) continue;
+        int si = (iy*w+ix)*4, di = (y*w+x)*4; for (int c = 0; c < 4; c++) o[di+c] = sG[si+c]; n++; } }
+    if (HemPx > 0) { Fix(o, tG, w, h, (int)tNav, tBot); if (TaperPx > 0) Taper(o, tB, tG, w, h); }
+    Sv(o, w, h, outP);
+    return "source top " + sTop + " navel " + sNav + " hem@mid " + sMidBot + "; target top " + tTop + " navel " + tNav + " WDI hem@mid " + tMidBot + "; px " + n; }
+}

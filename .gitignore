@@ -1,72 +1,15 @@
+# Branch cloud-work (Virginie 2026-11-08: everything but Build, to work in the cloud and not only locally). The full list of
+# what main keeps out of git, and why (art that grants no licence, ATTRIBUTION.md), is the .gitignore of main.
+
 # Build intermediates. Directory.Build.props sends them outside the published folder: Mod/ goes
 # to the Workshop as it stands, so an obj/ left there would ship the publicised Assembly-CSharp.dll.
-# The assembly itself is committed, because the mod is installed by junction and has to work
-# without a build step.
 build/
 Source/**/obj/
 Source/**/bin/
 *.pdb
 
-# Development environments.
-.vs/
-.vscode/
-.idea/
-*.user
-*.suo
-
-# Claude Code session worktrees and local settings.
-.claude/
-
-# Ephemeral Workshop-page research pulled by Firecrawl.
-.firecrawl/
-
-# Kept on the author's machine only, and never in a public repository: they are computed from,
-# or paint over, art that grants no licence (General Textures Collection, WDI's Realistic
-# Bodies). See ATTRIBUTION.md. The GIMP projects under scripts/ are painted over WDI's bodies.
-Parked/
-scripts/*.xcf
-
-# Compiled textures: a .dds is a conversion product, heavy and not readable in a diff. General
-# Textures Collection ships them beside its PNGs and this mod reads the PNGs, so none belongs here.
-*.dds
-*.DDS
-
-# Run evidence stays on disk and out of git: reports, logs and screenshots weigh megabytes and a
-# later run overwrites them. What is kept in git is the text summary beside each evidence folder,
-# docs/runs/<date>_<hour>/README.md, which says what the run was and what it showed.
-docs/runs/*/evidence/
-docs/runs/*/evidence-*/
-
-# Any report folder a Pickle run leaves, wherever it is copied to.
-evidence/
-evidence-*/
-Evidence/
-PickleReports*/
-pickle-reports*/
-
-# Preview renderer controls, local only (PUBLISHING.md).
-Art/.render/
-
-# Diagnostic garments computed from WDI's bodies (no licence): kept on disk for the Pickle
-# passes, never in git, and to be moved out of Mod/ before any upload.
-Mod/Textures/Venus/Diagnostics/
-Mod/Defs/Diagnostic*.xml
-Mod/Patches/Diagnostic*.xml
-
-# Raw Pickle reports copied into a run folder: summary.md, summary.json and junit.xml are kept,
-# the rest weighs megabytes and a stale build proves nothing (WELCOME.md).
-docs/runs/*/report.html
-docs/runs/*/messages.ndjson
-docs/runs/*/Player.log
-docs/runs/*/screenshots/
-
-# Windows Explorer folder settings (WELCOME.md: never in Mod/).
+# Windows Explorer folder settings.
 desktop.ini
 
-# Working images written by scripts/*.js (studies, previews). Kept in git history up to
-# 2026-10-15, then removed (PUBLISHING.md, Images: Art/ holds the minimal set only).
-Art/work/
-
-# Pickle runs land in Inbox/ and failures wait in Parked/ (AGENTS.md, Test evidence); only Evidence/ holds proofs.
-Tests/Pickle/Inbox/
-Tests/Pickle/Parked/
+# Over GitHub's 100 MB limit per file (1.6 GB of log).
+Art/work/transfer-proto/s15B.log

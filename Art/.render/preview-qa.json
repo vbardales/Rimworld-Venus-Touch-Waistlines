@@ -1,0 +1,94 @@
+{
+  "version": "1.6",
+  "configSource": "Art/Preview.config.json",
+  "legacyConfig": false,
+  "paletteSource": null,
+  "copySource": null,
+  "iconBadgeCorner": "bottom-right",
+  "elements": {
+    ".title-main": {
+      "bounds": {
+        "x": 48,
+        "y": 30,
+        "width": 319.734375,
+        "height": 83.59375
+      },
+      "fonts": [
+        {
+          "familyName": "RimWordFont",
+          "postScriptName": "RimWordFont",
+          "isCustomFont": true,
+          "glyphCount": 21
+        }
+      ]
+    },
+    ".suffix": {
+      "bounds": null,
+      "fonts": []
+    },
+    ".tag": {
+      "bounds": null,
+      "fonts": []
+    },
+    "p": {
+      "bounds": {
+        "x": 48,
+        "y": 150.1875,
+        "width": 362.25,
+        "height": 60.875
+      },
+      "fonts": [
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI",
+          "isCustomFont": false,
+          "glyphCount": 62
+        }
+      ]
+    },
+    ".version": {
+      "bounds": {
+        "x": 846.7371826171875,
+        "y": 4.737185001373291,
+        "width": 44.525634765625,
+        "height": 44.52562856674194
+      },
+      "fonts": [
+        {
+          "familyName": "Segoe UI",
+          "postScriptName": "SegoeUI-Bold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ]
+    }
+  },
+  "layout": {
+    "panel": {
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 519.671875,
+        "height": 232.0625
+      }
+    },
+    "copy": {
+      "bounds": {
+        "x": 48,
+        "y": 30,
+        "width": 430,
+        "height": 181.0625
+      }
+    }
+  },
+  "iconBadgeAlpha": {
+    "width": 1275,
+    "height": 1234,
+    "bounds": {
+      "x": 4,
+      "y": 5,
+      "width": 1271,
+      "height": 1182
+    }
+  }
+}

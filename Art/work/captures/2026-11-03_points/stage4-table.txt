@@ -1,0 +1,156 @@
+﻿WDI Thin_Female + WDI ShirtBasic|extremes|top|256|176|detected
+WDI Thin_Female + WDI ShirtBasic|extremes|bottom|256|418|detected
+WDI Thin_Female + WDI ShirtBasic|extremes|leftmost|203|249|detected
+WDI Thin_Female + WDI ShirtBasic|extremes|rightmost|309|249|detected
+WDI Thin_Female + WDI ShirtBasic|head/neck|neck base L|236|176|detected
+WDI Thin_Female + WDI ShirtBasic|head/neck|neck base R|276|176|detected
+WDI Thin_Female + WDI ShirtBasic|head/neck|jugular notch|256|176|to place
+WDI Thin_Female + WDI ShirtBasic|shoulders|shoulder tip L|204|246|detected
+WDI Thin_Female + WDI ShirtBasic|shoulders|shoulder tip R|308|246|detected
+WDI Thin_Female + WDI ShirtBasic|shoulders|armpit L|212|274|detected
+WDI Thin_Female + WDI ShirtBasic|shoulders|armpit R|300|274|detected
+WDI Thin_Female + WDI ShirtBasic|chest|breast apex L|221|264|detected
+WDI Thin_Female + WDI ShirtBasic|chest|breast apex R|290|264|detected
+WDI Thin_Female + WDI ShirtBasic|chest|cleavage|256|264|to place
+WDI Thin_Female + WDI ShirtBasic|chest|under-breast fold L|221|274|to place
+WDI Thin_Female + WDI ShirtBasic|chest|under-breast fold R|290|274|to place
+WDI Thin_Female + WDI ShirtBasic|torso|waist L|220|285|detected
+WDI Thin_Female + WDI ShirtBasic|torso|waist R|292|285|detected
+WDI Thin_Female + WDI ShirtBasic|torso|navel|256|345|detected
+WDI Thin_Female + WDI ShirtBasic|torso|hip L|208|336|to place
+WDI Thin_Female + WDI ShirtBasic|torso|hip R|304|336|to place
+WDI Thin_Female + WDI ShirtBasic|pelvis|groin crease L|229|360|to place
+WDI Thin_Female + WDI ShirtBasic|pelvis|groin crease R|283|360|to place
+WDI Thin_Female + WDI ShirtBasic|pelvis|sex|256|383|detected
+WDI Thin_Female + WDI ShirtBasic|pelvis|crotch point|256|406|to place
+WDI Thin_Female + WDI ShirtBasic|legs|leg bottom L|243|422|detected
+WDI Thin_Female + WDI ShirtBasic|legs|leg bottom R|269|422|detected
+WDI Thin_Female + WDI ShirtBasic|arms|elbow L|||not in texture
+WDI Thin_Female + WDI ShirtBasic|arms|elbow R|||not in texture
+WDI Thin_Female + WDI ShirtBasic|arms|wrist L|||not in texture
+WDI Thin_Female + WDI ShirtBasic|arms|wrist R|||not in texture
+WDI Thin_Female + WDI ShirtBasic|arms|hand end L|||not in texture
+WDI Thin_Female + WDI ShirtBasic|arms|hand end R|||not in texture
+WDI Thin_Female + WDI ShirtBasic|legs|knee L|||not in texture
+WDI Thin_Female + WDI ShirtBasic|legs|knee R|||not in texture
+WDI Thin_Female + WDI ShirtBasic|legs|ankle L|||not in texture
+WDI Thin_Female + WDI ShirtBasic|legs|ankle R|||not in texture
+WDI Thin_Female + WDI ShirtBasic|axis|midline top|256|176|detected
+WDI Thin_Female + WDI ShirtBasic|axis|midline crotch|256|383|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment hemL|230|422|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment hemR|281|422|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring0|288|224|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring2|278|200|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring4|256|192|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring6|232|200|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring8|222|224|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring10|238|240|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring12|254|244|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment ring14|272|240|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment hem middle|256|425|detected
+WDI Thin_Female + WDI ShirtBasic|garment|garment sleeve end L|||not in texture
+WDI Thin_Female + WDI ShirtBasic|garment|garment sleeve end R|||not in texture
+WDI Fat_Female + WDI ShirtBasic|extremes|top|256|162|detected
+WDI Fat_Female + WDI ShirtBasic|extremes|bottom|257|448|detected
+WDI Fat_Female + WDI ShirtBasic|extremes|leftmost|108|315|detected
+WDI Fat_Female + WDI ShirtBasic|extremes|rightmost|406|315|detected
+WDI Fat_Female + WDI ShirtBasic|head/neck|neck base L|198|175|detected
+WDI Fat_Female + WDI ShirtBasic|head/neck|neck base R|316|175|detected
+WDI Fat_Female + WDI ShirtBasic|head/neck|jugular notch|256|175|to place
+WDI Fat_Female + WDI ShirtBasic|shoulders|shoulder tip L|137|243|detected
+WDI Fat_Female + WDI ShirtBasic|shoulders|shoulder tip R|376|243|detected
+WDI Fat_Female + WDI ShirtBasic|shoulders|armpit L|133|249|to place
+WDI Fat_Female + WDI ShirtBasic|shoulders|armpit R|380|249|to place
+WDI Fat_Female + WDI ShirtBasic|chest|breast apex L|153|278|detected
+WDI Fat_Female + WDI ShirtBasic|chest|breast apex R|359|278|detected
+WDI Fat_Female + WDI ShirtBasic|chest|cleavage|256|278|to place
+WDI Fat_Female + WDI ShirtBasic|chest|under-breast fold L|153|309|to place
+WDI Fat_Female + WDI ShirtBasic|chest|under-breast fold R|359|309|to place
+WDI Fat_Female + WDI ShirtBasic|torso|waist L|130|259|to place
+WDI Fat_Female + WDI ShirtBasic|torso|waist R|384|259|to place
+WDI Fat_Female + WDI ShirtBasic|torso|navel|256|345|detected
+WDI Fat_Female + WDI ShirtBasic|torso|hip L|108|317|to place
+WDI Fat_Female + WDI ShirtBasic|torso|hip R|406|317|to place
+WDI Fat_Female + WDI ShirtBasic|pelvis|groin crease L|179|356|to place
+WDI Fat_Female + WDI ShirtBasic|pelvis|groin crease R|334|356|to place
+WDI Fat_Female + WDI ShirtBasic|pelvis|sex|256|394|detected
+WDI Fat_Female + WDI ShirtBasic|pelvis|crotch point|256|428|detected
+WDI Fat_Female + WDI ShirtBasic|legs|leg bottom L|229|442|detected
+WDI Fat_Female + WDI ShirtBasic|legs|leg bottom R|284|442|detected
+WDI Fat_Female + WDI ShirtBasic|arms|elbow L|||not in texture
+WDI Fat_Female + WDI ShirtBasic|arms|elbow R|||not in texture
+WDI Fat_Female + WDI ShirtBasic|arms|wrist L|||not in texture
+WDI Fat_Female + WDI ShirtBasic|arms|wrist R|||not in texture
+WDI Fat_Female + WDI ShirtBasic|arms|hand end L|||not in texture
+WDI Fat_Female + WDI ShirtBasic|arms|hand end R|||not in texture
+WDI Fat_Female + WDI ShirtBasic|legs|knee L|||not in texture
+WDI Fat_Female + WDI ShirtBasic|legs|knee R|||not in texture
+WDI Fat_Female + WDI ShirtBasic|legs|ankle L|||not in texture
+WDI Fat_Female + WDI ShirtBasic|legs|ankle R|||not in texture
+WDI Fat_Female + WDI ShirtBasic|axis|midline top|256|162|detected
+WDI Fat_Female + WDI ShirtBasic|axis|midline crotch|256|394|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment hemL|200|444|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment hemR|312|444|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring0|330|212|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring2|288|178|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring4|256|172|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring6|222|178|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring8|180|210|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring10|206|260|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring12|272|272|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment ring14|304|260|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment hem middle|256|446|detected
+WDI Fat_Female + WDI ShirtBasic|garment|garment sleeve end L|||not in texture
+WDI Fat_Female + WDI ShirtBasic|garment|garment sleeve end R|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|extremes|top|256|198|detected
+WDI Hulk_Female + WDI ShirtBasic|extremes|bottom|256|488|detected
+WDI Hulk_Female + WDI ShirtBasic|extremes|leftmost|140|277|detected
+WDI Hulk_Female + WDI ShirtBasic|extremes|rightmost|372|277|detected
+WDI Hulk_Female + WDI ShirtBasic|head/neck|neck base L|200|189|to place
+WDI Hulk_Female + WDI ShirtBasic|head/neck|neck base R|312|189|to place
+WDI Hulk_Female + WDI ShirtBasic|head/neck|jugular notch|256|189|to place
+WDI Hulk_Female + WDI ShirtBasic|shoulders|shoulder tip L|140|277|detected
+WDI Hulk_Female + WDI ShirtBasic|shoulders|shoulder tip R|372|277|detected
+WDI Hulk_Female + WDI ShirtBasic|shoulders|armpit L|144|313|detected
+WDI Hulk_Female + WDI ShirtBasic|shoulders|armpit R|368|313|detected
+WDI Hulk_Female + WDI ShirtBasic|chest|breast apex L|168|298|detected
+WDI Hulk_Female + WDI ShirtBasic|chest|breast apex R|343|298|detected
+WDI Hulk_Female + WDI ShirtBasic|chest|cleavage|256|298|to place
+WDI Hulk_Female + WDI ShirtBasic|chest|under-breast fold L|168|325|to place
+WDI Hulk_Female + WDI ShirtBasic|chest|under-breast fold R|343|325|to place
+WDI Hulk_Female + WDI ShirtBasic|torso|waist L|190|378|detected
+WDI Hulk_Female + WDI ShirtBasic|torso|waist R|322|378|detected
+WDI Hulk_Female + WDI ShirtBasic|torso|navel|256|394|detected
+WDI Hulk_Female + WDI ShirtBasic|torso|hip L|182|440|to place
+WDI Hulk_Female + WDI ShirtBasic|torso|hip R|330|440|to place
+WDI Hulk_Female + WDI ShirtBasic|pelvis|groin crease L|216|438|to place
+WDI Hulk_Female + WDI ShirtBasic|pelvis|groin crease R|296|438|to place
+WDI Hulk_Female + WDI ShirtBasic|pelvis|sex|256|437|detected
+WDI Hulk_Female + WDI ShirtBasic|pelvis|crotch point|256|468|to place
+WDI Hulk_Female + WDI ShirtBasic|legs|leg bottom L|245|488|detected
+WDI Hulk_Female + WDI ShirtBasic|legs|leg bottom R|267|488|detected
+WDI Hulk_Female + WDI ShirtBasic|arms|elbow L|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|arms|elbow R|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|arms|wrist L|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|arms|wrist R|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|arms|hand end L|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|arms|hand end R|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|legs|knee L|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|legs|knee R|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|legs|ankle L|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|legs|ankle R|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|axis|midline top|256|198|detected
+WDI Hulk_Female + WDI ShirtBasic|axis|midline crotch|256|437|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment hemL|234|494|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment hemR|276|494|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring0|298|252|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring2|282|224|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring4|254|218|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring6|226|224|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring8|210|252|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring10|230|276|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring12|254|282|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment ring14|278|276|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment hem middle|256|497|detected
+WDI Hulk_Female + WDI ShirtBasic|garment|garment sleeve end L|||not in texture
+WDI Hulk_Female + WDI ShirtBasic|garment|garment sleeve end R|||not in texture

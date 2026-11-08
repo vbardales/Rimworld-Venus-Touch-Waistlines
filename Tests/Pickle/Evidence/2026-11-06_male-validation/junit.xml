@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="Male on WDI's body, eight states, three facings" tests="1" failures="0" skipped="0" flakes="0" time="30.177">
+    <testcase name="Male, bare, shirts, trousers, underwear, shorts (South, East, North)" classname="Male on WDI's body, eight states, three facings" time="30.177">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: 1 bare WDI body -&gt; /repo/pickle-reports/screenshots/manual--1-bare-WDI-body--step0.png
+Attachment: 2 vanilla shirt -&gt; /repo/pickle-reports/screenshots/manual--2-vanilla-shirt--step0.png
+Attachment: 3 VAE shirt, no underwear -&gt; /repo/pickle-reports/screenshots/manual--3-VAE-shirt--no-underwear--step0.png
+Attachment: 4 shirt tucked into the trousers -&gt; /repo/pickle-reports/screenshots/manual--4-shirt-tucked-into-the-trousers--step0.png
+Attachment: 5 shirt over the trousers -&gt; /repo/pickle-reports/screenshots/manual--5-shirt-over-the-trousers--step0.png
+Attachment: 6 trousers alone -&gt; /repo/pickle-reports/screenshots/manual--6-trousers-alone--step0.png
+Attachment: 7 trousers and underwear -&gt; /repo/pickle-reports/screenshots/manual--7-trousers-and-underwear--step0.png
+Attachment: 8 shorts -&gt; /repo/pickle-reports/screenshots/manual--8-shorts--step0.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

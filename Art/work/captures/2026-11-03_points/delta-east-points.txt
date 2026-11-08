@@ -1,0 +1,96 @@
+﻿east|Male/Male|extremes|top|vanilla 62,45|WDI 58,47|dx -3,3|dy +2,3|both detected
+east|Male/Male|extremes|bottom|vanilla 62,107|WDI 60,106|dx -1,6|dy -1,0|both detected
+east|Male/Male|head/neck|neck front|vanilla 73,45|WDI 69,49|dx -4,5|dy +3,5|both detected
+east|Male/Male|head/neck|neck back|vanilla 51,45|WDI 53,49|dx +1,8|dy +3,5|both detected
+east|Male/Male|shoulders|upper back (shoulder blade)|vanilla 44,54|WDI 47,56|dx +2,5|dy +2,0|both detected
+east|Male/Male|chest|chest front|vanilla 84,56|WDI 83,69|dx -0,5|dy +12,5|both detected
+east|Male/Male|torso|waist front|vanilla 77,84|WDI 78,85|dx +0,6|dy +0,8|one placed
+east|Male/Male|torso|waist back (small of the back)|vanilla 47,76|WDI 49,74|dx +2,5|dy -2,5|both detected
+east|Male/Male|torso|belly front|vanilla 82,75|WDI 81,76|dx -0,5|dy +1,0|both placed
+east|Male/Male|pelvis|buttock back|vanilla 46,92|WDI 47,88|dx +0,8|dy -3,8|both detected
+east|Male/Male|legs|leg bottom front|vanilla 66,106|WDI 62,105|dx -4,0|dy -1,0|both detected
+east|Male/Male|legs|leg bottom back|vanilla 58,106|WDI 59,105|dx +0,8|dy -1,0|both detected
+east|Thin/Thin|extremes|top|vanilla 64,46|WDI 65,47|dx +1,1|dy +1,4|both detected
+east|Thin/Thin|extremes|bottom|vanilla 56,108|WDI 54,107|dx -1,6|dy -1,0|both detected
+east|Thin/Thin|head/neck|neck front|vanilla 69,46|WDI 69,49|dx +0,3|dy +2,5|both detected
+east|Thin/Thin|head/neck|neck back|vanilla 60,46|WDI 60,49|dx +0,3|dy +2,5|both detected
+east|Thin/Thin|shoulders|upper back (shoulder blade)|vanilla 50,66|WDI 51,70|dx +0,5|dy +4,0|one placed
+east|Thin/Thin|chest|chest front|vanilla 75,54|WDI 76,58|dx +0,9|dy +4,3|one placed
+east|Thin/Thin|torso|waist front|vanilla 68,85|WDI 69,85|dx +0,5|dy -0,3|both detected
+east|Thin/Thin|torso|waist back (small of the back)|vanilla 50,66|WDI 51,67|dx +1,0|dy +0,8|both placed
+east|Thin/Thin|torso|belly front|vanilla 71,76|WDI 71,76|dx -0,5|dy +0,3|both placed
+east|Thin/Thin|pelvis|buttock back|vanilla 44,97|WDI 44,93|dx -0,3|dy -4,3|both detected
+east|Thin/Thin|legs|leg bottom front|vanilla 56,107|WDI 56,106|dx +0,3|dy -1,0|both detected
+east|Thin/Thin|legs|leg bottom back|vanilla 56,107|WDI 53,106|dx -3,3|dy -1,0|both detected
+east|Fat/Fat|extremes|top|vanilla 63,40|WDI 63,41|dx -0,5|dy +1,4|both detected
+east|Fat/Fat|extremes|bottom|vanilla 68,115|WDI 63,113|dx -4,6|dy -2,3|both detected
+east|Fat/Fat|head/neck|neck front|vanilla 80,43|WDI 76,44|dx -4,3|dy +1,0|both detected
+east|Fat/Fat|head/neck|neck back|vanilla 46,43|WDI 50,44|dx +4,5|dy +1,0|both detected
+east|Fat/Fat|shoulders|upper back (shoulder blade)|vanilla 27,66|WDI 36,69|dx +9,1|dy +2,5|one placed
+east|Fat/Fat|chest|chest front|vanilla 94,76|WDI 93,75|dx -1,3|dy -1,3|both detected
+east|Fat/Fat|torso|waist front|vanilla 94,65|WDI 91,65|dx -3,3|dy +0,5|both placed
+east|Fat/Fat|torso|waist back (small of the back)|vanilla 28,65|WDI 37,65|dx +9,0|dy +0,5|both placed
+east|Fat/Fat|torso|belly front|vanilla 98,84|WDI 94,84|dx -3,8|dy -0,3|both detected
+east|Fat/Fat|pelvis|buttock back|vanilla 24,80|WDI 28,85|dx +3,9|dy +5,0|one placed
+east|Fat/Fat|legs|leg bottom front|vanilla 73,114|WDI 72,112|dx -1,3|dy -2,3|both detected
+east|Fat/Fat|legs|leg bottom back|vanilla 62,114|WDI 55,112|dx -7,0|dy -2,3|both detected
+east|Hulk/Hulk|extremes|top|vanilla 61,37|WDI 59,40|dx -1,5|dy +2,1|both detected
+east|Hulk/Hulk|extremes|bottom|vanilla 52,125|WDI 49,125|dx -3,0|dy +0,3|both detected
+east|Hulk/Hulk|head/neck|neck front|vanilla 76,40|WDI 73,42|dx -3,5|dy +1,8|both detected
+east|Hulk/Hulk|head/neck|neck back|vanilla 46,40|WDI 50,42|dx +3,8|dy +1,8|both detected
+east|Hulk/Hulk|shoulders|upper back (shoulder blade)|vanilla 35,63|WDI 41,55|dx +5,3|dy -8,3|both detected
+east|Hulk/Hulk|chest|chest front|vanilla 93,62|WDI 89,64|dx -3,9|dy +1,8|both detected
+east|Hulk/Hulk|torso|waist front|vanilla 82,93|WDI 78,94|dx -4,1|dy +1,0|both detected
+east|Hulk/Hulk|torso|waist back (small of the back)|vanilla 35,67|WDI 41,71|dx +5,6|dy +3,8|one placed
+east|Hulk/Hulk|torso|belly front|vanilla 90,81|WDI 85,82|dx -5,1|dy +1,0|both placed
+east|Hulk/Hulk|pelvis|buttock back|vanilla 29,106|WDI 31,105|dx +2,0|dy -1,5|both detected
+east|Hulk/Hulk|legs|leg bottom front|vanilla 58,124|WDI 52,125|dx -6,0|dy +0,3|both detected
+east|Hulk/Hulk|legs|leg bottom back|vanilla 46,124|WDI 47,125|dx +1,3|dy +0,3|both detected
+east|Female/Female|extremes|top|vanilla 65,41|WDI 64,41|dx -0,3|dy +0,5|both detected
+east|Female/Female|extremes|bottom|vanilla 59,113|WDI 56,111|dx -2,3|dy -1,5|both detected
+east|Female/Female|head/neck|neck front|vanilla 71,43|WDI 71,44|dx -0,4|dy +1,0|both detected
+east|Female/Female|head/neck|neck back|vanilla 58,43|WDI 58,44|dx -0,4|dy +1,0|both detected
+east|Female/Female|shoulders|upper back (shoulder blade)|vanilla 49,55|WDI 49,61|dx -0,6|dy +5,5|both detected
+east|Female/Female|chest|chest front|vanilla 80,67|WDI 78,66|dx -2,0|dy -0,8|both detected
+east|Female/Female|torso|waist front|vanilla 72,80|WDI 71,80|dx -1,4|dy 0,0|both detected
+east|Female/Female|torso|waist back (small of the back)|vanilla 49,65|WDI 49,69|dx 0,0|dy +4,0|one placed
+east|Female/Female|torso|belly front|vanilla 75,76|WDI 74,76|dx -0,8|dy -0,3|both placed
+east|Female/Female|pelvis|buttock back|vanilla 38,87|WDI 39,92|dx +0,4|dy +4,5|both detected
+east|Female/Female|legs|leg bottom front|vanilla 61,112|WDI 59,111|dx -1,8|dy -1,5|both detected
+east|Female/Female|legs|leg bottom back|vanilla 56,112|WDI 54,111|dx -2,0|dy -1,5|both detected
+east|Thin_Female/Thin|extremes|top|vanilla 64,46|WDI 65,46|dx +0,6|dy -0,1|both detected
+east|Thin_Female/Thin|extremes|bottom|vanilla 56,108|WDI 57,107|dx +1,1|dy -0,5|both detected
+east|Thin_Female/Thin|head/neck|neck front|vanilla 69,46|WDI 69,47|dx -0,5|dy +0,8|both detected
+east|Thin_Female/Thin|head/neck|neck back|vanilla 60,46|WDI 59,47|dx -0,8|dy +0,8|both detected
+east|Thin_Female/Thin|shoulders|upper back (shoulder blade)|vanilla 50,66|WDI 51,69|dx +0,3|dy +2,8|both detected
+east|Thin_Female/Thin|chest|chest front|vanilla 75,54|WDI 75,66|dx -0,4|dy +12,3|one placed
+east|Thin_Female/Thin|torso|waist front|vanilla 68,85|WDI 67,84|dx -1,4|dy -0,8|both detected
+east|Thin_Female/Thin|torso|waist back (small of the back)|vanilla 50,66|WDI 51,66|dx +0,6|dy 0,0|both placed
+east|Thin_Female/Thin|torso|belly front|vanilla 71,76|WDI 69,76|dx -2,0|dy -0,3|both placed
+east|Thin_Female/Thin|pelvis|buttock back|vanilla 44,97|WDI 43,89|dx -1,4|dy -7,8|both detected
+east|Thin_Female/Thin|legs|leg bottom front|vanilla 56,107|WDI 58,107|dx +1,5|dy -0,5|both detected
+east|Thin_Female/Thin|legs|leg bottom back|vanilla 56,107|WDI 55,107|dx -0,8|dy -0,5|both detected
+east|Fat_Female/Fat|extremes|top|vanilla 63,40|WDI 64,40|dx +0,6|dy +0,4|both detected
+east|Fat_Female/Fat|extremes|bottom|vanilla 68,115|WDI 60,114|dx -7,3|dy -0,8|both detected
+east|Fat_Female/Fat|head/neck|neck front|vanilla 80,43|WDI 77,44|dx -3,3|dy +0,8|both detected
+east|Fat_Female/Fat|head/neck|neck back|vanilla 46,43|WDI 51,44|dx +4,8|dy +0,8|both detected
+east|Fat_Female/Fat|shoulders|upper back (shoulder blade)|vanilla 27,66|WDI 36,68|dx +8,6|dy +2,3|both detected
+east|Fat_Female/Fat|chest|chest front|vanilla 94,76|WDI 94,67|dx +0,1|dy -8,8|both detected
+east|Fat_Female/Fat|torso|waist front|vanilla 94,65|WDI 87,81|dx -7,5|dy +16,0|one placed
+east|Fat_Female/Fat|torso|waist back (small of the back)|vanilla 28,65|WDI 37,65|dx +8,9|dy +0,3|both placed
+east|Fat_Female/Fat|torso|belly front|vanilla 98,84|WDI 92,76|dx -5,3|dy -7,8|one placed
+east|Fat_Female/Fat|pelvis|buttock back|vanilla 24,80|WDI 27,85|dx +3,4|dy +4,8|one placed
+east|Fat_Female/Fat|legs|leg bottom front|vanilla 73,114|WDI 74,114|dx +0,8|dy -0,8|both detected
+east|Fat_Female/Fat|legs|leg bottom back|vanilla 62,114|WDI 53,114|dx -8,8|dy -0,8|both detected
+east|Hulk_Female/Hulk|extremes|top|vanilla 61,37|WDI 64,46|dx +3,4|dy +8,5|both detected
+east|Hulk_Female/Hulk|extremes|bottom|vanilla 52,125|WDI 49,125|dx -3,0|dy -0,3|both detected
+east|Hulk_Female/Hulk|head/neck|neck front|vanilla 76,40|WDI 74,48|dx -1,8|dy +8,3|both detected
+east|Hulk_Female/Hulk|head/neck|neck back|vanilla 46,40|WDI 57,48|dx +11,1|dy +8,3|both detected
+east|Hulk_Female/Hulk|shoulders|upper back (shoulder blade)|vanilla 35,63|WDI 48,77|dx +12,8|dy +13,5|one placed
+east|Hulk_Female/Hulk|chest|chest front|vanilla 93,62|WDI 88,77|dx -4,6|dy +15,3|both detected
+east|Hulk_Female/Hulk|torso|waist front|vanilla 82,93|WDI 76,96|dx -5,3|dy +2,5|both detected
+east|Hulk_Female/Hulk|torso|waist back (small of the back)|vanilla 35,67|WDI 50,73|dx +14,6|dy +5,5|both placed
+east|Hulk_Female/Hulk|torso|belly front|vanilla 90,81|WDI 86,85|dx -3,8|dy +4,0|both placed
+east|Hulk_Female/Hulk|pelvis|buttock back|vanilla 29,106|WDI 31,102|dx +1,4|dy -4,5|both detected
+east|Hulk_Female/Hulk|legs|leg bottom front|vanilla 58,124|WDI 52,124|dx -6,5|dy -0,3|both detected
+east|Hulk_Female/Hulk|legs|leg bottom back|vanilla 46,124|WDI 47,124|dx +0,8|dy -0,3|both detected

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <!-- The only XML required by RimWorld to expose the three texture sets.
+       No C#, patches, behaviour, recipes, research, or Hooman Cute dependency. -->
+  <ThingDef ParentName="ApparelBase"><defName>LEWDWDI_Apparel_TubeTop</defName><label>tube top</label><smeltable>false</smeltable><statBases><Mass>0.15</Mass></statBases><graphicData><texPath>Things/Apparel/TubeTop/TubeTop</texPath><graphicClass>Graphic_Multi</graphicClass></graphicData><apparel><bodyPartGroups><li>Torso</li></bodyPartGroups><wornGraphicPath>Things/Apparel/TubeTop/TubeTop</wornGraphicPath><layers><li>OnSkin</li></layers></apparel></ThingDef>
+  <ThingDef ParentName="ApparelBase"><defName>LEWDWDI_Apparel_MicroSkirt</defName><label>micro skirt</label><smeltable>false</smeltable><statBases><Mass>0.15</Mass></statBases><graphicData><texPath>Things/Apparel/MicroSkirt/MicroSkirt</texPath><graphicClass>Graphic_Multi</graphicClass></graphicData><apparel><bodyPartGroups><li>Legs</li></bodyPartGroups><wornGraphicPath>Things/Apparel/MicroSkirt/MicroSkirt</wornGraphicPath><layers><li>OnSkin</li></layers></apparel></ThingDef>
+  <ThingDef ParentName="ApparelBase"><defName>LEWDWDI_Apparel_FlakiniVest</defName><label>flakini vest</label><smeltable>false</smeltable><statBases><Mass>0.2</Mass></statBases><graphicData><texPath>Things/Apparel/FlakiniVest/FlakiniVest</texPath><graphicClass>Graphic_Multi</graphicClass></graphicData><apparel><bodyPartGroups><li>Torso</li></bodyPartGroups><wornGraphicPath>Things/Apparel/FlakiniVest/FlakiniVest</wornGraphicPath><layers><li>Middle</li></layers></apparel></ThingDef>
+</Defs>

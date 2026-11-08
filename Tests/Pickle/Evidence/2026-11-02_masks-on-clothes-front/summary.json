@@ -1,0 +1,1 @@
+{"total":1,"passed":1,"failed":0,"skipped":0,"flaky":0,"exitReason":"passed","setName":"wdi-outline","scenarios":[{"name":"the red outline top bare, over a shirt, over a shirt and trousers, front (South)","outcome":"Passed","durationMs":150857,"attempts":1,"tickCost":{"ticks":360,"meanMs":14.536,"maxMs":323.819}}]}

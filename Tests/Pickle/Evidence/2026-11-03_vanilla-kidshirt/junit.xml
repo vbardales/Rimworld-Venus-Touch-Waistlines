@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+  <testsuite name="the vanilla body and shirt textures saved as PNG" tests="1" failures="0" skipped="0" flakes="0" time="26.873">
+    <testcase name="the Biotech kid shirt, three facings" classname="the vanilla body and shirt textures saved as PNG" time="26.873">
+      <system-out>Attachment: smoke-attachment -&gt; smoke test attachment content
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_south: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-kidshirt-child-south/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_north: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-kidshirt-child-north/0000.png
+Attachment: texture -&gt; Things/Pawn/Humanlike/Apparel/KidShirt/KidShirt_Child_east: 128 x 128 px, saved to /repo/pickle-reports/screenshots/film/pickletools-texture-save--vanilla-kidshirt-child-east/0000.png
+</system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

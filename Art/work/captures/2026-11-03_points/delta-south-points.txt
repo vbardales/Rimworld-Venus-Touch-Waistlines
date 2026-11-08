@@ -1,0 +1,232 @@
+﻿south|Male/Male|extremes|top|vanilla 64,45|WDI 64,49|dx +0,5|dy +3,6|both detected
+south|Male/Male|extremes|bottom|vanilla 64,106|WDI 64,108|dx -0,1|dy +1,6|both detected
+south|Male/Male|extremes|leftmost|vanilla 40,55|WDI 41,65|dx +1,0|dy +10,0|both detected
+south|Male/Male|extremes|rightmost|vanilla 88,58|WDI 87,65|dx -1,0|dy +7,0|both detected
+south|Male/Male|head/neck|neck base L|vanilla 50,45|WDI 54,46|dx +3,8|dy +1,3|one placed
+south|Male/Male|head/neck|neck base R|vanilla 77,45|WDI 74,46|dx -2,8|dy +1,3|one placed
+south|Male/Male|head/neck|jugular notch|vanilla 64,45|WDI 64,46|dx 0,0|dy +1,3|both placed
+south|Male/Male|shoulders|shoulder tip L|vanilla 40,58|WDI 42,63|dx +2,0|dy +5,3|both detected
+south|Male/Male|shoulders|shoulder tip R|vanilla 88,58|WDI 86,63|dx -1,5|dy +5,3|both detected
+south|Male/Male|shoulders|armpit L|vanilla 41,74|WDI 43,74|dx +1,5|dy -0,5|both detected
+south|Male/Male|shoulders|armpit R|vanilla 86,74|WDI 85,74|dx -1,0|dy -0,5|both detected
+south|Male/Male|chest|breast apex L|vanilla 48,69|WDI 48,75|dx -0,6|dy +5,8|one placed
+south|Male/Male|chest|breast apex R|vanilla 80,69|WDI 80,75|dx +0,3|dy +5,8|one placed
+south|Male/Male|chest|cleavage|vanilla 64,69|WDI 64,75|dx 0,0|dy +5,8|both placed
+south|Male/Male|chest|under-breast fold L|vanilla 48,74|WDI 48,80|dx -0,6|dy +6,0|both placed
+south|Male/Male|chest|under-breast fold R|vanilla 80,74|WDI 80,80|dx +0,3|dy +6,0|both placed
+south|Male/Male|torso|waist L|vanilla 44,83|WDI 46,84|dx +2,1|dy +0,5|one placed
+south|Male/Male|torso|waist R|vanilla 83,83|WDI 82,84|dx -1,1|dy +0,5|one placed
+south|Male/Male|torso|navel|vanilla 64,90|WDI 64,89|dx 0,0|dy -1,9|one placed
+south|Male/Male|torso|hip L|vanilla 45,87|WDI 47,87|dx +1,8|dy -0,3|both detected
+south|Male/Male|torso|hip R|vanilla 83,87|WDI 81,87|dx -1,8|dy -0,3|both detected
+south|Male/Male|pelvis|groin crease L|vanilla 54,97|WDI 55,89|dx +1,0|dy -8,8|both placed
+south|Male/Male|pelvis|groin crease R|vanilla 75,97|WDI 74,89|dx -1,0|dy -8,8|both placed
+south|Male/Male|pelvis|sex|vanilla 64,101|WDI 64,101|dx 0,0|dy +0,1|both placed
+south|Male/Male|pelvis|crotch point|vanilla 64,108|WDI 64,105|dx 0,0|dy -3,1|one placed
+south|Male/Male|legs|leg bottom L|vanilla 60,106|WDI 61,106|dx +1,0|dy +0,1|both detected
+south|Male/Male|legs|leg bottom R|vanilla 69,106|WDI 68,106|dx -1,0|dy +0,1|both detected
+south|Male/Male|axis|midline top|vanilla 64,45|WDI 64,49|dx 0,0|dy +3,6|both detected
+south|Male/Male|axis|midline crotch|vanilla 64,108|WDI 64,91|dx 0,0|dy -17,3|one placed
+south|Thin/Thin|extremes|top|vanilla 64,45|WDI 64,45|dx +0,1|dy -0,8|both detected
+south|Thin/Thin|extremes|bottom|vanilla 65,106|WDI 64,106|dx -0,4|dy -0,4|both detected
+south|Thin/Thin|extremes|leftmost|vanilla 52,58|WDI 52,51|dx -0,5|dy -7,5|both detected
+south|Thin/Thin|extremes|rightmost|vanilla 75,54|WDI 76,51|dx +1,8|dy -3,5|both detected
+south|Thin/Thin|head/neck|neck base L|vanilla 59,44|WDI 59,44|dx -0,3|dy +0,3|both placed
+south|Thin/Thin|head/neck|neck base R|vanilla 68,44|WDI 70,44|dx +1,5|dy +0,3|both placed
+south|Thin/Thin|head/neck|jugular notch|vanilla 64,44|WDI 64,44|dx +0,6|dy +0,3|both placed
+south|Thin/Thin|shoulders|shoulder tip L|vanilla 52,58|WDI 52,51|dx -0,5|dy -7,5|both detected
+south|Thin/Thin|shoulders|shoulder tip R|vanilla 75,58|WDI 76,51|dx +1,3|dy -7,5|both detected
+south|Thin/Thin|shoulders|armpit L|vanilla 52,61|WDI 52,64|dx +0,5|dy +2,5|one placed
+south|Thin/Thin|shoulders|armpit R|vanilla 75,61|WDI 76,64|dx +0,8|dy +2,5|one placed
+south|Thin/Thin|chest|breast apex L|vanilla 55,62|WDI 56,68|dx +0,9|dy +6,6|one placed
+south|Thin/Thin|chest|breast apex R|vanilla 72,62|WDI 72,68|dx +0,1|dy +6,6|one placed
+south|Thin/Thin|chest|cleavage|vanilla 64,62|WDI 64,68|dx +0,6|dy +6,6|both placed
+south|Thin/Thin|chest|under-breast fold L|vanilla 55,64|WDI 56,71|dx +0,9|dy +6,5|both placed
+south|Thin/Thin|chest|under-breast fold R|vanilla 72,64|WDI 72,71|dx +0,1|dy +6,5|both placed
+south|Thin/Thin|torso|waist L|vanilla 52,66|WDI 53,78|dx +1,3|dy +11,8|one placed
+south|Thin/Thin|torso|waist R|vanilla 76,66|WDI 75,78|dx -0,5|dy +11,8|one placed
+south|Thin/Thin|torso|navel|vanilla 64,79|WDI 64,89|dx +0,6|dy +9,7|one placed
+south|Thin/Thin|torso|hip L|vanilla 52,79|WDI 53,91|dx +1,4|dy +11,5|both placed
+south|Thin/Thin|torso|hip R|vanilla 75,79|WDI 75,91|dx -0,1|dy +11,5|both placed
+south|Thin/Thin|pelvis|groin crease L|vanilla 57,94|WDI 58,91|dx +1,2|dy -3,4|both placed
+south|Thin/Thin|pelvis|groin crease R|vanilla 70,94|WDI 70,91|dx +0,1|dy -3,4|both placed
+south|Thin/Thin|pelvis|sex|vanilla 64,102|WDI 64,101|dx +0,6|dy -1,1|both placed
+south|Thin/Thin|pelvis|crotch point|vanilla 64,109|WDI 64,99|dx +0,6|dy -9,8|both placed
+south|Thin/Thin|legs|leg bottom L|vanilla 63,106|WDI 61,106|dx -1,6|dy -0,4|both detected
+south|Thin/Thin|legs|leg bottom R|vanilla 65,106|WDI 67,106|dx +1,8|dy -0,4|both detected
+south|Thin/Thin|axis|midline top|vanilla 64,45|WDI 64,45|dx +0,6|dy -0,8|both detected
+south|Thin/Thin|axis|midline crotch|vanilla 64,109|WDI 64,91|dx +0,6|dy -18,3|one placed
+south|Fat/Fat|extremes|top|vanilla 63,40|WDI 64,41|dx +1,5|dy +0,1|both detected
+south|Fat/Fat|extremes|bottom|vanilla 63,111|WDI 64,112|dx +1,1|dy +1,1|both detected
+south|Fat/Fat|extremes|leftmost|vanilla 25,76|WDI 27,79|dx +2,1|dy +2,8|both detected
+south|Fat/Fat|extremes|rightmost|vanilla 101,78|WDI 101,79|dx -0,1|dy +0,8|both detected
+south|Fat/Fat|head/neck|neck base L|vanilla 46,42|WDI 50,43|dx +4,3|dy +1,3|both detected
+south|Fat/Fat|head/neck|neck base R|vanilla 79,42|WDI 78,43|dx -1,3|dy +1,3|both detected
+south|Fat/Fat|head/neck|jugular notch|vanilla 63,42|WDI 64,43|dx +1,0|dy +1,3|both placed
+south|Fat/Fat|shoulders|shoulder tip L|vanilla 31,60|WDI 35,60|dx +4,5|dy 0,0|both detected
+south|Fat/Fat|shoulders|shoulder tip R|vanilla 94,60|WDI 93,60|dx -1,5|dy 0,0|both detected
+south|Fat/Fat|shoulders|armpit L|vanilla 31,62|WDI 35,62|dx +3,8|dy +0,3|both placed
+south|Fat/Fat|shoulders|armpit R|vanilla 95,62|WDI 93,62|dx -1,3|dy +0,3|both placed
+south|Fat/Fat|chest|breast apex L|vanilla 43,62|WDI 42,74|dx -0,5|dy +12,4|one placed
+south|Fat/Fat|chest|breast apex R|vanilla 83,62|WDI 85,74|dx +2,2|dy +12,4|one placed
+south|Fat/Fat|chest|cleavage|vanilla 63,62|WDI 64,74|dx +1,0|dy +12,4|both placed
+south|Fat/Fat|chest|under-breast fold L|vanilla 43,68|WDI 42,81|dx -0,5|dy +12,8|both placed
+south|Fat/Fat|chest|under-breast fold R|vanilla 83,68|WDI 85,81|dx +2,2|dy +12,8|both placed
+south|Fat/Fat|torso|waist L|vanilla 30,64|WDI 33,65|dx +3,0|dy +0,5|both placed
+south|Fat/Fat|torso|waist R|vanilla 95,64|WDI 95,65|dx 0,0|dy +0,5|both placed
+south|Fat/Fat|torso|navel|vanilla 63,79|WDI 64,87|dx +1,0|dy +7,7|one placed
+south|Fat/Fat|torso|hip L|vanilla 24,79|WDI 27,79|dx +2,5|dy +0,3|both placed
+south|Fat/Fat|torso|hip R|vanilla 101,79|WDI 101,79|dx 0,0|dy +0,3|both placed
+south|Fat/Fat|pelvis|groin crease L|vanilla 43,96|WDI 45,91|dx +1,8|dy -5,4|both placed
+south|Fat/Fat|pelvis|groin crease R|vanilla 83,96|WDI 83,91|dx +0,3|dy -5,4|both placed
+south|Fat/Fat|pelvis|sex|vanilla 63,105|WDI 64,105|dx +1,0|dy -0,6|both placed
+south|Fat/Fat|pelvis|crotch point|vanilla 63,113|WDI 64,107|dx +1,0|dy -5,6|one placed
+south|Fat/Fat|legs|leg bottom L|vanilla 56,111|WDI 57,111|dx +1,3|dy -0,1|both detected
+south|Fat/Fat|legs|leg bottom R|vanilla 70,111|WDI 71,111|dx +0,9|dy -0,1|both detected
+south|Fat/Fat|axis|midline top|vanilla 63,40|WDI 64,41|dx +1,0|dy +0,1|both detected
+south|Fat/Fat|axis|midline crotch|vanilla 63,113|WDI 64,102|dx +1,0|dy -11,0|one placed
+south|Hulk/Hulk|extremes|top|vanilla 64,34|WDI 64,43|dx 0,0|dy +9,0|both detected
+south|Hulk/Hulk|extremes|bottom|vanilla 64,124|WDI 64,122|dx 0,0|dy -2,0|both detected
+south|Hulk/Hulk|extremes|leftmost|vanilla 27,65|WDI 34,66|dx +6,5|dy +0,8|both detected
+south|Hulk/Hulk|extremes|rightmost|vanilla 100,61|WDI 94,66|dx -6,0|dy +4,8|both detected
+south|Hulk/Hulk|head/neck|neck base L|vanilla 46,38|WDI 49,40|dx +3,5|dy +2,3|one placed
+south|Hulk/Hulk|head/neck|neck base R|vanilla 82,38|WDI 79,40|dx -3,5|dy +2,3|one placed
+south|Hulk/Hulk|head/neck|jugular notch|vanilla 63,38|WDI 64,40|dx +1,0|dy +2,3|both placed
+south|Hulk/Hulk|shoulders|shoulder tip L|vanilla 28,59|WDI 34,64|dx +5,9|dy +5,3|both detected
+south|Hulk/Hulk|shoulders|shoulder tip R|vanilla 99,59|WDI 94,64|dx -5,4|dy +5,3|both detected
+south|Hulk/Hulk|shoulders|armpit L|vanilla 30,78|WDI 36,78|dx +5,3|dy -0,3|both detected
+south|Hulk/Hulk|shoulders|armpit R|vanilla 97,78|WDI 92,78|dx -4,3|dy -0,3|both detected
+south|Hulk/Hulk|chest|breast apex L|vanilla 41,73|WDI 42,80|dx +1,8|dy +6,9|one placed
+south|Hulk/Hulk|chest|breast apex R|vanilla 86,73|WDI 85,80|dx 0,0|dy +6,9|one placed
+south|Hulk/Hulk|chest|cleavage|vanilla 63,73|WDI 64,80|dx +1,0|dy +6,9|both placed
+south|Hulk/Hulk|chest|under-breast fold L|vanilla 41,80|WDI 42,86|dx +1,8|dy +6,6|both placed
+south|Hulk/Hulk|chest|under-breast fold R|vanilla 86,80|WDI 85,86|dx 0,0|dy +6,6|both placed
+south|Hulk/Hulk|torso|waist L|vanilla 36,90|WDI 43,93|dx +6,9|dy +2,8|one placed
+south|Hulk/Hulk|torso|waist R|vanilla 91,90|WDI 85,93|dx -5,4|dy +2,8|one placed
+south|Hulk/Hulk|torso|navel|vanilla 63,101|WDI 64,100|dx +1,0|dy -1,0|one placed
+south|Hulk/Hulk|torso|hip L|vanilla 37,94|WDI 44,97|dx +6,1|dy +2,8|one placed
+south|Hulk/Hulk|torso|hip R|vanilla 89,94|WDI 85,97|dx -4,6|dy +2,8|one placed
+south|Hulk/Hulk|pelvis|groin crease L|vanilla 49,110|WDI 53,107|dx +4,0|dy -3,6|both placed
+south|Hulk/Hulk|pelvis|groin crease R|vanilla 77,110|WDI 75,107|dx -2,0|dy -3,6|both placed
+south|Hulk/Hulk|pelvis|sex|vanilla 63,117|WDI 64,117|dx +1,0|dy -0,6|both placed
+south|Hulk/Hulk|pelvis|crotch point|vanilla 63,127|WDI 64,121|dx +1,0|dy -5,8|both placed
+south|Hulk/Hulk|legs|leg bottom L|vanilla 61,124|WDI 61,123|dx +0,4|dy -0,8|both detected
+south|Hulk/Hulk|legs|leg bottom R|vanilla 66,126|WDI 67,123|dx +0,6|dy -2,9|both detected
+south|Hulk/Hulk|axis|midline top|vanilla 63,34|WDI 64,43|dx +1,0|dy +9,0|both detected
+south|Hulk/Hulk|axis|midline crotch|vanilla 63,127|WDI 64,117|dx +1,0|dy -10,0|one placed
+south|Female/Female|extremes|top|vanilla 64,40|WDI 64,45|dx +0,1|dy +4,6|both detected
+south|Female/Female|extremes|bottom|vanilla 64,111|WDI 64,111|dx +0,1|dy -0,1|both detected
+south|Female/Female|extremes|leftmost|vanilla 42,87|WDI 44,90|dx +1,4|dy +2,5|both detected
+south|Female/Female|extremes|rightmost|vanilla 86,87|WDI 85,90|dx -1,1|dy +2,5|both detected
+south|Female/Female|head/neck|neck base L|vanilla 56,40|WDI 58,45|dx +1,8|dy +4,8|both detected
+south|Female/Female|head/neck|neck base R|vanilla 72,40|WDI 71,45|dx -1,3|dy +4,8|both detected
+south|Female/Female|head/neck|jugular notch|vanilla 64,40|WDI 64,45|dx +0,1|dy +4,8|both placed
+south|Female/Female|shoulders|shoulder tip L|vanilla 47,59|WDI 49,63|dx +1,5|dy +4,0|both detected
+south|Female/Female|shoulders|shoulder tip R|vanilla 81,59|WDI 79,63|dx -1,3|dy +4,0|both detected
+south|Female/Female|shoulders|armpit L|vanilla 48,70|WDI 48,68|dx -0,3|dy -2,3|one placed
+south|Female/Female|shoulders|armpit R|vanilla 80,70|WDI 80,68|dx +0,5|dy -2,3|one placed
+south|Female/Female|chest|breast apex L|vanilla 53,65|WDI 54,69|dx +1,3|dy +3,9|one placed
+south|Female/Female|chest|breast apex R|vanilla 75,65|WDI 74,69|dx -1,3|dy +3,9|one placed
+south|Female/Female|chest|cleavage|vanilla 64,65|WDI 64,69|dx +0,1|dy +3,9|both placed
+south|Female/Female|chest|under-breast fold L|vanilla 53,69|WDI 54,72|dx +1,3|dy +3,5|both placed
+south|Female/Female|chest|under-breast fold R|vanilla 75,69|WDI 74,72|dx -1,3|dy +3,5|both placed
+south|Female/Female|torso|waist L|vanilla 50,73|WDI 52,75|dx +2,1|dy +2,0|both detected
+south|Female/Female|torso|waist R|vanilla 78,73|WDI 76,75|dx -2,0|dy +2,0|both detected
+south|Female/Female|torso|navel|vanilla 64,85|WDI 64,85|dx +0,1|dy +0,3|one placed
+south|Female/Female|torso|hip L|vanilla 42,88|WDI 44,89|dx +1,6|dy +0,8|both placed
+south|Female/Female|torso|hip R|vanilla 86,88|WDI 84,89|dx -1,4|dy +0,8|both placed
+south|Female/Female|pelvis|groin crease L|vanilla 52,100|WDI 53,94|dx +1,3|dy -6,0|both placed
+south|Female/Female|pelvis|groin crease R|vanilla 76,100|WDI 75,94|dx -1,1|dy -6,0|both placed
+south|Female/Female|pelvis|sex|vanilla 64,105|WDI 64,100|dx +0,1|dy -5,3|one placed
+south|Female/Female|pelvis|crotch point|vanilla 64,113|WDI 64,106|dx +0,1|dy -7,1|one placed
+south|Female/Female|legs|leg bottom L|vanilla 61,111|WDI 60,109|dx -0,8|dy -1,4|both detected
+south|Female/Female|legs|leg bottom R|vanilla 68,111|WDI 69,109|dx +1,1|dy -1,5|both detected
+south|Female/Female|axis|midline top|vanilla 64,40|WDI 64,45|dx +0,1|dy +4,6|both detected
+south|Female/Female|axis|midline crotch|vanilla 64,113|WDI 64,100|dx +0,1|dy -12,8|one placed
+south|Thin_Female/Thin|extremes|top|vanilla 64,45|WDI 64,44|dx 0,0|dy -1,4|both detected
+south|Thin_Female/Thin|extremes|bottom|vanilla 65,106|WDI 64,104|dx -0,5|dy -2,0|both detected
+south|Thin_Female/Thin|extremes|leftmost|vanilla 52,58|WDI 51,62|dx -1,6|dy +4,3|both detected
+south|Thin_Female/Thin|extremes|rightmost|vanilla 75,54|WDI 77,62|dx +2,6|dy +8,3|both detected
+south|Thin_Female/Thin|head/neck|neck base L|vanilla 59,44|WDI 59,44|dx 0,0|dy 0,0|one placed
+south|Thin_Female/Thin|head/neck|neck base R|vanilla 68,44|WDI 69,44|dx +1,0|dy 0,0|one placed
+south|Thin_Female/Thin|head/neck|jugular notch|vanilla 64,44|WDI 64,44|dx +0,5|dy 0,0|both placed
+south|Thin_Female/Thin|shoulders|shoulder tip L|vanilla 52,58|WDI 51,62|dx -1,4|dy +3,5|both detected
+south|Thin_Female/Thin|shoulders|shoulder tip R|vanilla 75,58|WDI 77,62|dx +1,9|dy +3,5|both detected
+south|Thin_Female/Thin|shoulders|armpit L|vanilla 52,61|WDI 53,69|dx +1,3|dy +7,5|one placed
+south|Thin_Female/Thin|shoulders|armpit R|vanilla 75,61|WDI 75,69|dx -0,3|dy +7,5|one placed
+south|Thin_Female/Thin|chest|breast apex L|vanilla 55,62|WDI 55,66|dx 0,0|dy +4,3|one placed
+south|Thin_Female/Thin|chest|breast apex R|vanilla 72,62|WDI 72,66|dx +0,8|dy +4,3|one placed
+south|Thin_Female/Thin|chest|cleavage|vanilla 64,62|WDI 64,66|dx +0,5|dy +4,3|both placed
+south|Thin_Female/Thin|chest|under-breast fold L|vanilla 55,64|WDI 55,68|dx 0,0|dy +4,5|both placed
+south|Thin_Female/Thin|chest|under-breast fold R|vanilla 72,64|WDI 72,68|dx +0,8|dy +4,5|both placed
+south|Thin_Female/Thin|torso|waist L|vanilla 52,66|WDI 55,71|dx +3,3|dy +5,3|one placed
+south|Thin_Female/Thin|torso|waist R|vanilla 76,66|WDI 73,71|dx -2,8|dy +5,3|one placed
+south|Thin_Female/Thin|torso|navel|vanilla 64,79|WDI 64,86|dx +0,5|dy +7,4|one placed
+south|Thin_Female/Thin|torso|hip L|vanilla 52,79|WDI 52,84|dx +0,3|dy +5,0|both placed
+south|Thin_Female/Thin|torso|hip R|vanilla 75,79|WDI 76,84|dx +0,8|dy +5,0|both placed
+south|Thin_Female/Thin|pelvis|groin crease L|vanilla 57,94|WDI 57,90|dx +0,5|dy -4,0|both placed
+south|Thin_Female/Thin|pelvis|groin crease R|vanilla 70,94|WDI 71,90|dx +0,5|dy -4,0|both placed
+south|Thin_Female/Thin|pelvis|sex|vanilla 64,102|WDI 64,96|dx +0,5|dy -6,4|one placed
+south|Thin_Female/Thin|pelvis|crotch point|vanilla 64,109|WDI 64,102|dx +0,5|dy -7,3|both placed
+south|Thin_Female/Thin|legs|leg bottom L|vanilla 63,106|WDI 61,106|dx -2,0|dy -0,6|both detected
+south|Thin_Female/Thin|legs|leg bottom R|vanilla 65,106|WDI 67,106|dx +2,0|dy -0,6|both detected
+south|Thin_Female/Thin|axis|midline top|vanilla 64,45|WDI 64,44|dx +0,5|dy -1,4|both detected
+south|Thin_Female/Thin|axis|midline crotch|vanilla 64,109|WDI 64,96|dx +0,5|dy -13,0|one placed
+south|Fat_Female/Fat|extremes|top|vanilla 63,40|WDI 64,41|dx +1,6|dy +0,1|both detected
+south|Fat_Female/Fat|extremes|bottom|vanilla 63,111|WDI 64,112|dx +1,3|dy +1,1|both detected
+south|Fat_Female/Fat|extremes|leftmost|vanilla 25,76|WDI 27,79|dx +2,0|dy +2,8|both detected
+south|Fat_Female/Fat|extremes|rightmost|vanilla 101,78|WDI 101,79|dx +0,3|dy +0,8|both detected
+south|Fat_Female/Fat|head/neck|neck base L|vanilla 46,42|WDI 49,44|dx +3,5|dy +1,8|both detected
+south|Fat_Female/Fat|head/neck|neck base R|vanilla 79,42|WDI 79,44|dx -0,3|dy +1,8|both detected
+south|Fat_Female/Fat|head/neck|jugular notch|vanilla 63,42|WDI 64,44|dx +1,1|dy +1,8|both placed
+south|Fat_Female/Fat|shoulders|shoulder tip L|vanilla 31,60|WDI 34,61|dx +3,4|dy +0,8|both detected
+south|Fat_Female/Fat|shoulders|shoulder tip R|vanilla 94,60|WDI 94,61|dx -0,1|dy +0,8|both detected
+south|Fat_Female/Fat|shoulders|armpit L|vanilla 31,62|WDI 33,62|dx +2,4|dy +0,8|both placed
+south|Fat_Female/Fat|shoulders|armpit R|vanilla 95,62|WDI 95,62|dx +0,4|dy +0,8|both placed
+south|Fat_Female/Fat|chest|breast apex L|vanilla 43,62|WDI 38,70|dx -4,5|dy +7,6|one placed
+south|Fat_Female/Fat|chest|breast apex R|vanilla 83,62|WDI 90,70|dx +6,6|dy +7,6|one placed
+south|Fat_Female/Fat|chest|cleavage|vanilla 63,62|WDI 64,70|dx +1,1|dy +7,6|both placed
+south|Fat_Female/Fat|chest|under-breast fold L|vanilla 43,68|WDI 38,77|dx -4,5|dy +9,3|both placed
+south|Fat_Female/Fat|chest|under-breast fold R|vanilla 83,68|WDI 90,77|dx +6,6|dy +9,3|both placed
+south|Fat_Female/Fat|torso|waist L|vanilla 30,64|WDI 32,65|dx +2,0|dy +0,5|both placed
+south|Fat_Female/Fat|torso|waist R|vanilla 95,64|WDI 96,65|dx +1,4|dy +0,5|both placed
+south|Fat_Female/Fat|torso|navel|vanilla 63,79|WDI 64,86|dx +1,1|dy +7,5|one placed
+south|Fat_Female/Fat|torso|hip L|vanilla 24,79|WDI 27,79|dx +2,5|dy +0,3|both placed
+south|Fat_Female/Fat|torso|hip R|vanilla 101,79|WDI 101,79|dx +0,3|dy +0,3|both placed
+south|Fat_Female/Fat|pelvis|groin crease L|vanilla 43,96|WDI 45,89|dx +1,8|dy -7,0|both placed
+south|Fat_Female/Fat|pelvis|groin crease R|vanilla 83,96|WDI 83,89|dx +0,4|dy -7,0|both placed
+south|Fat_Female/Fat|pelvis|sex|vanilla 63,105|WDI 64,99|dx +1,1|dy -6,8|one placed
+south|Fat_Female/Fat|pelvis|crotch point|vanilla 63,113|WDI 64,107|dx +1,1|dy -5,6|one placed
+south|Fat_Female/Fat|legs|leg bottom L|vanilla 56,111|WDI 57,111|dx +1,3|dy -0,1|both detected
+south|Fat_Female/Fat|legs|leg bottom R|vanilla 70,111|WDI 71,111|dx +0,9|dy -0,1|both detected
+south|Fat_Female/Fat|axis|midline top|vanilla 63,40|WDI 64,41|dx +1,1|dy +0,1|both detected
+south|Fat_Female/Fat|axis|midline crotch|vanilla 63,113|WDI 64,99|dx +1,1|dy -14,3|one placed
+south|Hulk_Female/Hulk|extremes|top|vanilla 64,34|WDI 64,50|dx 0,0|dy +15,8|both detected
+south|Hulk_Female/Hulk|extremes|bottom|vanilla 64,124|WDI 64,122|dx 0,0|dy -2,5|both detected
+south|Hulk_Female/Hulk|extremes|leftmost|vanilla 27,65|WDI 35,69|dx +7,5|dy +4,3|both detected
+south|Hulk_Female/Hulk|extremes|rightmost|vanilla 100,61|WDI 93,69|dx -7,0|dy +8,3|both detected
+south|Hulk_Female/Hulk|head/neck|neck base L|vanilla 46,38|WDI 50,47|dx +4,0|dy +9,3|one placed
+south|Hulk_Female/Hulk|head/neck|neck base R|vanilla 82,38|WDI 78,47|dx -4,0|dy +9,3|one placed
+south|Hulk_Female/Hulk|head/neck|jugular notch|vanilla 63,38|WDI 64,47|dx +1,0|dy +9,3|both placed
+south|Hulk_Female/Hulk|shoulders|shoulder tip L|vanilla 28,59|WDI 35,69|dx +6,5|dy +10,3|both detected
+south|Hulk_Female/Hulk|shoulders|shoulder tip R|vanilla 99,59|WDI 93,69|dx -6,0|dy +10,3|both detected
+south|Hulk_Female/Hulk|shoulders|armpit L|vanilla 30,78|WDI 36,78|dx +5,8|dy +0,3|both detected
+south|Hulk_Female/Hulk|shoulders|armpit R|vanilla 97,78|WDI 92,78|dx -4,8|dy +0,3|both detected
+south|Hulk_Female/Hulk|chest|breast apex L|vanilla 41,73|WDI 42,75|dx +1,5|dy +1,6|one placed
+south|Hulk_Female/Hulk|chest|breast apex R|vanilla 86,73|WDI 86,75|dx +0,2|dy +1,6|one placed
+south|Hulk_Female/Hulk|chest|cleavage|vanilla 63,73|WDI 64,75|dx +1,0|dy +1,6|both placed
+south|Hulk_Female/Hulk|chest|under-breast fold L|vanilla 41,80|WDI 42,81|dx +1,5|dy +1,4|both placed
+south|Hulk_Female/Hulk|chest|under-breast fold R|vanilla 86,80|WDI 86,81|dx +0,2|dy +1,4|both placed
+south|Hulk_Female/Hulk|torso|waist L|vanilla 36,90|WDI 48,95|dx +11,8|dy +4,5|both detected
+south|Hulk_Female/Hulk|torso|waist R|vanilla 91,90|WDI 80,95|dx -10,3|dy +4,5|both detected
+south|Hulk_Female/Hulk|torso|navel|vanilla 63,101|WDI 64,99|dx +1,0|dy -2,5|one placed
+south|Hulk_Female/Hulk|torso|hip L|vanilla 37,94|WDI 45,110|dx +8,0|dy +16,3|both placed
+south|Hulk_Female/Hulk|torso|hip R|vanilla 89,94|WDI 83,110|dx -6,5|dy +16,3|both placed
+south|Hulk_Female/Hulk|pelvis|groin crease L|vanilla 49,110|WDI 54,110|dx +4,9|dy -0,6|both placed
+south|Hulk_Female/Hulk|pelvis|groin crease R|vanilla 77,110|WDI 74,110|dx -2,9|dy -0,6|both placed
+south|Hulk_Female/Hulk|pelvis|sex|vanilla 63,117|WDI 64,109|dx +1,0|dy -8,0|one placed
+south|Hulk_Female/Hulk|pelvis|crotch point|vanilla 63,127|WDI 64,117|dx +1,0|dy -9,8|both placed
+south|Hulk_Female/Hulk|legs|leg bottom L|vanilla 61,124|WDI 61,122|dx +0,3|dy -2,1|both detected
+south|Hulk_Female/Hulk|legs|leg bottom R|vanilla 66,126|WDI 67,122|dx +0,8|dy -4,1|both detected
+south|Hulk_Female/Hulk|axis|midline top|vanilla 63,34|WDI 64,50|dx +1,0|dy +15,8|both detected
+south|Hulk_Female/Hulk|axis|midline crotch|vanilla 63,127|WDI 64,109|dx +1,0|dy -17,5|one placed

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Hands the trousers back to the game, which is what TailoredPants did.
+       Revised 2026-09-21, after the first version got this wrong.
+
+       The first attempt used autoFit false. That keeps the garment inside
+       TailorMade's bake: BakeFitted still runs, still multiplies the alpha by
+       the body mask, still applies the outline - it only stops consulting the
+       band. Close, but not what the parked route did.
+
+       TailoredPants used ignore. In PatternRegistry.ResolveInner an ignoring def
+       returns null before any pattern is built, so TailorMade never touches the
+       garment: no bake, no mask, no outline, no band. The apparel is drawn the
+       way RimWorld draws apparel. Parked/README.md says so in as many words -
+       the ignore def told TailorMade to leave both garments alone because they
+       were fitted already.
+
+       What is different now is who supplies the art. TailoredPants shipped its
+       own, cut to each body's silhouette, so ignoring TailorMade was safe by
+       construction. Here the art is AB's Visible Pants, drawn for vanilla
+       bodies with legs, and nothing has cut it to anything. So this is an
+       experiment with a real way of failing: the trousers may sit too low, or
+       float off a silhouette they were never drawn for. That is the thing to
+       look at, and it is visible in one glance.
+
+       Worth knowing either way: General Textures Collection carries a retexture
+       of these very garments, at Mods/VisiblePants/, but its LoadFolders gates
+       it on XeoNovaDan.VisiblePants. With AB's Visible Pants active instead,
+       that folder never loads and none of that art reaches the pawn. It is the
+       art the parked textures were computed from.
+
+       Why the Pickle captures showed no trousers at all (verified 2026-09-21
+       on the installed 1.6 assembly, ABsVisiblePants.dll, by decompiling it):
+       AB keeps its categories in AVPSettings.datas, which starts EMPTY. The five
+       defaults are created by CreateStartData, and that is called from only two
+       places - ExposeData, when a settings file exists and is being loaded, and
+       the Reset button in AB's own options window. A profile with no
+       Mod_2986402536_ABsVisiblePantsMod.xml, which is what the headless WSL game
+       has, therefore ends with datas empty, and AVPCache.MakeCache returns early
+       from both InitDatas and ApplyDatas: no garment is given a wornGraphicPath
+       and vanilla Apparel_Pants, which has none, is drawn as nothing. Nothing is
+       hidden behind the body; nothing is drawn. Her Windows game draws them
+       because her hand-written settings file exists. Neither render order nor
+       this def has any part in that. -->
+
+  <TailorMade.TailorPatternDef>
+    <defName>TMW_Pants_Native</defName>
+    <raceName>Human</raceName>
+
+    <!-- No bodyType and no apparelLayer: null matches every body type, and the
+         defName is a stabler key than whatever layer AB's mod assigns. -->
+
+    <targetApparelDefs>
+      <li>^Apparel_Pants$</li>
+      <li>^Apparel_KidPants$</li>
+    </targetApparelDefs>
+
+    <!-- The whole def. Everything else - offsets, scales, conform, autoFit -
+         describes how TailorMade should fit a garment, and none of it is read
+         once the garment is ignored. -->
+    <ignore>true</ignore>
+  </TailorMade.TailorPatternDef>
+
+</Defs>

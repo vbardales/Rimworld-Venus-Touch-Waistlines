@@ -1,0 +1,780 @@
+﻿AB Male (north)|extremes|top|254|180|detected
+AB Male (north)|extremes|bottom|254|426|detected
+AB Male (north)|extremes|leftmost|162|216|detected
+AB Male (north)|extremes|rightmost|350|232|detected
+AB Male (north)|head/neck|neck base L|200|180|detected
+AB Male (north)|head/neck|neck base R|308|180|detected
+AB Male (north)|head/neck|jugular notch|||not in view
+AB Male (north)|shoulders|shoulder tip L|160|232|detected
+AB Male (north)|shoulders|shoulder tip R|350|232|detected
+AB Male (north)|shoulders|armpit L|166|296|detected
+AB Male (north)|shoulders|armpit R|344|296|detected
+AB Male (north)|chest|breast apex L|||not in view
+AB Male (north)|chest|breast apex R|||not in view
+AB Male (north)|chest|cleavage|||not in view
+AB Male (north)|chest|under-breast fold L|||not in view
+AB Male (north)|chest|under-breast fold R|||not in view
+AB Male (north)|torso|waist L|176|332|to place
+AB Male (north)|torso|waist R|332|332|to place
+AB Male (north)|torso|navel|||not in view
+AB Male (north)|torso|hip L|180|347|detected
+AB Male (north)|torso|hip R|330|347|detected
+AB Male (north)|pelvis|groin crease L|||not in view
+AB Male (north)|pelvis|groin crease R|||not in view
+AB Male (north)|pelvis|sex|||not in view
+AB Male (north)|pelvis|crotch point|256|402|to place
+AB Male (north)|legs|leg bottom L|236|424|detected
+AB Male (north)|legs|leg bottom R|274|424|detected
+AB Male (north)|arms|elbow L|||not in texture
+AB Male (north)|arms|elbow R|||not in texture
+AB Male (north)|arms|wrist L|||not in texture
+AB Male (north)|arms|wrist R|||not in texture
+AB Male (north)|arms|hand end L|||not in texture
+AB Male (north)|arms|hand end R|||not in texture
+AB Male (north)|legs|knee L|||not in texture
+AB Male (north)|legs|knee R|||not in texture
+AB Male (north)|legs|ankle L|||not in texture
+AB Male (north)|legs|ankle R|||not in texture
+AB Male (north)|axis|midline top|256|180|detected
+AB Male (north)|axis|midline crotch|256|372|detected
+AB Male (north)|garment|pants garment hemL|216|422|detected
+AB Male (north)|garment|pants garment hemR|288|422|detected
+AB Male (north)|garment|pants garment top edge 0|213|368|detected
+AB Male (north)|garment|pants garment top edge 1|224|368|detected
+AB Male (north)|garment|pants garment top edge 2|236|372|detected
+AB Male (north)|garment|pants garment top edge 3|247|372|detected
+AB Male (north)|garment|pants garment top edge 4|259|372|detected
+AB Male (north)|garment|pants garment top edge 5|270|372|detected
+AB Male (north)|garment|pants garment top edge 6|282|368|detected
+AB Male (north)|garment|pants garment top edge 7|293|368|detected
+AB Male (north)|garment|pants garment hem middle|252|426|detected
+AB Male (north)|garment|pants garment sleeve end L|||not in texture
+AB Male (north)|garment|pants garment sleeve end R|||not in texture
+AB Thin (north)|extremes|top|256|182|detected
+AB Thin (north)|extremes|bottom|256|430|detected
+AB Thin (north)|extremes|leftmost|210|232|detected
+AB Thin (north)|extremes|rightmost|298|216|detected
+AB Thin (north)|head/neck|neck base L|236|176|to place
+AB Thin (north)|head/neck|neck base R|272|176|to place
+AB Thin (north)|head/neck|jugular notch|||not in view
+AB Thin (north)|shoulders|shoulder tip L|210|232|detected
+AB Thin (north)|shoulders|shoulder tip R|300|232|detected
+AB Thin (north)|shoulders|armpit L|208|244|to place
+AB Thin (north)|shoulders|armpit R|300|244|to place
+AB Thin (north)|chest|breast apex L|||not in view
+AB Thin (north)|chest|breast apex R|||not in view
+AB Thin (north)|chest|cleavage|||not in view
+AB Thin (north)|chest|under-breast fold L|||not in view
+AB Thin (north)|chest|under-breast fold R|||not in view
+AB Thin (north)|torso|waist L|208|264|to place
+AB Thin (north)|torso|waist R|300|264|to place
+AB Thin (north)|torso|navel|||not in view
+AB Thin (north)|torso|hip L|208|316|to place
+AB Thin (north)|torso|hip R|300|316|to place
+AB Thin (north)|pelvis|groin crease L|||not in view
+AB Thin (north)|pelvis|groin crease R|||not in view
+AB Thin (north)|pelvis|sex|||not in view
+AB Thin (north)|pelvis|crotch point|254|402|to place
+AB Thin (north)|legs|leg bottom L|249|428|detected
+AB Thin (north)|legs|leg bottom R|261|428|detected
+AB Thin (north)|arms|elbow L|||not in texture
+AB Thin (north)|arms|elbow R|||not in texture
+AB Thin (north)|arms|wrist L|||not in texture
+AB Thin (north)|arms|wrist R|||not in texture
+AB Thin (north)|arms|hand end L|||not in texture
+AB Thin (north)|arms|hand end R|||not in texture
+AB Thin (north)|legs|knee L|||not in texture
+AB Thin (north)|legs|knee R|||not in texture
+AB Thin (north)|legs|ankle L|||not in texture
+AB Thin (north)|legs|ankle R|||not in texture
+AB Thin (north)|axis|midline top|254|182|detected
+AB Thin (north)|axis|midline crotch|254|368|detected
+AB Thin (north)|garment|pants garment hemL|244|426|detected
+AB Thin (north)|garment|pants garment hemR|264|428|detected
+AB Thin (north)|garment|pants garment top edge 0|227|356|detected
+AB Thin (north)|garment|pants garment top edge 1|234|360|detected
+AB Thin (north)|garment|pants garment top edge 2|242|364|detected
+AB Thin (north)|garment|pants garment top edge 3|249|364|detected
+AB Thin (north)|garment|pants garment top edge 4|257|364|detected
+AB Thin (north)|garment|pants garment top edge 5|264|364|detected
+AB Thin (north)|garment|pants garment top edge 6|272|364|detected
+AB Thin (north)|garment|pants garment top edge 7|279|360|detected
+AB Thin (north)|garment|pants garment hem middle|254|430|detected
+AB Thin (north)|garment|pants garment sleeve end L|||not in texture
+AB Thin (north)|garment|pants garment sleeve end R|||not in texture
+AB Fat (north)|extremes|top|254|160|detected
+AB Fat (north)|extremes|bottom|256|451|detected
+AB Fat (north)|extremes|leftmost|104|304|detected
+AB Fat (north)|extremes|rightmost|406|312|detected
+AB Fat (north)|head/neck|neck base L|188|168|detected
+AB Fat (north)|head/neck|neck base R|320|168|detected
+AB Fat (north)|head/neck|jugular notch|||not in view
+AB Fat (north)|shoulders|shoulder tip L|128|240|detected
+AB Fat (north)|shoulders|shoulder tip R|380|240|detected
+AB Fat (north)|shoulders|armpit L|128|246|to place
+AB Fat (north)|shoulders|armpit R|380|246|to place
+AB Fat (north)|chest|breast apex L|||not in view
+AB Fat (north)|chest|breast apex R|||not in view
+AB Fat (north)|chest|cleavage|||not in view
+AB Fat (north)|chest|under-breast fold L|||not in view
+AB Fat (north)|chest|under-breast fold R|||not in view
+AB Fat (north)|torso|waist L|124|257|to place
+AB Fat (north)|torso|waist R|384|257|to place
+AB Fat (north)|torso|navel|||not in view
+AB Fat (north)|torso|hip L|104|316|to place
+AB Fat (north)|torso|hip R|408|316|to place
+AB Fat (north)|pelvis|groin crease L|||not in view
+AB Fat (north)|pelvis|groin crease R|||not in view
+AB Fat (north)|pelvis|sex|||not in view
+AB Fat (north)|pelvis|crotch point|256|422|to place
+AB Fat (north)|legs|leg bottom L|228|449|detected
+AB Fat (north)|legs|leg bottom R|284|444|detected
+AB Fat (north)|arms|elbow L|||not in texture
+AB Fat (north)|arms|elbow R|||not in texture
+AB Fat (north)|arms|wrist L|||not in texture
+AB Fat (north)|arms|wrist R|||not in texture
+AB Fat (north)|arms|hand end L|||not in texture
+AB Fat (north)|arms|hand end R|||not in texture
+AB Fat (north)|legs|knee L|||not in texture
+AB Fat (north)|legs|knee R|||not in texture
+AB Fat (north)|legs|ankle L|||not in texture
+AB Fat (north)|legs|ankle R|||not in texture
+AB Fat (north)|axis|midline top|256|160|detected
+AB Fat (north)|axis|midline crotch|256|392|detected
+AB Fat (north)|garment|pants garment hemL|208|442|detected
+AB Fat (north)|garment|pants garment hemR|292|444|detected
+AB Fat (north)|garment|pants garment top edge 0|178|384|detected
+AB Fat (north)|garment|pants garment top edge 1|200|388|detected
+AB Fat (north)|garment|pants garment top edge 2|222|388|detected
+AB Fat (north)|garment|pants garment top edge 3|244|388|detected
+AB Fat (north)|garment|pants garment top edge 4|266|388|detected
+AB Fat (north)|garment|pants garment top edge 5|288|388|detected
+AB Fat (north)|garment|pants garment top edge 6|310|388|detected
+AB Fat (north)|garment|pants garment top edge 7|332|384|detected
+AB Fat (north)|garment|pants garment hem middle|250|451|detected
+AB Fat (north)|garment|pants garment sleeve end L|||not in texture
+AB Fat (north)|garment|pants garment sleeve end R|||not in texture
+AB Hulk (north)|extremes|top|256|136|detected
+AB Hulk (north)|extremes|bottom|256|502|detected
+AB Hulk (north)|extremes|leftmost|110|260|detected
+AB Hulk (north)|extremes|rightmost|400|244|detected
+AB Hulk (north)|head/neck|neck base L|184|152|detected
+AB Hulk (north)|head/neck|neck base R|328|152|detected
+AB Hulk (north)|head/neck|jugular notch|||not in view
+AB Hulk (north)|shoulders|shoulder tip L|114|236|detected
+AB Hulk (north)|shoulders|shoulder tip R|396|236|detected
+AB Hulk (north)|shoulders|armpit L|122|312|detected
+AB Hulk (north)|shoulders|armpit R|386|312|detected
+AB Hulk (north)|chest|breast apex L|||not in view
+AB Hulk (north)|chest|breast apex R|||not in view
+AB Hulk (north)|chest|cleavage|||not in view
+AB Hulk (north)|chest|under-breast fold L|||not in view
+AB Hulk (north)|chest|under-breast fold R|||not in view
+AB Hulk (north)|torso|waist L|144|360|detected
+AB Hulk (north)|torso|waist R|362|360|detected
+AB Hulk (north)|torso|navel|||not in view
+AB Hulk (north)|torso|hip L|150|375|to place
+AB Hulk (north)|torso|hip R|356|375|to place
+AB Hulk (north)|pelvis|groin crease L|||not in view
+AB Hulk (north)|pelvis|groin crease R|||not in view
+AB Hulk (north)|pelvis|sex|||not in view
+AB Hulk (north)|pelvis|crotch point|252|464|to place
+AB Hulk (north)|legs|leg bottom L|242|500|detected
+AB Hulk (north)|legs|leg bottom R|266|500|detected
+AB Hulk (north)|arms|elbow L|||not in texture
+AB Hulk (north)|arms|elbow R|||not in texture
+AB Hulk (north)|arms|wrist L|||not in texture
+AB Hulk (north)|arms|wrist R|||not in texture
+AB Hulk (north)|arms|hand end L|||not in texture
+AB Hulk (north)|arms|hand end R|||not in texture
+AB Hulk (north)|legs|knee L|||not in texture
+AB Hulk (north)|legs|knee R|||not in texture
+AB Hulk (north)|legs|ankle L|||not in texture
+AB Hulk (north)|legs|ankle R|||not in texture
+AB Hulk (north)|axis|midline top|252|136|detected
+AB Hulk (north)|axis|midline crotch|252|420|detected
+AB Hulk (north)|garment|pants garment hemL|232|498|detected
+AB Hulk (north)|garment|pants garment hemR|280|500|detected
+AB Hulk (north)|garment|pants garment top edge 0|211|412|detected
+AB Hulk (north)|garment|pants garment top edge 1|224|416|detected
+AB Hulk (north)|garment|pants garment top edge 2|236|416|detected
+AB Hulk (north)|garment|pants garment top edge 3|249|416|detected
+AB Hulk (north)|garment|pants garment top edge 4|261|416|detected
+AB Hulk (north)|garment|pants garment top edge 5|274|416|detected
+AB Hulk (north)|garment|pants garment top edge 6|286|416|detected
+AB Hulk (north)|garment|pants garment top edge 7|299|416|detected
+AB Hulk (north)|garment|pants garment hem middle|256|502|detected
+AB Hulk (north)|garment|pants garment sleeve end L|||not in texture
+AB Hulk (north)|garment|pants garment sleeve end R|||not in texture
+AB Female (north)|extremes|top|256|160|detected
+AB Female (north)|extremes|bottom|254|450|detected
+AB Female (north)|extremes|leftmost|168|356|detected
+AB Female (north)|extremes|rightmost|342|348|detected
+AB Female (north)|head/neck|neck base L|224|160|detected
+AB Female (north)|head/neck|neck base R|288|160|detected
+AB Female (north)|head/neck|jugular notch|||not in view
+AB Female (north)|shoulders|shoulder tip L|190|236|detected
+AB Female (north)|shoulders|shoulder tip R|322|236|detected
+AB Female (north)|shoulders|armpit L|192|280|detected
+AB Female (north)|shoulders|armpit R|320|280|detected
+AB Female (north)|chest|breast apex L|||not in view
+AB Female (north)|chest|breast apex R|||not in view
+AB Female (north)|chest|cleavage|||not in view
+AB Female (north)|chest|under-breast fold L|||not in view
+AB Female (north)|chest|under-breast fold R|||not in view
+AB Female (north)|torso|waist L|200|292|detected
+AB Female (north)|torso|waist R|312|292|detected
+AB Female (north)|torso|navel|||not in view
+AB Female (north)|torso|hip L|170|352|to place
+AB Female (north)|torso|hip R|342|352|to place
+AB Female (north)|pelvis|groin crease L|||not in view
+AB Female (north)|pelvis|groin crease R|||not in view
+AB Female (north)|pelvis|sex|||not in view
+AB Female (north)|pelvis|crotch point|256|418|to place
+AB Female (north)|legs|leg bottom L|246|448|detected
+AB Female (north)|legs|leg bottom R|264|448|detected
+AB Female (north)|arms|elbow L|||not in texture
+AB Female (north)|arms|elbow R|||not in texture
+AB Female (north)|arms|wrist L|||not in texture
+AB Female (north)|arms|wrist R|||not in texture
+AB Female (north)|arms|hand end L|||not in texture
+AB Female (north)|arms|hand end R|||not in texture
+AB Female (north)|legs|knee L|||not in texture
+AB Female (north)|legs|knee R|||not in texture
+AB Female (north)|legs|ankle L|||not in texture
+AB Female (north)|legs|ankle R|||not in texture
+AB Female (north)|axis|midline top|256|160|detected
+AB Female (north)|axis|midline crotch|256|380|detected
+AB Female (north)|garment|pants garment hemL|236|446|detected
+AB Female (north)|garment|pants garment hemR|272|446|detected
+AB Female (north)|garment|pants garment top edge 0|204|372|detected
+AB Female (north)|garment|pants garment top edge 1|218|376|detected
+AB Female (north)|garment|pants garment top edge 2|232|376|detected
+AB Female (north)|garment|pants garment top edge 3|246|380|detected
+AB Female (north)|garment|pants garment top edge 4|260|380|detected
+AB Female (north)|garment|pants garment top edge 5|274|376|detected
+AB Female (north)|garment|pants garment top edge 6|288|376|detected
+AB Female (north)|garment|pants garment top edge 7|302|372|detected
+AB Female (north)|garment|pants garment hem middle|254|450|detected
+AB Female (north)|garment|pants garment sleeve end L|||not in texture
+AB Female (north)|garment|pants garment sleeve end R|||not in texture
+XND Male (north)|extremes|top|254|180|detected
+XND Male (north)|extremes|bottom|254|426|detected
+XND Male (north)|extremes|leftmost|162|216|detected
+XND Male (north)|extremes|rightmost|350|232|detected
+XND Male (north)|head/neck|neck base L|200|180|detected
+XND Male (north)|head/neck|neck base R|308|180|detected
+XND Male (north)|head/neck|jugular notch|||not in view
+XND Male (north)|shoulders|shoulder tip L|160|232|detected
+XND Male (north)|shoulders|shoulder tip R|350|232|detected
+XND Male (north)|shoulders|armpit L|166|296|detected
+XND Male (north)|shoulders|armpit R|344|296|detected
+XND Male (north)|chest|breast apex L|||not in view
+XND Male (north)|chest|breast apex R|||not in view
+XND Male (north)|chest|cleavage|||not in view
+XND Male (north)|chest|under-breast fold L|||not in view
+XND Male (north)|chest|under-breast fold R|||not in view
+XND Male (north)|torso|waist L|176|332|to place
+XND Male (north)|torso|waist R|332|332|to place
+XND Male (north)|torso|navel|||not in view
+XND Male (north)|torso|hip L|180|347|detected
+XND Male (north)|torso|hip R|330|347|detected
+XND Male (north)|pelvis|groin crease L|||not in view
+XND Male (north)|pelvis|groin crease R|||not in view
+XND Male (north)|pelvis|sex|||not in view
+XND Male (north)|pelvis|crotch point|256|402|to place
+XND Male (north)|legs|leg bottom L|236|424|detected
+XND Male (north)|legs|leg bottom R|274|424|detected
+XND Male (north)|arms|elbow L|||not in texture
+XND Male (north)|arms|elbow R|||not in texture
+XND Male (north)|arms|wrist L|||not in texture
+XND Male (north)|arms|wrist R|||not in texture
+XND Male (north)|arms|hand end L|||not in texture
+XND Male (north)|arms|hand end R|||not in texture
+XND Male (north)|legs|knee L|||not in texture
+XND Male (north)|legs|knee R|||not in texture
+XND Male (north)|legs|ankle L|||not in texture
+XND Male (north)|legs|ankle R|||not in texture
+XND Male (north)|axis|midline top|256|180|detected
+XND Male (north)|axis|midline crotch|256|372|detected
+XND Male (north)|garment|pants garment hemL|216|422|detected
+XND Male (north)|garment|pants garment hemR|288|422|detected
+XND Male (north)|garment|pants garment top edge 0|213|368|detected
+XND Male (north)|garment|pants garment top edge 1|224|368|detected
+XND Male (north)|garment|pants garment top edge 2|236|372|detected
+XND Male (north)|garment|pants garment top edge 3|247|372|detected
+XND Male (north)|garment|pants garment top edge 4|259|372|detected
+XND Male (north)|garment|pants garment top edge 5|270|372|detected
+XND Male (north)|garment|pants garment top edge 6|282|368|detected
+XND Male (north)|garment|pants garment top edge 7|293|368|detected
+XND Male (north)|garment|pants garment hem middle|252|426|detected
+XND Male (north)|garment|pants garment sleeve end L|||not in texture
+XND Male (north)|garment|pants garment sleeve end R|||not in texture
+XND Thin (north)|extremes|top|256|182|detected
+XND Thin (north)|extremes|bottom|256|430|detected
+XND Thin (north)|extremes|leftmost|210|232|detected
+XND Thin (north)|extremes|rightmost|298|216|detected
+XND Thin (north)|head/neck|neck base L|236|176|to place
+XND Thin (north)|head/neck|neck base R|272|176|to place
+XND Thin (north)|head/neck|jugular notch|||not in view
+XND Thin (north)|shoulders|shoulder tip L|210|232|detected
+XND Thin (north)|shoulders|shoulder tip R|300|232|detected
+XND Thin (north)|shoulders|armpit L|208|244|to place
+XND Thin (north)|shoulders|armpit R|300|244|to place
+XND Thin (north)|chest|breast apex L|||not in view
+XND Thin (north)|chest|breast apex R|||not in view
+XND Thin (north)|chest|cleavage|||not in view
+XND Thin (north)|chest|under-breast fold L|||not in view
+XND Thin (north)|chest|under-breast fold R|||not in view
+XND Thin (north)|torso|waist L|208|264|to place
+XND Thin (north)|torso|waist R|300|264|to place
+XND Thin (north)|torso|navel|||not in view
+XND Thin (north)|torso|hip L|208|316|to place
+XND Thin (north)|torso|hip R|300|316|to place
+XND Thin (north)|pelvis|groin crease L|||not in view
+XND Thin (north)|pelvis|groin crease R|||not in view
+XND Thin (north)|pelvis|sex|||not in view
+XND Thin (north)|pelvis|crotch point|254|402|to place
+XND Thin (north)|legs|leg bottom L|249|428|detected
+XND Thin (north)|legs|leg bottom R|261|428|detected
+XND Thin (north)|arms|elbow L|||not in texture
+XND Thin (north)|arms|elbow R|||not in texture
+XND Thin (north)|arms|wrist L|||not in texture
+XND Thin (north)|arms|wrist R|||not in texture
+XND Thin (north)|arms|hand end L|||not in texture
+XND Thin (north)|arms|hand end R|||not in texture
+XND Thin (north)|legs|knee L|||not in texture
+XND Thin (north)|legs|knee R|||not in texture
+XND Thin (north)|legs|ankle L|||not in texture
+XND Thin (north)|legs|ankle R|||not in texture
+XND Thin (north)|axis|midline top|254|182|detected
+XND Thin (north)|axis|midline crotch|254|368|detected
+XND Thin (north)|garment|pants garment hemL|244|426|detected
+XND Thin (north)|garment|pants garment hemR|264|428|detected
+XND Thin (north)|garment|pants garment top edge 0|227|356|detected
+XND Thin (north)|garment|pants garment top edge 1|234|360|detected
+XND Thin (north)|garment|pants garment top edge 2|242|364|detected
+XND Thin (north)|garment|pants garment top edge 3|249|364|detected
+XND Thin (north)|garment|pants garment top edge 4|257|364|detected
+XND Thin (north)|garment|pants garment top edge 5|264|364|detected
+XND Thin (north)|garment|pants garment top edge 6|272|364|detected
+XND Thin (north)|garment|pants garment top edge 7|279|360|detected
+XND Thin (north)|garment|pants garment hem middle|254|430|detected
+XND Thin (north)|garment|pants garment sleeve end L|||not in texture
+XND Thin (north)|garment|pants garment sleeve end R|||not in texture
+XND Fat (north)|extremes|top|254|160|detected
+XND Fat (north)|extremes|bottom|256|451|detected
+XND Fat (north)|extremes|leftmost|104|304|detected
+XND Fat (north)|extremes|rightmost|406|312|detected
+XND Fat (north)|head/neck|neck base L|188|168|detected
+XND Fat (north)|head/neck|neck base R|320|168|detected
+XND Fat (north)|head/neck|jugular notch|||not in view
+XND Fat (north)|shoulders|shoulder tip L|128|240|detected
+XND Fat (north)|shoulders|shoulder tip R|380|240|detected
+XND Fat (north)|shoulders|armpit L|128|246|to place
+XND Fat (north)|shoulders|armpit R|380|246|to place
+XND Fat (north)|chest|breast apex L|||not in view
+XND Fat (north)|chest|breast apex R|||not in view
+XND Fat (north)|chest|cleavage|||not in view
+XND Fat (north)|chest|under-breast fold L|||not in view
+XND Fat (north)|chest|under-breast fold R|||not in view
+XND Fat (north)|torso|waist L|124|257|to place
+XND Fat (north)|torso|waist R|384|257|to place
+XND Fat (north)|torso|navel|||not in view
+XND Fat (north)|torso|hip L|104|316|to place
+XND Fat (north)|torso|hip R|408|316|to place
+XND Fat (north)|pelvis|groin crease L|||not in view
+XND Fat (north)|pelvis|groin crease R|||not in view
+XND Fat (north)|pelvis|sex|||not in view
+XND Fat (north)|pelvis|crotch point|256|422|to place
+XND Fat (north)|legs|leg bottom L|228|449|detected
+XND Fat (north)|legs|leg bottom R|284|444|detected
+XND Fat (north)|arms|elbow L|||not in texture
+XND Fat (north)|arms|elbow R|||not in texture
+XND Fat (north)|arms|wrist L|||not in texture
+XND Fat (north)|arms|wrist R|||not in texture
+XND Fat (north)|arms|hand end L|||not in texture
+XND Fat (north)|arms|hand end R|||not in texture
+XND Fat (north)|legs|knee L|||not in texture
+XND Fat (north)|legs|knee R|||not in texture
+XND Fat (north)|legs|ankle L|||not in texture
+XND Fat (north)|legs|ankle R|||not in texture
+XND Fat (north)|axis|midline top|256|160|detected
+XND Fat (north)|axis|midline crotch|256|392|detected
+XND Fat (north)|garment|pants garment hemL|208|442|detected
+XND Fat (north)|garment|pants garment hemR|292|444|detected
+XND Fat (north)|garment|pants garment top edge 0|178|384|detected
+XND Fat (north)|garment|pants garment top edge 1|200|388|detected
+XND Fat (north)|garment|pants garment top edge 2|222|388|detected
+XND Fat (north)|garment|pants garment top edge 3|244|388|detected
+XND Fat (north)|garment|pants garment top edge 4|266|388|detected
+XND Fat (north)|garment|pants garment top edge 5|288|388|detected
+XND Fat (north)|garment|pants garment top edge 6|310|388|detected
+XND Fat (north)|garment|pants garment top edge 7|332|384|detected
+XND Fat (north)|garment|pants garment hem middle|250|451|detected
+XND Fat (north)|garment|pants garment sleeve end L|||not in texture
+XND Fat (north)|garment|pants garment sleeve end R|||not in texture
+XND Hulk (north)|extremes|top|256|136|detected
+XND Hulk (north)|extremes|bottom|256|502|detected
+XND Hulk (north)|extremes|leftmost|110|260|detected
+XND Hulk (north)|extremes|rightmost|400|244|detected
+XND Hulk (north)|head/neck|neck base L|184|152|detected
+XND Hulk (north)|head/neck|neck base R|328|152|detected
+XND Hulk (north)|head/neck|jugular notch|||not in view
+XND Hulk (north)|shoulders|shoulder tip L|114|236|detected
+XND Hulk (north)|shoulders|shoulder tip R|396|236|detected
+XND Hulk (north)|shoulders|armpit L|122|312|detected
+XND Hulk (north)|shoulders|armpit R|386|312|detected
+XND Hulk (north)|chest|breast apex L|||not in view
+XND Hulk (north)|chest|breast apex R|||not in view
+XND Hulk (north)|chest|cleavage|||not in view
+XND Hulk (north)|chest|under-breast fold L|||not in view
+XND Hulk (north)|chest|under-breast fold R|||not in view
+XND Hulk (north)|torso|waist L|144|360|detected
+XND Hulk (north)|torso|waist R|362|360|detected
+XND Hulk (north)|torso|navel|||not in view
+XND Hulk (north)|torso|hip L|150|375|to place
+XND Hulk (north)|torso|hip R|356|375|to place
+XND Hulk (north)|pelvis|groin crease L|||not in view
+XND Hulk (north)|pelvis|groin crease R|||not in view
+XND Hulk (north)|pelvis|sex|||not in view
+XND Hulk (north)|pelvis|crotch point|252|464|to place
+XND Hulk (north)|legs|leg bottom L|242|500|detected
+XND Hulk (north)|legs|leg bottom R|266|500|detected
+XND Hulk (north)|arms|elbow L|||not in texture
+XND Hulk (north)|arms|elbow R|||not in texture
+XND Hulk (north)|arms|wrist L|||not in texture
+XND Hulk (north)|arms|wrist R|||not in texture
+XND Hulk (north)|arms|hand end L|||not in texture
+XND Hulk (north)|arms|hand end R|||not in texture
+XND Hulk (north)|legs|knee L|||not in texture
+XND Hulk (north)|legs|knee R|||not in texture
+XND Hulk (north)|legs|ankle L|||not in texture
+XND Hulk (north)|legs|ankle R|||not in texture
+XND Hulk (north)|axis|midline top|252|136|detected
+XND Hulk (north)|axis|midline crotch|252|420|detected
+XND Hulk (north)|garment|pants garment hemL|232|498|detected
+XND Hulk (north)|garment|pants garment hemR|280|500|detected
+XND Hulk (north)|garment|pants garment top edge 0|211|412|detected
+XND Hulk (north)|garment|pants garment top edge 1|224|416|detected
+XND Hulk (north)|garment|pants garment top edge 2|236|416|detected
+XND Hulk (north)|garment|pants garment top edge 3|249|416|detected
+XND Hulk (north)|garment|pants garment top edge 4|261|416|detected
+XND Hulk (north)|garment|pants garment top edge 5|274|416|detected
+XND Hulk (north)|garment|pants garment top edge 6|286|416|detected
+XND Hulk (north)|garment|pants garment top edge 7|299|416|detected
+XND Hulk (north)|garment|pants garment hem middle|256|502|detected
+XND Hulk (north)|garment|pants garment sleeve end L|||not in texture
+XND Hulk (north)|garment|pants garment sleeve end R|||not in texture
+XND Female (north)|extremes|top|256|160|detected
+XND Female (north)|extremes|bottom|254|450|detected
+XND Female (north)|extremes|leftmost|168|356|detected
+XND Female (north)|extremes|rightmost|342|348|detected
+XND Female (north)|head/neck|neck base L|224|160|detected
+XND Female (north)|head/neck|neck base R|288|160|detected
+XND Female (north)|head/neck|jugular notch|||not in view
+XND Female (north)|shoulders|shoulder tip L|190|236|detected
+XND Female (north)|shoulders|shoulder tip R|322|236|detected
+XND Female (north)|shoulders|armpit L|192|280|detected
+XND Female (north)|shoulders|armpit R|320|280|detected
+XND Female (north)|chest|breast apex L|||not in view
+XND Female (north)|chest|breast apex R|||not in view
+XND Female (north)|chest|cleavage|||not in view
+XND Female (north)|chest|under-breast fold L|||not in view
+XND Female (north)|chest|under-breast fold R|||not in view
+XND Female (north)|torso|waist L|200|292|detected
+XND Female (north)|torso|waist R|312|292|detected
+XND Female (north)|torso|navel|||not in view
+XND Female (north)|torso|hip L|170|352|to place
+XND Female (north)|torso|hip R|342|352|to place
+XND Female (north)|pelvis|groin crease L|||not in view
+XND Female (north)|pelvis|groin crease R|||not in view
+XND Female (north)|pelvis|sex|||not in view
+XND Female (north)|pelvis|crotch point|256|418|to place
+XND Female (north)|legs|leg bottom L|246|448|detected
+XND Female (north)|legs|leg bottom R|264|448|detected
+XND Female (north)|arms|elbow L|||not in texture
+XND Female (north)|arms|elbow R|||not in texture
+XND Female (north)|arms|wrist L|||not in texture
+XND Female (north)|arms|wrist R|||not in texture
+XND Female (north)|arms|hand end L|||not in texture
+XND Female (north)|arms|hand end R|||not in texture
+XND Female (north)|legs|knee L|||not in texture
+XND Female (north)|legs|knee R|||not in texture
+XND Female (north)|legs|ankle L|||not in texture
+XND Female (north)|legs|ankle R|||not in texture
+XND Female (north)|axis|midline top|256|160|detected
+XND Female (north)|axis|midline crotch|256|380|detected
+XND Female (north)|garment|pants garment hemL|236|446|detected
+XND Female (north)|garment|pants garment hemR|272|446|detected
+XND Female (north)|garment|pants garment top edge 0|204|372|detected
+XND Female (north)|garment|pants garment top edge 1|218|376|detected
+XND Female (north)|garment|pants garment top edge 2|232|376|detected
+XND Female (north)|garment|pants garment top edge 3|246|380|detected
+XND Female (north)|garment|pants garment top edge 4|260|380|detected
+XND Female (north)|garment|pants garment top edge 5|274|376|detected
+XND Female (north)|garment|pants garment top edge 6|288|376|detected
+XND Female (north)|garment|pants garment top edge 7|302|372|detected
+XND Female (north)|garment|pants garment hem middle|254|450|detected
+XND Female (north)|garment|pants garment sleeve end L|||not in texture
+XND Female (north)|garment|pants garment sleeve end R|||not in texture
+catMonke Male (north)|extremes|top|254|180|detected
+catMonke Male (north)|extremes|bottom|256|426|detected
+catMonke Male (north)|extremes|leftmost|162|216|detected
+catMonke Male (north)|extremes|rightmost|350|232|detected
+catMonke Male (north)|head/neck|neck base L|200|180|detected
+catMonke Male (north)|head/neck|neck base R|308|180|detected
+catMonke Male (north)|head/neck|jugular notch|||not in view
+catMonke Male (north)|shoulders|shoulder tip L|160|232|detected
+catMonke Male (north)|shoulders|shoulder tip R|350|232|detected
+catMonke Male (north)|shoulders|armpit L|166|296|detected
+catMonke Male (north)|shoulders|armpit R|344|296|detected
+catMonke Male (north)|chest|breast apex L|||not in view
+catMonke Male (north)|chest|breast apex R|||not in view
+catMonke Male (north)|chest|cleavage|||not in view
+catMonke Male (north)|chest|under-breast fold L|||not in view
+catMonke Male (north)|chest|under-breast fold R|||not in view
+catMonke Male (north)|torso|waist L|176|332|to place
+catMonke Male (north)|torso|waist R|332|332|to place
+catMonke Male (north)|torso|navel|||not in view
+catMonke Male (north)|torso|hip L|180|347|detected
+catMonke Male (north)|torso|hip R|330|347|detected
+catMonke Male (north)|pelvis|groin crease L|||not in view
+catMonke Male (north)|pelvis|groin crease R|||not in view
+catMonke Male (north)|pelvis|sex|||not in view
+catMonke Male (north)|pelvis|crotch point|256|401|to place
+catMonke Male (north)|legs|leg bottom L|238|426|detected
+catMonke Male (north)|legs|leg bottom R|274|426|detected
+catMonke Male (north)|arms|elbow L|||not in texture
+catMonke Male (north)|arms|elbow R|||not in texture
+catMonke Male (north)|arms|wrist L|||not in texture
+catMonke Male (north)|arms|wrist R|||not in texture
+catMonke Male (north)|arms|hand end L|||not in texture
+catMonke Male (north)|arms|hand end R|||not in texture
+catMonke Male (north)|legs|knee L|||not in texture
+catMonke Male (north)|legs|knee R|||not in texture
+catMonke Male (north)|legs|ankle L|||not in texture
+catMonke Male (north)|legs|ankle R|||not in texture
+catMonke Male (north)|axis|midline top|256|180|detected
+catMonke Male (north)|axis|midline crotch|256|370|detected
+catMonke Male (north)|garment|pants garment hemL|216|423|detected
+catMonke Male (north)|garment|pants garment hemR|296|423|detected
+catMonke Male (north)|garment|pants garment top edge 0|213|366|detected
+catMonke Male (north)|garment|pants garment top edge 1|225|368|detected
+catMonke Male (north)|garment|pants garment top edge 2|237|369|detected
+catMonke Male (north)|garment|pants garment top edge 3|249|370|detected
+catMonke Male (north)|garment|pants garment top edge 4|261|370|detected
+catMonke Male (north)|garment|pants garment top edge 5|273|369|detected
+catMonke Male (north)|garment|pants garment top edge 6|285|368|detected
+catMonke Male (north)|garment|pants garment top edge 7|297|366|detected
+catMonke Male (north)|garment|pants garment hem middle|256|426|detected
+catMonke Male (north)|garment|pants garment sleeve end L|||not in texture
+catMonke Male (north)|garment|pants garment sleeve end R|||not in texture
+catMonke Thin (north)|extremes|top|256|182|detected
+catMonke Thin (north)|extremes|bottom|258|428|detected
+catMonke Thin (north)|extremes|leftmost|210|232|detected
+catMonke Thin (north)|extremes|rightmost|298|216|detected
+catMonke Thin (north)|head/neck|neck base L|236|176|to place
+catMonke Thin (north)|head/neck|neck base R|272|176|to place
+catMonke Thin (north)|head/neck|jugular notch|||not in view
+catMonke Thin (north)|shoulders|shoulder tip L|210|232|detected
+catMonke Thin (north)|shoulders|shoulder tip R|300|232|detected
+catMonke Thin (north)|shoulders|armpit L|208|244|to place
+catMonke Thin (north)|shoulders|armpit R|300|244|to place
+catMonke Thin (north)|chest|breast apex L|||not in view
+catMonke Thin (north)|chest|breast apex R|||not in view
+catMonke Thin (north)|chest|cleavage|||not in view
+catMonke Thin (north)|chest|under-breast fold L|||not in view
+catMonke Thin (north)|chest|under-breast fold R|||not in view
+catMonke Thin (north)|torso|waist L|208|264|to place
+catMonke Thin (north)|torso|waist R|300|264|to place
+catMonke Thin (north)|torso|navel|||not in view
+catMonke Thin (north)|torso|hip L|208|316|to place
+catMonke Thin (north)|torso|hip R|300|316|to place
+catMonke Thin (north)|pelvis|groin crease L|||not in view
+catMonke Thin (north)|pelvis|groin crease R|||not in view
+catMonke Thin (north)|pelvis|sex|||not in view
+catMonke Thin (north)|pelvis|crotch point|254|400|to place
+catMonke Thin (north)|legs|leg bottom L|251|427|detected
+catMonke Thin (north)|legs|leg bottom R|261|426|detected
+catMonke Thin (north)|arms|elbow L|||not in texture
+catMonke Thin (north)|arms|elbow R|||not in texture
+catMonke Thin (north)|arms|wrist L|||not in texture
+catMonke Thin (north)|arms|wrist R|||not in texture
+catMonke Thin (north)|arms|hand end L|||not in texture
+catMonke Thin (north)|arms|hand end R|||not in texture
+catMonke Thin (north)|legs|knee L|||not in texture
+catMonke Thin (north)|legs|knee R|||not in texture
+catMonke Thin (north)|legs|ankle L|||not in texture
+catMonke Thin (north)|legs|ankle R|||not in texture
+catMonke Thin (north)|axis|midline top|254|182|detected
+catMonke Thin (north)|axis|midline crotch|254|364|detected
+catMonke Thin (north)|garment|pants garment hemL|239|423|detected
+catMonke Thin (north)|garment|pants garment hemR|273|423|detected
+catMonke Thin (north)|garment|pants garment top edge 0|229|360|detected
+catMonke Thin (north)|garment|pants garment top edge 1|236|362|detected
+catMonke Thin (north)|garment|pants garment top edge 2|244|363|detected
+catMonke Thin (north)|garment|pants garment top edge 3|251|364|detected
+catMonke Thin (north)|garment|pants garment top edge 4|259|364|detected
+catMonke Thin (north)|garment|pants garment top edge 5|266|363|detected
+catMonke Thin (north)|garment|pants garment top edge 6|274|362|detected
+catMonke Thin (north)|garment|pants garment top edge 7|281|360|detected
+catMonke Thin (north)|garment|pants garment hem middle|256|426|detected
+catMonke Thin (north)|garment|pants garment sleeve end L|||not in texture
+catMonke Thin (north)|garment|pants garment sleeve end R|||not in texture
+catMonke Fat (north)|extremes|top|254|160|detected
+catMonke Fat (north)|extremes|bottom|256|446|detected
+catMonke Fat (north)|extremes|leftmost|102|362|detected
+catMonke Fat (north)|extremes|rightmost|408|362|detected
+catMonke Fat (north)|head/neck|neck base L|188|168|detected
+catMonke Fat (north)|head/neck|neck base R|320|168|detected
+catMonke Fat (north)|head/neck|jugular notch|||not in view
+catMonke Fat (north)|shoulders|shoulder tip L|128|240|detected
+catMonke Fat (north)|shoulders|shoulder tip R|380|240|detected
+catMonke Fat (north)|shoulders|armpit L|128|246|to place
+catMonke Fat (north)|shoulders|armpit R|380|246|to place
+catMonke Fat (north)|chest|breast apex L|||not in view
+catMonke Fat (north)|chest|breast apex R|||not in view
+catMonke Fat (north)|chest|cleavage|||not in view
+catMonke Fat (north)|chest|under-breast fold L|||not in view
+catMonke Fat (north)|chest|under-breast fold R|||not in view
+catMonke Fat (north)|torso|waist L|124|257|to place
+catMonke Fat (north)|torso|waist R|384|257|to place
+catMonke Fat (north)|torso|navel|||not in view
+catMonke Fat (north)|torso|hip L|104|317|to place
+catMonke Fat (north)|torso|hip R|408|317|to place
+catMonke Fat (north)|pelvis|groin crease L|||not in view
+catMonke Fat (north)|pelvis|groin crease R|||not in view
+catMonke Fat (north)|pelvis|sex|||not in view
+catMonke Fat (north)|pelvis|crotch point|256|421|to place
+catMonke Fat (north)|legs|leg bottom L|228|446|detected
+catMonke Fat (north)|legs|leg bottom R|284|445|detected
+catMonke Fat (north)|arms|elbow L|||not in texture
+catMonke Fat (north)|arms|elbow R|||not in texture
+catMonke Fat (north)|arms|wrist L|||not in texture
+catMonke Fat (north)|arms|wrist R|||not in texture
+catMonke Fat (north)|arms|hand end L|||not in texture
+catMonke Fat (north)|arms|hand end R|||not in texture
+catMonke Fat (north)|legs|knee L|||not in texture
+catMonke Fat (north)|legs|knee R|||not in texture
+catMonke Fat (north)|legs|ankle L|||not in texture
+catMonke Fat (north)|legs|ankle R|||not in texture
+catMonke Fat (north)|axis|midline top|256|160|detected
+catMonke Fat (north)|axis|midline crotch|256|390|detected
+catMonke Fat (north)|garment|pants garment hemL|203|444|detected
+catMonke Fat (north)|garment|pants garment hemR|309|444|detected
+catMonke Fat (north)|garment|pants garment top edge 0|175|383|detected
+catMonke Fat (north)|garment|pants garment top edge 1|198|387|detected
+catMonke Fat (north)|garment|pants garment top edge 2|221|389|detected
+catMonke Fat (north)|garment|pants garment top edge 3|244|390|detected
+catMonke Fat (north)|garment|pants garment top edge 4|267|390|detected
+catMonke Fat (north)|garment|pants garment top edge 5|290|389|detected
+catMonke Fat (north)|garment|pants garment top edge 6|313|387|detected
+catMonke Fat (north)|garment|pants garment top edge 7|336|383|detected
+catMonke Fat (north)|garment|pants garment hem middle|256|446|detected
+catMonke Fat (north)|garment|pants garment sleeve end L|||not in texture
+catMonke Fat (north)|garment|pants garment sleeve end R|||not in texture
+catMonke Hulk (north)|extremes|top|256|136|detected
+catMonke Hulk (north)|extremes|bottom|256|500|detected
+catMonke Hulk (north)|extremes|leftmost|110|260|detected
+catMonke Hulk (north)|extremes|rightmost|400|244|detected
+catMonke Hulk (north)|head/neck|neck base L|184|152|detected
+catMonke Hulk (north)|head/neck|neck base R|328|152|detected
+catMonke Hulk (north)|head/neck|jugular notch|||not in view
+catMonke Hulk (north)|shoulders|shoulder tip L|114|236|detected
+catMonke Hulk (north)|shoulders|shoulder tip R|396|236|detected
+catMonke Hulk (north)|shoulders|armpit L|122|312|detected
+catMonke Hulk (north)|shoulders|armpit R|386|312|detected
+catMonke Hulk (north)|chest|breast apex L|||not in view
+catMonke Hulk (north)|chest|breast apex R|||not in view
+catMonke Hulk (north)|chest|cleavage|||not in view
+catMonke Hulk (north)|chest|under-breast fold L|||not in view
+catMonke Hulk (north)|chest|under-breast fold R|||not in view
+catMonke Hulk (north)|torso|waist L|144|360|detected
+catMonke Hulk (north)|torso|waist R|362|360|detected
+catMonke Hulk (north)|torso|navel|||not in view
+catMonke Hulk (north)|torso|hip L|150|375|to place
+catMonke Hulk (north)|torso|hip R|356|375|to place
+catMonke Hulk (north)|pelvis|groin crease L|||not in view
+catMonke Hulk (north)|pelvis|groin crease R|||not in view
+catMonke Hulk (north)|pelvis|sex|||not in view
+catMonke Hulk (north)|pelvis|crotch point|252|462|to place
+catMonke Hulk (north)|legs|leg bottom L|244|499|detected
+catMonke Hulk (north)|legs|leg bottom R|264|505|detected
+catMonke Hulk (north)|arms|elbow L|||not in texture
+catMonke Hulk (north)|arms|elbow R|||not in texture
+catMonke Hulk (north)|arms|wrist L|||not in texture
+catMonke Hulk (north)|arms|wrist R|||not in texture
+catMonke Hulk (north)|arms|hand end L|||not in texture
+catMonke Hulk (north)|arms|hand end R|||not in texture
+catMonke Hulk (north)|legs|knee L|||not in texture
+catMonke Hulk (north)|legs|knee R|||not in texture
+catMonke Hulk (north)|legs|ankle L|||not in texture
+catMonke Hulk (north)|legs|ankle R|||not in texture
+catMonke Hulk (north)|axis|midline top|252|136|detected
+catMonke Hulk (north)|axis|midline crotch|252|418|detected
+catMonke Hulk (north)|garment|pants garment hemL|223|495|detected
+catMonke Hulk (north)|garment|pants garment hemR|289|495|detected
+catMonke Hulk (north)|garment|pants garment top edge 0|210|414|detected
+catMonke Hulk (north)|garment|pants garment top edge 1|223|416|detected
+catMonke Hulk (north)|garment|pants garment top edge 2|236|417|detected
+catMonke Hulk (north)|garment|pants garment top edge 3|249|418|detected
+catMonke Hulk (north)|garment|pants garment top edge 4|261|418|detected
+catMonke Hulk (north)|garment|pants garment top edge 5|274|417|detected
+catMonke Hulk (north)|garment|pants garment top edge 6|287|416|detected
+catMonke Hulk (north)|garment|pants garment top edge 7|300|414|detected
+catMonke Hulk (north)|garment|pants garment hem middle|256|498|detected
+catMonke Hulk (north)|garment|pants garment sleeve end L|||not in texture
+catMonke Hulk (north)|garment|pants garment sleeve end R|||not in texture
+catMonke Female (north)|extremes|top|256|160|detected
+catMonke Female (north)|extremes|bottom|256|444|detected
+catMonke Female (north)|extremes|leftmost|170|348|detected
+catMonke Female (north)|extremes|rightmost|342|348|detected
+catMonke Female (north)|head/neck|neck base L|224|160|detected
+catMonke Female (north)|head/neck|neck base R|288|160|detected
+catMonke Female (north)|head/neck|jugular notch|||not in view
+catMonke Female (north)|shoulders|shoulder tip L|190|236|detected
+catMonke Female (north)|shoulders|shoulder tip R|322|236|detected
+catMonke Female (north)|shoulders|armpit L|192|280|detected
+catMonke Female (north)|shoulders|armpit R|320|280|detected
+catMonke Female (north)|chest|breast apex L|||not in view
+catMonke Female (north)|chest|breast apex R|||not in view
+catMonke Female (north)|chest|cleavage|||not in view
+catMonke Female (north)|chest|under-breast fold L|||not in view
+catMonke Female (north)|chest|under-breast fold R|||not in view
+catMonke Female (north)|torso|waist L|200|292|detected
+catMonke Female (north)|torso|waist R|312|292|detected
+catMonke Female (north)|torso|navel|||not in view
+catMonke Female (north)|torso|hip L|170|351|to place
+catMonke Female (north)|torso|hip R|342|351|to place
+catMonke Female (north)|pelvis|groin crease L|||not in view
+catMonke Female (north)|pelvis|groin crease R|||not in view
+catMonke Female (north)|pelvis|sex|||not in view
+catMonke Female (north)|pelvis|crotch point|256|414|to place
+catMonke Female (north)|legs|leg bottom L|242|444|detected
+catMonke Female (north)|legs|leg bottom R|270|444|detected
+catMonke Female (north)|arms|elbow L|||not in texture
+catMonke Female (north)|arms|elbow R|||not in texture
+catMonke Female (north)|arms|wrist L|||not in texture
+catMonke Female (north)|arms|wrist R|||not in texture
+catMonke Female (north)|arms|hand end L|||not in texture
+catMonke Female (north)|arms|hand end R|||not in texture
+catMonke Female (north)|legs|knee L|||not in texture
+catMonke Female (north)|legs|knee R|||not in texture
+catMonke Female (north)|legs|ankle L|||not in texture
+catMonke Female (north)|legs|ankle R|||not in texture
+catMonke Female (north)|axis|midline top|256|160|detected
+catMonke Female (north)|axis|midline crotch|256|378|detected
+catMonke Female (north)|garment|pants garment hemL|222|440|detected
+catMonke Female (north)|garment|pants garment hemR|290|440|detected
+catMonke Female (north)|garment|pants garment top edge 0|208|372|detected
+catMonke Female (north)|garment|pants garment top edge 1|222|375|detected
+catMonke Female (north)|garment|pants garment top edge 2|235|377|detected
+catMonke Female (north)|garment|pants garment top edge 3|249|378|detected
+catMonke Female (north)|garment|pants garment top edge 4|262|378|detected
+catMonke Female (north)|garment|pants garment top edge 5|276|377|detected
+catMonke Female (north)|garment|pants garment top edge 6|289|375|detected
+catMonke Female (north)|garment|pants garment top edge 7|303|372|detected
+catMonke Female (north)|garment|pants garment hem middle|256|444|detected
+catMonke Female (north)|garment|pants garment sleeve end L|||not in texture
+catMonke Female (north)|garment|pants garment sleeve end R|||not in texture
