@@ -63,7 +63,7 @@ namespace TailorMadeWaistlines
                 case "Female": return Female;
                 case "Thin": return gender == Gender.Female ? FemaleThin : MaleThin;
                 case "Hulk": return gender == Gender.Female ? FemaleHulk : MaleHulk;
-                case "Fat": return gender == Gender.Female ? FemaleFat : MaleFat;
+                case "Fat": return FemaleFat;
                 case "Child": return gender == Gender.Female ? KidGirl : KidBoy;
                 default: return null;
             }
