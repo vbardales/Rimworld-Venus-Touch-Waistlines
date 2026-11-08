@@ -3,7 +3,7 @@ volumes) as a closed mesh for the 3D viewer. Front = south height field, back = 
 silhouette edge. Output: out/relief3d.json  {body: {R, U, pts:[row:[x,y,z]*2U]}}  (ring of 2U points per row).
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python relief_export.py [Body ...]
 """
-import sys, json
+import os, sys, json
 import numpy as np
 from scipy import ndimage as ndi
 import crack as c1, crack2, explain5b as e5
@@ -56,7 +56,7 @@ def main():
     for b in names:
         print(b, flush=True)
         out[b] = one(b)
-    json.dump({"R": R, "U": U, "bodies": out}, open(rf"{c1.OUT}\relief3d.json", "w"), separators=(",", ":"))
+    json.dump({"R": R, "U": U, "bodies": out}, open(rf"{c1.OUT}\relief3d{os.environ.get("RELIEF_TAG","")}.json", "w"), separators=(",", ":"))
     print("ok")
 
 

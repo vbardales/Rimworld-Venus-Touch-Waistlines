@@ -1,8 +1,8 @@
 """Texture over relief, to see which drawn volumes the relief does not carry (Virginie 2026-11-08).
 Columns per facing: texture | relief lit (relief3d.height) | texture 50 % over the relief, drawn lines in red.
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python overlay3d.py [Body ...]
-Boards: Art/work/captures/2026-11-08_overlay-<Body>.png (three facings), 2026-11-08_overlay-south-all.png"""
-import sys
+Boards: Art/work/captures/2026-11-08_overlay-<Body>.png (three facings), 2026-11-08_overlay{os.environ.get("RELIEF_TAG","")}-south-all.png"""
+import os, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage as ndi
@@ -59,7 +59,7 @@ def main():
         for r, f in enumerate(("south", "east", "north")):
             for c in range(3):
                 im.paste(tile(o[f][c], box), (10 + c * (w + 10), 30 + r * (h + 10)))
-        im.save(rf"{c1.CAPT}\2026-11-08_overlay-{b}.png")
+        im.save(rf"{c1.CAPT}\2026-11-08_overlay{os.environ.get("RELIEF_TAG","")}-{b}.png")
         south.append((b, tile(o["south"][2], box)))
     if len(south) > 1:
         w = max(t.width for _, t in south); h = max(t.height for _, t in south)
@@ -68,7 +68,7 @@ def main():
         for i, (b, t) in enumerate(south):
             x = 10 + (i % 4) * (w + 10); y = 10 + (i // 4) * (h + 30)
             d.text((x, y), b, fill=(0, 0, 0), font=font); im.paste(t, (x, y + 20))
-        im.save(rf"{c1.CAPT}\2026-11-08_overlay-south-all.png")
+        im.save(rf"{c1.CAPT}\2026-11-08_overlay{os.environ.get("RELIEF_TAG","")}-south-all.png")
     print("ok")
 
 
