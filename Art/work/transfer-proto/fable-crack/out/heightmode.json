@@ -1,0 +1,90 @@
+{
+ "Male": {
+  "drop": "",
+  "soft": 0.0,
+  "name": "base",
+  "weak": {
+   "base": 0.054,
+   "-navel": 0.053,
+   "-sex": 0.068,
+   "soft0.5": 0.053
+  }
+ },
+ "Female": {
+  "drop": "sex",
+  "soft": 0.0,
+  "name": "-sex",
+  "weak": {
+   "base": 0.209,
+   "-navel": 0.216,
+   "-sex": 0.155,
+   "soft0.5": 0.159
+  }
+ },
+ "Thin": {
+  "drop": "navel",
+  "soft": 0.0,
+  "name": "-navel",
+  "weak": {
+   "base": 0.243,
+   "-navel": 0.093,
+   "-sex": 0.273,
+   "soft0.5": 0.164
+  }
+ },
+ "Fat": {
+  "drop": "navel",
+  "soft": 0.0,
+  "name": "-navel",
+  "weak": {
+   "base": 0.322,
+   "-navel": 0.061,
+   "-sex": 0.316,
+   "soft0.5": 0.07
+  }
+ },
+ "Hulk": {
+  "drop": "",
+  "soft": 0.5,
+  "name": "soft0.5",
+  "weak": {
+   "base": 0.092,
+   "-navel": 0.089,
+   "-sex": 0.098,
+   "soft0.5": 0.059
+  }
+ },
+ "Thin_Female": {
+  "drop": "",
+  "soft": 0.5,
+  "name": "soft0.5",
+  "weak": {
+   "base": 0.455,
+   "-navel": 0.553,
+   "-sex": 0.336,
+   "soft0.5": 0.241
+  }
+ },
+ "Fat_Female": {
+  "drop": "navel",
+  "soft": 0.0,
+  "name": "-navel",
+  "weak": {
+   "base": 0.39,
+   "-navel": 0.158,
+   "-sex": 0.28,
+   "soft0.5": 0.209
+  }
+ },
+ "Hulk_Female": {
+  "drop": "",
+  "soft": 0.5,
+  "name": "soft0.5",
+  "weak": {
+   "base": 0.258,
+   "-navel": 0.269,
+   "-sex": 0.22,
+   "soft0.5": 0.172
+  }
+ }
+}

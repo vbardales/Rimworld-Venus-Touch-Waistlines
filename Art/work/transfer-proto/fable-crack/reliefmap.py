@@ -56,6 +56,23 @@ KEEP = {"neck base L", "neck base R", "jugular notch",
 # heights shared between the views, taken from the front view's rows (the views' rows matched by the silhouette's top and
 # bottom): the chest, the navel and the sex exist on the side and back views too, the study only named them on the front
 SHARED = ("armpit L", "navel", "sex")
+EXTRA = {}          # {(body, facing): {name: (vanilla row, WDI row)}}, filled by reliefstudy.py
+# height mode per body (heightmode.py, 2026-11-08, from anchortest.py): which kept anchor is dropped on this body and how
+# much the anchors' scale is softened; read from out/heightmode.json when it exists, {} = the anchors as they are
+MODES = None
+SOFT_AUTO = True    # build takes SOFT from the body's mode; False: SOFT as set by the caller (anchortest.py)
+
+
+def mode_of(body):
+    global MODES
+    if MODES is None:
+        import os, json
+        p = rf"{c1.OUT}\heightmode.json"
+        MODES = {}
+        if os.path.exists(p):
+            with open(p, encoding="utf-8") as fh:
+                MODES = json.load(fh)
+    return MODES.get(body, {"drop": "", "soft": 0.0})
 
 
 def anchors(m, v, rows, half=None):
@@ -83,12 +100,17 @@ def landmark_rows(body, f, vanilla, M):
             if k in ix:
                 g = ix[k]; x = P[ix["navel"], 0] + fp.GROIN_X * (P[g, 0] - P[ix["navel"], 0])
                 P[g] = (x, float(mnl[int(round(x))]))
-    rows = {n: float(P[i, 1]) for i, n in enumerate(names) if n in KEEP}
+    drop = mode_of(body)["drop"]
+    rows = {n: float(P[i, 1]) for i, n in enumerate(names) if n in KEEP and not (drop and drop in n)}
+    # extra anchors (reliefstudy.py, 2026-11-08: a point added only where a weak band resists): name -> (vanilla row,
+    # WDI row) at 512, per body and facing; a shared-row name ("S:...") counts for both profile halves
+    for n, (rv, rw) in EXTRA.get((body, f), {}).items():
+        rows[n] = float(rv if vanilla else rw)
     if f != "south":
         s2, d2, n2 = e5.named_pairs(body, "south")
         P2 = (d2 * 4) if vanilla else s2
         for i, n in enumerate(n2):
-            if n in SHARED:
+            if n in SHARED and not (drop and drop in n):
                 rows["S:" + n] = float(r3.map_row(P2[i, 1], M["south"], M[f]))
     return rows
 
@@ -132,6 +154,10 @@ def common_scale(Aw, Av, only=None):
     return np.array(kw), np.array(kv)
 
 
+SOFT = 0.0          # reliefstudy.py 2026-11-08: share of the uniform top-to-bottom scale blended into the anchors' piecewise
+                    # linear scale (0 = the anchors exactly, 1 = top and bottom only)
+
+
 def scale_fn(kw, kv):
     """WDI down -> vanilla down, piecewise linear between the anchors, extended linearly past the ends"""
     def to_van(vals):
@@ -140,6 +166,9 @@ def scale_fn(kw, kv):
         if len(kw) > 1:
             out[lo] = kv[0] + (vals[lo] - kw[0]) * (kv[1] - kv[0]) / max(kw[1] - kw[0], 1e-3)
             out[hi] = kv[-1] + (vals[hi] - kw[-1]) * (kv[-1] - kv[-2]) / max(kw[-1] - kw[-2], 1e-3)
+        if SOFT > 0 and len(kw) > 1:
+            lin = kv[0] + (vals - kw[0]) * (kv[-1] - kv[0]) / max(kw[-1] - kw[0], 1e-3)
+            out = (1 - SOFT) * out + SOFT * lin
         return out
     return to_van
 
@@ -170,6 +199,9 @@ def build(body, f, ease=0, cache={}):
         full = lambda img: ndi.binary_fill_holes(img[..., 3] > 0.5)
         cache[body] = (imw, imv, {k: full(imw[k]) for k in imw}, {k: full(imv[k]) for k in imv})
     imw, imv, Mw, Mv = cache[body]
+    global SOFT
+    if SOFT_AUTO:
+        SOFT = float(mode_of(body)["soft"])
     unw, vw, Rw = body_side(body, f, False, Mw, imw)
     unv, vv, Rv = body_side(body, f, True, Mv, imv)
     mv = Mv[f]; mw = Mw[f]
