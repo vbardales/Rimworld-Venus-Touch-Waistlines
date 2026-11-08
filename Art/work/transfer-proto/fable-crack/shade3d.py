@@ -17,6 +17,7 @@ MU = float(os.environ.get("SHADE_MU", 0.003))   # pull back to the volume
 _height0 = r3.height
 NIPPLE = float(os.environ.get("NIPPLE", 7.0))   # px of height
 SEX = float(os.environ.get("SEX", 9.0))
+PEC = float(os.environ.get("PEC", 8.0))      # px of height of each pectoral lobe
 NAVEL = float(os.environ.get("NAVEL", 8.0))
 
 
@@ -90,6 +91,25 @@ def height_shade(view, M, pts, lum):
         b = D.T @ t + MU * hb
         out[y0:y1, x] = spsolve(A, b)
     out = ndi.gaussian_filter(out, (2, 4)) * m
+    # Virginie 2026-11-08: two pectorals that share the chest (like the two testes in one sac): two lobes from the
+    # sternum to the armpit, from under the collarbone to the fold, a groove on the midline
+    need = ("armpit L", "armpit R", "shoulder tip L", "shoulder tip R", "under-breast fold L", "under-breast fold R")
+    if view == "south" and all(k in pts for k in need):
+        midx = 0.5 * (pts["breast apex L"][0] + pts["breast apex R"][0]) if "breast apex L" in pts else 0.5 * (pts["armpit L"][0] + pts["armpit R"][0])
+        ysh = 0.5 * (pts["shoulder tip L"][1] + pts["shoulder tip R"][1])
+        yfo = 0.5 * (pts["under-breast fold L"][1] + pts["under-breast fold R"][1])
+        for nm in ("armpit L", "armpit R"):
+            ax = pts[nm][0]
+            half = 0.5 * (abs(ax - midx) - 6)
+            if half < 8 or yfo - ysh < 30:
+                continue
+            sg = 1 if ax > midx else -1
+            cxp, cyp = midx + sg * (6 + half), 0.5 * (ysh + 12 + yfo)
+            ay = 0.5 * (yfo - ysh - 12)
+            rr = ((xx - cxp) / half) ** 2 + ((yy - cyp) / ay) ** 2
+            out = out + PEC * np.clip(1 - rr, 0, 1) ** 0.7 * m
+        band = np.exp(-(((yy - 0.5 * (ysh + yfo)) / (0.5 * (yfo - ysh))) ** 6))
+        out = out - 0.5 * PEC * np.exp(-(((xx - midx) / 5.0) ** 2)) * band * m
     if view == "south" and "sex" in pts:
         hull, cr = groin(m, lum, pts["sex"], ol)
         if hull is not None:
