@@ -15,6 +15,9 @@ import relief3d as r3
 K = float(os.environ.get("SHADE_K", 4.0))      # height per px at full darkness (slope, 1.4 = 54 degrees)
 MU = float(os.environ.get("SHADE_MU", 0.003))   # pull back to the volume
 _height0 = r3.height
+NIPPLE = float(os.environ.get("NIPPLE", 7.0))   # px of height
+SEX = float(os.environ.get("SEX", 9.0))
+NAVEL = float(os.environ.get("NAVEL", 8.0))
 
 
 def silhouette_full(img):
@@ -47,6 +50,17 @@ def height_shade(view, M, pts, lum):
     ol = ndi.binary_dilation(outline_of(m, lum), iterations=2)
     dark = np.clip(1.0 - lum / max(ref, 1e-3), 0, 1) * m * ~ol
     dark = ndi.gaussian_filter(dark, (1.0, 2.5)) * m
+    # Virginie 2026-11-08: nipples and sex stand out, the navel is hollow. Front view only (the points exist there):
+    # the shading is not read around them, then a bump or a dimple is added on the point.
+    feats = []
+    if view == "south":
+        for nm in ("breast apex L", "breast apex R"):
+            if nm in pts: feats.append((pts[nm], 7.0, +NIPPLE))
+        if "sex" in pts: feats.append((pts["sex"], 13.0, +SEX))
+        if "navel" in pts: feats.append((pts["navel"], 7.0, -NAVEL))
+    yy, xx = np.mgrid[0:n, 0:n]
+    for (px, py), r, a in feats:
+        dark = dark * (((xx - px) ** 2 + (yy - py) ** 2) > (1.6 * r) ** 2)
     out = h0.copy()
     for x in np.where(m.any(axis=0))[0]:
         col = m[:, x]
@@ -63,7 +77,9 @@ def height_shade(view, M, pts, lum):
         b = D.T @ t + MU * hb
         out[y0:y1, x] = spsolve(A, b)
     out = ndi.gaussian_filter(out, (2, 4)) * m
-    return np.clip(out, 0, None)
+    for (px, py), r, a in feats:
+        out = out + a * np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * (r / 2) ** 2))) * m
+    return np.clip(out, 0, None) if not any(a < 0 for _, _, a in feats) else np.clip(out, -20, None) * m
 
 
 r3.height = height_shade
