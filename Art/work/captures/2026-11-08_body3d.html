@@ -79,7 +79,7 @@ function skeleton(rows,A,lm,legs){
   g.add(tube(spine,2.2));
   // ribcage: a RIGID barrel (narrow at the top, widest at 2/3, 12 ribs), scaled to fit INSIDE the skin at its tightest level,
   // from the collarbone down to the costal margin (about 85 % of the way from the nipples to the navel: the lowest rib edge sits just above the navel)
-  const apexW=lm.apex??fold,yRibT2=sh-10,yRibB2=apexW-0.85*(apexW-navel),NR=12;
+  const apexW=lm.apex??fold,yRibT2=top-0.20*(top-fold),yRibB2=apexW-0.85*(apexW-navel),NR=12;
   const wfun=t=>t<=0.65?0.45+0.55*Math.sin(t/0.65*Math.PI/2):1-0.12*((t-0.65)/0.35);
   const dfun=t=>t<=0.60?0.50+0.50*Math.sin(t/0.60*Math.PI/2):1-0.10*((t-0.60)/0.40);
   const lev=[];
@@ -97,7 +97,7 @@ function skeleton(rows,A,lm,legs){
   g.add(tube([[lev[0].f.cx,lev[0].y+4,lev[0].sp[2]+lev[0].D],[lev[4].f.cx,lev[4].y-6,lev[4].sp[2]+lev[4].D],[lev[8].f.cx,lev[8].y-12,lev[8].sp[2]+lev[8].D]],3.4));
   // clavicles, shoulder blades (triangular plates on the back), all close under the skin
   for(const s of [-1,1]){
-    g.add(tube([P(yRibT+8,s*0.12,6),P(sh+10,s*0.85,5),P(sh+4,s*1.42,5)],2.4));
+    g.add(tube([P(yRibT2+6,s*0.12,5),P(yRibT2+2,s*0.7,5),P(sh+10,s*1.35,5)],2.4));
     const ys2=(sh+fold)/2+8,a=s*(Math.PI-0.85),i=ix(ys2),f=info(i);
     g.add(plate([[-1,0.9],[1,1],[0.15,-1]],f.hw*0.24,(sh-fold)*0.34,P(ys2,a,9),a,3));
   }
