@@ -8,28 +8,28 @@ All files live under `Art/work/` (gitignored, force-added on branch `cloud-work`
 
 | File | Role |
 |---|---|
-| `transfer-proto/fable-crack/shade3d.py` | Height field: `relief3d.height()` volume, then shape from shading (zenithal light), pec fan, groin dome, nipples, navel. |
-| `transfer-proto/fable-crack/relief_export2.py` | Closed mesh export: rings from the south and north height fields, leg rings under the crotch notch, landmark rows. Output `out/relief3d-shade5.json` (R=150, U=44). |
-| `transfer-proto/fable-crack/body3d_template.html` | Viewer code (three.js r128): skin modes, skeleton, organs, cage floor. `__DATA__` is replaced by the datasets. |
-| `transfer-proto/fable-crack/body3d_build.py` | Rebuilds `captures/2026-11-08_body3d.html` from the template and the DATA already in the viewer. |
+| `transfer-proto/fable-crack/shade3d.py` | Height field: `relief3d.height()` volume, then shape from shading (zenithal light), pec fan, groin dome, nipples, navel, and landmark-anchored thoracic creases. |
+| `transfer-proto/fable-crack/relief_export2.py` | Closed mesh export: 360 sub-pixel rings from the south and north height fields, a hard east-profile envelope, lower cut rings below the crotch (notch or landmark seam), landmark rows, and the rigid-rib-cage floor. Output `out/relief3d-shade5.json` (R=360, U=44). |
+| `transfer-proto/fable-crack/body3d_template.html` | Viewer code (three.js r128): skin modes, the exported diagnostic skeleton, and organs. `__DATA__` is replaced by the datasets. |
+| `transfer-proto/fable-crack/body3d_build.py` | Rebuilds `captures/2026-11-08_body3d.html`, automatically replacing the shaded dataset with the latest export. |
 | `captures/2026-11-08_body3d.html` | The viewer (open in a browser, `squelette` checkbox, `east` button). |
 
 Run the shading: `RELIEF_TAG=-shadeN uv run --with numpy --with pillow --with scipy --with scikit-image python shade3d.py [overlay|export] [Body ...]`.
-Knobs: `SHADE_K=4`, `SHADE_MU=0.003`, `NIPPLE=7`, `SEX=9`, `NAVEL=8`, `PEC=11`, `PEC_F=5`.
+Knobs: `SHADE_K=4`, `SHADE_MU=0.003`, `NIPPLE=7`, `SEX=9`, `NAVEL=8`, `PEC=11`, `PEC_F=5`, `DETAIL_OUT=5.5`, `DETAIL_IN=4`. The last two softly saturate all post-base signed surface detail, so named features cannot create a second body volume or a hard normal break. Base priors in `relief3d.py` are deliberately quiet (`ZONE_RELIEF=3`, `CHEST_LOBE=.08`, `CHEST_VALLEY=.06`); named features own the readable anatomy.
 
 ## Method
 
 1. Silhouette: alpha mask with holes filled, black outline kept (it is the rim where the surface turns away from the eye, so it is integrated, not removed).
-2. Volume: width from the south view, depth from the east view, mid-depth line from the east silhouette; chest lobes on the named points.
+2. Volume: width from the south view, depth from the east view, mid-depth line from the east silhouette; chest lobes on the named points. The east outline is a hard envelope: relief is renormalised row by row inside it, and the cage floor is capped there too.
 3. Shading: WDI shadows read as a zenithal light; dark = surface turning down. Per column, a tridiagonal least-squares system (height slope from the darkness, pulled back to the volume).
-4. Features: nipples and sex raised, navel hollowed; sex as a dome from the convex hull of the groin creases; pectorals as a fan (thin at the sternum, crisp oblique lower border, smaller on female bodies).
-5. Mesh: front ring from the south field, back ring from the north field, joined at the silhouette edge; legs as separate rings below the crotch notch (4 of 8 bodies have the notch: Male, Female, Fat, Fat_Female).
+4. Features: nipples and sex raised, navel hollowed; sex as a dome from the convex hull of the groin creases; pectorals as a fan (thin at the sternum, crisp oblique lower border, smaller on female bodies). The sternal and inferior-pectoral/under-breast creases are signed troughs anchored to the named points, so smoothing does not erase them.
+5. Mesh: front ring from the south field, back ring from the north field, joined at the silhouette edge. The assets end just below the crotch; their lower rings are a cut edge, not a reconstructed leg. Where a sprite has a crotch notch, its two alpha runs define two cut rings; otherwise, the named crotch starts an internal medial seam with the outer source projection unchanged.
 6. Skeleton (viewer): every bone is placed from the skin by a ray from the row axis and a margin under it.
    - Rib cage: rigid barrel of 12 ribs, from the neck base (20 % of the way from the body top to the under-breast fold) to just above the navel (85 % of the way from the nipples to the navel). Depth fitted per level on the centre-line skin (7 px margin in front, 12 px behind), smoothed over 5 levels. Width from the 40th percentile of the side margins.
    - Sternum: a straight line fitted by least squares on the centre-line skin, lifted to the 60th percentile of the residuals.
    - Clavicles under the neck skin (Virginie: the clavicles sit under the skin of the neck), from the notch to 10 px above the shoulder tip.
    - Spine at 30 % of the depth from the back skin (at least 14 px); scapulae and iliac wings as plates; sacrum, pubis, femurs.
-7. Floor (viewer only): where there is no muscle the skin rests on the cage. After the cage is built, any skin point in front of or behind the cage is pushed out to at least 5 px from the cage surface. Muscle zones (pecs, back) keep their gap with no floor. The count of moved points is logged in the console (`cage floor moved N skin points`).
+7. Floor (export): where there is no muscle the skin rests on the cage. After the cage is built, any skin point in front of or behind the cage is pushed out to at least 5 px from the cage surface. The export records the number of displaced points in each body's `cage.moved`; the viewer is diagnostic and never changes its input mesh.
 
 ## Research: soft tissue over the thorax (2026-11-08)
 
@@ -57,9 +57,8 @@ Consequences taken (estimates, not published measurements):
 
 ## Open
 
-- Floor only in the viewer: port it to Python so `relief3d-shade5.json` and the cloth study benefit.
 - Table of the gap cage to skin per rib level, for all eight bodies.
-- Seven bodies not reviewed in detail; Thin, Thin_Female, Hulk, Hulk_Female have no leg split; the mesh bottom is open at the leg ends.
+- These are torso–pelvis assets, not full figures: the source gives only 6 to 33 px below the crotch. A complete leg model needs a procedural extension or full-body source views. Thin, Thin_Female, Hulk and Hulk_Female use a landmark-defined medial seam because their sprites have no crotch notch. The lower cut is closed by a flat mesh cap, not modelled as a leg or foot.
 - Real-texture rerun of the cloud scripts (`heightmode.py all`, `garmentstudy.py all`).
 - Cloth surface as a low-pass of the volume; tucked and untucked rules; AB Pants; isoRim variant.
 - Docs of section C3 (`docs/GARMENT-FIT-PROCESS.md`) exist only on remote branch `nelim/lucid-davinci-jsbif5`, not merged.

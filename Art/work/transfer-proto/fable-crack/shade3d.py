@@ -14,13 +14,52 @@ import relief3d as r3
 
 K = float(os.environ.get("SHADE_K", 4.0))      # height per px at full darkness (slope, 1.4 = 54 degrees)
 MU = float(os.environ.get("SHADE_MU", 0.003))   # pull back to the volume
-_height0 = r3.height
+_base_height = r3.base_height
 NIPPLE = float(os.environ.get("NIPPLE", 7.0))   # px of height
 SEX = float(os.environ.get("SEX", 9.0))
 PEC = float(os.environ.get("PEC", 11.0))     # px of height of the pectoral muscle, male bodies
 PEC_F = float(os.environ.get("PEC_F", 5.0))   # the same under the breast tissue, female bodies
 BODY = [None]                                   # set by the views() wrapper below
 NAVEL = float(os.environ.get("NAVEL", 8.0))
+DETAIL_OUT = float(os.environ.get("DETAIL_OUT", 5.5))
+DETAIL_IN = float(os.environ.get("DETAIL_IN", 4.0))
+
+
+def chest_creases(out, m, pts):
+    """Signed thoracic troughs that shading alone cannot retain reliably.
+
+    They are anchored to the artist's existing landmarks rather than to pixel
+    darkness, so their position survives smoothing and the later cage
+    constraint. The cage floor in relief_export2.py is the final lower bound
+    for these negative displacements.
+    """
+    yy, xx = np.mgrid[0:out.shape[0], 0:out.shape[1]]
+    trough = np.zeros_like(out)
+    required = ("breast apex L", "breast apex R", "shoulder tip L", "shoulder tip R", "under-breast fold L", "under-breast fold R")
+    if not all(key in pts for key in required):
+        return out
+
+    left, right = pts["breast apex L"], pts["breast apex R"]
+    midx = 0.5 * (left[0] + right[0])
+    y_top = 0.5 * (pts["shoulder tip L"][1] + pts["shoulder tip R"][1]) + 12.0
+    y_bottom = 0.5 * (pts["under-breast fold L"][1] + pts["under-breast fold R"][1]) - 4.0
+    if y_bottom > y_top:
+        in_sternum = (yy >= y_top) & (yy <= y_bottom)
+        taper = np.sin(np.pi * np.clip((yy - y_top) / (y_bottom - y_top), 0, 1))
+        trough -= 2.5 * np.exp(-((xx - midx) / 5.0) ** 2) * taper * in_sternum
+
+    # The inferior pectoral / under-breast border is a line of attachment,
+    # not a shadow-painted valley. Interpolate it between its two anchors.
+    (x0, y0), (x1, y1) = pts["under-breast fold L"], pts["under-breast fold R"]
+    dx, dy = x1 - x0, y1 - y0
+    span2 = dx * dx + dy * dy
+    if span2 > 1:
+        t = np.clip(((xx - x0) * dx + (yy - y0) * dy) / span2, 0, 1)
+        px, py = x0 + t * dx, y0 + t * dy
+        dist = np.hypot(xx - px, yy - py)
+        trough -= 2.0 * np.exp(-(dist / 4.0) ** 2) * (t > 0.06) * (t < 0.94)
+
+    return out + trough * m
 
 
 def silhouette_full(img):
@@ -58,8 +97,8 @@ def outline_of(m, lum):
     return m & (lum < 0.2) & (ndi.distance_transform_edt(m) <= 15)
 
 
-def height_shade(view, M, pts, lum):
-    h0 = _height0(view, M, pts, lum)
+def legacy_height_shade(view, M, pts, lum):
+    h0 = _base_height(view, M, pts, lum)
     m = M[view]
     n = h0.shape[0]
     ref = float(np.percentile(lum[m & (lum > 0.2)], 95))
@@ -122,6 +161,7 @@ def height_shade(view, M, pts, lum):
             s_med = np.clip(u * w / 5.0, 0, 1)
             inc = np.maximum(inc, amp * Au * Av * s_low * s_lat * s_med * inside)
         out = out + ndi.gaussian_filter(inc, 1.2) * m
+    out = chest_creases(out, m, pts) if view == "south" else out
     if view == "south" and "sex" in pts:
         hull, cr = groin(m, lum, pts["sex"], ol)
         if hull is not None:
@@ -136,7 +176,28 @@ def height_shade(view, M, pts, lum):
             out = out + SEX * np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * 6.5 ** 2))) * m
     for (px, py), r, a in feats:
         out = out + a * np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * (r / 2) ** 2))) * m
-    return np.clip(out, 0, None) if not any(a < 0 for _, _, a in feats) else np.clip(out, -20, None) * m
+    # _height0 already owns the silhouette-calibrated base, its chest lobes,
+    # and the broad artist-separated zones.  The shaded solution and named
+    # features are surface detail only: letting them add another full volume
+    # made the chest and abdomen into stacked balloons.  Bound their signed
+    # displacement, preserving creases and the named relief without a second
+    # (or third) extrusion of the torso.
+    raw_detail = out - h0
+    # A hard clip creates a visible normal crease at its threshold.  A tanh
+    # saturation has the same finite limits but eases into them, so the
+    # renderer sees soft tissue rather than horizontal terraces.
+    detail = np.where(
+        raw_detail >= 0,
+        DETAIL_OUT * np.tanh(raw_detail / DETAIL_OUT),
+        DETAIL_IN * np.tanh(raw_detail / DETAIL_IN),
+    )
+    return np.maximum(h0 + detail, 0) * m
+
+
+# Stable public hook while the structured surface pass is built separately.
+# relief_export2 imports this module for its monkey-patch below.
+def height_shade(view, M, pts, lum):
+    return legacy_height_shade(view, M, pts, lum)
 
 
 _views0 = r3.views

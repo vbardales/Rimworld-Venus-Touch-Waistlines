@@ -22,9 +22,12 @@ label{margin-right:10px;white-space:nowrap}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-const DATA=__DATA__;
+const DATA=globalThis.__DATA__;
+if(!DATA){
+  document.body.innerHTML='<main style="max-width:42rem;margin:12vh auto;padding:2rem;line-height:1.5"><h1>Gabarit Body 3D</h1><p>Ce fichier est le gabarit du visualiseur : il ne contient volontairement aucune donnée de maillage.</p><p><a href="../../captures/2026-11-08_body3d.html">Ouvrir le visualiseur généré</a>, ou exécuter <code>uv run python body3d_build.py</code> après l’export.</p></main>';
+}else{
 const NOTES={
- shade:"relief + ombres + jambes: shading read as a zenithal light, outline = rim of the body, nipples raised, navel hollowed, sex = dome in the groin creases, legs split under the crotch notch where the silhouette has one (Male, Female, Fat, Fat_Female). Skeleton = schematic, fitted on the landmark rows (not anatomical bone shapes). Organs = a first volume from a profile reference (shaft hanging forward and down from the pubis, scrotum below and behind), proportioned on the shoulder width.",
+ shade:"relief + ombres + jambes: shading read as a zenithal light, outline = rim of the body, nipples raised, navel hollowed, sex = dome in the groin creases, legs split below the crotch: the drawn notch when present, otherwise an internal medial seam from the crotch landmark. Skeleton = schematic, fitted on the landmark rows (not anatomical bone shapes). Organs = a first volume from a profile reference (shaft hanging forward and down from the pubis, scrotum below and behind), proportioned on the shoulder width.",
  relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
  simple:"simple volume: superellipse sections from the E masks."};
 const sc=new THREE.Scene();
@@ -43,17 +46,25 @@ let G=null;
 const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THREE.DoubleSide});
 const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
 const flesh=new THREE.MeshStandardMaterial({color:0xc48a76,roughness:.75});
-function meshOf(rows,A){
+function meshOf(rows,A,{capTop=false,capBottom=false}={}){
   const R=rows.length,pos=[],idx=[];
   for(let i=0;i<R;i++)for(let k=0;k<A;k++){const j=k*3;pos.push(rows[i][j],rows[i][j+1],rows[i][j+2])}
   for(let i=0;i<R-1;i++)for(let k=0;k<A;k++){const a=i*A+k,b=i*A+(k+1)%A,c=(i+1)*A+k,d=(i+1)*A+(k+1)%A;idx.push(a,c,b,b,c,d)}
+  function cap(row,reverse){
+    const center=[0,0,0];
+    for(let k=0;k<A;k++){const j=k*3;center[0]+=row[j];center[1]+=row[j+1];center[2]+=row[j+2]}
+    const c=pos.length/3;pos.push(center[0]/A,center[1]/A,center[2]/A);
+    const base=reverse?(R-1)*A:0;
+    for(let k=0;k<A;k++){const a=base+k,b=base+(k+1)%A;idx.push(reverse?c:a,reverse?a:c,reverse?b:b)}
+  }
+  if(capTop)cap(rows[0],false);if(capBottom)cap(rows[R-1],true);
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
   return new THREE.Mesh(g,skin);
 }
 function tube(pts,r,mat,seg){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));return new THREE.Mesh(new THREE.TubeGeometry(c,seg||24,r,6,false),mat||bone)}
 function ball(p,rx,ry,rz,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),mat||bone);m.scale.set(rx,ry,rz);m.position.set(...p);return m}
-function skeleton(rows,A,lm,legs){
+function skeleton(rows,A,lm,legs,cage){
   const g=new THREE.Group(),R=rows.length;
   const y0=rows[0][1],y1=rows[R-1][1];
   const ix=yw=>Math.max(0,Math.min(R-1,Math.round((y0-yw)/(y0-y1)*(R-1))));
@@ -82,31 +93,29 @@ function skeleton(rows,A,lm,legs){
   const apexW=lm.apex??fold,yRibT2=top-0.20*(top-fold),yRibB2=apexW-0.85*(apexW-navel),NR=12;
   const wfun=t=>t<=0.65?0.45+0.55*Math.sin(t/0.65*Math.PI/2):1-0.12*((t-0.65)/0.35);
   const dfun=t=>t<=0.60?0.50+0.50*Math.sin(t/0.60*Math.PI/2):1-0.10*((t-0.60)/0.40);
-  const lev=[];
-  for(let k=0;k<NR;k++){const t=k/(NR-1),y=yRibT2+(yRibB2-yRibT2)*t,i=ix(y),f=info(i);
-    lev.push({t,y,f,ax:rad(i,Math.PI/2)-10,zf:f.cz+rad(i,0)-7,zb:f.cz-rad(i,Math.PI)+12,wf:wfun(t),df:dfun(t)})}
-  const sm=(key)=>{const v=lev.map(L=>L[key]);return v.map((_,k)=>{let s=0,n=0;for(let j=-2;j<=2;j++){const kk=Math.max(0,Math.min(NR-1,k+j));s+=v[kk];n++}return s/n})};
-  const zfS=sm('zf'),zbS=sm('zb'),axS=sm('ax');
-  // sternum = a rigid straight line (least squares on the centre-line skin), lifted to the 60th percentile of the residuals: the cleavage dips below it get floored
-  {const n=NR,mt=(n-1)/2;let sxy=0,sxx=0,my=0;zfS.forEach(v=>my+=v/n);zfS.forEach((v,k)=>{sxy+=(k-mt)*(v-my);sxx+=(k-mt)*(k-mt)});const sl=sxy/sxx;
-   const res=zfS.map((v,k)=>v-(my+sl*(k-mt))),sr=[...res].sort((p,q)=>p-q),sh0=sr[Math.floor(0.6*(n-1))];
-   for(let k=0;k<n;k++)zfS[k]=my+sl*(k-mt)+sh0}
-  const qs=(arr,p)=>{const v=[...arr].sort((a,b)=>a-b);return v[Math.floor(p*(v.length-1))]};
-  const Sx=qs(lev.map((L,k)=>axS[k]/L.wf),0.4);
-  lev.forEach((L,k)=>{L.sp=[0,0,zbS[k]];L.D=(zfS[k]-zbS[k])*L.df;L.a=Math.min(axS[k],Sx*L.wf)});
+  let lev=[];
+  if(cage?.levels?.length===NR){
+    // Same rigid cage as the export constraint, not a second fit to the skin.
+    lev=cage.levels.map(L=>({y:L.y,f:{cx:L.x},a:L.a,sp:[0,0,L.back],D:L.depth}));
+  }else{
+    for(let k=0;k<NR;k++){const t=k/(NR-1),y=yRibT2+(yRibB2-yRibT2)*t,i=ix(y),f=info(i);
+      lev.push({t,y,f,ax:rad(i,Math.PI/2)-10,zf:f.cz+rad(i,0)-7,zb:f.cz-rad(i,Math.PI)+12,wf:wfun(t),df:dfun(t)})}
+    const sm=(key)=>{const v=lev.map(L=>L[key]);return v.map((_,k)=>{let s=0,n=0;for(let j=-2;j<=2;j++){const kk=Math.max(0,Math.min(NR-1,k+j));s+=v[kk];n++}return s/n})};
+    const zfS=sm('zf'),zbS=sm('zb'),axS=sm('ax');
+    // Sternum: straight least-squares line, lifted over the deeper skin dimples.
+    {const n=NR,mt=(n-1)/2;let sxy=0,sxx=0,my=0;zfS.forEach(v=>my+=v/n);zfS.forEach((v,k)=>{sxy+=(k-mt)*(v-my);sxx+=(k-mt)*(k-mt)});const sl=sxy/sxx;
+     const res=zfS.map((v,k)=>v-(my+sl*(k-mt))),sr=[...res].sort((p,q)=>p-q),sh0=sr[Math.floor(0.6*(n-1))];
+     for(let k=0;k<n;k++)zfS[k]=my+sl*(k-mt)+sh0}
+    const qs=(arr,p)=>{const v=[...arr].sort((a,b)=>a-b);return v[Math.floor(p*(v.length-1))]};
+    const Sx=qs(lev.map((L,k)=>axS[k]/L.wf),0.4);
+    lev.forEach((L,k)=>{L.sp=[0,0,zbS[k]];L.D=(zfS[k]-zbS[k])*L.df;L.a=Math.min(axS[k],Sx*L.wf)});
+  }
   for(const L of lev)for(const sg of [-1,1]){const pts=[];
     for(let s=0;s<=26;s++){const phi=0.14+(Math.PI-0.12-0.14)*s/26;
       pts.push([L.f.cx+sg*L.a*Math.sin(phi),L.y-14*(1+Math.cos(phi))/2,L.sp[2]+L.D/2+(L.D/2)*Math.cos(phi)])}
     g.add(tube(pts,1.9,bone,40))}
-  // FLOOR (Virginie 2026-11-08): where there is no muscle the skin rests on the cage: skin never goes below the cage + 5 px (about 6-15 mm of skin and fat at ~5 px/cm)
-  const MINT=5,H=A/2;let moved=0;
-  for(let i=0;i<R;i++){const y=rows[i][1];if(y>lev[0].y||y<lev[NR-1].y)continue;
-    const u=(lev[0].y-y)/(lev[0].y-lev[NR-1].y)*(NR-1),k0=Math.min(NR-2,Math.floor(u)),w=u-k0,L0=lev[k0],L1=lev[k0+1];
-    const sp2=L0.sp[2]*(1-w)+L1.sp[2]*w,D=L0.D*(1-w)+L1.D*w,a=L0.a*(1-w)+L1.a*w,cx=L0.f.cx*(1-w)+L1.f.cx*w;
-    for(let k=0;k<A;k++){const x=rows[i][k*3]-cx,sq=Math.sqrt(Math.max(0,1-(x/a)*(x/a)));if(Math.abs(x)>a)continue;
-      const zc=sp2+D/2,zf=zc+D/2*sq+MINT,zb=zc-D/2*sq-MINT,j=k*3+2;
-      if(k<H){if(rows[i][j]<zf){rows[i][j]=zf;moved++}}else{if(rows[i][j]>zb){rows[i][j]=zb;moved++}}}}
-  console.log('cage floor moved',moved,'skin points');
+  // The rib-cage floor is enforced by relief_export2.py before this viewer is
+  // built. The viewer is diagnostic only and never mutates its mesh.
   g.add(tube([[lev[0].f.cx,lev[0].y+4,lev[0].sp[2]+lev[0].D],[lev[4].f.cx,lev[4].y-6,lev[4].sp[2]+lev[4].D],[lev[8].f.cx,lev[8].y-12,lev[8].sp[2]+lev[8].D]],3.4));
   // clavicles, shoulder blades (triangular plates on the back), all close under the skin
   for(const s of [-1,1]){
@@ -157,9 +166,9 @@ function build(){
   const A=DATA[mode].A;
   if(Array.isArray(e))e={rows:e,legs:null,lm:null};
   G=new THREE.Group();
-  const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs):null;
-  const torso=meshOf(e.rows,A);G.add(torso);
-  if(e.legs){G.add(meshOf(e.legs.L,A));G.add(meshOf(e.legs.R,A))}
+  const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null;
+  const torso=meshOf(e.rows,A,{capTop:true,capBottom:!e.legs});G.add(torso);
+  if(e.legs){G.add(meshOf(e.legs.L,A,{capBottom:true}));G.add(meshOf(e.legs.R,A,{capBottom:true}))}
   if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   sc.add(G);
@@ -177,4 +186,5 @@ document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v))
 build();view(0);
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
 (function loop(){requestAnimationFrame(loop);ctl.update();ren.render(sc,cam)})();
+}
 </script></body></html>

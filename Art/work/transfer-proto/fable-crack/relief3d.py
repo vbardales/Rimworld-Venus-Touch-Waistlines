@@ -20,7 +20,12 @@ import crack as c1, crack2, explain5b as e5
 from gridboard import STEP
 
 N = c1.N
-RELIEF = 8.0       # px: height of a drawn volume (pec, abs block) of 60 px across or more
+# Generic zones are only a weak prior.  The shaded pipeline adds the named
+# muscles and creases itself; a large zone bump here turns every white sprite
+# region into a second, pillow-like body volume.
+ZONE_RELIEF = 3.0
+CHEST_LOBE = 0.08
+CHEST_VALLEY = 0.06
 
 
 def silhouette(img):
@@ -51,8 +56,8 @@ def map_row(y, src_m, dst_m):
     return int(round(b0 + (y - a0) / max(a1 - a0, 1) * (b1 - b0)))
 
 
-def height(view, M, pts, lum):
-    """M: silhouettes {'south','east','north'}; pts: named points of this view; the visible surface height"""
+def base_height(view, M, pts, lum):
+    """Smooth three-view envelope, before any drawn or anatomical relief."""
     m = M[view]; h = np.zeros((N, N))
     ms, me = M["south"], M["east"]
     # the profile's centre line: middle of back and front edges, per east row
@@ -75,7 +80,18 @@ def height(view, M, pts, lum):
             c = 0.5 * (xl + xr); w = max(0.5 * (xr - xl), 1.0)
             t = np.clip((np.arange(N) - c) / w, -1, 1)
             h[y] = a * np.sqrt(1 - t ** 2)
-    h = ndi.gaussian_filter(h, (6, 3))          # rows smoothed: the 128 px vanilla steps striped it
+    return ndi.gaussian_filter(h, (6, 3)) * m   # rows smoothed: the 128 px vanilla steps striped it
+
+
+def height(view, M, pts, lum):
+    """Legacy relief map: smooth envelope plus broad artist-separated zones.
+
+    The nude mesh uses :func:`base_height` and owns its named anatomy in
+    ``shade3d.py``.  Other existing relief-map tools retain this historical
+    behavior unchanged.
+    """
+    m = M[view]
+    h = base_height(view, M, pts, lum)
     # the two chest lobes (front): the cleavage lower than the apexes, the fold as their lower edge
     if view == "south" and all(k in pts for k in ("breast apex L", "breast apex R", "under-breast fold L")):
         (xa, ya), (xb, yb) = pts["breast apex L"], pts["breast apex R"]
@@ -88,7 +104,7 @@ def height(view, M, pts, lum):
             lobe = np.maximum(lobe, np.exp(-d2))
         valley = np.exp(-(((xx - 0.5 * (xa + xb)) / (0.35 * r)) ** 2)) * np.exp(-(((yy - ya) / (1.6 * hv)) ** 2))
         hmax = float(h[int(ya)].max()) if h[int(ya)].max() > 0 else 20.0
-        h = h + 0.18 * hmax * lobe - 0.12 * hmax * valley
+        h = h + CHEST_LOBE * hmax * lobe - CHEST_VALLEY * hmax * valley
     # the volumes the artist separates with his drawn lines (pecs, abs blocks, shoulder blades): each zone between the lines
     # bulges on its own, the lines are where two volumes meet. The shading as height made hollows of the shadows (Virginie
     # 2026-11-07: 'les ombres font des dépressions plutôt que de mettre en avant des différences de volume')
@@ -105,7 +121,7 @@ def height(view, M, pts, lum):
         dm = float(d.max())
         if dm <= 0:
             continue
-        amp = RELIEF * min(1.0, np.sqrt(area) / 60.0)
+        amp = ZONE_RELIEF * min(1.0, np.sqrt(area) / 60.0)
         bump += amp * np.sqrt(np.clip(d / dm, 0, 1))
     bump = ndi.gaussian_filter(bump, 2)
     return (h + bump) * m
