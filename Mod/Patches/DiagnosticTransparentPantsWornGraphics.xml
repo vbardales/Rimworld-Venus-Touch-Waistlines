@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<Patch>
-  <!-- One base path: Graphic_Multi supplies _Male/_Thin/... and the facing. -->
-  <Operation Class="PatchOperationReplace">
-    <xpath>Defs/ThingDef[starts-with(defName, "Apparel_VenusDiagnosticPants_")]/apparel/wornGraphicPath</xpath>
-    <value><wornGraphicPath>Venus/Diagnostics/TransparentPants/Pants</wornGraphicPath></value>
-  </Operation>
-</Patch>

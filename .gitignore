@@ -13,3 +13,9 @@ desktop.ini
 
 # Over GitHub's 100 MB limit per file (1.6 GB of log).
 Art/work/transfer-proto/s15B.log
+
+# Diagnostic garments computed from WDI's bodies (no licence): kept on disk for the Pickle
+# passes, never in git, on this branch too (Virginie 2026-11-08).
+Mod/Textures/Venus/Diagnostics/
+Mod/Defs/Diagnostic*.xml
+Mod/Patches/Diagnostic*.xml
