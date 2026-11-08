@@ -31,15 +31,28 @@ def silhouette_full(img):
     return m
 
 
+def groin(m, lum, pt, ol):
+    """footprint of the sex: convex hull of the black groin creases that meet at the sex point (Virginie 2026-11-08: the
+    sex was badly modelled). Returns (hull mask, crease mask) or (None, None)"""
+    from skimage.morphology import convex_hull_image
+    px, py = pt
+    n = m.shape[0]
+    yy, xx = np.mgrid[0:n, 0:n]
+    box = (np.abs(xx - px) < 30) & (yy > py - 26) & (yy < py + 6)
+    dark = m & (lum < 0.25) & ~ol & box
+    lab, k = ndi.label(dark)
+    keep = [i for i in range(1, k + 1) if (lab == i).sum() >= 12]
+    if not keep:
+        return None, None
+    cr = np.isin(lab, keep)
+    hull = convex_hull_image(cr) & m
+    return (hull, cr) if hull.sum() >= 60 else (None, None)
+
+
 def outline_of(m, lum):
     """the black stroke along the edge: dark pixels connected to the edge of the silhouette"""
-    dark = m & (lum < 0.2)
-    lab, n = ndi.label(dark)
-    if n == 0:
-        return dark
-    edge = m & ~ndi.binary_erosion(m, iterations=2)
-    keep = np.unique(lab[edge & dark]); keep = keep[keep > 0]
-    return np.isin(lab, keep)
+    # dark pixels within the stroke's width of the edge (13 px at 512): a crease that joins the stroke is NOT part of it
+    return m & (lum < 0.2) & (ndi.distance_transform_edt(m) <= 15)
 
 
 def height_shade(view, M, pts, lum):
@@ -56,7 +69,7 @@ def height_shade(view, M, pts, lum):
     if view == "south":
         for nm in ("breast apex L", "breast apex R"):
             if nm in pts: feats.append((pts[nm], 7.0, +NIPPLE))
-        if "sex" in pts: feats.append((pts["sex"], 13.0, +SEX))
+        if "sex" in pts: feats.append((pts["sex"], 13.0, 0.0))   # shading not read there; the dome comes from the groin()
         if "navel" in pts: feats.append((pts["navel"], 7.0, -NAVEL))
     yy, xx = np.mgrid[0:n, 0:n]
     for (px, py), r, a in feats:
@@ -77,6 +90,18 @@ def height_shade(view, M, pts, lum):
         b = D.T @ t + MU * hb
         out[y0:y1, x] = spsolve(A, b)
     out = ndi.gaussian_filter(out, (2, 4)) * m
+    if view == "south" and "sex" in pts:
+        hull, cr = groin(m, lum, pts["sex"], ol)
+        if hull is not None:
+            wd = np.ptp(np.where(hull)[1]) + 1
+            amp = SEX * float(np.clip(wd / 40.0, 0.6, 1.6))
+            d = ndi.distance_transform_edt(hull)
+            dome = ndi.gaussian_filter(amp * np.sqrt(np.clip(d / max(d.max(), 1e-3), 0, 1)), 2.0)
+            groove = 0.15 * amp * ndi.gaussian_filter(ndi.binary_dilation(cr).astype(float), 2.0)
+            out = out + (dome - groove) * m
+        else:
+            px, py = pts["sex"]
+            out = out + SEX * np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * 6.5 ** 2))) * m
     for (px, py), r, a in feats:
         out = out + a * np.exp(-(((xx - px) ** 2 + (yy - py) ** 2) / (2 * (r / 2) ** 2))) * m
     return np.clip(out, 0, None) if not any(a < 0 for _, _, a in feats) else np.clip(out, -20, None) * m
