@@ -87,6 +87,10 @@ function skeleton(rows,A,lm,legs){
     lev.push({t,y,f,ax:rad(i,Math.PI/2)-10,zf:f.cz+rad(i,0)-7,zb:f.cz-rad(i,Math.PI)+12,wf:wfun(t),df:dfun(t)})}
   const sm=(key)=>{const v=lev.map(L=>L[key]);return v.map((_,k)=>{let s=0,n=0;for(let j=-2;j<=2;j++){const kk=Math.max(0,Math.min(NR-1,k+j));s+=v[kk];n++}return s/n})};
   const zfS=sm('zf'),zbS=sm('zb'),axS=sm('ax');
+  // sternum = a rigid straight line (least squares on the centre-line skin), lifted to the 60th percentile of the residuals: the cleavage dips below it get floored
+  {const n=NR,mt=(n-1)/2;let sxy=0,sxx=0,my=0;zfS.forEach(v=>my+=v/n);zfS.forEach((v,k)=>{sxy+=(k-mt)*(v-my);sxx+=(k-mt)*(k-mt)});const sl=sxy/sxx;
+   const res=zfS.map((v,k)=>v-(my+sl*(k-mt))),sr=[...res].sort((p,q)=>p-q),sh0=sr[Math.floor(0.6*(n-1))];
+   for(let k=0;k<n;k++)zfS[k]=my+sl*(k-mt)+sh0}
   const qs=(arr,p)=>{const v=[...arr].sort((a,b)=>a-b);return v[Math.floor(p*(v.length-1))]};
   const Sx=qs(lev.map((L,k)=>axS[k]/L.wf),0.4);
   lev.forEach((L,k)=>{L.sp=[0,0,zbS[k]];L.D=(zfS[k]-zbS[k])*L.df;L.a=Math.min(axS[k],Sx*L.wf)});
@@ -94,6 +98,15 @@ function skeleton(rows,A,lm,legs){
     for(let s=0;s<=26;s++){const phi=0.14+(Math.PI-0.12-0.14)*s/26;
       pts.push([L.f.cx+sg*L.a*Math.sin(phi),L.y-14*(1+Math.cos(phi))/2,L.sp[2]+L.D/2+(L.D/2)*Math.cos(phi)])}
     g.add(tube(pts,1.9,bone,40))}
+  // FLOOR (Virginie 2026-11-08): where there is no muscle the skin rests on the cage: skin never goes below the cage + 5 px (about 6-15 mm of skin and fat at ~5 px/cm)
+  const MINT=5,H=A/2;let moved=0;
+  for(let i=0;i<R;i++){const y=rows[i][1];if(y>lev[0].y||y<lev[NR-1].y)continue;
+    const u=(lev[0].y-y)/(lev[0].y-lev[NR-1].y)*(NR-1),k0=Math.min(NR-2,Math.floor(u)),w=u-k0,L0=lev[k0],L1=lev[k0+1];
+    const sp2=L0.sp[2]*(1-w)+L1.sp[2]*w,D=L0.D*(1-w)+L1.D*w,a=L0.a*(1-w)+L1.a*w,cx=L0.f.cx*(1-w)+L1.f.cx*w;
+    for(let k=0;k<A;k++){const x=rows[i][k*3]-cx,sq=Math.sqrt(Math.max(0,1-(x/a)*(x/a)));if(Math.abs(x)>a)continue;
+      const zc=sp2+D/2,zf=zc+D/2*sq+MINT,zb=zc-D/2*sq-MINT,j=k*3+2;
+      if(k<H){if(rows[i][j]<zf){rows[i][j]=zf;moved++}}else{if(rows[i][j]>zb){rows[i][j]=zb;moved++}}}}
+  console.log('cage floor moved',moved,'skin points');
   g.add(tube([[lev[0].f.cx,lev[0].y+4,lev[0].sp[2]+lev[0].D],[lev[4].f.cx,lev[4].y-6,lev[4].sp[2]+lev[4].D],[lev[8].f.cx,lev[8].y-12,lev[8].sp[2]+lev[8].D]],3.4));
   // clavicles, shoulder blades (triangular plates on the back), all close under the skin
   for(const s of [-1,1]){
@@ -144,9 +157,10 @@ function build(){
   const A=DATA[mode].A;
   if(Array.isArray(e))e={rows:e,legs:null,lm:null};
   G=new THREE.Group();
+  const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs):null;
   const torso=meshOf(e.rows,A);G.add(torso);
   if(e.legs){G.add(meshOf(e.legs.L,A));G.add(meshOf(e.legs.R,A))}
-  if(e.lm){const sk=skeleton(e.rows,A,e.lm,e.legs);sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
+  if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
