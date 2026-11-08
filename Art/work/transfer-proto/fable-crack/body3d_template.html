@@ -1,0 +1,180 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VTW body 3D</title>
+<style>
+:root{--bg:#f4f2ee;--fg:#222;--pn:#fffd}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1b1e;--fg:#ddd;--pn:#2a2a2ecc}}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px system-ui,sans-serif;overflow:hidden}
+#ui{position:fixed;left:16px;top:12px;background:var(--pn);padding:8px 12px;border-radius:8px;z-index:2;max-width:calc(100% - 32px)}
+select,button{font:inherit;margin:2px 6px 2px 0}
+label{margin-right:10px;white-space:nowrap}
+#note{position:fixed;left:16px;bottom:10px;right:16px;font-size:12px;opacity:.7}
+</style></head><body>
+<div id="ui">
+<select id="b"></select><select id="m"></select>
+<button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><br>
+<label><input type="checkbox" id="sk"> squelette</label>
+<label><input type="checkbox" id="og" checked> organes (corps masculins)</label>
+<label><input type="checkbox" id="w"> fil de fer</label>
+<label>peau <input type="range" id="op" min="10" max="100" value="100"></label>
+</div>
+<div id="note"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DATA=__DATA__;
+const NOTES={
+ shade:"relief + ombres + jambes: shading read as a zenithal light, outline = rim of the body, nipples raised, navel hollowed, sex = dome in the groin creases, legs split under the crotch notch where the silhouette has one (Male, Female, Fat, Fat_Female). Skeleton = schematic, fitted on the landmark rows (not anatomical bone shapes). Organs = a first volume from a profile reference (shaft hanging forward and down from the pubis, scrotum below and behind), proportioned on the shoulder width.",
+ relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
+ simple:"simple volume: superellipse sections from the E masks."};
+const sc=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);
+const ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
+ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(devicePixelRatio);
+document.body.appendChild(ren.domElement);
+const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;
+sc.add(new THREE.HemisphereLight(0xffffff,0x555566,.75));
+const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(200,300,400);sc.add(dl);
+const $=id=>document.getElementById(id);
+const sel=$('b'),msel=$('m');
+Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:'relief + ombres + jambes',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
+Object.keys(DATA.shade.bodies).forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
+let G=null;
+const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THREE.DoubleSide});
+const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
+const flesh=new THREE.MeshStandardMaterial({color:0xc48a76,roughness:.75});
+function meshOf(rows,A){
+  const R=rows.length,pos=[],idx=[];
+  for(let i=0;i<R;i++)for(let k=0;k<A;k++){const j=k*3;pos.push(rows[i][j],rows[i][j+1],rows[i][j+2])}
+  for(let i=0;i<R-1;i++)for(let k=0;k<A;k++){const a=i*A+k,b=i*A+(k+1)%A,c=(i+1)*A+k,d=(i+1)*A+(k+1)%A;idx.push(a,c,b,b,c,d)}
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+  return new THREE.Mesh(g,skin);
+}
+function tube(pts,r,mat,seg){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));return new THREE.Mesh(new THREE.TubeGeometry(c,seg||24,r,6,false),mat||bone)}
+function ball(p,rx,ry,rz,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),mat||bone);m.scale.set(rx,ry,rz);m.position.set(...p);return m}
+function skeleton(rows,A,lm,legs){
+  const g=new THREE.Group(),R=rows.length;
+  const y0=rows[0][1],y1=rows[R-1][1];
+  const ix=yw=>Math.max(0,Math.min(R-1,Math.round((y0-yw)/(y0-y1)*(R-1))));
+  // every bone is placed from the SKIN: a ray from the axis of the row, the skin hit, then a margin under it (px at 512)
+  const info=i=>{let xa=1e9,xb=-1e9,za=1e9,zb=-1e9;for(let k=0;k<A;k++){const x=rows[i][k*3],z=rows[i][k*3+2];xa=Math.min(xa,x);xb=Math.max(xb,x);za=Math.min(za,z);zb=Math.max(zb,z)}return{cx:(xa+xb)/2,cz:(za+zb)/2,hw:(xb-xa)/2,zb,za}};
+  const rad=(i,ang)=>{const f=info(i),dx=Math.sin(ang),dz=Math.cos(ang);let best=1e9;
+    for(let k=0;k<A;k++){const k2=(k+1)%A,px=rows[i][k*3]-f.cx,pz=rows[i][k*3+2]-f.cz,qx=rows[i][k2*3]-f.cx,qz=rows[i][k2*3+2]-f.cz;
+      const ex=qx-px,ez=qz-pz,den=dx*ez-dz*ex;if(Math.abs(den)<1e-9)continue;
+      const t=(px*ez-pz*ex)/den,s=(px*dz-pz*dx)/den;if(t>0&&s>=0&&s<=1&&t<best)best=t}
+    return best<1e8?best:f.hw*0.8};
+  const P=(yw,ang,m)=>{const i=ix(yw),f=info(i),r=Math.max(2,rad(i,ang)-m);return[f.cx+r*Math.sin(ang),yw,f.cz+r*Math.cos(ang)]};
+  const top=lm.top,navel=lm.navel??top-0.5*(top-lm.bottom),fold=lm.fold??lm.apex??top-0.3*(top-navel),crotch=lm.crotch??lm.bottom;
+  const sh=lm.shoulder??top-0.12*(top-fold),yRibB=fold-0.55*(fold-navel),yRibT=top-0.12*(top-fold);
+  // plate: a flat shape laid on the skin (normal = outward direction of the ray)
+  const plate=(pts,sx,sy,pos,ang,th)=>{const s=new THREE.Shape(pts.map(p=>new THREE.Vector2(p[0]*sx,p[1]*sy)));
+    const m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:th,bevelEnabled:false}),bone);
+    m.position.set(pos[0],pos[1],pos[2]);m.lookAt(pos[0]+Math.sin(ang)*10,pos[1],pos[2]+Math.cos(ang)*10);return m};
+  // spine, a little under the back skin, vertebrae as short blocks
+  const NS=26,ys=top-2,ye=crotch+6,spine=[];
+  const zspan=y=>{const i=ix(y),f=info(i);const zb=f.cz-rad(i,Math.PI),zf=f.cz+rad(i,0);return{f,zb,zf}};
+  for(let i=0;i<NS;i++){const t=i/(NS-1),y=ys+(ye-ys)*t,q=zspan(y),p=[q.f.cx,y,q.zb+Math.max(14,0.30*(q.zf-q.zb))];spine.push(p);
+    g.add(ball(p,4.4+3.2*t,2.6,4.4+3.2*t))}
+  g.add(tube(spine,2.2));
+  // ribcage: a RIGID barrel (narrow at the top, widest at 2/3, 12 ribs), scaled to fit INSIDE the skin at its tightest level,
+  // from the collarbone down to the costal margin (about 85 % of the way from the nipples to the navel: the lowest rib edge sits just above the navel)
+  const apexW=lm.apex??fold,yRibT2=top-0.20*(top-fold),yRibB2=apexW-0.85*(apexW-navel),NR=12;
+  const wfun=t=>t<=0.65?0.45+0.55*Math.sin(t/0.65*Math.PI/2):1-0.12*((t-0.65)/0.35);
+  const dfun=t=>t<=0.60?0.50+0.50*Math.sin(t/0.60*Math.PI/2):1-0.10*((t-0.60)/0.40);
+  const lev=[];
+  for(let k=0;k<NR;k++){const t=k/(NR-1),y=yRibT2+(yRibB2-yRibT2)*t,i=ix(y),f=info(i);
+    lev.push({t,y,f,ax:rad(i,Math.PI/2)-10,zf:f.cz+rad(i,0)-7,zb:f.cz-rad(i,Math.PI)+12,wf:wfun(t),df:dfun(t)})}
+  const sm=(key)=>{const v=lev.map(L=>L[key]);return v.map((_,k)=>{let s=0,n=0;for(let j=-2;j<=2;j++){const kk=Math.max(0,Math.min(NR-1,k+j));s+=v[kk];n++}return s/n})};
+  const zfS=sm('zf'),zbS=sm('zb'),axS=sm('ax');
+  // sternum = a rigid straight line (least squares on the centre-line skin), lifted to the 60th percentile of the residuals: the cleavage dips below it get floored
+  {const n=NR,mt=(n-1)/2;let sxy=0,sxx=0,my=0;zfS.forEach(v=>my+=v/n);zfS.forEach((v,k)=>{sxy+=(k-mt)*(v-my);sxx+=(k-mt)*(k-mt)});const sl=sxy/sxx;
+   const res=zfS.map((v,k)=>v-(my+sl*(k-mt))),sr=[...res].sort((p,q)=>p-q),sh0=sr[Math.floor(0.6*(n-1))];
+   for(let k=0;k<n;k++)zfS[k]=my+sl*(k-mt)+sh0}
+  const qs=(arr,p)=>{const v=[...arr].sort((a,b)=>a-b);return v[Math.floor(p*(v.length-1))]};
+  const Sx=qs(lev.map((L,k)=>axS[k]/L.wf),0.4);
+  lev.forEach((L,k)=>{L.sp=[0,0,zbS[k]];L.D=(zfS[k]-zbS[k])*L.df;L.a=Math.min(axS[k],Sx*L.wf)});
+  for(const L of lev)for(const sg of [-1,1]){const pts=[];
+    for(let s=0;s<=26;s++){const phi=0.14+(Math.PI-0.12-0.14)*s/26;
+      pts.push([L.f.cx+sg*L.a*Math.sin(phi),L.y-14*(1+Math.cos(phi))/2,L.sp[2]+L.D/2+(L.D/2)*Math.cos(phi)])}
+    g.add(tube(pts,1.9,bone,40))}
+  // FLOOR (Virginie 2026-11-08): where there is no muscle the skin rests on the cage: skin never goes below the cage + 5 px (about 6-15 mm of skin and fat at ~5 px/cm)
+  const MINT=5,H=A/2;let moved=0;
+  for(let i=0;i<R;i++){const y=rows[i][1];if(y>lev[0].y||y<lev[NR-1].y)continue;
+    const u=(lev[0].y-y)/(lev[0].y-lev[NR-1].y)*(NR-1),k0=Math.min(NR-2,Math.floor(u)),w=u-k0,L0=lev[k0],L1=lev[k0+1];
+    const sp2=L0.sp[2]*(1-w)+L1.sp[2]*w,D=L0.D*(1-w)+L1.D*w,a=L0.a*(1-w)+L1.a*w,cx=L0.f.cx*(1-w)+L1.f.cx*w;
+    for(let k=0;k<A;k++){const x=rows[i][k*3]-cx,sq=Math.sqrt(Math.max(0,1-(x/a)*(x/a)));if(Math.abs(x)>a)continue;
+      const zc=sp2+D/2,zf=zc+D/2*sq+MINT,zb=zc-D/2*sq-MINT,j=k*3+2;
+      if(k<H){if(rows[i][j]<zf){rows[i][j]=zf;moved++}}else{if(rows[i][j]>zb){rows[i][j]=zb;moved++}}}}
+  console.log('cage floor moved',moved,'skin points');
+  g.add(tube([[lev[0].f.cx,lev[0].y+4,lev[0].sp[2]+lev[0].D],[lev[4].f.cx,lev[4].y-6,lev[4].sp[2]+lev[4].D],[lev[8].f.cx,lev[8].y-12,lev[8].sp[2]+lev[8].D]],3.4));
+  // clavicles, shoulder blades (triangular plates on the back), all close under the skin
+  for(const s of [-1,1]){
+    g.add(tube([P(yRibT2+6,s*0.12,5),P(yRibT2+2,s*0.7,5),P(sh+10,s*1.35,5)],2.4));
+    const ys2=(sh+fold)/2+8,a=s*(Math.PI-0.85),i=ix(ys2),f=info(i);
+    g.add(plate([[-1,0.9],[1,1],[0.15,-1]],f.hw*0.24,(sh-fold)*0.34,P(ys2,a,9),a,3));
+  }
+  // pelvis: iliac wings (fan plates on the hips), sacrum (triangle on the back), pubic bone in front
+  const yp=navel+(fold-navel)*0.06,yw=(yp+crotch)/2+8,iw=info(ix(yw));
+  for(const s of [-1,1]){const a=s*(Math.PI-1.15);
+    g.add(plate([[-1,0.7],[0.2,1],[1,0.3],[0.9,-0.6],[0,-1]],iw.hw*0.34,(yp-crotch)*0.42,P(yw,a,7),a,3.5))}
+  g.add(plate([[-1,1],[1,1],[0,-1]],iw.hw*0.13,20,P(crotch+18,Math.PI,9),Math.PI,3.5));
+  const sy=lm.sex??crotch+14;g.add(ball(P(sy+2,0,7),iw.hw*0.12,3.5,3.5));
+  // femurs: hip joint deep in the hip, then straight down the middle of each leg
+  const hy=crotch+8,hi=ix(hy),hf=info(hi),lb=lm.bottom;
+  for(const s of [-1,1]){const cx0=hf.cx+s*hf.hw*0.46,cz0=hf.cz;g.add(ball([cx0,hy,cz0],8,8,8));
+    let ex=cx0,ez=cz0;
+    if(legs){const L=(s<0?legs.L:legs.R),last=L[L.length-1];let sx=0,sz=0;for(let k=0;k<A;k++){sx+=last[k*3];sz+=last[k*3+2]}ex=sx/A;ez=sz/A}
+    g.add(tube([[cx0,hy,cz0],[(cx0+ex)/2,(hy+lb)/2,(cz0+ez)/2],[ex,lb+2,ez]],4.4))}
+  return g;
+}
+function organs(rows,A,lm){
+  const R=rows.length,y0=rows[0][1],y1=rows[R-1][1];
+  const sy=lm.sex??lm.crotch;if(sy==null)return null;
+  const i=Math.round(Math.max(0,Math.min(R-1,(y0-sy)/(y0-y1)*(R-1))));
+  let xa=1e9,xb=-1e9,zb=-1e9,za=1e9;for(let k=0;k<A;k++){xa=Math.min(xa,rows[i][k*3]);xb=Math.max(xb,rows[i][k*3]);za=Math.min(za,rows[i][k*3+2]);zb=Math.max(zb,rows[i][k*3+2])}
+  // shoulder width from the top rows
+  let sw=0;for(let r=2;r<14;r++){let a=1e9,b=-1e9;for(let k=0;k<A;k++){a=Math.min(a,rows[r][k*3]);b=Math.max(b,rows[r][k*3])}sw=Math.max(sw,b-a)}
+  const cx=(xa+xb)/2,g=new THREE.Group();
+  // flaccid, sized on Veale et al. 2015 (BJU Int 115:978: pendulous length 9.16 cm, circumference 9.31 cm; shoulder width taken as 42 cm): the shaft leaves the pubis forward and slightly down, then sags (angle under the horizontal grows from 20 to 75 degrees)
+  const L=0.22*sw,r=0.048*sw,root=new THREE.Vector3(cx,sy+0.02*sw,zb-0.04*sw),pts=[root.clone()];
+  let p=root.clone();const NSEG=14;
+  for(let s=1;s<=NSEG;s++){const t=(s-0.5)/NSEG,a=0.50+0.85*t*t;p=p.clone();p.y-=L/NSEG*Math.sin(a);p.z+=L/NSEG*Math.cos(a);pts.push(p)}
+  const c=new THREE.CatmullRomCurve3(pts);
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(c,40,r,14,false),flesh));
+  const tip=pts[pts.length-1];
+  g.add(ball([tip.x,tip.y-0.2*r,tip.z+0.1*r],r*1.02,r*1.15,r*1.02,flesh));
+  g.add(ball([root.x,root.y,root.z],r*1.25,r*1.25,r*1.25,flesh));
+  // one sac, two testes that share it: a narrow neck under the root, two overlapping lobes (the left one hangs a little lower)
+  g.add(ball([cx,sy-0.060*sw,zb-0.055*sw],0.050*sw,0.050*sw,0.040*sw,flesh));
+  g.add(ball([cx-0.030*sw,sy-0.118*sw,zb-0.072*sw],0.046*sw,0.062*sw,0.050*sw,flesh));
+  g.add(ball([cx+0.030*sw,sy-0.108*sw,zb-0.072*sw],0.046*sw,0.058*sw,0.050*sw,flesh));
+  return g;
+}
+function build(){
+  if(G){sc.remove(G)}
+  const mode=msel.value,name=sel.value;let e=DATA[mode].bodies[name];
+  const A=DATA[mode].A;
+  if(Array.isArray(e))e={rows:e,legs:null,lm:null};
+  G=new THREE.Group();
+  const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs):null;
+  const torso=meshOf(e.rows,A);G.add(torso);
+  if(e.legs){G.add(meshOf(e.legs.L,A));G.add(meshOf(e.legs.R,A))}
+  if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
+    if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
+  sc.add(G);
+  const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
+  apply();$('note').textContent=NOTES[mode];
+}
+function apply(){
+  const sk=$('sk').checked,op=+$('op').value/100;
+  skin.wireframe=$('w').checked;skin.transparent=(sk||op<1);skin.opacity=sk?Math.min(op,.3):op;skin.depthWrite=!(sk||op<1);skin.needsUpdate=true;
+  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked});
+}
+function view(v){const d=1000;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
+sel.onchange=msel.onchange=build;['sk','og','w','op'].forEach(i=>$(i).oninput=apply);
+document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
+build();view(0);
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
+(function loop(){requestAnimationFrame(loop);ctl.update();ren.render(sc,cam)})();
+</script></body></html>
