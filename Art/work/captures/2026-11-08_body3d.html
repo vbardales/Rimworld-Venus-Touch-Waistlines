@@ -110,14 +110,16 @@ function organs(rows,A,lm){
   // shoulder width from the top rows
   let sw=0;for(let r=2;r<14;r++){let a=1e9,b=-1e9;for(let k=0;k<A;k++){a=Math.min(a,rows[r][k*3]);b=Math.max(b,rows[r][k*3])}sw=Math.max(sw,b-a)}
   const cx=(xa+xb)/2,g=new THREE.Group();
-  const L=0.22*sw,r=0.036*sw,ang=0.60; // shaft: forward and down, 34 degrees under the horizontal
-  const root=new THREE.Vector3(cx,sy+0.02*sw,zb-0.04*sw),dir=new THREE.Vector3(0,-Math.sin(ang),Math.cos(ang));
-  const mid=root.clone().addScaledVector(dir,L*0.5),tip=root.clone().addScaledVector(dir,L);
-  const sh=new THREE.Mesh(new THREE.CylinderGeometry(r*0.9,r,L,16),flesh);
-  sh.position.copy(mid);sh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().negate());g.add(sh);
-  const gl=ball([tip.x,tip.y,tip.z],r*1.12,r*1.12,r*1.25,flesh);g.add(gl);
-  g.add(ball([root.x,root.y,root.z],r*1.2,r*1.2,r*1.2,flesh));
-  g.add(ball([cx,sy-0.10*sw,zb-0.07*sw],0.075*sw,0.095*sw,0.065*sw,flesh));
+  // flaccid, sized on Veale et al. 2015 (BJU Int 115:978: pendulous length 9.16 cm, circumference 9.31 cm; shoulder width taken as 42 cm): the shaft leaves the pubis forward and slightly down, then sags (angle under the horizontal grows from 20 to 75 degrees)
+  const L=0.22*sw,r=0.048*sw,root=new THREE.Vector3(cx,sy+0.02*sw,zb-0.04*sw),pts=[root.clone()];
+  let p=root.clone();const NSEG=14;
+  for(let s=1;s<=NSEG;s++){const t=(s-0.5)/NSEG,a=0.50+0.85*t*t;p=p.clone();p.y-=L/NSEG*Math.sin(a);p.z+=L/NSEG*Math.cos(a);pts.push(p)}
+  const c=new THREE.CatmullRomCurve3(pts);
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(c,40,r,14,false),flesh));
+  const tip=pts[pts.length-1];
+  g.add(ball([tip.x,tip.y-0.2*r,tip.z+0.1*r],r*1.02,r*1.15,r*1.02,flesh));
+  g.add(ball([root.x,root.y,root.z],r*1.25,r*1.25,r*1.25,flesh));
+  g.add(ball([cx,sy-0.125*sw,zb-0.075*sw],0.078*sw,0.088*sw,0.062*sw,flesh));
   return g;
 }
 function build(){
