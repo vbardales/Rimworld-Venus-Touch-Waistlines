@@ -48,6 +48,27 @@ def _gauss(xx, yy, point, sx, sy, amp=1.0):
     return amp * np.exp(-0.5 * (((xx - x) / sx) ** 2 + ((yy - y) / sy) ** 2))
 
 
+def _oriented_gauss(xx, yy, point, axis, along, across, amp=1.0):
+    """A local oval whose axes follow a landmark-to-landmark direction.
+
+    Back muscles are diagonal planes: an axis-aligned ellipse makes a
+    trapezius or latissimus look like another horizontal pillow.  ``axis`` is
+    derived from two named landmarks by the caller, so this stays a compact
+    measured patch rather than a freehand painted muscle.
+    """
+    if point is None or along <= 0 or across <= 0:
+        return np.zeros_like(xx, dtype=float)
+    dx, dy = axis
+    length = np.hypot(dx, dy)
+    if length < 1e-6:
+        return _gauss(xx, yy, point, along, across, amp)
+    ux, uy = dx / length, dy / length
+    px, py = point
+    axial = (xx - px) * ux + (yy - py) * uy
+    lateral = -(xx - px) * uy + (yy - py) * ux
+    return amp * np.exp(-0.5 * ((axial / along) ** 2 + (lateral / across) ** 2))
+
+
 def _segment(xx, yy, a, b, width, amp=1.0, end_taper=0.0):
     """A rounded signed crease along the finite segment ``a``--``b``.
 
@@ -263,7 +284,22 @@ def _front_torso_patches(xx, yy, a, flags):
                 soft += _gauss(xx, yy, support, 0.38 * half, 0.70 * drop, 0.55)
                 out += soft
             else:
-                out += _gauss(xx, yy, center, 0.68 * half, 0.70 * height, amp)
+                # Pec major is a fan from the sternum toward the humerus, not
+                # a horizontal chest sausage.  Its measured apex and lower
+                # fold bound a low, finite mass; a medial gate leaves the
+                # sternum and inter-pec groove on the rib cage.  Hulk uses
+                # the same construction with more height, Average less.
+                drop = max((fold_side[1] - apex[1]) if fold_side is not None else height, 12.0)
+                center = (0.56 * apex[0] + 0.28 * armpit[0] + 0.16 * midx,
+                          apex[1] + 0.32 * drop)
+                pec = _gauss(xx, yy, center, 0.62 * half, 0.76 * drop, amp)
+                sign = -1.0 if apex[0] < midx else 1.0
+                medial_distance = sign * (xx - midx)
+                pec *= 1.0 / (1.0 + np.exp(-(medial_distance - 2.0) / 3.8))
+                pec *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.42 * drop)) / 3.5))
+                if fold_side is not None:
+                    pec *= 1.0 / (1.0 + np.exp((yy - (fold_side[1] + 0.34 * drop)) / 4.0))
+                out += pec
             if fold_side is not None:
                 inner = (midx + (-1.0 if fold_side[0] < midx else 1.0) * 5.0, fold_side[1] - 0.5)
                 control = ((fold_side[0] + inner[0]) * 0.5, fold_side[1] + 2.5)
@@ -334,7 +370,7 @@ def _front_torso_patches(xx, yy, a, flags):
 
 
 def _back_torso_patches(xx, yy, a, flags):
-    """Back-side patches: spine, scapulae, hips and rounded gluteal masses."""
+    """Back-side patches: spine, local muscle planes, hips and gluteal mass."""
     out = np.zeros_like(xx, dtype=float)
     neck_mid = _mid(a["neck_l"], a["neck_r"])
     hips = a["hips"]
@@ -347,12 +383,41 @@ def _back_torso_patches(xx, yy, a, flags):
         lumbar = (hips[0], max(waist_mid[1], neck_mid[1] + 12.0))
         out += _segment(xx, yy, neck_mid, lumbar, 4.2, -1.30, 0.15)
     # The north point table deliberately has no fictitious breast points.  Use
-    # only shoulder/armpit geometry for scapulae.
-    for shoulder, armpit in ((a["shoulder_l"], a["armpit_l"]), (a["shoulder_r"], a["armpit_r"])):
+    # only neck/shoulder/armpit/waist geometry for the upper-back planes.
+    # The non-muscular bodies retain only a low scapular plane.  Hulk and
+    # Average gain finite trapezius, scapular and latissimus ovals aligned
+    # diagonally between their measured attachment landmarks; this avoids both
+    # a row-wide band and a generic stack of posterior blobs.
+    muscle_amp = 1.0 if flags["hulk"] else 0.48 if flags["average"] else 0.0
+    side_data = ((a["shoulder_l"], a["armpit_l"], a["waist_l"]),
+                 (a["shoulder_r"], a["armpit_r"], a["waist_r"]))
+    for shoulder, armpit, waist in side_data:
         if shoulder is None or armpit is None:
             continue
         center = (0.58 * shoulder[0] + 0.42 * armpit[0], 0.45 * shoulder[1] + 0.55 * armpit[1])
-        out += _gauss(xx, yy, center, 11.0, 14.0, 3.1 if flags["hulk"] else 1.35)
+        scap_amp = 1.45 if flags["hulk"] else 0.82 if flags["average"] else 1.35
+        out += _gauss(xx, yy, center, 10.0, 13.0, scap_amp)
+        if muscle_amp == 0.0 or neck_mid is None or waist is None:
+            continue
+        neck_to_shoulder = (shoulder[0] - neck_mid[0], shoulder[1] - neck_mid[1])
+        trap_center = (0.45 * neck_mid[0] + 0.55 * shoulder[0],
+                       0.45 * neck_mid[1] + 0.55 * shoulder[1])
+        trap_span = np.hypot(*neck_to_shoulder)
+        out += _oriented_gauss(xx, yy, trap_center, neck_to_shoulder,
+                               0.42 * trap_span, max(4.2, 0.16 * trap_span),
+                               2.10 * muscle_amp)
+        back_axis = (waist[0] - armpit[0], waist[1] - armpit[1])
+        back_span = np.hypot(*back_axis)
+        scap_center = (0.54 * shoulder[0] + 0.22 * armpit[0] + 0.24 * waist[0],
+                       0.54 * shoulder[1] + 0.22 * armpit[1] + 0.24 * waist[1])
+        out += _oriented_gauss(xx, yy, scap_center, back_axis,
+                               0.31 * back_span, max(5.0, 0.22 * back_span),
+                               1.85 * muscle_amp)
+        lat_center = (0.38 * armpit[0] + 0.62 * waist[0],
+                      0.38 * armpit[1] + 0.62 * waist[1])
+        out += _oriented_gauss(xx, yy, lat_center, back_axis,
+                               0.34 * back_span, max(5.8, 0.24 * back_span),
+                               1.55 * muscle_amp)
     if hips is not None and crotch is not None:
         spread = max(abs(a["hip_l"][0] - hips[0]) if a["hip_l"] is not None else 22.0, 16.0)
         height = max(abs(crotch[1] - hips[1]), 14.0)
