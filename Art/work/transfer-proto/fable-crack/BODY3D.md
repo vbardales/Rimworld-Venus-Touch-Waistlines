@@ -33,6 +33,14 @@ Run the active export: `uv run --with numpy --with pillow --with scipy --with sc
    - Spine at 30 % of the depth from the back skin (at least 14 px); scapulae and iliac wings as plates; sacrum, pubis, femurs.
 7. Floor (export): where there is no muscle the skin rests on the cage. After the cage is built, any skin point in front of or behind the cage is pushed out to at least 5 px from the cage surface. The export records the number of displaced points in each body's `cage.moved`; the viewer is diagnostic and never changes its input mesh.
 
+## Checkpoint (2026-11-09)
+
+The active reconstruction is a landmark-led anatomical prototype, not yet a WDI-equivalent render. `shade3d.py` retains `RELIEF_MODE=legacy` as an A/B fallback, while the default structured mode has a smooth three-silhouette envelope and local signed forms: neck/collar and axillae, attached breasts or sternum-to-humerus pectoral fans, sternum, navel, groin/pubis, Hulk lower abdominal pairs, posterior spine/scapular/latissimus planes and gluteal cleft. The supporting cage, spine, pelvis and femur roots remain a diagnostic constraint beneath that skin.
+
+The required export, comparison and viewer build were last run on all eight bodies. Silhouette p95 ranges from 0.70 px (Thin south) to 4.79 px (Fat south); `Fat_Female` east is 4.10 px. Those numbers are only a contour gate. The source-plus-landmark and active-relief panels still show overly pillow-like transitions for Fat, Fat_Female and Thin_Female, and the uniform 3D viewer material cannot reproduce the WDI white/grey/ink treatment by itself.
+
+Two generic smoothing experiments were rejected after full South/North/East regeneration: final Z smoothing degraded profile agreement, and lateral/global smoothing of the envelope both degraded east agreement and introduced normal artefacts near the neck. The next change must instead construct the thorax–abdomen–pelvis base directly from profile landmarks, retain the existing signed local anatomy above it, and compare full three-view renders with WDI rather than accepting a contour-only result.
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:
