@@ -90,3 +90,13 @@ Consequences for the model:
 | Groin / upper thigh | Two wide rear lobes (buttocks) and a smaller front pair with a notch at the pubic midline. The rear lobes are rounder and larger than in the male section. |
 
 Differences from the male series that the model must carry: the breast is a separate pair of lobes added at the chest ring, bounded by the cleavage notch and its own lateral edge, not a deepened pec; the hip ring is wider than the waist by a larger ratio; the rear lobes of the pelvis ring are bigger and rounder (posterior gluteal pad, section 3).
+
+## 6. Muscle layer seen on a sculpt (anatomy4sculptors 3D viewer screenshot, male bust, half skin and half muscles)
+
+The screenshot is one view of the viewer (T pose, right half of the torso shows the muscle layer under the skin of the left half). What it shows for the muscle layer:
+- Each muscle is a smooth, closed, lens-shaped volume with rounded ends, separate from its neighbours. They butt against each other along clear seams; none is a band across the whole torso.
+- Pectoralis major is a broad, thin fan: thick at the sternal edge and lower border, tapering onto the humerus, with a crisp lower margin. Deltoid is a cap over the shoulder joint, thick in the middle. Serratus anterior shows as short separate digitations on the side ribs. Rectus abdominis is a column of paired blocks, wider at the top.
+- The skin on this lean body follows the muscle volumes closely (thin fat): surface creases are the seams between volumes. This is the male case for the layered model: skin = muscle offset by a few pixels, and the fat pads of section 3 add on top only at flank, lower abdomen and gluteal region.
+- Use: the muscle volumes can be built as the same lobe-pair sections of section 5, clipped to their attachment ranges, then unioned with a smooth minimum so the seams stay as creases.
+
+Limits: one screenshot, no scale, no side or back view. It confirms the shape of the muscle layer; it gives no measurements.
