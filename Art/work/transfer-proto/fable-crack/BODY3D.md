@@ -111,6 +111,48 @@ Limits to state plainly: the creases and the shading are read from each sprite, 
 
 Next: feed these fields to the mesh export and viewer; cure the north over-inking (joint fit of slope and crease, lower crease gain on the midline); sharpen the strokes (crease profile with a flat floor of the stroke width); then replace the generic lobes by the muscle and fat-pad volumes of `ANATOMY-LAYERS.md`, body by body.
 
+### Likeness pass (2026-11-10, `wdi3d.py`)
+
+The table and the "still wrong" list above describe commit `31198ca`. This pass changed the shader and the two fits; the core + masses base is untouched. One shader and one parameter set for the eight bodies.
+
+What changed:
+1. Creases and volumes are separated by scale. `closed(h)` fills every hollow narrower than `CLOSE` = 19 px to its rim (grey closing with a disc; hollows shallower than about 1 px are left alone, otherwise the closing lays square plateaus on smooth saddles). Ink = depth under that rim, black at `GROOVE` = 4 px. The slope tone is computed on the closed surface, so a crease wall never shades and a broad tilt never inks. The former cavity term (surface below its 6 px Gaussian mean) inked the base midline notches (spine, gluteal cleft) as wide blobs and left wide strokes grey.
+2. Joint fit: `fit_shading` returns the closed surface, so a narrow hollow of the base (the bottom of the spine and cleft notches) that the artist did not draw is filled, and only the drawn strokes are carved back by `fit_grooves`. The broad part of each notch stays.
+3. Strokes: the crease is carved on the stroke's own pixels (no blur), depth started at `GROOVE` x darkness and iterated per pixel against the raw sprite luminance (depth cap 16 px, needed where a stroke sits on a volume step). Flat floor of the stroke's width, black where the sprite is black. Thin pale strokes (luminance about 0.8: spine, cleft) are now selected too.
+4. Grey: toon transfer. Measured on the sprites, the grey mode is luminance 0.85 (median of the greys 0.81 to 0.86) with a tail down to 0.55. Tone lost = 0.15 reached over 0.10 of downward slope beyond 0.15, then 0.5 per unit of slope, capped at 0.6. The fit steps in slope units through the inverse transfer, 24 rounds, target blur 0.5 px (was 1.0).
+5. East: rows of the side field smoothed (sigma 2 px, rows only) and 256 lateral samples (was 96).
+6. Areola: read from the sprite's pink patches (centroid, equivalent radius, median colour) and applied as albedo under the ink, in every view, so the drawn dark crescent shows.
+7. `overview()` writes `2026-11-09_wdi3d-overview.png` at the end of every run.
+
+Score (mean absolute luminance difference, lower is better), before then after:
+
+| Body | south | north | east | moved mean / p95 px after (south, north, east) |
+|---|---|---|---|---|
+| Male | 0.021 / 0.012 | 0.028 / 0.013 | 0.026 / 0.013 | 5.39 / 9.21, 1.42 / 4.62, 4.18 / 9.62 |
+| Female | 0.027 / 0.018 | 0.040 / 0.011 | 0.031 / 0.021 | 3.29 / 7.93, 5.10 / 10.27, 5.09 / 12.62 |
+| Thin | 0.024 / 0.019 | 0.023 / 0.009 | 0.025 / 0.017 | 1.17 / 2.67, 1.38 / 3.80, 3.20 / 9.58 |
+| Thin_Female | 0.018 / 0.011 | 0.040 / 0.015 | 0.021 / 0.015 | 4.21 / 8.14, 2.59 / 5.34, 2.40 / 7.80 |
+| Fat | 0.025 / 0.022 | 0.034 / 0.009 | 0.026 / 0.015 | 6.94 / 17.28, 7.03 / 15.74, 8.42 / 17.98 |
+| Fat_Female | 0.027 / 0.011 | 0.042 / 0.013 | 0.029 / 0.014 | 5.69 / 12.42, 8.12 / 22.56, 9.06 / 21.30 |
+| Hulk | 0.023 / 0.012 | 0.027 / 0.013 | 0.033 / 0.014 | 8.50 / 14.82, 3.14 / 10.10, 7.57 / 15.98 |
+| Hulk_Female | 0.043 / 0.013 | 0.040 / 0.016 | 0.035 / 0.016 | 7.93 / 16.34, 3.26 / 11.40, 8.96 / 19.43 |
+
+"Moved" is the distance between the profile-built volumes and the fitted surface before the creases are carved (it now includes the filling of narrow base hollows). It is large on Fat, Fat_Female and both Hulks (p95 15 to 23 px on a 512 px sprite): there the lobes are too far from the drawn volumes and the fit does the work. That is the measure of how much anatomy is still missing from the base, not a success.
+
+Read from the overview:
+- Cured: the black blobs on the spine and cleft (all north views); strokes have the drawn width and reach black (under the pecs and breasts, east chest crease, fat folds); the nipple crescent shows.
+- Better, not equal: grey wedges have the WDI tone and a harder edge, but are smaller than drawn in places (Fat east lower back, Hulk_Female south under the breasts) and their inner edge is still a short gradient.
+- Still wrong: faint vertical streaks and small blocks in white areas whose base slope sits near the toon threshold (lower buttocks on Male, Thin_Female, Fat and Fat_Female north; lower half of Fat, Fat_Female and Hulk east; Hulk and Hulk_Female south chest). Thin south (0.019), Fat south (0.022) and Female east (0.021) are the weakest. A faint light line doubles some heavy strokes on Fat south (the lit lower wall of a step under the stroke).
+
+Tried and rejected in this pass (do not retry as such):
+- Closing with a square footprint and no depth gate: block-shaped plateaus everywhere.
+- Toon step over 0.06 of slope: too sensitive, speckled whites; 0.10 kept.
+- Fit stepping on the measured slope with a margin on each side of the toon step (white pushed 0.05 under the threshold, grey 0.03 over): diverges unclipped (Fat north 0.009 to 0.041); clipped to 0.15 per round it lowers some scores (Fat south 0.017) but bands the whites horizontally and loses wedges (Fat east, Male north). The score did not see it; the board did.
+
+Not done: the fitted fields are still not fed to the mesh export and the viewer (step 5 of the brief).
+
+Next: the streaks and the large "moved" values have the same cause, the generic lobes. Replace them by the muscle and fat-pad volumes of `ANATOMY-LAYERS.md` for Fat and Hulk first (belly apron, gluteal lobes, pec and latissimus planes), so that the base already has white flats and down-facing facets where the sprite has them and the fit only trims. Then feed the fields to the mesh export.
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:

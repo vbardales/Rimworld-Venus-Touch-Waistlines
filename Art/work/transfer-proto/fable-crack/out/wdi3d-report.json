@@ -1,186 +1,186 @@
 {
   "Male": {
     "south": {
-      "mae": 0.0209,
+      "mae": 0.0124,
       "blank_white": 0.0851,
       "outline_px": 13.4,
-      "moved_mean_px": 3.71,
-      "moved_p95_px": 6.92
+      "moved_mean_px": 5.39,
+      "moved_p95_px": 9.21
     },
     "north": {
-      "mae": 0.0275,
+      "mae": 0.0127,
       "blank_white": 0.0567,
       "outline_px": 14.0,
-      "moved_mean_px": 2.09,
-      "moved_p95_px": 5.99
+      "moved_mean_px": 1.42,
+      "moved_p95_px": 4.62
     },
     "east": {
-      "mae": 0.026,
+      "mae": 0.0127,
       "blank_white": 0.0704,
       "outline_px": 11.0,
-      "moved_mean_px": 2.98,
-      "moved_p95_px": 7.26
+      "moved_mean_px": 4.18,
+      "moved_p95_px": 9.62
     }
   },
   "Female": {
     "south": {
-      "mae": 0.0266,
+      "mae": 0.0181,
       "blank_white": 0.0983,
       "outline_px": 14.0,
-      "moved_mean_px": 3.56,
-      "moved_p95_px": 9.45
+      "moved_mean_px": 3.29,
+      "moved_p95_px": 7.93
     },
     "north": {
-      "mae": 0.0403,
+      "mae": 0.0115,
       "blank_white": 0.0566,
       "outline_px": 12.0,
-      "moved_mean_px": 4.43,
-      "moved_p95_px": 12.12
+      "moved_mean_px": 5.1,
+      "moved_p95_px": 10.27
     },
     "east": {
-      "mae": 0.0307,
+      "mae": 0.0209,
       "blank_white": 0.0849,
       "outline_px": 13.5,
-      "moved_mean_px": 3.81,
-      "moved_p95_px": 10.67
+      "moved_mean_px": 5.09,
+      "moved_p95_px": 12.62
     }
   },
   "Thin": {
     "south": {
-      "mae": 0.024,
+      "mae": 0.0194,
       "blank_white": 0.1074,
       "outline_px": 13.6,
-      "moved_mean_px": 2.43,
-      "moved_p95_px": 7.63
+      "moved_mean_px": 1.17,
+      "moved_p95_px": 2.67
     },
     "north": {
-      "mae": 0.0232,
+      "mae": 0.0089,
       "blank_white": 0.048,
       "outline_px": 13.0,
-      "moved_mean_px": 2.09,
-      "moved_p95_px": 4.85
+      "moved_mean_px": 1.38,
+      "moved_p95_px": 3.8
     },
     "east": {
-      "mae": 0.025,
+      "mae": 0.0165,
       "blank_white": 0.0796,
       "outline_px": 13.6,
-      "moved_mean_px": 3.07,
-      "moved_p95_px": 10.6
+      "moved_mean_px": 3.2,
+      "moved_p95_px": 9.58
     }
   },
   "Thin_Female": {
     "south": {
-      "mae": 0.0176,
+      "mae": 0.011,
       "blank_white": 0.106,
       "outline_px": 14.0,
-      "moved_mean_px": 3.72,
-      "moved_p95_px": 7.48
+      "moved_mean_px": 4.21,
+      "moved_p95_px": 8.14
     },
     "north": {
-      "mae": 0.0399,
+      "mae": 0.0149,
       "blank_white": 0.0799,
       "outline_px": 14.0,
-      "moved_mean_px": 3.07,
-      "moved_p95_px": 8.19
+      "moved_mean_px": 2.59,
+      "moved_p95_px": 5.34
     },
     "east": {
-      "mae": 0.0212,
+      "mae": 0.0146,
       "blank_white": 0.0824,
       "outline_px": 13.6,
-      "moved_mean_px": 2.39,
-      "moved_p95_px": 6.77
+      "moved_mean_px": 2.4,
+      "moved_p95_px": 7.8
     }
   },
   "Fat": {
     "south": {
-      "mae": 0.0245,
+      "mae": 0.0216,
       "blank_white": 0.1136,
       "outline_px": 12.2,
-      "moved_mean_px": 5.88,
-      "moved_p95_px": 14.96
+      "moved_mean_px": 6.94,
+      "moved_p95_px": 17.28
     },
     "north": {
-      "mae": 0.0337,
+      "mae": 0.009,
       "blank_white": 0.0525,
       "outline_px": 12.2,
-      "moved_mean_px": 6.44,
-      "moved_p95_px": 17.19
+      "moved_mean_px": 7.03,
+      "moved_p95_px": 15.74
     },
     "east": {
-      "mae": 0.0258,
+      "mae": 0.0148,
       "blank_white": 0.0822,
       "outline_px": 14.0,
-      "moved_mean_px": 6.38,
-      "moved_p95_px": 14.5
+      "moved_mean_px": 8.42,
+      "moved_p95_px": 17.98
     }
   },
   "Fat_Female": {
     "south": {
-      "mae": 0.0274,
+      "mae": 0.0112,
       "blank_white": 0.1018,
       "outline_px": 14.0,
-      "moved_mean_px": 5.64,
-      "moved_p95_px": 12.97
+      "moved_mean_px": 5.69,
+      "moved_p95_px": 12.42
     },
     "north": {
-      "mae": 0.0416,
+      "mae": 0.0126,
       "blank_white": 0.0711,
       "outline_px": 12.2,
-      "moved_mean_px": 7.1,
-      "moved_p95_px": 21.76
+      "moved_mean_px": 8.12,
+      "moved_p95_px": 22.56
     },
     "east": {
-      "mae": 0.029,
+      "mae": 0.0138,
       "blank_white": 0.0641,
       "outline_px": 13.2,
-      "moved_mean_px": 7.07,
-      "moved_p95_px": 17.1
+      "moved_mean_px": 9.06,
+      "moved_p95_px": 21.3
     }
   },
   "Hulk": {
     "south": {
-      "mae": 0.0229,
+      "mae": 0.0119,
       "blank_white": 0.0823,
       "outline_px": 14.2,
-      "moved_mean_px": 5.37,
-      "moved_p95_px": 10.65
+      "moved_mean_px": 8.5,
+      "moved_p95_px": 14.82
     },
     "north": {
-      "mae": 0.0274,
+      "mae": 0.0127,
       "blank_white": 0.0553,
       "outline_px": 13.2,
-      "moved_mean_px": 3.57,
-      "moved_p95_px": 10.38
+      "moved_mean_px": 3.14,
+      "moved_p95_px": 10.1
     },
     "east": {
-      "mae": 0.0325,
+      "mae": 0.0141,
       "blank_white": 0.0763,
       "outline_px": 13.5,
-      "moved_mean_px": 5.13,
-      "moved_p95_px": 10.21
+      "moved_mean_px": 7.57,
+      "moved_p95_px": 15.98
     }
   },
   "Hulk_Female": {
     "south": {
-      "mae": 0.0426,
+      "mae": 0.013,
       "blank_white": 0.097,
       "outline_px": 15.6,
-      "moved_mean_px": 8.08,
-      "moved_p95_px": 18.05
+      "moved_mean_px": 7.93,
+      "moved_p95_px": 16.34
     },
     "north": {
-      "mae": 0.0401,
+      "mae": 0.0161,
       "blank_white": 0.0809,
       "outline_px": 15.0,
-      "moved_mean_px": 3.46,
-      "moved_p95_px": 10.34
+      "moved_mean_px": 3.26,
+      "moved_p95_px": 11.4
     },
     "east": {
-      "mae": 0.0352,
+      "mae": 0.0157,
       "blank_white": 0.0843,
       "outline_px": 13.1,
-      "moved_mean_px": 6.63,
-      "moved_p95_px": 14.55
+      "moved_mean_px": 8.96,
+      "moved_p95_px": 19.43
     }
   }
 }

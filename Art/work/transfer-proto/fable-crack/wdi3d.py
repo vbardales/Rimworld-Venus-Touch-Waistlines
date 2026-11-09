@@ -15,9 +15,9 @@ Model (front field in the south frame, back field in the north frame, depth in e
      own profile is exactly the east silhouette.
   4. Local signed patches of shade3d.py on top (neck, navel, groin, abs, spine ...).
 Capture: the three views are rendered from those fields (the east view is the side of the
-same solid) with a WDI-style shader: white fill, light from the top of the sprite, grey on
-down-facing skin, black cast shadow under overhangs, grey ink in concave creases, constant
-black outline.  A board and a luminance score against the real texture are written.
+same solid) with a WDI-style shader: white fill, light from the top of the sprite, flat grey
+on down-facing skin (toon step), ink in hollows narrower than CLOSE (depth under the rim),
+areola albedo, constant black outline.  A board and a luminance score against the real texture are written.
 
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python wdi3d.py [Body ...]
 Board: Art/work/captures/2026-11-09_wdi3d-<Body>.png ; scores: out/wdi3d-report.json
@@ -237,7 +237,7 @@ def side_field(M, prof, Hs, Hn):
         xl = np.interp(ys, np.arange(N), np.nan_to_num(slo)); xr = np.interp(ys, np.arange(N), np.nan_to_num(shi))
         nl = np.interp(yn, np.arange(N), np.nan_to_num(nlo)); nr = np.interp(yn, np.arange(N), np.nan_to_num(nhi))
         c = 0.5 * (xl + xr)
-        x = np.linspace(c, xr, 96)
+        x = np.linspace(c, xr, 256)
         zf = ndi.map_coordinates(Hs, [np.full_like(x, ys), x], order=1)
         xn = nr - (x - xl) / max(xr - xl, 1) * (nr - nl)
         zb = ndi.map_coordinates(Hn, [np.full_like(x, yn), xn], order=1)
@@ -285,8 +285,11 @@ def diffuse(h, m, lines, steps=DIFFUSE):
     return h * m
 
 
-SLOPE_K = 0.50   # tone lost per unit of downward slope beyond SLOPE_0 (shared by the model fit and the shader)
-SLOPE_0 = 0.15
+SLOPE_K = 0.50   # tone lost per unit of downward slope beyond the toon step (shared by the model fit and the shader)
+SLOPE_0 = 0.15   # downward slope where the grey starts
+TOON_G = 0.15    # flat WDI grey (luminance 0.85, the mode of the sprite greys): reached over TOON_D of slope
+TOON_D = 0.10
+CLOSE = 19       # px: a hollow narrower than this is a crease (ink); wider is a volume (shaded by its slope)
 MU = 0.001       # pull of the fitted surface back to the profile-built volumes (length scale about 16 px)
 
 
@@ -296,16 +299,41 @@ def wdi_shade(img, m, width):
     inner = ndi.distance_transform_edt(m) > width + 1.0
     g = np.clip(1.0 - lum, 0, 1)
     g = ndi.grey_opening(g, size=(7, 7))
-    return np.clip(ndi.gaussian_filter(g, 1.0), 0, 0.6) * inner
+    return np.clip(ndi.gaussian_filter(g, 0.5), 0, 0.6) * inner
 
 
-def tone_of_slope(h):
-    """Top light: skin that faces down goes grey, linearly with its slope (shared with the shader)."""
-    gy, _ = np.gradient(ndi.gaussian_filter(h, 1.0))
-    return 1.0 - np.clip(SLOPE_K * np.clip(-gy - SLOPE_0, 0, None), 0, 0.6)
+DISK = np.hypot(*np.mgrid[-(CLOSE // 2):CLOSE // 2 + 1, -(CLOSE // 2):CLOSE // 2 + 1]) <= CLOSE / 2
 
 
-def fit_shading(h, m, grey, rounds=8):
+def closed(h):
+    """The volumes without their creases: every hollow narrower than CLOSE is filled to its rim.
+
+    Hollows shallower than about 1 px are left alone: a flat closing lays square plateaus on
+    any saddle of a smooth surface, and their edges would shade as blocks.
+    """
+    cav = ndi.grey_closing(h, footprint=DISK) - h
+    return h + cav * smooth01((cav - 0.3) / 0.7)
+
+
+def loss_of_slope(s):
+    """Tone lost at downward slope s: a toon step to the flat WDI grey, then linear (darker under overhangs)."""
+    t = np.clip((s - SLOPE_0) / TOON_D, 0, 1)
+    return np.clip(TOON_G * t + SLOPE_K * np.clip(s - SLOPE_0 - TOON_D, 0, None), 0, 0.6)
+
+
+def slope_of_loss(g):
+    """Inverse of loss_of_slope (used by the fit to step in slope units)."""
+    g = np.clip(g, 0, 0.6)
+    return np.where(g <= TOON_G, SLOPE_0 + TOON_D * g / TOON_G, SLOPE_0 + TOON_D + (g - TOON_G) / SLOPE_K)
+
+
+def tone_of_slope(hc):
+    """Top light on the crease-free volumes: skin that faces down goes grey (shared with the shader)."""
+    gy, _ = np.gradient(ndi.gaussian_filter(hc, 0.6))
+    return 1.0 - loss_of_slope(-gy)
+
+
+def fit_shading(h, m, grey, rounds=24):
     """Fit the volumes so that their top-lit capture has the sprite's broad shading.
 
     Unknown: the surface u.  It stays as close as possible to the profile-built volumes h
@@ -348,15 +376,20 @@ def fit_shading(h, m, grey, rounds=8):
         e = float(np.abs(err).mean())
         if e < best[0]:
             best = (e, out)
-        gy_t = np.clip(gy_t - 0.5 * ndi.gaussian_filter(err, 0.7) / SLOPE_K, -2.0, 2.0)
-    return best[1]
+        # step in slope units through the inverse transfer.  Rejected: stepping on the measured slope with a
+        # margin on each side of the toon step (diverges unclipped; clipped it bands and loses wedges).
+        step = slope_of_loss(grey) - slope_of_loss(1.0 - tone_of_slope(closed(out)))   # > 0: needs more downward slope
+        gy_t = np.clip(gy_t - 0.7 * ndi.gaussian_filter(step * inner, 0.5), -2.0, 2.0)
+    return closed(best[1]) * m
 
 
 def fit_grooves(h, m, lines, img, width, rounds=8):
     """Depth of each drawn crease, adjusted until the captured ink has the painted tone."""
-    lum = ndi.gaussian_filter(c1.lum(img), 0.8)
-    sel = ndi.gaussian_filter(lines, 1.0) > 0.04
-    depth = GROOVE * ndi.gaussian_filter(lines, 0.8)
+    lum = c1.lum(img)
+    dark = 1.0 - lum
+    faint = (dark - ndi.grey_opening(dark, size=(11, 11))) > 0.03   # thin pale strokes too (spine, cleft)
+    sel = ((lines > 0.04) | faint) & (ndi.distance_transform_edt(m) > width + 1.0)   # stroke pixels: flat floor, full width
+    depth = GROOVE * np.clip(1.0 - lum, 0, 1) * sel
     best = (1e9, h)
     for _ in range(rounds):
         out = np.maximum(h - depth, 0.0) * m
@@ -364,14 +397,14 @@ def fit_grooves(h, m, lines, img, width, rounds=8):
         e = float(np.abs(err).sum())
         if e < best[0]:
             best = (e, out)
-        depth = np.clip(depth + 1.5 * ndi.gaussian_filter(err, 0.6), 0, 9.0) * sel
+        depth = np.clip(depth + 0.8 * GROOVE * err, 0, 16.0) * sel
     return best[1]
 
 
 def tone_full(h, m):
-    tone = tone_of_slope(h)
-    cav = np.clip(ndi.gaussian_filter(h, 6.0) - h, 0, None) * m
-    return np.minimum(tone, 1.0 - np.clip((cav - 0.8) / (0.55 * GROOVE), 0, 1))
+    """Shader: slope tone of the crease-free volumes, ink in the creases (depth under the rim, black at GROOVE)."""
+    hc = closed(h)
+    return np.minimum(tone_of_slope(hc), 1.0 - np.clip((hc - h) * m / GROOVE, 0, 1))
 
 
 def carve(h, m, lines):
@@ -386,14 +419,28 @@ def outline_width(img, m):
     return float(np.percentile(d[ol], 95)) + 1.0 if ol.sum() > 50 else 13.0
 
 
+def areolae(img, m):
+    """Pink patches of the sprite as discs (x, y, radius, colour): skin colour, not relief."""
+    r, g, b = img[..., 0], img[..., 1], img[..., 2]
+    pink = (r > 0.8) & (r - b > 0.04) & m
+    lab, n = ndi.label(pink)
+    out = []
+    for i in range(1, n + 1):
+        ys, xs = np.nonzero(lab == i)
+        if len(ys) >= 30:
+            out.append((float(xs.mean()), float(ys.mean()), float(np.sqrt(len(ys) / np.pi)), np.median(img[ys, xs, :3], axis=0)))
+    return out
+
+
 def capture(h, m, width, nipples=()):
-    """White skin, top light, grey down-facing, cast shadow ink, crease ink, black outline."""
+    """White skin, top light, grey down-facing, crease ink, black outline; the areola is an albedo under the ink."""
     tone = tone_full(h, m)
-    rgb = np.repeat(tone[..., None], 3, axis=2)
-    for (x, y, r) in nipples:
-        yy, xx = np.mgrid[0:N, 0:N]
-        a = np.clip(1.2 - np.hypot(xx - x, yy - y) / r, 0, 1)[..., None]
-        rgb = rgb * (1 - a) + np.array([0.98, 0.84, 0.80]) * a
+    albedo = np.ones((N, N, 3))
+    yy, xx = np.mgrid[0:N, 0:N]
+    for (x, y, r, col) in nipples:
+        a = np.clip(r + 0.5 - np.hypot(xx - x, yy - y), 0, 1)[..., None]
+        albedo = albedo * (1 - a) + col * a
+    rgb = tone[..., None] * albedo
     d = ndi.distance_transform_edt(m)
     edge = np.clip(width - d + 0.5, 0, 1)[..., None]
     rgb = rgb * (1 - edge)
@@ -426,6 +473,7 @@ def one(body):
     # volumes: smooth inside the zones the artist separates, steps on his creases
     Hs = diffuse(Hs, M["south"], lines["south"]); Hn = diffuse(Hn, M["north"], lines["north"])
     He = side_field(M, prof, Hs, Hn)
+    He = ndi.gaussian_filter1d(He, 2.0, axis=0) * M["east"]          # rows are built one by one: no row bands
     He = diffuse(He, M["east"], lines["east"], 60)
     base = {"south": Hs, "north": Hn, "east": He}
     fields = {}; moved = {}
@@ -434,14 +482,10 @@ def one(body):
         fields[f] = fit_grooves(fitted, M[f], lines[f], imgs[f], width[f])
         inner = ndi.distance_transform_edt(M[f]) > width[f] + 2
         moved[f] = (float(np.abs(fitted - base[f])[inner].mean()), float(np.percentile(np.abs(fitted - base[f])[inner], 95)))
-    nip = []
-    for k in ("breast apex L", "breast apex R"):
-        if k in P["south"]:
-            nip.append((P["south"][k][0], P["south"][k][1], 5.0))
     tiles, rep = [], {}
     for f in ("south", "north", "east"):
         w = width[f]
-        cap = capture(fields[f], M[f], w, nip if f == "south" else ())
+        cap = capture(fields[f], M[f], w, areolae(imgs[f], M[f]))
         mae, blank = score(cap, imgs[f], M[f], w)
         rep[f] = {"mae": round(mae, 4), "blank_white": round(blank, 4), "outline_px": round(w, 1),
                   "moved_mean_px": round(moved[f][0], 2), "moved_p95_px": round(moved[f][1], 2)}
@@ -460,6 +504,16 @@ def one(body):
     return rep
 
 
+def overview(width=1500):
+    boards = [Image.open(CAPT / f"2026-11-09_wdi3d-{b}.png") for b in BODIES]
+    k = width / max(b.width for b in boards)
+    boards = [b.resize((max(int(b.width * k), 1), max(int(b.height * k), 1)), Image.LANCZOS) for b in boards]
+    out = Image.new("RGB", (width, sum(b.height + 4 for b in boards)), (235, 235, 230)); y = 0
+    for b in boards:
+        out.paste(b, (0, y)); y += b.height + 4
+    out.save(CAPT / "2026-11-09_wdi3d-overview.png")
+
+
 def main():
     names = [a for a in sys.argv[1:] if a in BODIES] or BODIES
     path = HERE / "out" / "wdi3d-report.json"
@@ -468,6 +522,7 @@ def main():
         report[b] = one(b)
         print(b, " ".join(f"{f} {v['mae']:.3f}/{v['blank_white']:.3f}" for f, v in report[b].items()), flush=True)
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    overview()
 
 
 if __name__ == "__main__":
