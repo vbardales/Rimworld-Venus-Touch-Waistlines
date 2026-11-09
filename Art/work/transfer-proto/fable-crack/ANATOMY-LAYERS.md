@@ -100,3 +100,18 @@ The screenshot is one view of the viewer (T pose, right half of the torso shows 
 - Use: the muscle volumes can be built as the same lobe-pair sections of section 5, clipped to their attachment ranges, then unioned with a smooth minimum so the seams stay as creases.
 
 Limits: one screenshot, no scale, no side or back view. It confirms the shape of the muscle layer; it gives no measurements.
+
+## 7. Muscles of the frontal torso, layer by layer (anatomy4sculptors, `muscles-of-torso-front`)
+
+Source: [image](https://anatomy4sculptors.com/ref-images/638604511470685015.jpg), found in the pasted page DOM (`image-holder` background). Six panels, each adds one muscle over the rib cage and spine. The order is the build order of the muscle layer.
+
+1. Skeleton: the rib cage leans forward and is open at the front; the sternum is the central floor; the clavicle runs out to the acromion. Ribs are separate hoops with gaps.
+2. Serratus anterior: finger-like digitations on the side of ribs 1 to 8 or 9, from the rib faces to the medial border of the scapula. It is the first layer over the side ribs, and its lower fingers interlock with the external oblique.
+3. Pectoralis major: a large fan of two heads. Clavicular head from the medial half of the clavicle, sternocostal head from the sternum and upper costal cartilages; both converge on the humerus (the sleeve at the armpit). Its lower border is oblique and ends at the armpit; below it the serratus shows.
+4. Latissimus dorsi (seen from the front at the side): a thin sheet on the lower side of the ribs, from the iliac crest and lumbar fascia up to the humerus behind the armpit. It forms the lateral wall behind the serratus.
+5. Trapezius and deltoid: trapezius leaves the occiput and the neck spine and drapes to the clavicle and the scapular spine (the neck-to-shoulder slope, the stylised WDI mass); deltoid caps the shoulder from clavicle, acromion and scapular spine to the humerus.
+6. External oblique and rectus abdominis: the oblique is a broad sheet from the lower ribs running down and forward to the iliac crest and the linea alba; the rectus is a column of paired blocks on each side of the midline, wider at the top, with tendinous intersections. The external oblique interlocks with the serratus at the costal margin.
+
+Use in the model: attachment anchors for each muscle (clavicle, sternum, costal margin, iliac crest, humerus root, scapular spine) can be derived from the landmark set (jugular notch, shoulder tips, armpits, under-breast fold, navel, hips). Each muscle is a finite volume between its anchors; the order above is the stacking order (serratus under pectoral, pectoral over serratus, oblique and rectus last on the abdomen).
+
+How to feed more references: the viewer is a login-gated app, but the page DOM that you paste contains each image's static URL (`image-holder`, `background-image: url(".../ref-images/<id>.jpg")`). That URL is a public file and can be read directly. The neighbours of this asset are `torso-cross-section-female` (previous) and `the-pectoralis-major` (next); paste their DOM the same way.
