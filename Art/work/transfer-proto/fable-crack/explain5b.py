@@ -6,7 +6,7 @@ Board: Art/work/captures/2026-11-07_step5-detail.png
 
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python explain5b.py
 """
-import re, sys
+import pathlib, re, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage as ndi
@@ -27,7 +27,13 @@ LAM = 1.0 if "exact" in sys.argv[1:] else 2000.0   # TPS smoothing: 2000 = round
 def named_pairs(body, facing):
     """same pairs and order as crack.landmarks, with the point names"""
     pairs, names = {}, {}
-    with open(rf"{POINTS}\delta-{facing}-points.txt", encoding="utf-8-sig") as f:
+    # The production machine keeps POINTS as a Windows path.  Cloud checkouts
+    # deliberately contain the same study files but not that drive, so use the
+    # in-repository copy when the configured path is unavailable.
+    path = pathlib.Path(POINTS) / f"delta-{facing}-points.txt"
+    if not path.exists():
+        path = pathlib.Path(__file__).resolve().parents[2] / "captures" / "2026-11-03_points" / path.name
+    with path.open(encoding="utf-8-sig") as f:
         for raw in f:
             p = raw.strip().split("|")
             if len(p) < 6 or not p[1].startswith(body + "/") or p[2] == "axis":

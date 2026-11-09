@@ -8,21 +8,22 @@ All files live under `Art/work/` (gitignored, force-added on branch `cloud-work`
 
 | File | Role |
 |---|---|
-| `transfer-proto/fable-crack/shade3d.py` | Height field: `relief3d.height()` volume, then shape from shading (zenithal light), pec fan, groin dome, nipples, navel, and landmark-anchored thoracic creases. |
+| `transfer-proto/fable-crack/shade3d.py` | Active height field: a smooth three-silhouette envelope plus signed, localized patches anchored to the 2026-11-03 landmarks (neck/collar, axillae, attached breast or pec, sternum, navel, abs, pubis/groin, glutes). The former column-luminance solve remains selectable as a fallback. |
 | `transfer-proto/fable-crack/relief_export2.py` | Closed mesh export: 360 sub-pixel rings from the south and north height fields, a hard east-profile envelope, lower cut rings below the crotch (notch or landmark seam), landmark rows, and the rigid-rib-cage floor. Output `out/relief3d-shade5.json` (R=360, U=44). |
 | `transfer-proto/fable-crack/body3d_template.html` | Viewer code (three.js r128): skin modes, the exported diagnostic skeleton, and organs. `__DATA__` is replaced by the datasets. |
 | `transfer-proto/fable-crack/body3d_build.py` | Rebuilds `captures/2026-11-08_body3d.html`, automatically replacing the shaded dataset with the latest export. |
 | `captures/2026-11-08_body3d.html` | The viewer (open in a browser, `squelette` checkbox, `east` button). |
 
-Run the shading: `RELIEF_TAG=-shadeN uv run --with numpy --with pillow --with scipy --with scikit-image python shade3d.py [overlay|export] [Body ...]`.
-Knobs: `SHADE_K=4`, `SHADE_MU=0.003`, `NIPPLE=7`, `SEX=9`, `NAVEL=8`, `PEC=11`, `PEC_F=5`, `DETAIL_OUT=5.5`, `DETAIL_IN=4`. The last two softly saturate all post-base signed surface detail, so named features cannot create a second body volume or a hard normal break. Base priors in `relief3d.py` are deliberately quiet (`ZONE_RELIEF=3`, `CHEST_LOBE=.08`, `CHEST_VALLEY=.06`); named features own the readable anatomy.
+Run the active export: `uv run --with numpy --with pillow --with scipy --with scikit-image python relief_export2.py`; then `uv run --with numpy --with pillow --with scipy --with scikit-image python body3d_compare.py`; then `uv run python body3d_build.py`.
+
+`RELIEF_MODE=structured` is the default. It does not sample the broad light/grey paint as height. `RELIEF_MODE=legacy` retains the previous `SHADE_K`/`SHADE_MU` column solve for A/B diagnosis only; it must not be treated as the active anatomy result. The older named-detail knobs remain meaningful only in that fallback.
 
 ## Method
 
 1. Silhouette: alpha mask with holes filled, black outline kept (it is the rim where the surface turns away from the eye, so it is integrated, not removed).
-2. Volume: width from the south view, depth from the east view, mid-depth line from the east silhouette; chest lobes on the named points. The east outline is a hard envelope: relief is renormalised row by row inside it, and the cage floor is capped there too.
-3. Shading: WDI shadows read as a zenithal light; dark = surface turning down. Per column, a tridiagonal least-squares system (height slope from the darkness, pulled back to the volume).
-4. Features: nipples and sex raised, navel hollowed; sex as a dome from the convex hull of the groin creases; pectorals as a fan (thin at the sternum, crisp oblique lower border, smaller on female bodies). The sternal and inferior-pectoral/under-breast creases are signed troughs anchored to the named points, so smoothing does not erase them.
+2. Volume: width from the south view, depth from the east view, mid-depth line from the east silhouette. The east outline is a hard envelope: relief is renormalised row by row inside it, and the cage floor is capped there too.
+3. Surface: localized signed patches are placed from the measured landmark geometry, never from a full-column luminance integral. The neck/collar, clavicles, sternal hollow, armpits, attachment folds, navel, groin and intergluteal cleft therefore have finite endpoints rather than becoming screen-wide bands.
+4. Body-specific anatomy: female breast patches are teardrop supports bounded by each own attachment crease and a central cleavage return to the cage; Fat_Female adds a soft low pubic apron and larger gluteal patches; Hulk and Male/Average receive paired upper and lower abdominal pads with a finite linea alba. The side view adds only local chest, belly, waist and buttock planes. White/grey paint remains paint unless a landmark asks for a form.
 5. Mesh: front ring from the south field, back ring from the north field, joined at the silhouette edge. The assets end just below the crotch; their lower rings are a cut edge, not a reconstructed leg. Where a sprite has a crotch notch, its two alpha runs define two cut rings; otherwise, the named crotch starts an internal medial seam with the outer source projection unchanged.
 6. Skeleton (viewer): every bone is placed from the skin by a ray from the row axis and a margin under it.
    - Rib cage: rigid barrel of 12 ribs, from the neck base (20 % of the way from the body top to the under-breast fold) to just above the navel (85 % of the way from the nipples to the navel). Depth fitted per level on the centre-line skin (7 px margin in front, 12 px behind), smoothed over 5 levels. Width from the 40th percentile of the side margins.
@@ -58,7 +59,8 @@ Consequences taken (estimates, not published measurements):
 ## Open
 
 - Table of the gap cage to skin per rib level, for all eight bodies.
-- These are torso–pelvis assets, not full figures: the source gives only 6 to 33 px below the crotch. A complete leg model needs a procedural extension or full-body source views. Thin, Thin_Female, Hulk and Hulk_Female use a landmark-defined medial seam because their sprites have no crotch notch. The lower cut is closed by a flat mesh cap, not modelled as a leg or foot.
+- These are torso–pelvis crops, not full figures: the source gives only 6 to 33 px below the crotch. Only the leg roots can be inferred faithfully. A complete leg model needs a procedural extension or full-body source views. Thin, Thin_Female, Hulk and Hulk_Female use a landmark-defined medial seam because their sprites have no crotch notch. The lower cut is closed by a flat mesh cap, not modelled as a leg or foot.
+- The cloud checkout has no Steam Workshop tree. For repeatable validation, `relief3d.views()` uses the real WDI texture when available and otherwise rebuilds a local stand-in from `captures/2026-11-03_points` and the committed `E_<Body>_<facing>.png` masks. This is adequate for silhouette/landmark validation but not a substitute for rerunning on the original Workshop PNGs.
 - Real-texture rerun of the cloud scripts (`heightmode.py all`, `garmentstudy.py all`).
 - Cloth surface as a low-pass of the volume; tucked and untucked rules; AB Pants; isoRim variant.
 - Docs of section C3 (`docs/GARMENT-FIT-PROCESS.md`) exist only on remote branch `nelim/lucid-davinci-jsbif5`, not merged.

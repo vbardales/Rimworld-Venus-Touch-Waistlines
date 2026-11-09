@@ -12,6 +12,7 @@ Board per facing: WDI relief (lit) | WDI draped grid | vanilla relief | vanilla 
 Board: Art/work/captures/2026-11-07_relief3d-<Body>.png
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python relief3d.py [Body]
 """
+import pathlib
 import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -164,8 +165,23 @@ def draped(h, m):
 def views(body, vanilla):
     out = {}
     for f in ("south", "east", "north"):
-        img = e5.x4(c1.load(rf"{c1.VAN}\vanilla-{c1.VANILLA_OF[body]}-{f}.png")) if vanilla else \
-            c1.load(rf"{crack2.WS}\Bodies\Naked_{body}_{f}.png", N)
+        if vanilla:
+            img = e5.x4(c1.load(rf"{c1.VAN}\vanilla-{c1.VANILLA_OF[body]}-{f}.png"))
+        else:
+            # A real workstation has the WDI texture tree.  A cloud checkout
+            # intentionally does not ship that external Workshop asset; in
+            # that case rebuild the documented stand-in from the checked-in
+            # 2026-11-03 source boards and use it only for local validation.
+            source = pathlib.Path(crack2.WS) / "Bodies" / f"Naked_{body}_{f}.png"
+            if not source.exists():
+                repo = pathlib.Path(__file__).resolve().parents[4]
+                source = repo.parent / "ws" / "Bodies" / f"Naked_{body}_{f}.png"
+                if not source.exists():
+                    from wdi_from_study import rebuild
+                    texture, _, _, _ = rebuild(body, f)
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    Image.fromarray((texture * 255).round().astype(np.uint8), "RGBA").save(source)
+            img = c1.load(str(source), N)
         out[f] = img
     return out
 

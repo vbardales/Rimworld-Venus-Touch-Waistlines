@@ -1,10 +1,18 @@
-"""Shape from the WDI shading (Virginie 2026-11-08: the WDI shadows were made with a zenithal light, so they tell the
-volumes). Light from the top of the image (head side): a surface whose normal turns DOWN is darker, so the shading gives
-the vertical slope of the height field where it is dark (the bright side saturates and tells nothing). Per column,
-minimise  sum (h[y+1]-h[y]-t[y])^2 + MU * sum (h[y]-h0[y])^2  with t = h0's own slope plus  -K*darkness  where the
-texture is darker than its lit white, h0 = relief3d.height (volume + lobes). Then a small 2D smoothing.
-Used by patching relief3d.height; set RELIEF_TAG for the output names of overlay3d.py and relief_export.py.
-Run: RELIEF_TAG=-shade uv run --with numpy --with pillow --with scipy --with scikit-image python shade3d.py [overlay|export] [Body ...]"""
+"""Landmark-led surface relief for the WDI bodies.
+
+The active surface is deliberately *not* reconstructed from a column-by-column
+luminance integral.  The WDI sprites use broad white and grey areas for style,
+so treating every tonal transition as height made horizontal terraces and
+``pillow`` torsos.  Instead we start from the smooth three-silhouette envelope
+in :func:`relief3d.base_height` and add a small set of signed, local anatomical
+patches.  Each patch is tied to artist-measured landmarks (rather than a shade
+threshold): collar/neck, armpit, attached breast or pectoral, sternum, navel,
+pubis/groin, abdomen, hips and the posterior gluteal mass.
+
+``RELIEF_MODE=legacy`` retains the previous luminance solver as an explicit
+fallback for comparison.  ``structured`` is the default and is the only mode
+used by ``relief_export2.py`` normally.
+"""
 import os, sys
 import numpy as np
 from scipy import ndimage as ndi
@@ -23,6 +31,282 @@ BODY = [None]                                   # set by the views() wrapper bel
 NAVEL = float(os.environ.get("NAVEL", 8.0))
 DETAIL_OUT = float(os.environ.get("DETAIL_OUT", 5.5))
 DETAIL_IN = float(os.environ.get("DETAIL_IN", 4.0))
+RELIEF_MODE = os.environ.get("RELIEF_MODE", "structured").lower()
+
+
+def _point(pts, name):
+    """Return a named point as floats, or ``None`` when a study omitted it."""
+    p = pts.get(name)
+    return None if p is None else (float(p[0]), float(p[1]))
+
+
+def _gauss(xx, yy, point, sx, sy, amp=1.0):
+    """A compact smooth signed patch centred on a measured landmark."""
+    if point is None or sx <= 0 or sy <= 0:
+        return np.zeros_like(xx, dtype=float)
+    x, y = point
+    return amp * np.exp(-0.5 * (((xx - x) / sx) ** 2 + ((yy - y) / sy) ** 2))
+
+
+def _segment(xx, yy, a, b, width, amp=1.0, end_taper=0.0):
+    """A rounded signed crease along the finite segment ``a``--``b``.
+
+    Unlike a row-wide dark-band conversion this has finite ends and therefore
+    cannot turn an under-breast fold, collarbone or groin crease into a stripe
+    across the whole torso.
+    """
+    if a is None or b is None or width <= 0:
+        return np.zeros_like(xx, dtype=float)
+    ax, ay = a; bx, by = b
+    dx, dy = bx - ax, by - ay
+    length2 = dx * dx + dy * dy
+    if length2 < 1e-6:
+        return _gauss(xx, yy, a, width, width, amp)
+    t = ((xx - ax) * dx + (yy - ay) * dy) / length2
+    tc = np.clip(t, 0.0, 1.0)
+    px, py = ax + tc * dx, ay + tc * dy
+    patch = amp * np.exp(-0.5 * ((np.hypot(xx - px, yy - py) / width) ** 2))
+    if end_taper:
+        patch *= np.clip(np.minimum(t, 1.0 - t) / end_taper, 0.0, 1.0)
+    return patch
+
+
+def _mid(a, b, fallback=(256.0, 256.0)):
+    if a is not None and b is not None:
+        return ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5)
+    return a or b or fallback
+
+
+def _body_flags():
+    """Small semantic body classes; never infer them from pixel brightness."""
+    name = BODY[0] or ""
+    return {
+        "female": "Female" in name,
+        "fat": "Fat" in name,
+        "hulk": "Hulk" in name,
+        # ``Male`` is the project's Average body (there is no Average asset).
+        "average": name == "Male",
+    }
+
+
+def _anchors(pts):
+    """Collect the measurements shared by all local patch recipes."""
+    neck_l, neck_r = _point(pts, "neck base L"), _point(pts, "neck base R")
+    shoulder_l, shoulder_r = _point(pts, "shoulder tip L"), _point(pts, "shoulder tip R")
+    armpit_l, armpit_r = _point(pts, "armpit L"), _point(pts, "armpit R")
+    apex_l, apex_r = _point(pts, "breast apex L"), _point(pts, "breast apex R")
+    fold_l, fold_r = _point(pts, "under-breast fold L"), _point(pts, "under-breast fold R")
+    hip_l, hip_r = _point(pts, "hip L"), _point(pts, "hip R")
+    return {
+        "neck_l": neck_l, "neck_r": neck_r,
+        "notch": _point(pts, "jugular notch") or _mid(neck_l, neck_r),
+        "shoulder_l": shoulder_l, "shoulder_r": shoulder_r,
+        "armpit_l": armpit_l, "armpit_r": armpit_r,
+        "apex_l": apex_l, "apex_r": apex_r,
+        "cleavage": _point(pts, "cleavage") or _mid(apex_l, apex_r),
+        "fold_l": fold_l, "fold_r": fold_r,
+        "fold": _mid(fold_l, fold_r),
+        "navel": _point(pts, "navel"),
+        "waist_l": _point(pts, "waist L"), "waist_r": _point(pts, "waist R"),
+        "hip_l": hip_l, "hip_r": hip_r, "hips": _mid(hip_l, hip_r),
+        "groin_l": _point(pts, "groin crease L"),
+        "groin_r": _point(pts, "groin crease R"),
+        "sex": _point(pts, "sex"),
+        "crotch": _point(pts, "crotch point"),
+    }
+
+
+def _front_torso_patches(xx, yy, a, flags):
+    """Signed front anatomy, entirely delimited by the 2026-11-03 points."""
+    out = np.zeros_like(xx, dtype=float)
+    notch, fold = a["notch"], a["fold"]
+    midx = a["cleavage"][0] if a["cleavage"] is not None else notch[0]
+
+    # Neck root, clavicles and axillary hollows.  The small finite segments
+    # make the neck legible without mistaking a grey chest plane for depth.
+    out += _segment(xx, yy, a["neck_l"], a["neck_r"], 3.4, -3.6, 0.08)
+    for shoulder in (a["shoulder_l"], a["shoulder_r"]):
+        if notch is not None and shoulder is not None:
+            out += _segment(xx, yy, notch, shoulder, 3.0, -2.7, 0.10)
+    for armpit in (a["armpit_l"], a["armpit_r"]):
+        out += _gauss(xx, yy, armpit, 7.0, 6.0, -3.8)
+
+    # The sternum is a finite valley between notch and fold.  It is distinct
+    # from the cleavage below, so female skin can return to the rib cage.
+    if notch is not None and fold is not None:
+        sternum_end = (midx, min(fold[1] - 4.0, notch[1] + 0.80 * (fold[1] - notch[1])))
+        out += _segment(xx, yy, notch, sternum_end, 3.1, -2.8, 0.10)
+
+    breast_pairs = ((a["apex_l"], a["fold_l"], a["armpit_l"]),
+                    (a["apex_r"], a["fold_r"], a["armpit_r"]))
+    if flags["female"]:
+        # A breast is a supported teardrop: the lobe is anchored between its
+        # apex, fold and armpit, then the fold and cleavage cut it back into
+        # the cage.  This deliberately has no free spherical "add-on".
+        lift = 5.0 if flags["fat"] else 4.2
+        for apex, fold_side, armpit in breast_pairs:
+            if apex is None:
+                continue
+            half = max(abs(apex[0] - midx), 15.0)
+            drop = max((fold_side[1] - apex[1]) if fold_side is not None else 20.0, 12.0)
+            center = (apex[0], apex[1] + 0.36 * drop)
+            lobe = _gauss(xx, yy, center, 0.64 * half, 0.86 * drop, lift)
+            # The upper/lateral attachment spreads toward the clavicle and
+            # armpit with only a fraction of the breast volume.
+            if armpit is not None:
+                support = ((0.45 * apex[0] + 0.55 * armpit[0]),
+                           0.55 * apex[1] + 0.45 * armpit[1])
+                lobe += _gauss(xx, yy, support, 0.55 * half, max(drop, 14.0), 0.34 * lift)
+            # Do not let a hanging lobe rise as a ball above its attachment.
+            lobe *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.35 * drop)) / 3.5))
+            out += lobe
+        # Each breast owns its attachment crease.  Joining both points with a
+        # single trough made a rigid horizontal rail across soft chests.
+        for fold_side in (a["fold_l"], a["fold_r"]):
+            if fold_side is None:
+                continue
+            sign = -1.0 if fold_side[0] < midx else 1.0
+            inner = (midx + sign * 4.0, fold_side[1] - 0.8)
+            out += _segment(xx, yy, fold_side, inner, 3.1, -2.25, 0.14)
+        if a["cleavage"] is not None and fold is not None:
+            out += _segment(xx, yy, a["cleavage"], fold, 3.0, -4.2, 0.08)
+    else:
+        # Pectorals are fan-shaped local masses, bounded inferiorly by the
+        # measured fold line.  Hulk gets greater relief, Average stays clear
+        # but restrained; Thin receives only the attachment structure.
+        amp = 5.0 if flags["hulk"] else 3.2 if flags["average"] else 1.7
+        for apex, fold_side, armpit in breast_pairs:
+            if apex is None or armpit is None:
+                continue
+            half = max(abs(apex[0] - midx), 12.0)
+            height = max(abs(armpit[1] - apex[1]), 15.0)
+            center = (0.42 * midx + 0.36 * apex[0] + 0.22 * armpit[0],
+                      0.35 * apex[1] + 0.65 * armpit[1])
+            out += _gauss(xx, yy, center, 0.68 * half, 0.70 * height, amp)
+            if fold_side is not None:
+                out += _segment(xx, yy, (midx, fold_side[1] - 1.5), fold_side, 2.5, -1.75, 0.12)
+
+    # Navel is a true dimple rather than an inverted luminance speck.  A very
+    # small rim keeps it readable under the skin shader without adding a band.
+    navel = a["navel"]
+    if navel is not None:
+        out += _gauss(xx, yy, navel, 3.4, 3.8, -6.2)
+        out += _gauss(xx, yy, navel, 7.2, 7.5, 1.35)
+
+    # Structured (paired) abdominal pads, not a periodic row solver.  The
+    # lower pair is deliberately retained for Hulk/Average bodies.
+    if (flags["hulk"] or flags["average"]) and fold is not None and navel is not None:
+        top, bottom = fold[1] + 4.0, navel[1] - 5.0
+        lower_bottom = (a["sex"] or a["crotch"] or navel)[1] - 5.0
+        half = max(abs(a["waist_l"][0] - midx) if a["waist_l"] is not None else 26.0, 18.0)
+        amp = 3.8 if flags["hulk"] else 2.35
+        for y0, y1, local_amp in ((top, bottom, amp), (navel[1] + 5.0, lower_bottom, 0.88 * amp)):
+            if y1 <= y0 + 6:
+                continue
+            cy = 0.5 * (y0 + y1)
+            for sign in (-1, 1):
+                out += _gauss(xx, yy, (midx + sign * 0.42 * half, cy), 0.33 * half, 0.34 * (y1 - y0), local_amp)
+            out += _segment(xx, yy, (midx, y0), (midx, y1), 2.0, -1.8, 0.10)
+        # A pair of short tendinous intersections reads as abdominal structure
+        # without producing the old full-width horizontal band.
+        for sign in (-1, 1):
+            out += _segment(
+                xx, yy,
+                (midx + sign * 0.10 * half, bottom),
+                (midx + sign * 0.56 * half, bottom),
+                1.8, -0.72, 0.16,
+            )
+
+    # Pubis, sex, groin and leg roots are separate named forms.  Fat_Female
+    # gets a broad low, soft apron (not a hard horizontal shelf); every body
+    # gets the two finite inguinal creases terminating at its sex point.
+    sex, crotch = a["sex"], a["crotch"]
+    if sex is not None:
+        groin_y = np.mean([p[1] for p in (a["groin_l"], a["groin_r"]) if p is not None]) if any(p is not None for p in (a["groin_l"], a["groin_r"])) else sex[1] - 9.0
+        hips = max(abs(a["hip_l"][0] - midx) if a["hip_l"] is not None else 30.0, 18.0)
+        if flags["female"] and flags["fat"]:
+            apron_center = (midx, 0.58 * groin_y + 0.42 * sex[1])
+            out += _gauss(xx, yy, apron_center, 0.52 * hips, max(9.0, 0.58 * abs(sex[1] - groin_y) + 8.0), 3.7)
+        else:
+            out += _gauss(xx, yy, (midx, 0.58 * groin_y + 0.42 * sex[1]), 0.34 * hips, 9.0, 2.6 if flags["fat"] else 2.1)
+        out += _gauss(xx, yy, sex, 3.8, 5.0, 1.6)
+        for crease in (a["groin_l"], a["groin_r"]):
+            if crease is not None:
+                out += _segment(xx, yy, crease, sex, 2.7, -3.1, 0.05)
+        if crotch is not None:
+            out += _segment(xx, yy, sex, crotch, 2.3, -2.2, 0.12)
+    return out
+
+
+def _back_torso_patches(xx, yy, a, flags):
+    """Back-side patches: spine, scapulae, hips and rounded gluteal masses."""
+    out = np.zeros_like(xx, dtype=float)
+    neck_mid = _mid(a["neck_l"], a["neck_r"])
+    hips = a["hips"]
+    crotch = a["crotch"]
+    if neck_mid is not None and hips is not None:
+        out += _segment(xx, yy, neck_mid, hips, 2.8, -2.3, 0.06)
+    # The north point table deliberately has no fictitious breast points.  Use
+    # only shoulder/armpit geometry for scapulae.
+    for shoulder, armpit in ((a["shoulder_l"], a["armpit_l"]), (a["shoulder_r"], a["armpit_r"])):
+        if shoulder is None or armpit is None:
+            continue
+        center = (0.58 * shoulder[0] + 0.42 * armpit[0], 0.45 * shoulder[1] + 0.55 * armpit[1])
+        out += _gauss(xx, yy, center, 10.0, 13.0, 2.8 if flags["hulk"] else 1.25)
+    if hips is not None and crotch is not None:
+        spread = max(abs(a["hip_l"][0] - hips[0]) if a["hip_l"] is not None else 22.0, 16.0)
+        height = max(abs(crotch[1] - hips[1]), 14.0)
+        amp = 4.3 if flags["fat"] else 3.0
+        for sign in (-1, 1):
+            out += _gauss(xx, yy, (hips[0] + sign * 0.43 * spread, hips[1] + 0.48 * height), 0.44 * spread, 0.52 * height, amp)
+        out += _segment(xx, yy, hips, crotch, 2.7, -3.1, 0.08)
+    return out
+
+
+def _profile_patches(xx, yy, pts, flags):
+    """Side-view-only local planes; useful for viewer normals and diagnosis."""
+    out = np.zeros_like(xx, dtype=float)
+    front, back = _point(pts, "neck front"), _point(pts, "neck back")
+    if front is not None and back is not None:
+        out += _segment(xx, yy, back, front, 2.8, -2.8, 0.08)
+    chest = _point(pts, "chest front")
+    belly = _point(pts, "belly front")
+    waist_front = _point(pts, "waist front")
+    small_back = _point(pts, "waist back (small of the back)")
+    buttock = _point(pts, "buttock back")
+    if chest is not None:
+        out += _gauss(xx, yy, chest, 8.0, 11.0, 3.4 if flags["female"] else 3.0 if flags["hulk"] else 1.7)
+    if belly is not None:
+        out += _gauss(xx, yy, belly, 10.0, 12.0, 2.8 if flags["fat"] else 1.1)
+    if waist_front is not None:
+        out += _gauss(xx, yy, waist_front, 6.0, 7.0, -1.6)
+    if small_back is not None:
+        out += _gauss(xx, yy, small_back, 6.0, 8.0, -2.0)
+    if buttock is not None:
+        out += _gauss(xx, yy, buttock, 10.0, 12.0, 3.8 if flags["fat"] else 2.2)
+    return out
+
+
+def structured_height(view, M, pts, lum):
+    """Active anatomy pass: smooth envelope plus signed landmark patches.
+
+    ``lum`` remains an argument for API compatibility but is intentionally not
+    sampled here.  Flat light/grey regions in the sprites are paint, not an
+    instruction to extrude a full row of skin.
+    """
+    base = _base_height(view, M, pts, lum)
+    yy, xx = np.mgrid[0:base.shape[0], 0:base.shape[1]]
+    flags = _body_flags()
+    if view == "south":
+        detail = _front_torso_patches(xx, yy, _anchors(pts), flags)
+    elif view == "north":
+        detail = _back_torso_patches(xx, yy, _anchors(pts), flags)
+    else:
+        detail = _profile_patches(xx, yy, pts, flags)
+    # Only joins between nearby named forms are softened.  Broad filtering was
+    # the other source of the prior horizontal bands.
+    detail = ndi.gaussian_filter(detail, 0.7) * M[view]
+    return np.maximum(base + detail, 0.0) * M[view]
 
 
 def chest_creases(out, m, pts):
@@ -194,10 +478,13 @@ def legacy_height_shade(view, M, pts, lum):
     return np.maximum(h0 + detail, 0) * m
 
 
-# Stable public hook while the structured surface pass is built separately.
-# relief_export2 imports this module for its monkey-patch below.
 def height_shade(view, M, pts, lum):
-    return legacy_height_shade(view, M, pts, lum)
+    """Select the landmark surface, retaining the old solver for A/B work."""
+    if RELIEF_MODE in ("legacy", "luminance", "column"):
+        return legacy_height_shade(view, M, pts, lum)
+    if RELIEF_MODE not in ("structured", "patches", "landmark"):
+        raise ValueError(f"unknown RELIEF_MODE={RELIEF_MODE!r}; use structured or legacy")
+    return structured_height(view, M, pts, lum)
 
 
 _views0 = r3.views

@@ -4,6 +4,7 @@ shade3d as a closed mesh like relief_export.py, plus
   - landmark rows (world y) for the skeleton of the viewer: top, shoulder tip, apex, fold, navel, sex, crotch.
 Output out/relief3d-shade5.json {R,U,bodies:{b:{rows:[R][2U*3], legs:{L:[n][2U*3],R:[...]}|null, lm:{name:y}}}}.
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python relief_export2.py [Body ...]"""
+import pathlib
 import sys, json
 import numpy as np
 from scipy import ndimage as ndi
@@ -322,7 +323,13 @@ def main():
         print(b, flush=True)
         out[b] = one(b)
         print("  split", out[b]["lm"].get("split"), "legs", None if out[b]["legs"] is None else len(out[b]["legs"]["L"]), flush=True)
-    json.dump({"R": R, "U": U, "bodies": out}, open(rf"{c1.OUT}\relief3d-shade5.json", "w"), separators=(",", ":"))
+    # Keep this export runnable directly on Cloud as well as through the
+    # historical Windows-path launcher.  The out directory lives beside this
+    # script in both environments.
+    output = pathlib.Path(__file__).with_name("out") / "relief3d-shade5.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", encoding="utf-8") as handle:
+        json.dump({"R": R, "U": U, "bodies": out}, handle, separators=(",", ":"))
     print("ok")
 
 
