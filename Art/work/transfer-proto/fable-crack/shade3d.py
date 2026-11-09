@@ -350,27 +350,32 @@ def _back_torso_patches(xx, yy, a, flags):
 
 
 def _profile_patches(xx, yy, pts, flags):
-    """Side-view-only local planes; useful for viewer normals and diagnosis."""
+    """Side-view-only local planes; useful for viewer normals and diagnosis.
+
+    The east silhouette already carries the large chest/belly/buttock profile
+    and is enforced as a hard export envelope.  These are deliberately small
+    normal cues, not a second stack of generic side-view lobes.
+    """
     out = np.zeros_like(xx, dtype=float)
     front, back = _point(pts, "neck front"), _point(pts, "neck back")
     if front is not None and back is not None:
-        out += _segment(xx, yy, back, front, 2.8, -2.8, 0.08)
+        out += _segment(xx, yy, back, front, 3.8, -1.55, 0.14)
     chest = _point(pts, "chest front")
     belly = _point(pts, "belly front")
     waist_front = _point(pts, "waist front")
     small_back = _point(pts, "waist back (small of the back)")
     buttock = _point(pts, "buttock back")
     if chest is not None:
-        chest_amp = 3.4 if flags["female"] else 3.0 if flags["hulk"] else 2.7 if flags["fat"] else 1.7
+        chest_amp = 2.25 if flags["female"] else 2.0 if flags["hulk"] else 1.65 if flags["fat"] else 1.20
         out += _gauss(xx, yy, chest, 8.0, 11.0, chest_amp)
     if belly is not None:
-        out += _gauss(xx, yy, belly, 10.0, 12.0, 2.8 if flags["fat"] else 1.1)
+        out += _gauss(xx, yy, belly, 11.0, 13.0, 1.75 if flags["fat"] else 0.70)
     if waist_front is not None:
-        out += _gauss(xx, yy, waist_front, 6.0, 7.0, -1.6)
+        out += _gauss(xx, yy, waist_front, 7.5, 8.5, -0.85)
     if small_back is not None:
-        out += _gauss(xx, yy, small_back, 6.0, 8.0, -2.0)
+        out += _gauss(xx, yy, small_back, 7.5, 9.5, -1.10)
     if buttock is not None:
-        out += _gauss(xx, yy, buttock, 10.0, 12.0, 3.8 if flags["fat"] else 2.2)
+        out += _gauss(xx, yy, buttock, 11.0, 13.0, 2.35 if flags["fat"] else 1.45)
     return out
 
 
