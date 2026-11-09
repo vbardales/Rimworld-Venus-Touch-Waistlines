@@ -75,6 +75,42 @@ Rejected, do not retry: final-Z smoothing; lateral or global envelope smoothing 
 
 Recommendation for the step after: add per-body soft-tissue masses from the drawn shading that are not silhouette (breast lobes with the under-breast shelf, abdominal apron and fold, gluteal lobes), placed from the south/north landmarks as signed finite volumes with their own cross-section exponent, and score them by the lit render against the WDI texture's grey bands. Then rerun garment fitting on Male and Hulk first, whose base is good enough.
 
+## Core + masses model with WDI-style capture (2026-11-09, `wdi3d.py`)
+
+Requirement restated by Virginie: one 3D model per body type; captured from front, back and side it must give an image very close to the WDI sprite, and it must respect bone, muscle and fat. Anatomy references and the layer architecture are in `ANATOMY-LAYERS.md`. `wdi3d.py` is a new, self-contained pipeline; it does not replace the mesh export yet.
+
+Model, per body (real WDI textures):
+1. Profile: front and back edges of the east silhouette per row.
+2. Core: polyline through the profile landmark rows neck, waist, leg bottom (front and back). This is the bone-bearing trunk.
+3. Masses: what the profile shows beyond the core (chest or breasts, belly, upper back, buttocks). Thickness per row comes from the profile; the lateral footprint is a left/right lobe pair with a midline notch (sternum, linea alba, groin, spine, cleft), breasts as teardrop lobes from the apex and fold landmarks. Each row is rescaled so the model profile is exactly the east silhouette.
+4. Zones: barrier diffusion, the thin dark strokes of the sprite are barriers, so a profile step (pec shelf, under-breast fold) sits on the drawn crease and not on a horizontal row.
+5. Local signed patches of `shade3d.py` on top.
+6. Fit to the drawing: a screened Poisson fit corrects the vertical slope until the top-lit capture has the sprite broad shading (a shadow becomes a change of volume across it, never a hollow; pull back to the volumes MU=0.001), then the depth of each drawn crease is adjusted until the captured ink has the painted tone.
+7. East view: the side of the same solid (half-width visible at each depth from the front and back fields), then the same fit with the east sprite. The model is the intersection of the three height-field solids.
+
+Capture shader (same for all bodies): white skin, light from the top of the sprite (tone = 1 - 0.5 x downward slope beyond 0.15), ink where the skin lies below its surroundings (cavity), constant black outline of the measured width, nipples painted.
+
+Score: mean absolute luminance difference with the WDI texture inside the outline after a 2 px blur, then the same for a blank white body. Lower is better.
+
+| Body | south | north | east | moved mean / p95 px (south) |
+|---|---|---|---|---|
+| Male | 0.021 / 0.085 | 0.028 / 0.057 | 0.026 / 0.070 | 3.71 / 6.92 |
+| Female | 0.027 / 0.098 | 0.040 / 0.057 | 0.031 / 0.085 | 3.56 / 9.45 |
+| Thin | 0.024 / 0.107 | 0.023 / 0.048 | 0.025 / 0.080 | 2.43 / 7.63 |
+| Thin_Female | 0.018 / 0.106 | 0.040 / 0.080 | 0.021 / 0.082 | 3.72 / 7.48 |
+| Fat | 0.025 / 0.114 | 0.034 / 0.052 | 0.026 / 0.082 | 5.88 / 14.96 |
+| Fat_Female | 0.027 / 0.102 | 0.042 / 0.071 | 0.029 / 0.064 | 5.64 / 12.97 |
+| Hulk | 0.023 / 0.082 | 0.027 / 0.055 | 0.033 / 0.076 | 5.37 / 10.65 |
+| Hulk_Female | 0.043 / 0.097 | 0.040 / 0.081 | 0.035 / 0.084 | 8.08 / 18.05 |
+
+The capture removes 60 to 80 % of the difference to WDI on south and east, 40 to 60 % on north. Boards: `Art/work/captures/2026-11-09_wdi3d-<Body>.png` and `2026-11-09_wdi3d-overview.png` (WDI | capture, three views).
+
+Read from the boards: the captures are recognisably the WDI drawings (pec and breast folds, abdominal lines, navel, groin, scapula crescents, gluteal cleft, fat folds). Still wrong: grey wedges are lighter and softer than WDI; drawn strokes are thinner and sometimes broken; black blobs on the spine and cleft of several north views; faint horizontal row bands in some east views (Fat, Fat_Female); nipples are only a pink disc; Hulk_Female south is the worst (0.043).
+
+Limits to state plainly: the creases and the shading are read from each sprite, so likeness is partly by construction; the three views are fitted separately and only tied by the shared profile and silhouettes; the fit moved the surface by the amounts in the last column. The mesh export and the viewer (`relief_export2.py`, `body3d.html`) still use the older fields; the fitted fields are saved as `out/wdi3d-<Body>.npz`.
+
+Next: feed these fields to the mesh export and viewer; cure the north over-inking (joint fit of slope and crease, lower crease gain on the midline); sharpen the strokes (crease profile with a flat floor of the stroke width); then replace the generic lobes by the muscle and fat-pad volumes of `ANATOMY-LAYERS.md`, body by body.
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:
