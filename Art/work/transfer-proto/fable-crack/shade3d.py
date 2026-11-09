@@ -71,6 +71,39 @@ def _segment(xx, yy, a, b, width, amp=1.0, end_taper=0.0):
     return patch
 
 
+def _curve(xx, yy, a, control, b, width, amp=1.0, end_taper=0.0):
+    """A rounded crease along a short quadratic Bezier arc.
+
+    The source's attachment lines are usually shallow arcs.  A single straight
+    segment made their lighting read as a hard horizontal rail even when its
+    endpoints were measured correctly.  Sampling this tiny curve is cheap at
+    the sprite resolution and keeps the depression local and anatomical.
+    """
+    if a is None or control is None or b is None or width <= 0:
+        return np.zeros_like(xx, dtype=float)
+    # Measure against short *segments*, not isolated samples.  The latter
+    # creates a visible dotted ridge where nearest samples exchange ownership.
+    ts = np.linspace(0.0, 1.0, 17)
+    ax, ay = a; cx, cy = control; bx, by = b
+    px = (1.0 - ts) ** 2 * ax + 2.0 * (1.0 - ts) * ts * cx + ts ** 2 * bx
+    py = (1.0 - ts) ** 2 * ay + 2.0 * (1.0 - ts) * ts * cy + ts ** 2 * by
+    sx, sy = px[:-1], py[:-1]
+    vx, vy = px[1:] - sx, py[1:] - sy
+    rx, ry = xx[..., None] - sx, yy[..., None] - sy
+    t = np.clip((rx * vx + ry * vy) / (vx * vx + vy * vy), 0.0, 1.0)
+    dx, dy = rx - t * vx, ry - t * vy
+    distance2 = np.min(dx * dx + dy * dy, axis=-1)
+    patch = amp * np.exp(-0.5 * distance2 / (width * width))
+    if end_taper:
+        # Rounded caps taper only inside a few crease widths, preserving a
+        # continuous derivative along the entire arc.
+        cap_distance2 = np.minimum((xx - ax) ** 2 + (yy - ay) ** 2,
+                                   (xx - bx) ** 2 + (yy - by) ** 2)
+        cap_width = max(width * (1.0 + 4.0 * end_taper), width)
+        patch *= 1.0 - np.exp(-0.5 * cap_distance2 / (cap_width * cap_width))
+    return patch
+
+
 def _mid(a, b, fallback=(256.0, 256.0)):
     if a is not None and b is not None:
         return ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5)
@@ -124,18 +157,18 @@ def _front_torso_patches(xx, yy, a, flags):
 
     # Neck root, clavicles and axillary hollows.  The small finite segments
     # make the neck legible without mistaking a grey chest plane for depth.
-    out += _segment(xx, yy, a["neck_l"], a["neck_r"], 3.4, -3.6, 0.08)
+    out += _segment(xx, yy, a["neck_l"], a["neck_r"], 4.2, -2.1, 0.13)
     for shoulder in (a["shoulder_l"], a["shoulder_r"]):
         if notch is not None and shoulder is not None:
-            out += _segment(xx, yy, notch, shoulder, 3.0, -2.7, 0.10)
+            out += _segment(xx, yy, notch, shoulder, 3.8, -1.9, 0.14)
     for armpit in (a["armpit_l"], a["armpit_r"]):
-        out += _gauss(xx, yy, armpit, 7.0, 6.0, -3.8)
+        out += _gauss(xx, yy, armpit, 7.5, 6.5, -3.0)
 
     # The sternum is a finite valley between notch and fold.  It is distinct
     # from the cleavage below, so female skin can return to the rib cage.
     if notch is not None and fold is not None:
         sternum_end = (midx, min(fold[1] - 4.0, notch[1] + 0.80 * (fold[1] - notch[1])))
-        out += _segment(xx, yy, notch, sternum_end, 3.1, -2.8, 0.10)
+        out += _segment(xx, yy, notch, sternum_end, 4.2, -1.65, 0.15)
 
     breast_pairs = ((a["apex_l"], a["fold_l"], a["armpit_l"]),
                     (a["apex_r"], a["fold_r"], a["armpit_r"]))
@@ -176,15 +209,21 @@ def _front_torso_patches(xx, yy, a, flags):
             if fold_side is None:
                 continue
             sign = -1.0 if fold_side[0] < midx else 1.0
-            inner = (midx + sign * 4.0, fold_side[1] - 0.8)
-            out += _segment(xx, yy, fold_side, inner, 2.8, -1.8, 0.14)
+            inner = (midx + sign * 5.5, fold_side[1] - 0.5)
+            # The fold dips a little under the hanging lobe, then climbs
+            # into the sternum; it must not become a ruler-straight shelf.
+            control = ((fold_side[0] + inner[0]) * 0.5, fold_side[1] + 3.5)
+            # The inked source fold is a useful *location*, but its dark value
+            # is not its depth.  Keep just enough depression to attach the
+            # mass without converting the whole painted fold into a rail.
+            out += _curve(xx, yy, fold_side, control, inner, 4.4, -0.65, 0.20)
         if a["cleavage"] is not None and fold is not None:
-            out += _segment(xx, yy, a["cleavage"], fold, 3.0, -4.2, 0.08)
+            out += _segment(xx, yy, a["cleavage"], fold, 4.3, -2.15, 0.16)
     else:
         # Pectorals are fan-shaped local masses, bounded inferiorly by the
         # measured fold line.  Hulk gets greater relief, Average stays clear
         # but restrained; Thin receives only the attachment structure.
-        amp = 5.0 if flags["hulk"] else 3.2 if flags["average"] else 1.7
+        amp = 5.0 if flags["hulk"] else 3.2 if flags["average"] else 2.9 if flags["fat"] else 1.7
         for apex, fold_side, armpit in breast_pairs:
             if apex is None or armpit is None:
                 continue
@@ -192,9 +231,18 @@ def _front_torso_patches(xx, yy, a, flags):
             height = max(abs(armpit[1] - apex[1]), 15.0)
             center = (0.42 * midx + 0.36 * apex[0] + 0.22 * armpit[0],
                       0.35 * apex[1] + 0.65 * armpit[1])
-            out += _gauss(xx, yy, center, 0.68 * half, 0.70 * height, amp)
+            # A fat male chest falls more broadly than a pec: same landmarks,
+            # a lower and taller soft-tissue patch rather than a second kind
+            # of generic sphere.
+            if flags["fat"]:
+                center = (center[0], center[1] + 0.20 * height)
+                out += _gauss(xx, yy, center, 0.74 * half, 1.06 * height, amp)
+            else:
+                out += _gauss(xx, yy, center, 0.68 * half, 0.70 * height, amp)
             if fold_side is not None:
-                out += _segment(xx, yy, (midx, fold_side[1] - 1.5), fold_side, 2.5, -1.75, 0.12)
+                inner = (midx + (-1.0 if fold_side[0] < midx else 1.0) * 5.0, fold_side[1] - 0.5)
+                control = ((fold_side[0] + inner[0]) * 0.5, fold_side[1] + 2.5)
+                out += _curve(xx, yy, fold_side, control, inner, 4.2, -0.45, 0.20)
 
     # Navel is a true dimple rather than an inverted luminance speck.  A very
     # small rim keeps it readable under the skin shader without adding a band.
@@ -216,7 +264,7 @@ def _front_torso_patches(xx, yy, a, flags):
             cy = 0.5 * (y0 + y1)
             for sign in (-1, 1):
                 out += _gauss(xx, yy, (midx + sign * 0.42 * half, cy), 0.33 * half, 0.34 * (y1 - y0), local_amp)
-            out += _segment(xx, yy, (midx, y0), (midx, y1), 2.0, -1.8, 0.10)
+            out += _segment(xx, yy, (midx, y0), (midx, y1), 3.0, -1.15, 0.14)
         # A pair of short tendinous intersections reads as abdominal structure
         # without producing the old full-width horizontal band.
         for sign in (-1, 1):
@@ -224,27 +272,33 @@ def _front_torso_patches(xx, yy, a, flags):
                 xx, yy,
                 (midx + sign * 0.10 * half, bottom),
                 (midx + sign * 0.56 * half, bottom),
-                1.8, -0.72, 0.16,
+                2.7, -0.42, 0.22,
             )
 
-    # Pubis, sex, groin and leg roots are separate named forms.  Fat_Female
-    # gets a broad low, soft apron (not a hard horizontal shelf); every body
+    # Pubis, sex, groin and leg roots are separate named forms.  Fat bodies
+    # get a broad low, soft apron (not a hard horizontal shelf); every body
     # gets the two finite inguinal creases terminating at its sex point.
     sex, crotch = a["sex"], a["crotch"]
     if sex is not None:
         groin_y = np.mean([p[1] for p in (a["groin_l"], a["groin_r"]) if p is not None]) if any(p is not None for p in (a["groin_l"], a["groin_r"])) else sex[1] - 9.0
         hips = max(abs(a["hip_l"][0] - midx) if a["hip_l"] is not None else 30.0, 18.0)
-        if flags["female"] and flags["fat"]:
+        if flags["fat"]:
             apron_center = (midx, 0.58 * groin_y + 0.42 * sex[1])
-            out += _gauss(xx, yy, apron_center, 0.52 * hips, max(9.0, 0.58 * abs(sex[1] - groin_y) + 8.0), 3.7)
+            apron_width = 0.52 * hips if flags["female"] else 0.44 * hips
+            apron_amp = 3.7 if flags["female"] else 2.9
+            out += _gauss(xx, yy, apron_center, apron_width, max(9.0, 0.58 * abs(sex[1] - groin_y) + 8.0), apron_amp)
         else:
             out += _gauss(xx, yy, (midx, 0.58 * groin_y + 0.42 * sex[1]), 0.34 * hips, 9.0, 2.6 if flags["fat"] else 2.1)
         out += _gauss(xx, yy, sex, 3.8, 5.0, 1.6)
         for crease in (a["groin_l"], a["groin_r"]):
             if crease is not None:
-                out += _segment(xx, yy, crease, sex, 2.7, -3.1, 0.05)
+                out += _curve(
+                    xx, yy, crease,
+                    ((crease[0] + sex[0]) * 0.5, crease[1] + 3.0), sex,
+                    3.8, -2.05, 0.14,
+                )
         if crotch is not None:
-            out += _segment(xx, yy, sex, crotch, 2.3, -2.2, 0.12)
+            out += _segment(xx, yy, sex, crotch, 3.2, -1.45, 0.16)
     return out
 
 
@@ -285,7 +339,8 @@ def _profile_patches(xx, yy, pts, flags):
     small_back = _point(pts, "waist back (small of the back)")
     buttock = _point(pts, "buttock back")
     if chest is not None:
-        out += _gauss(xx, yy, chest, 8.0, 11.0, 3.4 if flags["female"] else 3.0 if flags["hulk"] else 1.7)
+        chest_amp = 3.4 if flags["female"] else 3.0 if flags["hulk"] else 2.7 if flags["fat"] else 1.7
+        out += _gauss(xx, yy, chest, 8.0, 11.0, chest_amp)
     if belly is not None:
         out += _gauss(xx, yy, belly, 10.0, 12.0, 2.8 if flags["fat"] else 1.1)
     if waist_front is not None:

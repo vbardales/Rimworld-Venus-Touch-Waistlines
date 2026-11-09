@@ -2,9 +2,14 @@
 
 The mesh itself is projected orthographically for south, north and east.  A
 cyan source outline and a magenta mesh outline are written for every body/view
-under ``out/body3d-compare``.  ``report.json`` is the machine-readable gate:
-edge error is reported in source pixels after a harmless global translation
-fit, so an incorrect silhouette cannot be hidden by changing viewer framing.
+under ``out/body3d-compare``.  A companion ``*-surface.png`` panel shows the
+source beside the active signed-patch relief with the measured landmarks.  It
+is deliberately separate from the contour metric: a close contour does not
+prove that the neck, chest, navel or groin have a readable surface.
+
+``report.json`` is the machine-readable silhouette gate: edge error is
+reported in source pixels after a harmless global translation fit, so an
+incorrect silhouette cannot be hidden by changing viewer framing.
 
 Run after ``relief_export2.py``:
     uv run --with numpy --with pillow --with scipy --with scikit-image python body3d_compare.py
@@ -18,6 +23,7 @@ from PIL import Image, ImageDraw
 from scipy import ndimage as ndi
 
 import crack as c1
+import explain5b as e5
 import relief3d as r3
 import shade3d  # noqa: F401 -- use the full alpha silhouette, including the source rim
 
@@ -118,6 +124,40 @@ def compare(body, view, vertices, image):
     }
 
 
+def surface_panel(body, view, images, masks):
+    """Render the active relief next to its source and measured anchors.
+
+    This is a surface-review aid, not a pixel shader reconstruction.  It makes
+    it easy to reject a passing silhouette when localized signed anatomy has
+    been lost or turned into a full-width band.
+    """
+    image, mask = images[view], masks[view]
+    src, _, names = e5.named_pairs(body, view)
+    points = {name: tuple(src[index]) for index, name in enumerate(names)}
+    h = r3.height(view, masks, points, c1.lum(image))
+    lit = r3.lit(h, mask)
+
+    relief_rgb = np.full(image.shape[:2] + (3,), 226, dtype=np.uint8)
+    relief_rgb[mask] = np.clip(lit[..., :3][mask] * 255, 0, 255).astype(np.uint8)
+    source = source_image(image).convert("RGB")
+    relief = Image.fromarray(relief_rgb, "RGB")
+    ys, xs = np.nonzero(mask)
+    box = (max(0, xs.min() - 12), max(0, ys.min() - 24), min(c1.N, xs.max() + 13), min(c1.N, ys.max() + 13))
+    source, relief = source.crop(box), relief.crop(box)
+    panel = Image.new("RGB", (source.width * 2 + 12, source.height + 22), (235, 235, 230))
+    panel.paste(source, (0, 22)); panel.paste(relief, (source.width + 12, 22))
+    draw = ImageDraw.Draw(panel)
+    draw.text((2, 3), "source + landmarks", fill=(25, 25, 25))
+    draw.text((source.width + 14, 3), "active landmark relief", fill=(25, 25, 25))
+    for x, y in points.values():
+        px, py = int(round(x)) - box[0], int(round(y)) - box[1] + 22
+        if not (0 <= px < source.width and 22 <= py < panel.height):
+            continue
+        for offset in (0, source.width + 12):
+            draw.ellipse((px + offset - 2, py - 2, px + offset + 2, py + 2), outline=(0, 210, 230), width=1)
+    return panel
+
+
 def main():
     names = tuple(arg for arg in sys.argv[1:] if arg in BODIES) or BODIES
     data = json.loads(DATA_PATH.read_text(encoding="utf-8"))
@@ -137,10 +177,12 @@ def main():
             )
         rows = np.concatenate(parts, axis=0)
         images = r3.views(body, False)
+        masks = {view: r3.silhouette(images[view]) for view in VIEWS}
         report[body] = {}
         for view in VIEWS:
             board, stats = compare(body, view, rows, images[view])
             board.save(OUT_DIR / f"{body}-{view}.png")
+            surface_panel(body, view, images, masks).save(OUT_DIR / f"{body}-{view}-surface.png")
             report[body][view] = stats
             print(body, view, f"p95={stats['edge_error_p95_px']:.2f}px", flush=True)
     (OUT_DIR / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
