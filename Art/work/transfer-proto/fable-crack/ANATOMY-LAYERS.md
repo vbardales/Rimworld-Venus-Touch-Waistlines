@@ -58,3 +58,23 @@ Skin is the outside of a stack, computed from layers. The WDI silhouettes become
 Order of work: Male and Hulk first (muscle visible, fat thin, base good enough). Then Female and Thin_Female (breast pads). Fat and Fat_Female last, because their look is all pads and folds.
 
 Open question for Virginie: WDI is stylised (the Male chest is 0.87 deep for 0.7 in a real thorax). The layers should respect anatomy at the attachment level, then scale to the WDI proportions; confirm that WDI proportions win where they disagree with the anatomy.
+
+## 5. Horizontal cross sections (anatomy4sculptors, "Horizontal Cross Section of the Torso")
+
+Source: [reference image](https://anatomy4sculptors.com/ref-images/638955316146433608.png), five male sections from shoulders to groin. The other album pages are JavaScript apps and could not be read, so only this image was studied.
+
+It shows that the section of the torso is not an ellipse or a superellipse at any level. This is why `base3d.py` still reads as a pillow:
+
+| Level | Section |
+|---|---|
+| Shoulder / clavicle | Wide cloud, front edge with a central dip at the sternal notch and a lobe each side (clavicle and upper pec); back edge nearly flat with a shallow dip at the spine. |
+| Chest / pecs | Widest section. Front: two pec lobes with a midline dip over the sternum. Back: nearly flat, slightly lobed (scapulae), a dip at the spine. Flanks are rounded by the latissimus. |
+| Waist | Smallest and roundest. Front slightly flat, a notch at the navel line; back a gentle spine dip. |
+| Hip / iliac | Wider again. Front flat with a faint midline notch (linea alba); back wider than front with two rounded lobes (gluteus medius over the crest) and a midline cleft. |
+| Groin / upper thigh | Four lobes: two rear (buttocks) and two front (thighs and pubic mound), with a notch at the front midline and a deep notch at the back midline (intergluteal cleft). |
+
+Consequences for the model:
+- Each ring is a closed curve built from a left lobe and a right lobe joined by a midline notch (front and back), not one smooth convex curve. A bilateral lobe pair, each lobe a super-ellipse, with a notch depth per level, is the minimal form.
+- Notch depth is the bone-and-fat signal: deep where skin sits on bone or a fold (sternal notch, spine, cleft), shallow where fat fills (a fat body fills the notches, so its sections become rounder). The same parametrisation then covers all eight bodies.
+- Lobe width, depth and notch depth are interpolated between the levels above, using the east landmark rows for placement, instead of one exponent per row.
+- The `U=44` points per half-ring are enough to hold two lobes and a notch; no change to the mesh format.
