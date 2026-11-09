@@ -318,21 +318,34 @@ def _back_torso_patches(xx, yy, a, flags):
     hips = a["hips"]
     crotch = a["crotch"]
     if neck_mid is not None and hips is not None:
-        out += _segment(xx, yy, neck_mid, hips, 2.8, -2.3, 0.06)
+        # Split the spinal sulcus at the waist.  One sharp neck-to-crotch
+        # segment was reading as a zipper instead of a soft, finite back
+        # plane, especially across the fat bodies.
+        waist_mid = _mid(a["waist_l"], a["waist_r"], hips)
+        lumbar = (hips[0], max(waist_mid[1], neck_mid[1] + 12.0))
+        out += _segment(xx, yy, neck_mid, lumbar, 4.2, -1.30, 0.15)
     # The north point table deliberately has no fictitious breast points.  Use
     # only shoulder/armpit geometry for scapulae.
     for shoulder, armpit in ((a["shoulder_l"], a["armpit_l"]), (a["shoulder_r"], a["armpit_r"])):
         if shoulder is None or armpit is None:
             continue
         center = (0.58 * shoulder[0] + 0.42 * armpit[0], 0.45 * shoulder[1] + 0.55 * armpit[1])
-        out += _gauss(xx, yy, center, 10.0, 13.0, 2.8 if flags["hulk"] else 1.25)
+        out += _gauss(xx, yy, center, 11.0, 14.0, 3.1 if flags["hulk"] else 1.35)
     if hips is not None and crotch is not None:
         spread = max(abs(a["hip_l"][0] - hips[0]) if a["hip_l"] is not None else 22.0, 16.0)
         height = max(abs(crotch[1] - hips[1]), 14.0)
-        amp = 4.3 if flags["fat"] else 3.0
+        # Preserve the prior Hulk amplitude: the new localized cleft already
+        # makes the gluteal pair legible, while extra height leaks into the
+        # east projection without adding source-supported information.
+        amp = 4.5 if flags["fat"] else 3.0
         for sign in (-1, 1):
-            out += _gauss(xx, yy, (hips[0] + sign * 0.43 * spread, hips[1] + 0.48 * height), 0.44 * spread, 0.52 * height, amp)
-        out += _segment(xx, yy, hips, crotch, 2.7, -3.1, 0.08)
+            out += _gauss(xx, yy, (hips[0] + sign * 0.43 * spread, hips[1] + 0.50 * height), 0.46 * spread, 0.54 * height, amp)
+        # The intergluteal cleft begins on the lower sacrum, not at the hip
+        # axis.  Its rounded cap keeps the two fat lobes attached rather than
+        # slicing the entire pelvis down the middle.
+        cleft_start = (hips[0], hips[1] + 0.30 * height)
+        out += _segment(xx, yy, lumbar, cleft_start, 3.8, -0.95, 0.18)
+        out += _segment(xx, yy, cleft_start, crotch, 4.2, -1.55, 0.18)
     return out
 
 
