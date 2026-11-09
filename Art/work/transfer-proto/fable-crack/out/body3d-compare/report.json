@@ -16,10 +16,10 @@
     },
     "east": {
       "rows": 240,
-      "translation_px": 251.275,
-      "edge_error_median_px": 0.525,
-      "edge_error_p95_px": 2.825,
-      "edge_error_max_px": 5.375
+      "translation_px": 251.25,
+      "edge_error_median_px": 0.55,
+      "edge_error_p95_px": 2.85,
+      "edge_error_max_px": 5.45
     }
   },
   "Female": {
@@ -154,10 +154,10 @@
     },
     "east": {
       "rows": 349,
-      "translation_px": 235.8,
-      "edge_error_median_px": 0.6,
-      "edge_error_p95_px": 2.5,
-      "edge_error_max_px": 8.5
+      "translation_px": 235.75,
+      "edge_error_median_px": 0.55,
+      "edge_error_p95_px": 2.465,
+      "edge_error_max_px": 8.45
     }
   },
   "Hulk_Female": {
@@ -177,10 +177,10 @@
     },
     "east": {
       "rows": 321,
-      "translation_px": 246.95,
-      "edge_error_median_px": 0.55,
-      "edge_error_p95_px": 2.85,
-      "edge_error_max_px": 5.45
+      "translation_px": 246.9,
+      "edge_error_median_px": 0.5,
+      "edge_error_p95_px": 3.0,
+      "edge_error_max_px": 5.5
     }
   }
 }

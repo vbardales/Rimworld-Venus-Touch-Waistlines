@@ -312,14 +312,29 @@ def _front_torso_patches(xx, yy, a, flags):
         out += _gauss(xx, yy, navel, 3.4, 3.8, -6.2)
         out += _gauss(xx, yy, navel, 7.2, 7.5, 1.35)
 
-    # Structured (paired) abdominal pads, not a periodic row solver.  The
-    # lower pair is deliberately retained for Hulk/Average bodies.
+    # Structured (paired) abdominal pads, not a periodic row solver.  Hulk
+    # needs three short, separated pairs from the costal margin to the pubis;
+    # Average deliberately stays at two restrained pairs.  The breaks are
+    # empty skin transitions, not dark rows converted into height, so they do
+    # not recreate the old horizontal-band artefact.
     if (flags["hulk"] or flags["average"]) and fold is not None and navel is not None:
-        top, bottom = fold[1] + 4.0, navel[1] - 5.0
+        top, upper_bottom = fold[1] + 4.0, navel[1] - 5.0
         lower_bottom = (a["sex"] or a["crotch"] or navel)[1] - 5.0
         half = max(abs(a["waist_l"][0] - midx) if a["waist_l"] is not None else 26.0, 18.0)
         amp = 3.8 if flags["hulk"] else 2.35
-        for y0, y1, local_amp in ((top, bottom, amp), (navel[1] + 5.0, lower_bottom, 0.88 * amp)):
+        upper_span = upper_bottom - top
+        if flags["hulk"] and upper_span >= 16.0:
+            pad_rows = (
+                (top, top + 0.39 * upper_span, 0.82 * amp, 0.38),
+                (top + 0.54 * upper_span, upper_bottom, amp, 0.42),
+                (navel[1] + 6.0, lower_bottom, 0.86 * amp, 0.37),
+            )
+        else:
+            pad_rows = (
+                (top, upper_bottom, amp, 0.41),
+                (navel[1] + 5.0, lower_bottom, 0.88 * amp, 0.37),
+            )
+        for y0, y1, local_amp, lateral in pad_rows:
             if y1 <= y0 + 6:
                 continue
             cy = 0.5 * (y0 + y1)
@@ -327,20 +342,12 @@ def _front_torso_patches(xx, yy, a, flags):
                 # Never let the paired pads merge through the linea alba.
                 # Their source positions are bilateral, so this medial gate is
                 # landmark geometry rather than a brightness-derived crease.
-                pad = _gauss(xx, yy, (midx + sign * 0.42 * half, cy), 0.33 * half, 0.34 * (y1 - y0), local_amp)
+                pad = _gauss(xx, yy, (midx + sign * lateral * half, cy),
+                             0.29 * half, max(3.8, 0.31 * (y1 - y0)), local_amp)
                 medial_distance = sign * (xx - midx)
                 pad *= 1.0 / (1.0 + np.exp(-(medial_distance - 2.0) / 3.5))
                 out += pad
             out += _segment(xx, yy, (midx, y0), (midx, y1), 3.0, -1.15, 0.14)
-        # A pair of short tendinous intersections reads as abdominal structure
-        # without producing the old full-width horizontal band.
-        for sign in (-1, 1):
-            out += _segment(
-                xx, yy,
-                (midx + sign * 0.10 * half, bottom),
-                (midx + sign * 0.56 * half, bottom),
-                2.7, -0.42, 0.22,
-            )
 
     # Pubis, sex, groin and leg roots are separate named forms.  Fat bodies
     # get a broad low, soft apron (not a hard horizontal shelf); every body
