@@ -12,7 +12,8 @@ All files live under `Art/work/` (gitignored, force-added on branch `cloud-work`
 | `transfer-proto/fable-crack/relief_export2.py` | Closed mesh export: 360 sub-pixel rings from the south and north height fields, a hard east-profile envelope, lower cut rings below the crotch (notch or landmark seam), landmark rows, and the rigid-rib-cage floor. Output `out/relief3d-shade5.json` (R=360, U=44). |
 | `transfer-proto/fable-crack/body3d_compare.py` | Silhouette overlays and a source-versus-active-relief panel for every body/view. The latter plots the 2026-11-03 landmarks so a low contour error cannot conceal a lost neck, chest attachment, navel or groin. |
 | `transfer-proto/fable-crack/body3d_template.html` | Viewer code (three.js r128): skin modes, the exported diagnostic skeleton, and organs. `__DATA__` is replaced by the datasets. |
-| `transfer-proto/fable-crack/body3d_build.py` | Rebuilds `captures/2026-11-08_body3d.html`, automatically replacing the shaded dataset with the latest export. |
+| `transfer-proto/fable-crack/body3d_build.py` | Rebuilds `captures/2026-11-08_body3d.html`, automatically replacing the first dataset with the latest export (`wdi3d-mesh.json`; `legacy` argument for `relief3d-shade5.json`). |
+| `transfer-proto/fable-crack/wdi3d.py`, `wdi3d_export.py` | The core + masses model fitted to the WDI drawing, and its export (mesh, crease maps, frame) for the viewer. |
 | `captures/2026-11-08_body3d.html` | The viewer (open in a browser, `squelette` checkbox, `east` button). |
 
 Run the active export: `uv run --with numpy --with pillow --with scipy --with scikit-image python relief_export2.py`; then `uv run --with numpy --with pillow --with scipy --with scikit-image python body3d_compare.py`; then `uv run python body3d_build.py`. Inspect both `out/body3d-compare/<body>-<view>.png` (source/mesh edge overlay) and `out/body3d-compare/<body>-<view>-surface.png` (source + anchors beside the active signed relief); neither may be replaced by the other.
@@ -149,7 +150,22 @@ Tried and rejected in this pass (do not retry as such):
 - Toon step over 0.06 of slope: too sensitive, speckled whites; 0.10 kept.
 - Fit stepping on the measured slope with a margin on each side of the toon step (white pushed 0.05 under the threshold, grey 0.03 over): diverges unclipped (Fat north 0.009 to 0.041); clipped to 0.15 per round it lowers some scores (Fat south 0.017) but bands the whites horizontally and loses wedges (Fat east, Male north). The score did not see it; the board did.
 
-Not done: the fitted fields are still not fed to the mesh export and the viewer (step 5 of the brief).
+The fitted fields were not yet fed to the viewer at this point; see the next section.
+
+### wdi3d model in the 3D viewer (2026-11-10)
+
+Run: `wdi3d.py`, then `wdi3d_export.py` (writes `out/wdi3d-mesh.json`, not committed, about 5 MB, it is embedded in the viewer), then `uv run python body3d_build.py`. `body3d_build.py legacy` puts the older `relief3d-shade5.json` mesh back.
+
+- Mesh: `relief_export2.one(body, fields)` now accepts the wdi3d fields. Rings, legs, landmark rows and the east-profile cap are unchanged; the south and north fields are the crease-free volumes `closed(field)`, measured from the wdi3d centre plane; the rib cage is computed for the skeleton but no longer pushes the skin; rings smoothed over 3 rows (was 6); vertices at 0.01 px (at 0.1 px the ring-to-ring slope noise equals the toon step).
+- Creases and areolae: three 512 px maps per body (south, north, east), colour = areola albedo x (1 - ink), ink = crease depth under the rim of the fitted field. They are maps because the mesh has one vertex every 4 px across and the creases are 2 to 14 px wide.
+- Material (`body3d_template.html`, three.js r128 `ShaderMaterial`): white skin; toon top light with the wdi3d transfer, computed from the view-space normal, light = top of the screen, taken relative to the body's centre plane (per-vertex `tilt` attribute; without it the leaning trunk shaded the whole lower belly grey); maps projected from the three sprite frames and chosen by the object normal (south or north by its sign, east where the normal is sideways); black rim from the normal and its screen derivative, sized to the sprite outline at the current zoom. The first mode of the viewer is now "modèle WDI (wdi3d)"; `relief` and `simple` are unchanged; organs are off by default.
+
+Read in the browser (Male south, Fat_Female east and north; one render-and-fix cycle, used for the tilt and the vertex precision):
+- South and north are recognisably the wdi3d captures: white skin, grey under the pecs and buttocks, drawn creases, navel, cleft.
+- Still wrong: fine horizontal banding of the greys on the lower trunk (ring-to-ring normal noise against the toon threshold); the rim is ragged and uneven, thin or missing on flat flanks, never the constant 12 to 15 px sprite outline; the east view is poor (ragged silhouette, smeared crease map on the breast, greys that come from the south/north volumes because the east fit has no field in the mesh).
+- Cannot be reproduced by this viewer as built: a constant-width outline inside the silhouette (needs a screen-space edge pass, not a material); the east fit (the mesh has two fields, the model three); creases as real geometry at this mesh density.
+
+Housekeeping: `out/relief3d-shade5.json` and `out/body3d-compare/*.png` were modified in the worktree by earlier export runs of the old pipeline; they were restored with `git checkout`, not committed.
 
 Next: the streaks and the large "moved" values have the same cause, the generic lobes. Replace them by the muscle and fat-pad volumes of `ANATOMY-LAYERS.md` for Fat and Hulk first (belly apron, gluteal lobes, pec and latissimus planes), so that the base already has white flats and down-facing facets where the sprite has them and the fit only trims. Then feed the fields to the mesh export.
 

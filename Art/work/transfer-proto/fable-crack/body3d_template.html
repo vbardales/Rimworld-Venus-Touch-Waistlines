@@ -14,7 +14,7 @@ label{margin-right:10px;white-space:nowrap}
 <select id="b"></select><select id="m"></select>
 <button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><br>
 <label><input type="checkbox" id="sk"> squelette</label>
-<label><input type="checkbox" id="og" checked> organes (corps masculins)</label>
+<label><input type="checkbox" id="og"> organes (corps masculins)</label>
 <label><input type="checkbox" id="w"> fil de fer</label>
 <label>peau <input type="range" id="op" min="10" max="100" value="100"></label>
 </div>
@@ -27,6 +27,7 @@ if(!DATA){
   document.body.innerHTML='<main style="max-width:42rem;margin:12vh auto;padding:2rem;line-height:1.5"><h1>Gabarit Body 3D</h1><p>Ce fichier est le gabarit du visualiseur : il ne contient volontairement aucune donnée de maillage.</p><p><a href="../../captures/2026-11-08_body3d.html">Ouvrir le visualiseur généré</a>, ou exécuter <code>uv run python body3d_build.py</code> après l’export.</p></main>';
 }else{
 const NOTES={
+ wdi:"wdi3d model (core + masses fitted to the WDI drawing). Mesh = crease-free volumes of the south and north fields. Material: white skin, light from the top of the screen, taken relative to the body's centre plane (flat grey on skin that faces down, same transfer as wdi3d.py), creases and areolae from the model's crease maps (south, north, east, chosen by the surface normal), black rim. Not reproduced: the rim is a screen-space estimate (uneven width, thin on flat flanks), the east greys come from the south/north volumes and not from the east fit, creases are maps and not geometry.",
  shade:"relief + ombres + jambes: shading read as a zenithal light, outline = rim of the body, nipples raised, navel hollowed, sex = dome in the groin creases, legs split below the crotch: the drawn notch when present, otherwise an internal medial seam from the crotch landmark. Skeleton = schematic, fitted on the landmark rows (not anatomical bone shapes). Organs = a first volume from a profile reference (shaft hanging forward and down from the pubis, scrotum below and behind), proportioned on the shoulder width.",
  relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
  simple:"simple volume: superellipse sections from the E masks."};
@@ -40,13 +41,39 @@ sc.add(new THREE.HemisphereLight(0xffffff,0x555566,.75));
 const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(200,300,400);sc.add(dl);
 const $=id=>document.getElementById(id);
 const sel=$('b'),msel=$('m');
-Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:'relief + ombres + jambes',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
+const isWdi=e=>!!(e&&e.tex);
+const WDI=isWdi(Object.values(DATA.shade.bodies)[0]);
+Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:WDI?'modèle WDI (wdi3d)':'relief + ombres + jambes',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
 Object.keys(DATA.shade.bodies).forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
 let G=null;
 const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THREE.DoubleSide});
+// WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
+const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
+ uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1}},
+ vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
+void main(){vP=position;vNo=normal;vNr=normalMatrix*normal;vNv=normalMatrix*vec3(normal.x,normal.y+tilt*normal.z,normal.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+ fragmentShader:`uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;
+varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
+void main(){
+ vec3 nv=normalize(vNv);vec3 no=normalize(vNo);vec3 nr=normalize(vNr);
+ if(nr.z<0.){nv=-nv;no=-no;nr=-nr;}
+ float ys=-vP.y;float f=(ys-rows.x)/(rows.y-rows.x);
+ vec2 uvS=vec2(vP.x+off.x+.5,ys+.5)/512.;
+ vec2 uvN=vec2(off.y-vP.x+.5,rows.z+f*(rows.w-rows.z)+.5)/512.;
+ vec2 uvE=vec2(vP.z+off.z+.5,erow.x+f*(erow.y-erow.x)+.5)/512.;
+ vec3 a=no.z>0.?texture2D(tS,uvS).rgb:texture2D(tN,uvN).rgb;
+ a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.75,.9,abs(no.x)));
+ float s=-nv.y/max(nv.z,.05);
+ float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,.6);
+ float d=nr.z/max(fwidth(nr.z),1e-5);
+ float rim=nr.z<.6?1.-smoothstep(2.*pxw-1.,2.*pxw+1.,d):0.;
+ gl_FragColor=vec4(a*(1.-loss)*(1.-rim),opacity);
+}`});
+const texOf=u=>{const t=new THREE.TextureLoader().load(u);t.flipY=false;t.generateMipmaps=false;t.minFilter=t.magFilter=THREE.LinearFilter;return t};
+let cur=skin,outlinePx=13;
 const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
 const flesh=new THREE.MeshStandardMaterial({color:0xc48a76,roughness:.75});
-function meshOf(rows,A,{capTop=false,capBottom=false}={}){
+function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null}={}){
   const R=rows.length,pos=[],idx=[];
   for(let i=0;i<R;i++)for(let k=0;k<A;k++){const j=k*3;pos.push(rows[i][j],rows[i][j+1],rows[i][j+2])}
   for(let i=0;i<R-1;i++)for(let k=0;k<A;k++){const a=i*A+k,b=i*A+(k+1)%A,c=(i+1)*A+k,d=(i+1)*A+(k+1)%A;idx.push(a,c,b,b,c,d)}
@@ -60,7 +87,10 @@ function meshOf(rows,A,{capTop=false,capBottom=false}={}){
   if(capTop)cap(rows[0],false);if(capBottom)cap(rows[R-1],true);
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
-  return new THREE.Mesh(g,skin);
+  // slope of the body's centre plane at each vertex: the wdi material lights the surface relative to that plane
+  const tl=new Float32Array(pos.length/3);if(tilt)for(let i=0;i<tl.length;i++)tl[i]=tilt(pos[i*3+1]);
+  g.setAttribute('tilt',new THREE.Float32BufferAttribute(tl,1));
+  return new THREE.Mesh(g,cur);
 }
 function tube(pts,r,mat,seg){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));return new THREE.Mesh(new THREE.TubeGeometry(c,seg||24,r,6,false),mat||bone)}
 function ball(p,rx,ry,rz,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),mat||bone);m.scale.set(rx,ry,rz);m.position.set(...p);return m}
@@ -166,18 +196,23 @@ function build(){
   const A=DATA[mode].A;
   if(Array.isArray(e))e={rows:e,legs:null,lm:null};
   G=new THREE.Group();
+  cur=isWdi(e)?wdiMat:skin;
+  if(isWdi(e)){const u=wdiMat.uniforms,F=e.frame;u.tS.value=texOf(e.tex.s);u.tN.value=texOf(e.tex.n);u.tE.value=texOf(e.tex.e);
+    u.rows.value.set(F.s[0],F.s[1],F.n[0],F.n[1]);u.erow.value.set(F.e[0],F.e[1]);u.off.value.set(F.cxs,F.cxn,F.zmean);outlinePx=e.outline||13}
   const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null;
-  const torso=meshOf(e.rows,A,{capTop:true,capBottom:!e.legs});G.add(torso);
-  if(e.legs){G.add(meshOf(e.legs.L,A,{capBottom:true}));G.add(meshOf(e.legs.R,A,{capBottom:true}))}
+  const zc=e.frame&&e.frame.zc,tilt=zc?y=>{const r=Math.max(1,Math.min(zc.length-2,Math.round(-y-e.frame.s[0])));return -(zc[r+1]-zc[r-1])/2}:null;
+  const torso=meshOf(e.rows,A,{capTop:true,capBottom:!e.legs,tilt});G.add(torso);
+  if(e.legs){G.add(meshOf(e.legs.L,A,{capBottom:true,tilt}));G.add(meshOf(e.legs.R,A,{capBottom:true,tilt}))}
   if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
-  apply();$('note').textContent=NOTES[mode];
+  apply();$('note').textContent=NOTES[isWdi(e)?'wdi':mode];
 }
 function apply(){
   const sk=$('sk').checked,op=+$('op').value/100;
-  skin.wireframe=$('w').checked;skin.transparent=(sk||op<1);skin.opacity=sk?Math.min(op,.3):op;skin.depthWrite=!(sk||op<1);skin.needsUpdate=true;
+  const o=sk?Math.min(op,.3):op;
+  cur.wireframe=$('w').checked;cur.transparent=(sk||op<1);cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=!(sk||op<1);cur.needsUpdate=true;
   G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked});
 }
 function view(v){const d=1000;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
@@ -185,6 +220,9 @@ sel.onchange=msel.onchange=build;['sk','og','w','op'].forEach(i=>$(i).oninput=ap
 document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
 build();view(0);
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
-(function loop(){requestAnimationFrame(loop);ctl.update();ren.render(sc,cam)})();
+(function loop(){requestAnimationFrame(loop);ctl.update();
+  // outline width of the sprite (world px) in device pixels at the current zoom
+  wdiMat.uniforms.pxw.value=outlinePx*innerHeight*ren.getPixelRatio()/(2*Math.tan(cam.fov*Math.PI/360)*cam.position.distanceTo(ctl.target));
+  ren.render(sc,cam)})();
 }
 </script></body></html>

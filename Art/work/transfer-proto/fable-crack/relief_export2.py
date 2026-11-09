@@ -250,7 +250,8 @@ def apply_rib_cage_floor(rows, lm, profile_bounds=None):
     }
 
 
-def one(body):
+def one(body, fields=None):
+    """fields: optional {"south", "north", "zc"} from wdi3d.py; they replace the shade3d height fields."""
     imgs = r3.views(body, False)
     M = {f: r3.silhouette(imgs[f]) for f in imgs}
     H, B, P = {}, {}, {}
@@ -265,6 +266,9 @@ def one(body):
         # Previously H["east"] was calculated but never reached a vertex.
         B[f] = shade3d._base_height(f, M, pts, lum)
         H[f] = r3.height(f, M, pts, lum)
+    if fields is not None:
+        H["south"], H["north"] = fields["south"], fields["north"]
+        H["east"] = B["east"]                        # the wdi3d fields already carry the profile
     ms, me, mn = M["south"], M["east"], M["north"]
     s0, s1 = r3.rows_of(ms)
     cx_south = np.mean([np.mean(r3.extent(ms, y)) for y in range(s0, s1 + 1)])
@@ -319,6 +323,9 @@ def one(body):
         if zb is None or nl is None:
             return None
         zc = 0.5 * (zb + zf)
+        if fields is not None:                       # wdi3d measures its fields from its own centre plane
+            zw = float(np.interp(ye, np.arange(N), fields["zc"]))
+            zc = zw if np.isfinite(zw) else zc
         front_profile, back_profile = profile_detail(y)
         out = np.zeros((2 * U, 3))
         for k in range(U):
@@ -346,7 +353,7 @@ def one(body):
         xl, xr = extent_at(ms, y)
         rg = None if xl is None else ring(y, xl, xr, xl, xr)
         rows.append(rg if rg is not None else (rows[-1] if rows else np.zeros((2 * U, 3))))
-    rows = ndi.gaussian_filter1d(np.array(rows), SIGMA_ROWS, axis=0, mode="nearest")
+    rows = ndi.gaussian_filter1d(np.array(rows), SIGMA_ROWS if fields is None else 3.0, axis=0, mode="nearest")
     zmean = float(np.mean(rows[..., 2]))
     rows[..., 2] -= zmean
     profile_rows = constrain_east_profile(rows, ms, me, zmean)
@@ -377,8 +384,8 @@ def one(body):
             constrain_east_profile(L, ms, me, zmean)
             constrain_east_profile(Rr, ms, me, zmean)
             legs = {
-                "L": np.round(L.reshape(len(L), -1), 1).tolist(),
-                "R": np.round(Rr.reshape(len(Rr), -1), 1).tolist(),
+                "L": np.round(L.reshape(len(L), -1), 1 if fields is None else 2).tolist(),
+                "R": np.round(Rr.reshape(len(Rr), -1), 1 if fields is None else 2).tolist(),
                 "mode": split_mode,
             }
     lm = {"top": -float(s0), "bottom": -float(s1)}
@@ -389,9 +396,20 @@ def one(body):
     if ysplit is not None:
         lm["split"] = -float(ysplit)
     profile_bounds = lambda world_y: east_profile_bounds(world_y, ms, me, zmean)
-    rows, cage = apply_rib_cage_floor(rows, lm, profile_bounds)
+    if fields is None:
+        rows, cage = apply_rib_cage_floor(rows, lm, profile_bounds)
+    else:                                            # fitted surface kept as is: the cage is only drawn
+        _, cage = apply_rib_cage_floor(rows.copy(), lm, profile_bounds)
     cage["profile_rows_constrained"] = profile_rows
-    return {"rows": np.round(rows.reshape(R, -1), 1).tolist(), "legs": legs, "lm": lm, "cage": cage}
+    e0, e1 = r3.rows_of(me)
+    frame = {"s": [int(s0), int(s1)], "n": [int(n0), int(n1)], "e": [int(e0), int(e1)],
+             "cxs": round(float(cx_south), 2), "cxn": round(float(cx_north), 2), "zmean": round(zmean, 2)}
+    if fields is not None:
+        # centre plane per south row (viewer: the light is taken relative to it, as in the wdi3d capture);
+        # 0.01 px vertices: at 0.1 px the ring-to-ring slope noise is as large as the toon step
+        ye = [map_row_at(y, ms, me) for y in range(s0, s1 + 1)]
+        frame["zc"] = np.round(np.interp(ye, np.arange(N), np.nan_to_num(fields["zc"], nan=zmean)) - zmean, 2).tolist()
+    return {"rows": np.round(rows.reshape(R, -1), 1 if fields is None else 2).tolist(), "legs": legs, "lm": lm, "cage": cage, "frame": frame}
 
 
 def main():
