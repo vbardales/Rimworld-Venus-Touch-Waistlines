@@ -164,10 +164,14 @@ def _front_torso_patches(xx, yy, a, flags):
     for armpit in (a["armpit_l"], a["armpit_r"]):
         out += _gauss(xx, yy, armpit, 7.5, 6.5, -3.0)
 
-    # The sternum is a finite valley between notch and fold.  It is distinct
-    # from the cleavage below, so female skin can return to the rib cage.
+    # The sternum is a finite valley.  On female bodies it ends *above* the
+    # cleavage: otherwise one long central groove falsely cuts through both
+    # the thorax and the breast volume.
     if notch is not None and fold is not None:
         sternum_end = (midx, min(fold[1] - 4.0, notch[1] + 0.80 * (fold[1] - notch[1])))
+        if flags["female"] and a["cleavage"] is not None:
+            chest_span = max(a["cleavage"][1] - notch[1], 12.0)
+            sternum_end = (midx, a["cleavage"][1] - max(7.0, 0.18 * chest_span))
         out += _segment(xx, yy, notch, sternum_end, 4.2, -1.65, 0.15)
 
     breast_pairs = ((a["apex_l"], a["fold_l"], a["armpit_l"]),
@@ -182,14 +186,19 @@ def _front_torso_patches(xx, yy, a, flags):
                 continue
             half = max(abs(apex[0] - midx), 15.0)
             drop = max((fold_side[1] - apex[1]) if fold_side is not None else 20.0, 12.0)
-            # A hanging breast widens and remains full *below* the apex.  A
-            # symmetric ellipse here was still reading as a sphere glued to
-            # the chest, especially on Fat_Female.  This anisotropic patch is
-            # narrow/high at its attachment and broad/low only as it falls.
-            dy = yy - apex[1]
-            vertical = np.where(dy < 0, dy / (0.52 * drop), dy / (1.18 * drop))
-            width = half * (0.42 + 0.27 * np.clip((dy + 0.20 * drop) / (1.25 * drop), 0.0, 1.0))
+            # A hanging breast widens and reaches its maximum *below* the
+            # apex.  The apex is a measured nipple/peak landmark, not the
+            # centre of a symmetric added sphere.  Keep the high attachment
+            # narrow, move the low soft-tissue maximum down, and prevent each
+            # lobe from spilling across the sternal cage plane.
+            lobe_y = apex[1] + 0.28 * drop
+            dy = yy - lobe_y
+            vertical = np.where(dy < 0, dy / (0.62 * drop), dy / (0.88 * drop))
+            width = half * (0.34 + 0.29 * np.clip((yy - apex[1] + 0.12 * drop) / (1.20 * drop), 0.0, 1.0))
             lobe = lift * np.exp(-0.5 * (vertical ** 2 + ((xx - apex[0]) / width) ** 2))
+            sign = -1.0 if apex[0] < midx else 1.0
+            medial_distance = sign * (xx - midx)
+            lobe *= 1.0 / (1.0 + np.exp(-(medial_distance - 3.0) / 4.5))
             # The upper/lateral attachment spreads toward the clavicle and
             # armpit with only a fraction of the breast volume.
             if armpit is not None:
@@ -197,7 +206,7 @@ def _front_torso_patches(xx, yy, a, flags):
                            0.55 * apex[1] + 0.45 * armpit[1])
                 lobe += _gauss(xx, yy, support, 0.52 * half, max(drop, 14.0), 0.28 * lift)
             # Do not let a hanging lobe rise as a ball above its attachment.
-            lobe *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.30 * drop)) / 3.5))
+            lobe *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.24 * drop)) / 3.5))
             if fold_side is not None:
                 # The fold is an attachment, not a sawed-off shelf: tissue
                 # may hang slightly below it but fades over a local span.
@@ -218,7 +227,7 @@ def _front_torso_patches(xx, yy, a, flags):
             # mass without converting the whole painted fold into a rail.
             out += _curve(xx, yy, fold_side, control, inner, 4.4, -0.65, 0.20)
         if a["cleavage"] is not None and fold is not None:
-            out += _segment(xx, yy, a["cleavage"], fold, 4.3, -2.15, 0.16)
+            out += _segment(xx, yy, a["cleavage"], fold, 4.6, -1.45, 0.20)
     else:
         # Pectorals are fan-shaped local masses, bounded inferiorly by the
         # measured fold line.  Hulk gets greater relief, Average stays clear
