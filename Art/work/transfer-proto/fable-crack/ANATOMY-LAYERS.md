@@ -1,0 +1,60 @@
+# Layered anatomy study for the WDI body 3D (2026-11-09)
+
+Virginie's requirement: respect the skeleton, the muscles and the fat masses biologically, and when the model is captured from front, side or back, get an image very close to WDI. The 2026-11-09 base (`base3d.py`) only reshapes a per-row section taken from the silhouette. It has no layers, so it cannot get there. This note records what the seven reference images and the anatomy4sculptors page say, and the architecture they imply. Nothing here is implemented yet.
+
+Sources: skeleton front/back and side illustrations, two muscle charts (front/back, side), a 3-view female muscle render, a 9-panel drawing of male torsos with belly and folds, a back view with the gluteal muscles coloured (the green diamond and pink fold line are marked), and [anatomy4sculptors, gluteal muscles and fat](https://anatomy4sculptors.com/fr/blog/anatomie-des-fesses-muscles-et-graisse/). The page text is partly garbled; only what it states clearly is used, and it gives no numbers.
+
+## 1. Skeleton: where bone carries the skin
+
+Skin sits on bone, with almost no soft tissue, at these places. They set creases, dimples and hard edges, and they are fixed per body, whatever the fat.
+
+| Landmark | Views | What it does to the surface |
+|---|---|---|
+| Clavicle, jugular notch, sternum | front | Flat plate on the midline; notch is a real hollow. Sternum is a floor, the cleavage cannot go deeper. |
+| Costal arch (lower rib margin) | front, side | Edge that ends the chest; the shelf under the pecs or breasts. |
+| Acromion, scapular spine, medial scapular border | back | Shoulder tip; the two shoulder-blade ridges beside the spine. |
+| Spinous processes | back | Midline groove, deepest where muscle is thin (low back). |
+| Iliac crest, ASIS | all | Hip edge; the waist ends on it; flank fat rides above it. |
+| Sacral triangle (bony) | back | The diamond at the top of the cleft; hollow in both sexes. |
+| Greater trochanter | back, side | Hollow below the hip on a lean body, covered by fat on a fat one. |
+
+Profile posture, from the side skeleton: thoracic spine curves back (kyphosis), lumbar spine curves in (lordosis), the pelvis tilts with the ASIS forward and down and the sacrum back and up. The rib cage is a barrel, widest around ribs 7 to 9, and it leans forward at the top. The present cage is a straight, symmetric barrel; it needs these curves, because they are what makes the side profile.
+
+## 2. Muscles: where they attach
+
+Muscles are finite volumes between two bone attachments, not bands. From the charts and the page:
+
+- Pectoralis major: clavicle, sternum and upper costal cartilages to the humerus; fan converging on the armpit.
+- Latissimus dorsi: lumbar fascia and iliac crest to the humerus; long diagonal sheet on the back, fills the waist-to-armpit line.
+- Trapezius: occiput and spine to clavicle and scapular spine; the stylised mass above the shoulder in WDI.
+- Rectus abdominis: pubis to costal margin, blocks separated by tendinous intersections (the Hulk and Male abdominal pairs).
+- External oblique and serratus: costal margin to iliac crest; the side wall of the abdomen.
+- Gluteus medius: anterior three quarters of the iliac crest to the greater trochanter. Gluteus maximus: the biggest, inserts mostly on the iliotibial band. TFL: ASIS to the iliotibial band. Medius, maximus and TFL form a wheel around the greater trochanter.
+
+## 3. Fat: pads and folds
+
+Fat is the missing layer. It is not an offset of the bone and not a bump on the muscle: it is distributed in named pads, and the folds are where two pads or a pad and a bone-tied band meet.
+
+From the page (gluteal region):
+- Men: median gluteal pad (lower-middle buttock), flank pad (at the waist, around the iliac crest), inferior gluteal extension across the gluteal fold. Muscle shapes show through.
+- Women: six pads: flank, lateral gluteal (upper buttock, up to the sacral triangle), posterior gluteal (the largest, over maximus and part of medius), inferior gluteal extension, outer thigh, inner thigh. Fat covers the muscles and the trochanter, so they are generally not visible. The Michaelis rhombus is the sacral triangle plus subcutaneous fat.
+- The gluteal fold is a depression where the gluteal band crosses the maximus and the median pad; it is what makes the buttock round.
+
+From the belly drawings: the belly is an apron that hangs from the lower abdomen, projects past the chest in profile, creases at the navel and under the apron, and rolls over the waistband. Flank fat shows as a roll above the iliac crest, folding when the body bends. The thin panels show the opposite: ribs, intersections, iliac crest and ASIS visible.
+
+Not found: numbers for fat thickness per pad, the banana fold, the infragluteal fold as a separate structure, and the gluteus minimus. These stay estimates, to be set by eye against WDI.
+
+## 4. Architecture this implies
+
+Skin is the outside of a stack, computed from layers. The WDI silhouettes become the fit target, not the input.
+
+1. Bone layer (rigid, per body class): rib barrel with kyphosis and forward lean, spine curve, pelvis with tilt, ASIS, iliac crest, sacral triangle, trochanter. The existing cage and pelvis are the starting point.
+2. Muscle layer: each muscle is a finite volume between its attachment points on that bone layer, with a thickness profile. Thin bodies show it; fat bodies bury it.
+3. Fat layer: a thickness field over the torso, the sum of named pads (flank, abdominal apron, gluteal pads, breast, inferior extensions) per body class and sex. A fold is a deliberate crease where two pads meet, with a sag (gravity) term for apron and breast. Minimum thickness is the 5 px floor over bare bone.
+4. Skin: outer surface of bone, muscle and fat, with a smooth-union so creases keep a finite radius.
+5. Fit: the pad amplitudes and bone parameters are solved per body so that the three silhouettes match WDI. The shaded South/North/East render is compared with the WDI texture by its grey bands (the artist's shadow lines mark creases and pad edges). Not by luminance as height (rejected earlier).
+6. Existing local signed patches stay for small features: neck, navel, nipple, groin, linea alba.
+
+Order of work: Male and Hulk first (muscle visible, fat thin, base good enough). Then Female and Thin_Female (breast pads). Fat and Fat_Female last, because their look is all pads and folds.
+
+Open question for Virginie: WDI is stylised (the Male chest is 0.87 deep for 0.7 in a real thorax). The layers should respect anatomy at the attachment level, then scale to the WDI proportions; confirm that WDI proportions win where they disagree with the anatomy.
