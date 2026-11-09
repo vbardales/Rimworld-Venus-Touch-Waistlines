@@ -59,7 +59,7 @@ remaining:
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 publication_changelog_review_sha: b083afbf2c36b906c562272fc3719a556c5922e2
 updated:      2026-11-09
-protocols_read_sha: b1463127f5a02e208ce0dc75d3b7bbc5957ef0e9
+protocols_read_sha: 26283d93d4e6b601128a3906b4ea6fe6a5a964cf
 ---
 ## Earlier journal
 
