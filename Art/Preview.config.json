@@ -22,7 +22,8 @@
     "file": "echo-concept.png"
   },
   "icon": {
-    "file": "ModIcon-source.png"
+    "file": "ModIcon-source.png",
+    "corner": "bottom-left"
   },
   "palette": {
     "veil": "#1E2731",
