@@ -210,13 +210,18 @@ def apply_rib_cage_floor(rows, lm, profile_bounds=None):
 def one(body):
     imgs = r3.views(body, False)
     M = {f: r3.silhouette(imgs[f]) for f in imgs}
-    H, P = {}, {}
+    H, B, P = {}, {}, {}
     for f in ("south", "east", "north"):
         s, d, names = e5.named_pairs(body, f)
         pts = {n: tuple(s[i]) for i, n in enumerate(names)}
         if f == "south":
             P = pts
-        H[f] = r3.height(f, M, pts, c1.lum(imgs[f]))
+        lum = c1.lum(imgs[f])
+        # Keep the explicit three-silhouette base so the east landmarks can
+        # contribute a small signed profile correction to the closed mesh.
+        # Previously H["east"] was calculated but never reached a vertex.
+        B[f] = r3.base_height(f, M, pts, lum)
+        H[f] = r3.height(f, M, pts, lum)
     ms, me, mn = M["south"], M["east"], M["north"]
     s0, s1 = r3.rows_of(ms)
     cx_south = np.mean([np.mean(r3.extent(ms, y)) for y in range(s0, s1 + 1)])
@@ -238,7 +243,32 @@ def one(body):
     if ysplit is None and cy < s1 - 1:
         ysplit = min(max(cy, s0), s1 - 1)
         split_mode = "crotch-landmark"
-    zc_all = {}
+    east_detail = H["east"] - B["east"]
+
+    def _signed_peak(values):
+        """Keep the largest signed local profile patch, never a row average."""
+        if not len(values):
+            return 0.0
+        lo, hi = float(np.min(values)), float(np.max(values))
+        return hi if abs(hi) >= abs(lo) else lo
+
+    def profile_detail(y):
+        """Front/back detail at one source row from the east-view patches.
+
+        The profile landmarks live slightly inside the black outline.  Taking
+        the signed local peak on each half preserves a chest/belly projection
+        or a waist/small-back hollow without allowing paint variation to
+        change the measured profile silhouette.
+        """
+        ye = map_row_at(y, ms, me)
+        zb, zf = extent_at(me, ye)
+        if zb is None:
+            return 0.0, 0.0
+        row = east_detail[int(np.clip(round(ye), 0, N - 1))]
+        mid = int(round(0.5 * (zb + zf)))
+        back = row[int(max(0, np.floor(zb))):max(mid, 1)]
+        front = row[min(mid, N - 1):int(min(N, np.ceil(zf) + 1))]
+        return _signed_peak(front), _signed_peak(back)
 
     def ring(y, xa, xb, xl, xr):
         ye = map_row_at(y, ms, me); zb, zf = extent_at(me, ye)
@@ -246,6 +276,7 @@ def one(body):
         if zb is None or nl is None:
             return None
         zc = 0.5 * (zb + zf)
+        front_profile, back_profile = profile_detail(y)
         out = np.zeros((2 * U, 3))
         for k in range(U):
             u = k / (U - 1)
@@ -253,12 +284,16 @@ def one(body):
             hf = ndi.map_coordinates(H["south"], [[y], [xs]], order=1)[0]
             xn = nr - ((xs - xl) / max(xr - xl, 1)) * (nr - nl)
             hb = ndi.map_coordinates(H["north"], [[yn], [xn]], order=1)[0]
-            out[k] = (xs - cx_south, -y, zc + hf)
+            # The east patches are intentionally a small correction: the
+            # south/north maps provide the primary surface while the measured
+            # east envelope remains a hard cap below.
+            section = np.sqrt(max(0.0, 1.0 - (2.0 * u - 1.0) ** 2))
+            out[k] = (xs - cx_south, -y, zc + hf + 0.16 * front_profile * section)
             # The north sprite is viewed from the opposite camera direction:
             # x must be mirrored into world space.  Previously xn affected
             # only the sampled height, so every rear contour was silently
             # projected from the south sprite instead of its own source.
-            out[2 * U - 1 - k] = (cx_north - xn, -y, zc - hb)
+            out[2 * U - 1 - k] = (cx_north - xn, -y, zc - hb - 0.16 * back_profile * section)
         return out
 
     ytop = ysplit if ysplit is not None else s1

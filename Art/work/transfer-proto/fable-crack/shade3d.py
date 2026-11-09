@@ -143,22 +143,32 @@ def _front_torso_patches(xx, yy, a, flags):
         # A breast is a supported teardrop: the lobe is anchored between its
         # apex, fold and armpit, then the fold and cleavage cut it back into
         # the cage.  This deliberately has no free spherical "add-on".
-        lift = 5.0 if flags["fat"] else 4.2
+        lift = 4.5 if flags["fat"] else 3.8
         for apex, fold_side, armpit in breast_pairs:
             if apex is None:
                 continue
             half = max(abs(apex[0] - midx), 15.0)
             drop = max((fold_side[1] - apex[1]) if fold_side is not None else 20.0, 12.0)
-            center = (apex[0], apex[1] + 0.36 * drop)
-            lobe = _gauss(xx, yy, center, 0.64 * half, 0.86 * drop, lift)
+            # A hanging breast widens and remains full *below* the apex.  A
+            # symmetric ellipse here was still reading as a sphere glued to
+            # the chest, especially on Fat_Female.  This anisotropic patch is
+            # narrow/high at its attachment and broad/low only as it falls.
+            dy = yy - apex[1]
+            vertical = np.where(dy < 0, dy / (0.52 * drop), dy / (1.18 * drop))
+            width = half * (0.42 + 0.27 * np.clip((dy + 0.20 * drop) / (1.25 * drop), 0.0, 1.0))
+            lobe = lift * np.exp(-0.5 * (vertical ** 2 + ((xx - apex[0]) / width) ** 2))
             # The upper/lateral attachment spreads toward the clavicle and
             # armpit with only a fraction of the breast volume.
             if armpit is not None:
                 support = ((0.45 * apex[0] + 0.55 * armpit[0]),
                            0.55 * apex[1] + 0.45 * armpit[1])
-                lobe += _gauss(xx, yy, support, 0.55 * half, max(drop, 14.0), 0.34 * lift)
+                lobe += _gauss(xx, yy, support, 0.52 * half, max(drop, 14.0), 0.28 * lift)
             # Do not let a hanging lobe rise as a ball above its attachment.
-            lobe *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.35 * drop)) / 3.5))
+            lobe *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.30 * drop)) / 3.5))
+            if fold_side is not None:
+                # The fold is an attachment, not a sawed-off shelf: tissue
+                # may hang slightly below it but fades over a local span.
+                lobe *= 1.0 / (1.0 + np.exp((yy - (fold_side[1] + 0.55 * drop)) / 4.5))
             out += lobe
         # Each breast owns its attachment crease.  Joining both points with a
         # single trough made a rigid horizontal rail across soft chests.
@@ -167,7 +177,7 @@ def _front_torso_patches(xx, yy, a, flags):
                 continue
             sign = -1.0 if fold_side[0] < midx else 1.0
             inner = (midx + sign * 4.0, fold_side[1] - 0.8)
-            out += _segment(xx, yy, fold_side, inner, 3.1, -2.25, 0.14)
+            out += _segment(xx, yy, fold_side, inner, 2.8, -1.8, 0.14)
         if a["cleavage"] is not None and fold is not None:
             out += _segment(xx, yy, a["cleavage"], fold, 3.0, -4.2, 0.08)
     else:
