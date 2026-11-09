@@ -272,7 +272,13 @@ def _front_torso_patches(xx, yy, a, flags):
                 continue
             cy = 0.5 * (y0 + y1)
             for sign in (-1, 1):
-                out += _gauss(xx, yy, (midx + sign * 0.42 * half, cy), 0.33 * half, 0.34 * (y1 - y0), local_amp)
+                # Never let the paired pads merge through the linea alba.
+                # Their source positions are bilateral, so this medial gate is
+                # landmark geometry rather than a brightness-derived crease.
+                pad = _gauss(xx, yy, (midx + sign * 0.42 * half, cy), 0.33 * half, 0.34 * (y1 - y0), local_amp)
+                medial_distance = sign * (xx - midx)
+                pad *= 1.0 / (1.0 + np.exp(-(medial_distance - 2.0) / 3.5))
+                out += pad
             out += _segment(xx, yy, (midx, y0), (midx, y1), 3.0, -1.15, 0.14)
         # A pair of short tendinous intersections reads as abdominal structure
         # without producing the old full-width horizontal band.
