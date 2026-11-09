@@ -232,7 +232,7 @@ def _front_torso_patches(xx, yy, a, flags):
         # Pectorals are fan-shaped local masses, bounded inferiorly by the
         # measured fold line.  Hulk gets greater relief, Average stays clear
         # but restrained; Thin receives only the attachment structure.
-        amp = 5.0 if flags["hulk"] else 3.2 if flags["average"] else 2.9 if flags["fat"] else 1.7
+        amp = 5.0 if flags["hulk"] else 3.2 if flags["average"] else 1.7
         for apex, fold_side, armpit in breast_pairs:
             if apex is None or armpit is None:
                 continue
@@ -240,12 +240,23 @@ def _front_torso_patches(xx, yy, a, flags):
             height = max(abs(armpit[1] - apex[1]), 15.0)
             center = (0.42 * midx + 0.36 * apex[0] + 0.22 * armpit[0],
                       0.35 * apex[1] + 0.65 * armpit[1])
-            # A fat male chest falls more broadly than a pec: same landmarks,
-            # a lower and taller soft-tissue patch rather than a second kind
-            # of generic sphere.
+            # A fat male chest is a pair of mild, supported hanging masses,
+            # not a wide pectoral ellipse.  Its maximum lies below the apex;
+            # upper/lateral support and the measured fold keep it attached to
+            # the rib cage without borrowing the female recipe wholesale.
             if flags["fat"]:
-                center = (center[0], center[1] + 0.20 * height)
-                out += _gauss(xx, yy, center, 0.74 * half, 1.06 * height, amp)
+                drop = max((fold_side[1] - apex[1]) if fold_side is not None else 20.0, 12.0)
+                center = (0.78 * apex[0] + 0.22 * armpit[0], apex[1] + 0.30 * drop)
+                soft = _gauss(xx, yy, center, 0.52 * half, 0.85 * drop, 4.2)
+                sign = -1.0 if apex[0] < midx else 1.0
+                medial_distance = sign * (xx - midx)
+                soft *= 1.0 / (1.0 + np.exp(-(medial_distance - 4.0) / 4.5))
+                soft *= 1.0 / (1.0 + np.exp(-(yy - (apex[1] - 0.28 * drop)) / 3.5))
+                if fold_side is not None:
+                    soft *= 1.0 / (1.0 + np.exp((yy - (fold_side[1] + 0.60 * drop)) / 4.5))
+                support = (0.50 * apex[0] + 0.50 * armpit[0], apex[1] - 0.08 * drop)
+                soft += _gauss(xx, yy, support, 0.38 * half, 0.70 * drop, 0.55)
+                out += soft
             else:
                 out += _gauss(xx, yy, center, 0.68 * half, 0.70 * height, amp)
             if fold_side is not None:

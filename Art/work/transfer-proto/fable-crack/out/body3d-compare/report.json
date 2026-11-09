@@ -108,10 +108,10 @@
     },
     "east": {
       "rows": 292,
-      "translation_px": 249.9,
-      "edge_error_median_px": 0.8,
-      "edge_error_p95_px": 2.685,
-      "edge_error_max_px": 10.0
+      "translation_px": 250.25,
+      "edge_error_median_px": 0.85,
+      "edge_error_p95_px": 2.75,
+      "edge_error_max_px": 10.55
     }
   },
   "Fat_Female": {
