@@ -78,3 +78,15 @@ Consequences for the model:
 - Notch depth is the bone-and-fat signal: deep where skin sits on bone or a fold (sternal notch, spine, cleft), shallow where fat fills (a fat body fills the notches, so its sections become rounder). The same parametrisation then covers all eight bodies.
 - Lobe width, depth and notch depth are interpolated between the levels above, using the east landmark rows for placement, instead of one exponent per row.
 - The `U=44` points per half-ring are enough to hold two lobes and a notch; no change to the mesh format.
+
+### Female sections (same series, second image)
+
+| Level | Section |
+|---|---|
+| Shoulder / upper chest | Cloud as the male one, front dip at the notch, shoulders slightly narrower. |
+| Breast level | Not a pec plate: two separate, rounded breast lobes projecting from the front, a deep V cleavage between them (deeper than the male sternal dip), then the ribcage behind. Widest at the lateral breast edges. Back flat with two shallow scapular bulges and a spine dip. |
+| Waist | Small, nearly round, front slightly pointed over the linea alba, back with two soft lobes. |
+| Hip / iliac | Wide, oval, with a gentle front dip and a back dip; wider than the male hip relative to the chest. |
+| Groin / upper thigh | Two wide rear lobes (buttocks) and a smaller front pair with a notch at the pubic midline. The rear lobes are rounder and larger than in the male section. |
+
+Differences from the male series that the model must carry: the breast is a separate pair of lobes added at the chest ring, bounded by the cleavage notch and its own lateral edge, not a deepened pec; the hip ring is wider than the waist by a larger ratio; the rear lobes of the pelvis ring are bigger and rounder (posterior gluteal pad, section 3).
