@@ -4,6 +4,7 @@ shade3d as a closed mesh like relief_export.py, plus
   - landmark rows (world y) for the skeleton of the viewer: top, shoulder tip, apex, fold, navel, sex, crotch.
 Output out/relief3d-shade5.json {R,U,bodies:{b:{rows:[R][2U*3], legs:{L:[n][2U*3],R:[...]}|null, lm:{name:y}}}}.
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python relief_export2.py [Body ...]"""
+import os
 import pathlib
 import sys, json
 import numpy as np
@@ -23,6 +24,10 @@ SIDE_MARGIN = 10.0
 FRONT_MARGIN = 7.0
 BACK_MARGIN = 12.0
 SKIN_MARGIN = 5.0
+CAGE_FADE = float(os.environ.get("CAGE_FADE", 14.0))  # source px over which the cage floor fades out
+# Row-wise smoothing of the silhouette extents (source rows); 0 = raw stair steps.
+PROFILE_SIGMA = float(os.environ.get("PROFILE_SIGMA", 2.0))
+_NO_SMOOTH = [None]
 
 
 def runs(row):
@@ -30,8 +35,40 @@ def runs(row):
     return list(zip(np.where(d == 1)[0], np.where(d == -1)[0] - 1))
 
 
+_SMOOTH = {}
+
+
+def smooth_extents(mask, sigma=PROFILE_SIGMA):
+    """Per-row left/right extents with the sprite's 4 px stair-steps removed.
+
+    The 128 px source is upscaled, so the raw extents step every few rows and
+    carve horizontal bands into the lit mesh.  A small 1-D Gaussian along the
+    rows only (never across) keeps the profile within a pixel or two.
+    """
+    key = id(mask)
+    if key not in _SMOOTH:
+        lo = np.full(mask.shape[0], np.nan)
+        hi = np.full(mask.shape[0], np.nan)
+        for y in np.where(mask.any(axis=1))[0]:
+            xs = np.flatnonzero(mask[y])
+            lo[y], hi[y] = xs[0], xs[-1]
+        ok = np.isfinite(lo)
+        idx = np.flatnonzero(ok)
+        for arr in (lo, hi):
+            arr[idx[0]:idx[-1] + 1] = np.interp(np.arange(idx[0], idx[-1] + 1), idx, arr[idx])
+            arr[idx[0]:idx[-1] + 1] = ndi.gaussian_filter1d(arr[idx[0]:idx[-1] + 1], sigma, mode="nearest")
+        _SMOOTH[key] = (lo, hi, mask)
+    return _SMOOTH[key][:2]
+
+
 def extent_at(mask, y):
     """Linearly interpolate the left/right silhouette limits at a sub-pixel row."""
+    if PROFILE_SIGMA > 0 and mask is not _NO_SMOOTH[0]:
+        lo, hi = smooth_extents(mask)
+        y = float(np.clip(y, 0, mask.shape[0] - 1))
+        if not np.isfinite(lo[int(round(y))]):
+            return None, None
+        return float(np.interp(y, np.arange(len(lo)), lo)), float(np.interp(y, np.arange(len(hi)), hi))
     y = float(np.clip(y, 0, mask.shape[0] - 1))
     low, high = int(np.floor(y)), int(np.ceil(y))
     a, b = r3.extent(mask, low), r3.extent(mask, high)
@@ -164,9 +201,15 @@ def apply_rib_cage_floor(rows, lm, profile_bounds=None):
     moved = 0
     for row in rows:
         y = row[0, 1]
-        if y > cage_top or y < cage_bottom:
+        if y > cage_top + CAGE_FADE or y < cage_bottom - CAGE_FADE:
             continue
+        # Past either end the last rib level is held and its push fades out,
+        # so the floor does not leave a step in the skin at the cage edge.
+        overshoot = max(y - cage_top, cage_bottom - y, 0.0)
+        fade = 1.0 - overshoot / CAGE_FADE
+        fade = fade * fade * (3 - 2 * fade)
         u = (cage_top - y) / (cage_top - cage_bottom) * (RIB_LEVELS - 1)
+        u = float(np.clip(u, 0, RIB_LEVELS - 1))
         low = min(RIB_LEVELS - 2, max(0, int(np.floor(u))))
         weight = np.clip(u - low, 0, 1)
         a = (1 - weight) * levels[low]["a"] + weight * levels[low + 1]["a"]
@@ -186,12 +229,12 @@ def apply_rib_cage_floor(rows, lm, profile_bounds=None):
             if point_index < U:
                 floor = center_z + half_depth + SKIN_MARGIN
                 if point[2] < floor:
-                    point[2] = min(floor, front_limit)
+                    point[2] = point[2] + fade * (min(floor, front_limit) - point[2])
                     moved += 1
             else:
                 floor = center_z - half_depth - SKIN_MARGIN
                 if point[2] > floor:
-                    point[2] = max(floor, back_limit)
+                    point[2] = point[2] + fade * (max(floor, back_limit) - point[2])
                     moved += 1
 
     return rows, {
@@ -220,7 +263,7 @@ def one(body):
         # Keep the explicit three-silhouette base so the east landmarks can
         # contribute a small signed profile correction to the closed mesh.
         # Previously H["east"] was calculated but never reached a vertex.
-        B[f] = r3.base_height(f, M, pts, lum)
+        B[f] = shade3d._base_height(f, M, pts, lum)
         H[f] = r3.height(f, M, pts, lum)
     ms, me, mn = M["south"], M["east"], M["north"]
     s0, s1 = r3.rows_of(ms)

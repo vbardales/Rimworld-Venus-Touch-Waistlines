@@ -22,7 +22,8 @@ import relief3d as r3
 
 K = float(os.environ.get("SHADE_K", 4.0))      # height per px at full darkness (slope, 1.4 = 54 degrees)
 MU = float(os.environ.get("SHADE_MU", 0.003))   # pull back to the volume
-_base_height = r3.base_height
+import base3d
+_base_height = base3d.profile_base
 NIPPLE = float(os.environ.get("NIPPLE", 7.0))   # px of height
 SEX = float(os.environ.get("SEX", 9.0))
 PEC = float(os.environ.get("PEC", 11.0))     # px of height of the pectoral muscle, male bodies
@@ -678,6 +679,7 @@ _views0 = r3.views
 
 def _views(body, vanilla):
     BODY[0] = body
+    base3d.BODY[0] = body
     return _views0(body, vanilla)
 
 

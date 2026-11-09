@@ -41,6 +41,40 @@ The required export, comparison and viewer build were last run on all eight bodi
 
 Two generic smoothing experiments were rejected after full South/North/East regeneration: final Z smoothing degraded profile agreement, and lateral/global smoothing of the envelope both degraded east agreement and introduced normal artefacts near the neck. The next change must instead construct the thorax–abdomen–pelvis base directly from profile landmarks, retain the existing signed local anatomy above it, and compare full three-view renders with WDI rather than accepting a contour-only result.
 
+## Profile-led base envelope (2026-11-09, real WDI textures)
+
+All numbers below use the real Workshop textures (`Naked_<Body>_<facing>.png`, Steam id 3527486510) on this workstation; the stand-in is not used. The older Checkpoint numbers came from the stand-in, so they are not comparable.
+
+Method (new files `base3d.py`, `body3d_render.py`; edits in `shade3d.py`, `relief_export2.py`):
+
+1. `base3d.profile_base` replaces `relief3d.base_height` for south and north (east delegates to the old base; `BASE_MODE=ellipse` restores the old one). Depth per row still comes from the east silhouette (front and back half-depth about its centre, smoothed along rows with sigma 2). The per-row section is no longer an ellipse but a superellipse `(1-|t|^p)^(1/p)`, with p set per body class and interpolated between east landmark rows (top, chest front, waist front, buttock back, bottom): chest plate p 2.7 to 3.2 (Hulk highest, Fat 2.3), waist 2.0 to 2.6, hip 2.2 to 2.6, back halves flatter at the shoulder blades and rounder at the buttock. The signed anatomy patches of `shade3d.py` are laid over it unchanged.
+2. `relief_export2.py`: the hard east cap now reads row-smoothed profile extents (`PROFILE_SIGMA=2`, rows only). The sprite is a 4 px upscale, so raw extents stepped and cut horizontal bands in the lit mesh. `CAGE_FADE=14`: the rib-cage floor holds its last level and fades its push over 14 px past both ends, so it leaves no step at the cage edge.
+3. `body3d_render.py`: South/North/East shaded mesh (z-buffer, light upper left) beside the WDI texture and a mesh-edge overlay, one board per body in `Art/work/captures/2026-11-09_body3d-render-<Body>.png`. Legs share the body's vertical registration. This is the check that must be read, not the contour number.
+
+Silhouette p95 (px), before (old ellipse base, real textures) then after:
+
+| Body | south | north | east |
+|---|---|---|---|
+| Male | 2.10 / 2.10 | 1.15 / 0.96 | 2.87 / 2.42 |
+| Female | 3.54 / 3.65 | 1.45 / 1.55 | 2.45 / 2.30 |
+| Thin | 0.90 / 0.72 | 0.80 / 0.72 | 2.40 / 2.25 |
+| Thin_Female | 1.21 / 1.30 | 1.91 / 2.10 | 2.25 / 2.23 |
+| Fat | 4.68 / 4.79 | 2.60 / 2.70 | 2.85 / 2.55 |
+| Fat_Female | 2.69 / 2.60 | 2.70 / 2.60 | 4.00 / 3.35 |
+| Hulk | 1.40 / 1.30 | 2.38 / 2.20 | 2.65 / 2.67 |
+| Hulk_Female | 2.30 / 2.30 | 2.19 / 2.40 | 3.00 / 3.05 |
+
+East improves on 6 of 8 bodies (Fat_Female 4.00 to 3.35). South and north barely move: the base change is in the section, not in the outline. Fat south (4.79) is the worst; it is the bulging belly/breast outline, not touched here.
+
+Read from the full renders (two render-and-fix cycles used):
+- Better: the profile is smoother, no horizontal banding from the sprite steps, the chest reads as a plate and the torso as a block rather than a barrel (Hulk, Male, Thin_Female).
+- Still wrong: Fat, Fat_Female, Thin_Female are still soft and uniform. The WDI breast lobes, the under-breast shelf and the belly folds are drawn lines and gradients, not silhouette, so a profile-only base cannot make them. Fat_Female south has a dark band at the fold but no lobes. Hulk has a hard shelf at the chest-to-abdomen row (a real step in the Hulk east profile, not a smoothing fault) and a bright pelvic plate on the north view. Residual faint banding remains on the north views. Legs are still the flat cut.
+- The Hulk shelf was first suspected to be the cage floor; the fade did not change it, so it comes from the east profile.
+
+Rejected, do not retry: final-Z smoothing; lateral or global envelope smoothing (both degraded east agreement and made normal artefacts near the neck). 
+
+Recommendation for the step after: add per-body soft-tissue masses from the drawn shading that are not silhouette (breast lobes with the under-breast shelf, abdominal apron and fold, gluteal lobes), placed from the south/north landmarks as signed finite volumes with their own cross-section exponent, and score them by the lit render against the WDI texture's grey bands. Then rerun garment fitting on Male and Hulk first, whose base is good enough.
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:
@@ -69,7 +103,7 @@ Consequences taken (estimates, not published measurements):
 
 - Table of the gap cage to skin per rib level, for all eight bodies.
 - These are torso–pelvis crops, not full figures: the source gives only 6 to 33 px below the crotch. Only the leg roots can be inferred faithfully. A complete leg model needs a procedural extension or full-body source views. Thin, Thin_Female, Hulk and Hulk_Female use a landmark-defined medial seam because their sprites have no crotch notch. The lower cut is closed by a flat mesh cap, not modelled as a leg or foot.
-- The cloud checkout has no Steam Workshop tree. For repeatable validation, `relief3d.views()` uses the real WDI texture when available and otherwise rebuilds a local stand-in from `captures/2026-11-03_points` and the committed `E_<Body>_<facing>.png` masks. This is adequate for silhouette/landmark validation but not a substitute for rerunning on the original Workshop PNGs.
-- Real-texture rerun of the cloud scripts (`heightmode.py all`, `garmentstudy.py all`).
+- Local runs use the real Workshop textures. The cloud checkout has no Steam Workshop tree, so there `relief3d.views()` falls back to a stand-in rebuilt from `captures/2026-11-03_points`; that is only for silhouette and landmark validation.
+- Real-texture rerun: the mesh export, compare and render ran on the real textures on 2026-11-09. `heightmode.py all` and `garmentstudy.py all` are not rerun yet.
 - Cloth surface as a low-pass of the volume; tucked and untucked rules; AB Pants; isoRim variant.
 - Docs of section C3 (`docs/GARMENT-FIT-PROCESS.md`) exist only on remote branch `nelim/lucid-davinci-jsbif5`, not merged.
