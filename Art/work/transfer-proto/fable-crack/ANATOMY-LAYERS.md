@@ -135,3 +135,11 @@ Only the small thumbnails were available, so only their printed text is used.
 - External oblique: a masculine flank is larger and extends outward over the hip bone (iliac crest); the border between the rounded external oblique and the bony pelvis is S-shaped. So at the waist-to-hip rows the male ring widens by the oblique mass over the crest, and the boundary between muscle and bone-near skin runs as an S curve, not a straight line. On women the flank pad of section 3 takes this role.
 
 These three notes refine section 7 (attachments) and the male cross sections of section 5.
+
+## 10. Back muscles (three more album tiles, thumbnails; text read from the cards)
+
+- Back anatomy (labelled): trapezius, rhomboid major, deltoid, teres minor, infraspinatus, teres major, triceps, latissimus dorsi. Rhomboid and infraspinatus lie under the trapezius at the scapula; teres minor and major run from the lateral scapula border to the humerus and fill the armpit's back wall.
+- Back layers: "The back muscles are arranged in layers: erector spinae is the deepest, latissimus dorsi lies above it, and trapezius sits on top." Stack order from bone: erector spinae (two columns beside the spinous processes), then latissimus dorsi (a sheet whose diamond-shaped aponeurosis covers the lumbar region), then trapezius (a kite from skull base to the mid back, spreading to the scapular spine and clavicle).
+- Trapezius: extends from the base of the skull to the middle of the back and across the shoulder blades; it stabilises and turns the head. Its shape is a diamond/kite, whose lower tip ends at the middle of the back (about T12) and whose lateral points run to the shoulders.
+
+For the back rings of section 5: the spine groove is the gap between the two erector columns, deep at the low back and shallow where the trapezius covers it; the upper back ring is widest at the shoulder blades (trapezius plus scapula plus rhomboid and teres), the waist ring is narrowed by the latissimus edge, and the lumbar area shows the latissimus aponeurosis as a flat diamond over the columns. The gluteal rhombus (section 3) is the continuation of that diamond downward.
