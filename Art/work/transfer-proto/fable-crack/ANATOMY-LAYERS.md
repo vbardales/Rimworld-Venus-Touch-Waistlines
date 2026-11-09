@@ -143,3 +143,7 @@ These three notes refine section 7 (attachments) and the male cross sections of 
 - Trapezius: extends from the base of the skull to the middle of the back and across the shoulder blades; it stabilises and turns the head. Its shape is a diamond/kite, whose lower tip ends at the middle of the back (about T12) and whose lateral points run to the shoulders.
 
 For the back rings of section 5: the spine groove is the gap between the two erector columns, deep at the low back and shallow where the trapezius covers it; the upper back ring is widest at the shoulder blades (trapezius plus scapula plus rhomboid and teres), the waist ring is narrowed by the latissimus edge, and the lumbar area shows the latissimus aponeurosis as a flat diamond over the columns. The gluteal rhombus (section 3) is the continuation of that diamond downward.
+
+### Latissimus dorsi tile (thumbnail text)
+
+"Latissimus dorsi: the broadest muscle of the back. It extends from the lower back all the way to the upper arm. It creates much of the triangular shape of the male torso." The drawings show it as a wide sheet whose lower edge follows the iliac crest and whose fibres converge up and outward to the humerus. For the model: on Male and Hulk the latissimus is what makes the V (wide shoulders narrowing to the waist) in both the back and the front silhouette, so the waist-ring width is set by the latissimus edge, not by the ribs.
