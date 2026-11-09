@@ -125,3 +125,13 @@ One front view of a lean female bust, skin surface. What it shows for the breast
 - Clavicles and the sternal notch read as bone-supported lines; the shoulder-to-neck line is smooth.
 
 Consequences for the model: the breast pad of the chest ring (section 5) is a lobe whose thickness field starts at the clavicle, peaks in the lower half and ends at a curved fold; the cleavage notch depth is a per-body parameter (shallow here, deeper for the high-bust WDI sprites), and the sternal floor stays at the rib cage depth. Limits: one view, no scale, no profile.
+
+## 9. Three more album tiles (thumbnails only; text read from the cards)
+
+Only the small thumbnails were available, so only their printed text is used.
+
+- Pectoralis major: one end connects to the humerus, the other to (A) the medial 3/5 of the clavicle, (B) the sternum, (C) the ribs, (D) the aponeuroses of the abdominal oblique muscles. So the lower fibres reach down to the rectus sheath and the oblique, not only to the sternum: the fan's lower border is a long arc into the upper abdomen.
+- Clavicle visibility: how much of the clavicle shows depends on how developed the pectoralis major is. The thicker the upper chest, the less the clavicle shows. The cross section shows the clavicle as an S-curved bar with the pec attaching along its lower face. For the model: the clavicle line is a bone-supported crest on lean or weak-pec bodies (Thin, Thin_Female) and a soft groove between the pec and the trapezius on thick-pec bodies (Hulk, Male).
+- External oblique: a masculine flank is larger and extends outward over the hip bone (iliac crest); the border between the rounded external oblique and the bony pelvis is S-shaped. So at the waist-to-hip rows the male ring widens by the oblique mass over the crest, and the boundary between muscle and bone-near skin runs as an S curve, not a straight line. On women the flank pad of section 3 takes this role.
+
+These three notes refine section 7 (attachments) and the male cross sections of section 5.
