@@ -115,3 +115,13 @@ Source: [image](https://anatomy4sculptors.com/ref-images/638604511470685015.jpg)
 Use in the model: attachment anchors for each muscle (clavicle, sternum, costal margin, iliac crest, humerus root, scapular spine) can be derived from the landmark set (jugular notch, shoulder tips, armpits, under-breast fold, navel, hips). Each muscle is a finite volume between its anchors; the order above is the stacking order (serratus under pectoral, pectoral over serratus, oblique and rectus last on the abdomen).
 
 How to feed more references: the viewer is a login-gated app, but the page DOM that you paste contains each image's static URL (`image-holder`, `background-image: url(".../ref-images/<id>.jpg")`). That URL is a public file and can be read directly. The neighbours of this asset are `torso-cross-section-female` (previous) and `the-pectoralis-major` (next); paste their DOM the same way.
+
+## 8. Female upper body, skin only (anatomy4sculptors 3D viewer screenshot, front view)
+
+One front view of a lean female bust, skin surface. What it shows for the breast and chest:
+- The breast is a soft mass that starts high, near the clavicle: the upper pole is a gentle slope from the collarbone, not a dome added on a flat chest. The fullest part and the nipple sit in the lower half of the mass; the nipple points slightly outward and down.
+- The inferior border is a curved crease (under-breast fold) that is shallow on this body, and the mass sits a little lower on the outer side than the inner side.
+- Medially the two masses meet over the sternum with a shallow, rounded cleavage, not a deep V; the sternum plane between them stays flat and the notch above it is a clear hollow.
+- Clavicles and the sternal notch read as bone-supported lines; the shoulder-to-neck line is smooth.
+
+Consequences for the model: the breast pad of the chest ring (section 5) is a lobe whose thickness field starts at the clavicle, peaks in the lower half and ends at a curved fold; the cleavage notch depth is a per-body parameter (shallow here, deeper for the high-bust WDI sprites), and the sternal floor stays at the rib cage depth. Limits: one view, no scale, no profile.
