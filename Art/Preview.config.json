@@ -1,26 +1,13 @@
 {
   "panel": {
     "title": "Venus Touch Waistlines",
-    "titleSize": 38,
     "titleParts": [
-      {
-        "text": "Venus Touch"
-      },
-      {
-        "text": "Waistlines",
-        "breakBefore": true
-      }
+      { "text": "Venus Touch Waistlines" }
     ],
-    "tagInline": true,
-    "copyLines": [
-      "Decide where every garment stops.",
-      "One waistline for every body."
-    ]
+    "description": "Decide where every garment stops. One waistline for every body."
   },
-  "backgroundFile": "Preview-source.png",
-  "echo": {
-    "file": "echo-concept.png"
-  },
+  "background": { "file": "Preview-source.png" },
+  "echo": { "file": "echo-concept.png" },
   "icon": {
     "file": "ModIcon-source.png",
     "corner": "bottom-left"
