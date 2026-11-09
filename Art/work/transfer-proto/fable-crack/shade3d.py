@@ -116,6 +116,7 @@ def _body_flags():
     return {
         "female": "Female" in name,
         "fat": "Fat" in name,
+        "thin": name.startswith("Thin"),
         "hulk": "Hulk" in name,
         # ``Male`` is the project's Average body (there is no Average asset).
         "average": name == "Male",
@@ -180,7 +181,11 @@ def _front_torso_patches(xx, yy, a, flags):
         # A breast is a supported teardrop: the lobe is anchored between its
         # apex, fold and armpit, then the fold and cleavage cut it back into
         # the cage.  This deliberately has no free spherical "add-on".
-        lift = 4.5 if flags["fat"] else 3.8
+        # Thin_Female still has a small attached breast in the sources.  Its
+        # narrow measured support needs a little more local height than an
+        # Average patch to remain readable after the smooth cage envelope,
+        # never a broader or spherical lobe.
+        lift = 4.5 if flags["fat"] else 4.3 if flags["thin"] else 3.8
         for apex, fold_side, armpit in breast_pairs:
             if apex is None:
                 continue
