@@ -64,6 +64,7 @@ void main(){
  vec2 uvE=vec2(vP.z+off.z+.5,erow.x+f*(erow.y-erow.x)+.5)/512.;
  vec3 a=no.z>0.?texture2D(tS,uvS).rgb:texture2D(tN,uvN).rgb;
  a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.55,.8,abs(no.x)));
+ a=mix(vec3(1.),a,smoothstep(.45,.8,max(abs(no.z),abs(no.x))));
  float gt=no.z>0.?texture2D(gS,uvS).r:texture2D(gN,uvN).r;
  gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));gt=mix(gt,1.,gm);
  // looking along one of the three sprite axes: the sprite's own maps (albedo, ink, baked tone) are shown whatever the normal says, so the view is the 2D capture;
@@ -76,7 +77,10 @@ float lb=0.;float wS=smoothstep(.93,.99,cdir.z),wN=smoothstep(.93,.99,-cdir.z),w
  float s=-nv.y/max(nv.z,.05);
  float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,lc);
  float form=mix(mix(fl,1.,wa),1.,clamp(dot(nr,normalize(vec3(-.3,.5,.8)))*.5+.5,0.,1.));
- gl_FragColor=vec4(a*(1.-mix(loss*gt,lb,wa))*form,opacity);
+ float lbn=no.z>0.?texture2D(bS,uvS).r:texture2D(bN,uvN).r;lbn=mix(lbn,texture2D(bE,uvE).r,smoothstep(.55,.8,abs(no.x)))*.6;
+ float wb=smoothstep(.74,.97,max(abs(no.z),abs(no.x)));
+ vec3 col=a*(1.-mix(mix(loss*gt,lbn,wb),lb,wa))*form;
+ gl_FragColor=vec4(col,opacity);
 }`});
 // constant-width black outline: screen-space pass on the body mask (the sprite outline is a fixed width inside the silhouette)
 const RT=new THREE.WebGLMultisampleRenderTarget(2,2,{format:THREE.RGBAFormat});

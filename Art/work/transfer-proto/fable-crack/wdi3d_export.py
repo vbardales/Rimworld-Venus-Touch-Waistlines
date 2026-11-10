@@ -73,6 +73,12 @@ def baked_loss(h, m):
     return np.clip((1.0 - w.tone_of_slope(w.closed(h))) * m / BAKE_MAX, 0, 1)
 
 
+def baked_open(h, m):
+    """Same tone as baked_loss for a field that is already crease-free (the hollowed mesh field): no closing, so the
+    valleys the mesh carries are in the three sprite views too and match the 3/4 views."""
+    return np.clip((1.0 - w.tone_of_slope(h)) * m / BAKE_MAX, 0, 1)
+
+
 def gray_uri(g):
     buf = io.BytesIO()
     Image.fromarray(np.clip(255 * g + 0.5, 0, 255).astype(np.uint8)).save(buf, "PNG", optimize=True)
@@ -86,8 +92,8 @@ HOLLOW = float(os.environ.get("HOLLOW", 10.0))        # px, blur of the artist's
 CHEST = float(os.environ.get("CHEST", 14.0))          # sternal dip between the pecs / breasts
 ABS = float(os.environ.get("ABS", 5.0))               # linea alba
 SPINE = float(os.environ.get("SPINE", 8.0))           # spine groove, low back
-CLEFT = float(os.environ.get("CLEFT", 26.0))          # intergluteal cleft
-CURL = float(os.environ.get("CURL", 12.0))            # lower edge of the lobes curls under (gluteal fold)
+CLEFT = float(os.environ.get("CLEFT", 10.0))          # intergluteal cleft
+CURL = float(os.environ.get("CURL", 8.0))            # lower edge of the lobes curls under (gluteal fold)
 FAT_FILL = {"Fat": 0.6, "Fat_Female": 0.6}            # fraction of the notch depth left on bodies whose fat fills the notches
 HOLLOW_SIGMA = float(os.environ.get("HOLLOW_SIGMA", 9.0))
 
@@ -103,7 +109,7 @@ def notch_profile(t, back):
         a = ramp(t, 0.38, 0.46) * (1 - ramp(t, 0.74, 0.82))
         return CHEST * e + ABS * a, 0.06 * e + 0.03 * a + 0.03 * (1 - e - a)
     sp = ramp(t, 0.20, 0.55) * (1 - ramp(t, 0.64, 0.70))
-    cl = ramp(t, 0.64, 0.76)
+    cl = ramp(t, 0.82, 0.93)
     return SPINE * sp + CLEFT * cl, 0.04 * sp + 0.022 * cl + 0.04 * (1 - sp - cl)
 
 
@@ -137,11 +143,12 @@ def hollowed(h, img, m, width, back=False, fill=1.0):
 def one(body):
     z = np.load(HERE / "out" / f"wdi3d-{body}.npz")
     imgs, M, _ = w.load(body)
+    zf = {f: z[f] for f in ("south", "north", "east")}
     wd = {f: w.outline_width(imgs[f], M[f]) for f in imgs}
-    fields = {"south": hollowed(z["south"], imgs["south"], M["south"], wd["south"], fill=FAT_FILL.get(body, 1.0)), "north": hollowed(z["north"], imgs["north"], M["north"], wd["north"], back=True, fill=FAT_FILL.get(body, 1.0)), "zc": z["zc"]}
+    fields = {"south": hollowed(zf["south"], imgs["south"], M["south"], wd["south"], fill=FAT_FILL.get(body, 1.0)), "north": hollowed(zf["north"], imgs["north"], M["north"], wd["north"], back=True, fill=FAT_FILL.get(body, 1.0)), "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
-    e["bake"] = {f[0]: gray_uri(baked_loss(z[f], M[f])) for f in ("south", "north", "east")}
+    e["bake"] = {"s": gray_uri(baked_open(fields["south"], M["south"])), "n": gray_uri(baked_open(fields["north"], M["north"])), "e": gray_uri(baked_loss(zf["east"], M["east"]))}
     e["gate"] = {f[0]: gray_uri(grey_gate(imgs[f], M[f])) for f in ("south", "north", "east")}
     e["outline"] = round(float(np.mean([w.outline_width(imgs[f], M[f]) for f in imgs])), 1)
     return e
