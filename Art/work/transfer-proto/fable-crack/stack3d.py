@@ -661,7 +661,7 @@ def fat_field(G, lean, bone, T, ty, prm=MALE):
         top, ra, rf, xa = br
         rowgate = sstep((R - top) / max(ra - top, 1.0)) * (1.0 - sstep((R - rf) / max(0.4 * (rf - ra), 5.0)))
         lobes = np.exp(-((X - xa) / (0.72 * xa)) ** 2)        # two lobes (the mirror gives the other), a cleavage between them
-        wf = wf * (1.0 - rowgate) + rowgate * (0.25 * wf + 0.75 * lobes * (c > 0))
+        wf = wf * (1.0 - rowgate) + rowgate * (0.25 * wf + 0.75 * lobes * np.clip(c, 0, 1) ** 0.7)   # front-facing only: no fat thrown sideways
     t = np.maximum(ef * wf + eb * wb + es * s2, ty["tmin"])
     return np.minimum(redistance(G, lean) - t, bone - prm["fat_bone"]).astype(np.float32)
 
