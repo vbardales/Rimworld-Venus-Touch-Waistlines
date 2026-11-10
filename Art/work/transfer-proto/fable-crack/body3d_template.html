@@ -45,14 +45,14 @@ const isWdi=e=>!!(e&&e.tex);
 const WDI=isWdi(Object.values(DATA.shade.bodies)[0]);
 Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:WDI?'modèle WDI (wdi3d)':'relief + ombres + jambes',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
 Object.keys(DATA.shade.bodies).forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
-let G=null;
+let G=null,fitD=1000;
 const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THREE.DoubleSide});
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
- uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1}},
+ uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){vP=position;vNo=normal;vNr=normalMatrix*normal;vNv=normalMatrix*vec3(normal.x,normal.y+tilt*normal.z,normal.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;
+ fragmentShader:`uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;
 varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){
  vec3 nv=normalize(vNv);vec3 no=normalize(vNo);vec3 nr=normalize(vNr);
@@ -62,17 +62,38 @@ void main(){
  vec2 uvN=vec2(off.y-vP.x+.5,rows.z+f*(rows.w-rows.z)+.5)/512.;
  vec2 uvE=vec2(vP.z+off.z+.5,erow.x+f*(erow.y-erow.x)+.5)/512.;
  vec3 a=no.z>0.?texture2D(tS,uvS).rgb:texture2D(tN,uvN).rgb;
- a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.75,.9,abs(no.x)));
+ a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.55,.8,abs(no.x)));
+ float gt=no.z>0.?texture2D(gS,uvS).r:texture2D(gN,uvN).r;
+ gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));
  float s=-nv.y/max(nv.z,.05);
  float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,.6);
- float d=nr.z/max(fwidth(nr.z),1e-5);
- float rim=nr.z<.6?1.-smoothstep(2.*pxw-1.,2.*pxw+1.,d):0.;
- gl_FragColor=vec4(a*(1.-loss)*(1.-rim),opacity);
+ float form=mix(.8,1.,clamp(dot(nr,normalize(vec3(-.3,.5,.8)))*.5+.5,0.,1.));
+ gl_FragColor=vec4(a*(1.-loss*gt)*form,opacity);
 }`});
+// constant-width black outline: screen-space pass on the body mask (the sprite outline is a fixed width inside the silhouette)
+const RT=new THREE.WebGLMultisampleRenderTarget(2,2,{format:THREE.RGBAFormat});
+const post=new THREE.Scene(),pcam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const pmat=new THREE.ShaderMaterial({transparent:true,depthTest:false,depthWrite:false,uniforms:{tD:{value:RT.texture},px:{value:new THREE.Vector2(1,1)},r:{value:10},on:{value:1}},
+ vertexShader:'varying vec2 u;void main(){u=uv;gl_Position=vec4(position.xy,0.,1.);}',
+ fragmentShader:`uniform sampler2D tD;uniform vec2 px;uniform float r;uniform float on;varying vec2 u;
+void main(){vec4 c=texture2D(tD,u);if(c.a<.01){gl_FragColor=vec4(0.);return;}
+ float e=0.;
+ for(int i=0;i<16;i++){float a=float(i)*.3926991;vec2 d=vec2(cos(a),sin(a));
+  e=max(e,1.-texture2D(tD,u+d*px*r).a);e=max(e,1.-texture2D(tD,u+d*px*r*.66).a);e=max(e,1.-texture2D(tD,u+d*px*r*.33).a);}
+ e=on*smoothstep(.2,.8,e);
+ gl_FragColor=vec4(mix(c.rgb/c.a,vec3(.03,.03,.04),e),max(c.a,e));}`});
+post.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),pmat));
 const texOf=u=>{const t=new THREE.TextureLoader().load(u);t.flipY=false;t.generateMipmaps=false;t.minFilter=t.magFilter=THREE.LinearFilter;return t};
 let cur=skin,outlinePx=13;
 const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
 const flesh=new THREE.MeshStandardMaterial({color:0xc48a76,roughness:.75});
+// ring-to-ring noise of the mesh normals sits at the toon threshold and bands the greys: low-pass the normals on the grid (rows more than ring)
+function smoothNormals(g,R,A){const n=g.attributes.normal.array,m=R*A,t=new Float32Array(m*3);
+  const pass=(rowDir)=>{for(let i=0;i<R;i++)for(let k=0;k<A;k++){let a,b;
+    if(rowDir){a=Math.max(0,i-1)*A+k;b=Math.min(R-1,i+1)*A+k}else{a=i*A+(k+A-1)%A;b=i*A+(k+1)%A}
+    const c=i*A+k;for(let j=0;j<3;j++)t[c*3+j]=.5*n[c*3+j]+.25*n[a*3+j]+.25*n[b*3+j]}
+    for(let c=0;c<m;c++){const x=t[c*3],y=t[c*3+1],z=t[c*3+2],l=Math.hypot(x,y,z)||1;n[c*3]=x/l;n[c*3+1]=y/l;n[c*3+2]=z/l}};
+  for(let s=0;s<60;s++)pass(true);pass(false);pass(false);g.attributes.normal.needsUpdate=true}
 function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null}={}){
   const R=rows.length,pos=[],idx=[];
   for(let i=0;i<R;i++)for(let k=0;k<A;k++){const j=k*3;pos.push(rows[i][j],rows[i][j+1],rows[i][j+2])}
@@ -86,7 +107,7 @@ function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null}={}){
   }
   if(capTop)cap(rows[0],false);if(capBottom)cap(rows[R-1],true);
   const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();smoothNormals(g,R,A);
   // slope of the body's centre plane at each vertex: the wdi material lights the surface relative to that plane
   const tl=new Float32Array(pos.length/3);if(tilt)for(let i=0;i<tl.length;i++)tl[i]=tilt(pos[i*3+1]);
   g.setAttribute('tilt',new THREE.Float32BufferAttribute(tl,1));
@@ -198,6 +219,7 @@ function build(){
   G=new THREE.Group();
   cur=isWdi(e)?wdiMat:skin;
   if(isWdi(e)){const u=wdiMat.uniforms,F=e.frame;u.tS.value=texOf(e.tex.s);u.tN.value=texOf(e.tex.n);u.tE.value=texOf(e.tex.e);
+    u.gS.value=texOf(e.gate.s);u.gN.value=texOf(e.gate.n);u.gE.value=texOf(e.gate.e);
     u.rows.value.set(F.s[0],F.s[1],F.n[0],F.n[1]);u.erow.value.set(F.e[0],F.e[1]);u.off.value.set(F.cxs,F.cxn,F.zmean);outlinePx=e.outline||13}
   const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null;
   const zc=e.frame&&e.frame.zc,tilt=zc?y=>{const r=Math.max(1,Math.min(zc.length-2,Math.round(-y-e.frame.s[0])));return -(zc[r+1]-zc[r-1])/2}:null;
@@ -207,6 +229,7 @@ function build(){
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
+  fitD=Math.max(bb.max.y-bb.min.y,(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
   apply();$('note').textContent=NOTES[isWdi(e)?'wdi':mode];
 }
 function apply(){
@@ -215,14 +238,18 @@ function apply(){
   cur.wireframe=$('w').checked;cur.transparent=(sk||op<1);cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=!(sk||op<1);cur.needsUpdate=true;
   G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked});
 }
-function view(v){const d=1000;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
+function view(v){const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
 sel.onchange=msel.onchange=build;['sk','og','w','op'].forEach(i=>$(i).oninput=apply);
 document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
-build();view(0);
+build();view(0);sel.addEventListener('change',()=>view(0));msel.addEventListener('change',()=>view(0));
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
 (function loop(){requestAnimationFrame(loop);ctl.update();
   // outline width of the sprite (world px) in device pixels at the current zoom
   wdiMat.uniforms.pxw.value=outlinePx*innerHeight*ren.getPixelRatio()/(2*Math.tan(cam.fov*Math.PI/360)*cam.position.distanceTo(ctl.target));
-  ren.render(sc,cam)})();
+  const sz=new THREE.Vector2();ren.getDrawingBufferSize(sz);
+  if(RT.width!==sz.x||RT.height!==sz.y)RT.setSize(sz.x,sz.y);
+  if(cur===wdiMat){pmat.uniforms.px.value.set(1/sz.x,1/sz.y);pmat.uniforms.r.value=wdiMat.uniforms.pxw.value;
+    ren.setRenderTarget(RT);ren.setClearColor(0x000000,0);ren.clear();ren.render(sc,cam);ren.setRenderTarget(null);ren.clear();ren.render(post,pcam)}
+  else ren.render(sc,cam)})();
 }
 </script></body></html>

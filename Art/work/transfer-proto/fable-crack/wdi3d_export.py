@@ -20,6 +20,7 @@ import sys
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage as ndi
 
 import relief_export2 as rx
 import wdi3d as w
@@ -45,12 +46,33 @@ def ink_map(h, img, m):
     return albedo * (1 - ink[..., None])
 
 
+GATE_LUM = 0.93   # sprite luminance under which the artist painted a grey (or ink)
+
+
+def grey_gate(img, m):
+    """0..1 where the sprite has grey or ink, soft edge: the viewer lets the mesh light grey the skin only there.
+
+    The mesh keeps the profile steps (under-breast shelf, buttock fold) as full-width facets; the drawing
+    greys only a wedge of them. Extent comes from the drawing, tone and slope from the mesh.
+    """
+    g = ((w.c1.lum(img) < GATE_LUM) & (m > 0)).astype(float)
+    g = ndi.maximum_filter(g, size=9)
+    return np.clip(1.6 * ndi.gaussian_filter(g, 4.0), 0, 1)
+
+
+def gray_uri(g):
+    buf = io.BytesIO()
+    Image.fromarray(np.clip(255 * g + 0.5, 0, 255).astype(np.uint8)).save(buf, "PNG", optimize=True)
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+
 def one(body):
     z = np.load(HERE / "out" / f"wdi3d-{body}.npz")
     imgs, M, _ = w.load(body)
     fields = {"south": w.closed(z["south"]) * M["south"], "north": w.closed(z["north"]) * M["north"], "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
+    e["gate"] = {f[0]: gray_uri(grey_gate(imgs[f], M[f])) for f in ("south", "north", "east")}
     e["outline"] = round(float(np.mean([w.outline_width(imgs[f], M[f]) for f in imgs])), 1)
     return e
 

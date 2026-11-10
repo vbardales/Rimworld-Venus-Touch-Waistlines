@@ -169,6 +169,34 @@ Housekeeping: `out/relief3d-shade5.json` and `out/body3d-compare/*.png` were mod
 
 Next: the streaks and the large "moved" values have the same cause, the generic lobes. Replace them by the muscle and fat-pad volumes of `ANATOMY-LAYERS.md` for Fat and Hulk first (belly apron, gluteal lobes, pec and latissimus planes), so that the base already has white flats and down-facing facets where the sprite has them and the fit only trims. Then feed the fields to the mesh export.
 
+### Viewer material fix (2026-11-10, Fable session)
+
+Reproduced headlessly: `viewcap.py` (playwright chromium, swiftshader) captures south, east, north of every body from the html into `captures/2026-11-10_viewer-<tag>-<Body>.png` and an overview. Run `uv run --with playwright --with pillow python viewcap.py <tag> [Body ...]` (once: `uv run --with playwright playwright install chromium`). Before: `2026-11-10_viewer-before-*.png` (Male, Fat_Female); after: `2026-11-10_viewer-b2-*.png`.
+
+Causes found, in the order they were hit:
+1. Black blobs on the rim: the rim came from `fwidth(normal.z)`, which is noise on a ragged normal field. Replaced by a screen-space outline pass (render target, then a full-screen pass: a body pixel is black if any of 48 samples on three circles of radius `pxw` falls on the background). Constant width, `pxw` = sprite outline (12.8 px) at the current zoom. `WebGLMultisampleRenderTarget` keeps it antialiased.
+2. Fine horizontal banding of the greys: the vertex normals of a 360-ring mesh with sub-pixel row spacing are noisy against the toon threshold. The normals are now low-passed on the grid after `computeVertexNormals` (60 passes along the rows, 2 along the ring, [1 2 1]), then `tilt` and the toon transfer as before.
+3. Full-width bands at the waist, lower belly and under the chest: `relief_export2.constrain_east_profile` (hard cap) rescales the depth of each row by its own factor, and the factors jump from row to row. For the wdi3d fields the hard cap is gone (`WDI_CAP=hard` brings it back). The fitted fields drift from the east profile (p95 10 to 19 px without any correction, `east_check.py`), so they get `correct_east_profile`: front and back shift per row toward the east profile, both directions, the shift smoothed along the rows (`WDI_CAP_SIGMA`, 6 rows default), ring remapped piecewise-linearly around its mid depth. Profile p95 (px) at sigma 3 / 6 (default, used for the viewer shots) / 8: see the table below.
+4. Remaining grey strips (under-breast shelf, buttock fold): real profile steps, lit as full-width facets, while the sprite greys only a wedge. New `gate` maps (`wdi3d_export.grey_gate`, three grayscale 512 px maps per body, sprite luminance under 0.93, dilated 9 px, blurred 4 px): the mesh light greys the skin only inside the gate. Extent comes from the drawing, slope and tone from the mesh.
+5. Form: a soft light term (`mix(.8,1,n.l)`) so a white body shows its volume when turned; east crease map selected from `|n.x| > .55 to .8` (was .75 to .9) to remove the stair-step streaks of the south/north maps at grazing angles; camera distance fitted to the body size and width (was a fixed 1000, tiny Thin bodies and clipped Fat ones).
+
+Profile p95 of the mesh against the east sprite (abs front/back error, px, `east_check.py`):
+
+| Body | no correction | sigma 3 | sigma 6 | sigma 8 |
+|---|---|---|---|---|
+| Male | 10.5 | 0.42 | 1.15 | 1.67 |
+| Female | 10.7 | 0.46 | 1.23 | 1.72 |
+| Thin | 3.5 | 0.19 | 0.60 | 0.98 |
+| Thin_Female | 10.4 | 0.37 | 1.01 | 1.42 |
+| Fat | 17.4 | 0.57 | 1.78 | 2.54 |
+| Fat_Female | 18.5 | 0.59 | 1.67 | 2.30 |
+| Hulk | 15.8 | 0.60 | 1.47 | 2.09 |
+| Hulk_Female | 19.2 | 0.52 | 1.30 | 1.95 |
+
+Without any east correction the viewer east silhouettes were slabs (no breast, no belly); with it they follow WDI.
+
+Read from `2026-11-10_viewer-b2-overview.png`: all eight bodies read in south, east, north; constant black outline; no blobs; chest, belly and hips show; the fine banding is gone. Still wrong: Hulk_Female south and Hulk east keep a grey blotch at the chest-to-abdomen step (a real profile step, drawn grey there in WDI too, but wider in the mesh); the buttock base greys on the north views as a flat strip; the outline is as thick as WDI's, which hides the flanks at 560 px; creases are maps, not geometry.
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:

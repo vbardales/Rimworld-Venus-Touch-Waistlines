@@ -123,6 +123,43 @@ def constrain_east_profile(rows, south_mask, east_mask, zmean):
     return constrained
 
 
+def correct_east_profile(rows, south_mask, east_mask, zmean, sigma):
+    """Pull the front and back of each ring onto the measured east profile, both ways, with a row-smoothed correction.
+
+    The fitted wdi3d fields drift from the profile (the fit follows the drawn shading), up to 10-20 px at p95.
+    The hard cap of constrain_east_profile cured only the too-deep rows and, row by row, cut horizontal bands
+    into the lit mesh. Here the per-row shift of the front and of the back is smoothed along the rows
+    (sigma in rows), then the ring is remapped piecewise-linearly around its mid depth.
+    """
+    n = len(rows)
+    f = rows[:, :, 2].max(axis=1)
+    b = rows[:, :, 2].min(axis=1)
+    df = np.zeros(n)
+    db = np.zeros(n)
+    ok = np.zeros(n, bool)
+    for i, row in enumerate(rows):
+        bounds = east_profile_bounds(row[0, 1], south_mask, east_mask, zmean)
+        if bounds is None:
+            continue
+        db[i] = bounds[0] - b[i]
+        df[i] = bounds[1] - f[i]
+        ok[i] = True
+    if ok.any():
+        idx = np.arange(n)
+        df = np.interp(idx, idx[ok], df[ok])
+        db = np.interp(idx, idx[ok], db[ok])
+    if sigma > 0:
+        df = ndi.gaussian_filter1d(df, sigma, mode="nearest")
+        db = ndi.gaussian_filter1d(db, sigma, mode="nearest")
+    for i, row in enumerate(rows):
+        m = 0.5 * (f[i] + b[i])
+        z = row[:, 2]
+        up = np.clip((z - m) / max(f[i] - m, 1e-6), 0, 1)
+        dn = np.clip((m - z) / max(m - b[i], 1e-6), 0, 1)
+        row[:, 2] = z + up * df[i] + dn * db[i]
+    return int(ok.sum())
+
+
 def _smooth(values, radius=2):
     """Five-level edge-preserving box smoothing, matching the viewer cage."""
     padded = np.pad(np.asarray(values, float), (radius, radius), mode="edge")
@@ -356,7 +393,13 @@ def one(body, fields=None):
     rows = ndi.gaussian_filter1d(np.array(rows), SIGMA_ROWS if fields is None else 3.0, axis=0, mode="nearest")
     zmean = float(np.mean(rows[..., 2]))
     rows[..., 2] -= zmean
-    profile_rows = constrain_east_profile(rows, ms, me, zmean)
+    cap_mode = os.environ.get("WDI_CAP", "smooth")
+    if fields is None or cap_mode == "hard":
+        profile_rows = constrain_east_profile(rows, ms, me, zmean)
+    elif cap_mode == "smooth":
+        profile_rows = correct_east_profile(rows, ms, me, zmean, float(os.environ.get("WDI_CAP_SIGMA", 6.0)))
+    else:
+        profile_rows = 0
     legs = None
     if ysplit is not None and s1 - ysplit >= 2:
         L, Rr = [], []
