@@ -82,7 +82,8 @@ def gray_uri(g):
 HOLLOW = float(os.environ.get("HOLLOW", 18.0))        # px of depth of the broad hollows (0 = none)
 GLUTE = float(os.environ.get("GLUTE", 22.0))         # px of extra cleft depth between the buttocks
 GLUTE_CURL = float(os.environ.get("GLUTE_CURL", 24.0))   # px the lower edge of the lobes curls under
-MIDLINE = float(os.environ.get("MIDLINE", 18.0))     # px of depth of the median valley
+MID_SIGMA = float(os.environ.get("MID_SIGMA", 0.10))   # median valley half-width, fraction of the row width
+MIDLINE = float(os.environ.get("MIDLINE", 36.0))     # px of depth of the median valley
 HOLLOW_SIGMA = float(os.environ.get("HOLLOW_SIGMA", 9.0))
 
 
@@ -105,7 +106,7 @@ def hollowed(h, img, m, width, back=False):
         r = np.nonzero(m[y])[0]
         if len(r) < 8:
             continue
-        cx, s = 0.5 * (r[0] + r[-1]), max(0.06 * (r[-1] - r[0]), 3.0)
+        cx, s = 0.5 * (r[0] + r[-1]), max(MID_SIGMA * (r[-1] - r[0]), 3.0)
         mid[y] = np.exp(-0.5 * ((np.arange(N) - cx) / s) ** 2)
     t = (yy - y0) / max(y1 - y0, 1)                   # 0 top .. 1 bottom of the sprite: taper in at the shoulders, out at the pelvis
     mid *= np.clip((t - 0.10) / 0.12, 0, 1) * (np.clip((0.80 - t) / 0.12, 0, 1) if not back else 1.0)
