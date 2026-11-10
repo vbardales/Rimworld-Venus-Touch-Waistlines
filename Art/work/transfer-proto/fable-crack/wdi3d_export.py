@@ -80,7 +80,7 @@ def gray_uri(g):
 
 
 HOLLOW = float(os.environ.get("HOLLOW", 18.0))        # px of depth of the broad hollows (0 = none)
-GLUTE = float(os.environ.get("GLUTE", 22.0))         # px of extra cleft depth between the buttocks
+GLUTE = float(os.environ.get("GLUTE", 46.0))         # px of extra cleft depth between the buttocks
 GLUTE_CURL = float(os.environ.get("GLUTE_CURL", 24.0))   # px the lower edge of the lobes curls under
 MID_SIGMA = float(os.environ.get("MID_SIGMA", 0.10))   # median valley half-width, fraction of the row width
 MIDLINE = float(os.environ.get("MIDLINE", 36.0))     # px of depth of the median valley
