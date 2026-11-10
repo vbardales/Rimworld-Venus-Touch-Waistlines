@@ -79,19 +79,39 @@ def gray_uri(g):
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
 
-HOLLOW = float(os.environ.get("HOLLOW", 18.0))        # px of depth of the broad hollows (0 = none)
-GLUTE = float(os.environ.get("GLUTE", 46.0))         # px of extra cleft depth between the buttocks
-GLUTE_CURL = float(os.environ.get("GLUTE_CURL", 24.0))   # px the lower edge of the lobes curls under
-MID_SIGMA = float(os.environ.get("MID_SIGMA", 0.10))   # median valley half-width, fraction of the row width
-MIDLINE = float(os.environ.get("MIDLINE", 36.0))     # px of depth of the median valley
+# Depths (px) of the notches, from ANATOMY-LAYERS.md sections 1, 3 and 5: the sternum is a bone floor (shallow dip between the
+# pecs), the linea alba is a faint notch, the spine groove is shallow under the trapezius and deeper at the low back, the
+# intergluteal cleft is the deep and narrow notch. Fat fills the notches. No numbers in the sources: set by eye.
+HOLLOW = float(os.environ.get("HOLLOW", 10.0))        # px, blur of the artist's strokes (seams between volumes)
+CHEST = float(os.environ.get("CHEST", 14.0))          # sternal dip between the pecs / breasts
+ABS = float(os.environ.get("ABS", 5.0))               # linea alba
+SPINE = float(os.environ.get("SPINE", 8.0))           # spine groove, low back
+CLEFT = float(os.environ.get("CLEFT", 26.0))          # intergluteal cleft
+CURL = float(os.environ.get("CURL", 12.0))            # lower edge of the lobes curls under (gluteal fold)
+FAT_FILL = {"Fat": 0.6, "Fat_Female": 0.6}            # fraction of the notch depth left on bodies whose fat fills the notches
 HOLLOW_SIGMA = float(os.environ.get("HOLLOW_SIGMA", 9.0))
 
 
-def hollowed(h, img, m, width, back=False):
-    """Crease-free volume with broad soft hollows along the artist's creases (sternum, ab grooves, spine, scapulae).
+def ramp(t, a, b):
+    return np.clip((t - a) / max(b - a, 1e-6), 0, 1)
 
-    The creases are thin strokes; the hollow is their blur, scaled by the local height so it dies at the silhouette.
-    The 3/4 views then have a valley where the drawing has a line; the three sprite views keep the baked tone.
+
+def notch_profile(t, back):
+    """Depth (px) and half-width (fraction of the row width) of the median notch at height t (0 top .. 1 bottom of the sprite)."""
+    if not back:
+        e = ramp(t, 0.10, 0.18) * (1 - ramp(t, 0.38, 0.46))
+        a = ramp(t, 0.38, 0.46) * (1 - ramp(t, 0.74, 0.82))
+        return CHEST * e + ABS * a, 0.06 * e + 0.03 * a + 0.03 * (1 - e - a)
+    sp = ramp(t, 0.20, 0.55) * (1 - ramp(t, 0.64, 0.70))
+    cl = ramp(t, 0.64, 0.76)
+    return SPINE * sp + CLEFT * cl, 0.04 * sp + 0.022 * cl + 0.04 * (1 - sp - cl)
+
+
+def hollowed(h, img, m, width, back=False, fill=1.0):
+    """Crease-free volume with soft hollows: the blur of the artist's strokes plus the median notch of the torso.
+
+    The three sprite views keep the baked tone; the 3/4 views get the valleys.  All depths are scaled by local height so
+    they die at the silhouette.
     """
     L = w.wdi_lines(img, m, width)
     b = ndi.gaussian_filter(L, HOLLOW_SIGMA)
@@ -100,27 +120,25 @@ def hollowed(h, img, m, width, back=False):
     rel = np.clip(hc / max(float(hc.max()), 1e-6) * 2.0, 0, 1)
     ys, xs = np.nonzero(m)
     y0, y1 = ys.min(), ys.max()
-    yy, xx = np.mgrid[0:N, 0:N]
-    mid = np.zeros((N, N))
-    for y in range(y0, y1 + 1):                       # median valley: sternum and abdomen (south), spine (north)
+    notch = np.zeros((N, N))
+    cols = np.arange(N)
+    for y in range(y0, y1 + 1):
         r = np.nonzero(m[y])[0]
         if len(r) < 8:
             continue
-        cx, s = 0.5 * (r[0] + r[-1]), max(MID_SIGMA * (r[-1] - r[0]), 3.0)
-        mid[y] = np.exp(-0.5 * ((np.arange(N) - cx) / s) ** 2)
-    t = (yy - y0) / max(y1 - y0, 1)                   # 0 top .. 1 bottom of the sprite: taper in at the shoulders, out at the pelvis
-    mid *= np.clip((t - 0.10) / 0.12, 0, 1) * (np.clip((0.80 - t) / 0.12, 0, 1) if not back else 1.0)
-    glute = np.zeros((N, N))
-    if back:                                            # buttocks: deeper cleft in the lower rows, lower edge of each lobe curls under (sub-gluteal fold)
-        glute = GLUTE * mid * np.clip((t - 0.62) / 0.12, 0, 1) + GLUTE_CURL * np.clip((t - 0.90) / 0.10, 0, 1) ** 2
-    return np.maximum(hc - HOLLOW * b * rel - MIDLINE * mid * rel - glute * rel, 0.0) * m
+        depth, sig = notch_profile((y - y0) / max(y1 - y0, 1), back)
+        notch[y] = fill * depth * np.exp(-0.5 * ((cols - 0.5 * (r[0] + r[-1])) / max(sig * (r[-1] - r[0]), 2.0)) ** 2)
+    yy = np.mgrid[0:N, 0:N][0]
+    t = (yy - y0) / max(y1 - y0, 1)
+    curl = fill * CURL * ramp(t, 0.92, 1.0) ** 2 if back else 0.0
+    return np.maximum(hc - HOLLOW * b * rel - (notch + curl) * rel, 0.0) * m
 
 
 def one(body):
     z = np.load(HERE / "out" / f"wdi3d-{body}.npz")
     imgs, M, _ = w.load(body)
     wd = {f: w.outline_width(imgs[f], M[f]) for f in imgs}
-    fields = {"south": hollowed(z["south"], imgs["south"], M["south"], wd["south"]), "north": hollowed(z["north"], imgs["north"], M["north"], wd["north"], back=True), "zc": z["zc"]}
+    fields = {"south": hollowed(z["south"], imgs["south"], M["south"], wd["south"], fill=FAT_FILL.get(body, 1.0)), "north": hollowed(z["north"], imgs["north"], M["north"], wd["north"], back=True, fill=FAT_FILL.get(body, 1.0)), "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
     e["bake"] = {f[0]: gray_uri(baked_loss(z[f], M[f])) for f in ("south", "north", "east")}
