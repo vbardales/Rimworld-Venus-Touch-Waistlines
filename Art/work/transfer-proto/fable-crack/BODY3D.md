@@ -218,7 +218,7 @@ Score of the viewer, three views, ORTHO captures (`viewscore.py`, tag q6, camera
 | Hulk | 3.0 / 0.029 | 2.0 / 0.024 | 4.0 / 0.017 |
 | Hulk_Female | 3.0 / 0.029 | 2.8 / 0.041 | 3.0 / 0.023 |
 
-These gaps are above the 2D capture gaps (0.009 to 0.022) because the render goes through a perspective-free GL pass, antialiasing, a bounding-box fit and a resample, and because thin strokes mis-registered by one pixel count twice. Same pipeline before the baked tone: 0.03 to 0.12 (Male south 0.066 to 0.083, Fat_Female east 0.089 to 0.099). Boards: `captures/2026-11-10_viewer-c2-<Body>.png` (south | east | north), `...-c2-overview.png`, and `...-c2-oblique.png` (Male, Fat_Female, Hulk_Female seen obliquely: lit mesh with the maps, still readable).
+These gaps are above the 2D capture gaps (0.009 to 0.022) because the render goes through a perspective-free GL pass, antialiasing, a bounding-box fit and a resample, and because thin strokes mis-registered by one pixel count twice. Same pipeline before the baked tone: 0.03 to 0.12 (Male south 0.066 to 0.083, Fat_Female east 0.089 to 0.099). Boards: `captures/2026-11-10_viewer-c2-<Body>.png` (south | east | north), `...-c2-overview.png`, and `...-c3-oblique.png` (Male, Fat_Female, Hulk_Female seen obliquely: lit mesh with the maps, still readable).
 
 Tried: soft form light darkens every view (form .8 vs 1.0: 0.095 vs 0.078 on Male south before the baking); cap of the grey at .35 helped the mesh-lit fallback alone (Fat_Female east 0.089 to 0.073) but is moot once the three views are baked. Kept `lc` at .6.
 
