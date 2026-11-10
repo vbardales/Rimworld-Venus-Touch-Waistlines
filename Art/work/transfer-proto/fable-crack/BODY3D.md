@@ -14,7 +14,8 @@ All files live under `Art/work/` (gitignored, force-added on branch `cloud-work`
 | `transfer-proto/fable-crack/body3d_template.html` | Viewer code (three.js r128): skin modes, the exported diagnostic skeleton, and organs. `__DATA__` is replaced by the datasets. |
 | `transfer-proto/fable-crack/body3d_build.py` | Rebuilds `captures/2026-11-08_body3d.html`, automatically replacing the first dataset with the latest export (`wdi3d-mesh.json`; `legacy` argument for `relief3d-shade5.json`). |
 | `transfer-proto/fable-crack/wdi3d.py`, `wdi3d_export.py` | The core + masses model fitted to the WDI drawing, and its export (mesh, crease maps, frame) for the viewer. |
-| `captures/2026-11-08_body3d.html` | The viewer (open in a browser, `squelette` checkbox, `east` button). |
+| `transfer-proto/fable-crack/stack3d.py`, `stack3d_export.py` | The stack model (Male): skeleton, viscera, muscle volumes, fat, skin as the outside of the stack, fitted to the three silhouettes; and its export for the viewer (rings, maps, bone and muscle meshes). Section "Stack model for Male". |
+| `captures/2026-11-08_body3d.html` | The viewer (open in a browser, `squelette` and `muscles` checkboxes, `east` button). |
 
 Run the active export: `uv run --with numpy --with pillow --with scipy --with scikit-image python relief_export2.py`; then `uv run --with numpy --with pillow --with scipy --with scikit-image python body3d_compare.py`; then `uv run python body3d_build.py`. Inspect both `out/body3d-compare/<body>-<view>.png` (source/mesh edge overlay) and `out/body3d-compare/<body>-<view>-surface.png` (source + anchors beside the active signed relief); neither may be replaced by the other.
 
@@ -258,6 +259,51 @@ What was tried and dropped (not committed): clavicle crests, vertebra bumps, sho
 Kept: the tone of the south and north sprite views is now baked from the same hollowed field as the mesh (`baked_open` in `wdi3d_export.py`), so the notches match the 3/4 views. Cost: the luminance gap against the WDI sprite rises (tag q13: south 0.036 to 0.058, north 0.024 to 0.051, east unchanged 0.022 to 0.039) because the valleys now exist in the tone and WDI has none there. Viewer: the baked tone is also used off axis near the sprite directions (`wb` in the shader), and the stroke maps fade where the surface turns away from their projection; `?sn=` and `?gm=` stay.
 
 Decision: rebuild from a skeleton, attach the muscle volumes to it, add fat, take the skin as the outside of the stack (`ANATOMY-LAYERS.md` section 4), Male first, then adapt to the other bodies, and finally fit to WDI by parameters (never by painting). Notches, the clavicle, the vertebrae, the blades and the gluteal bubbles then come out of the volumes. References sent by Virginie: anatomy4sculptors male buttocks (two cylinder-like gluteus maximus and medius bubbles, a short cleft low), muscle-layout sculpt of the torso and pelvis (back, side, front, with the genital placement).
+### Stack model for Male (2026-11-10, `stack3d.py`, `stack3d_export.py`)
+
+First build of the decision above, Male only. The volume is the union of the layers; nothing is drawn on a base. The wdi3d Male stays in the viewer as "Male (wdi3d)" for comparison; the seven other bodies are still wdi3d.
+
+Space and method. x = south column minus 258 (the body is symmetric, only x >= 0 is computed), r = south row, z = east column. Every part is a signed distance field on a 1 px voxel grid (2 px for tuning). Three kinds of parts:
+- free volumes: ellipsoids with a different radius on each side of each axis (eggs, half domes), round cones and chains of them, triangle plates;
+- lofted solids (rib barrel, abdominal cavity): one superellipse section per row from control rows (half width, front, back), closed by domes;
+- sheet muscles ("lens"): a thickness along the normal of what lies below, inside a polygon drawn in the front, back, flank or unwrapped projection, with a rounded border. A superficial sheet is laid on the stack built so far, a deep one on the bones and viscera.
+Unions use a small smooth radius, so the seam between two muscles stays a crease.
+
+Layers of the Male (`build_male`, numbers in `MALE`), placed from the sprite landmarks, the east profile and the two silhouettes:
+1. Bones: spine through the spinous tips (kyphosis, lordosis, one capsule per vertebra), rib barrel with the slanted inlet (T1 at row 212 behind, manubrium at row 250 in front) and the costal arch, sternum, S-curved clavicle from the notch (row 251) to the acromion (row 236), scapula blade with its spine and acromion, humerus stub, pelvis (iliac crest from the PSIS to the ASIS, wings, sacrum, coccyx, pubis, ischium), femur stub.
+2. Viscera: the abdominal cavity between the barrel and the pelvis.
+3. Muscles: arm stump, neck base and upper trapezius (the WDI dome above the clavicle and the scapular spine), serratus (four digitations), pectoralis major (fan, thicker at its lower border), rectus abdominis (four blocks a side), external oblique (ribs to iliac crest and inguinal ligament), erector spinae, infraspinatus-teres-rhomboid mound on the scapula, latissimus dorsi, middle and lower trapezius, thoracolumbar fascia with the multifidus, deltoid cap, gluteus medius, gluteus maximus, tensor fasciae latae with the hip flexors, thigh stump.
+4. Fat: 2.5 px everywhere, a 3.5 px floor over bare bone, and the male pads only where the sources put them (flank, lower abdomen, pubis, lower medial gluteal). Fat fills the notches: a hollow narrower than about 5 px is bridged (`fill_sigma`, `fill_gap`), a ridge is kept. Skin tethers stop that bridging along the lines where the skin is tied down (lower border of the pectoral, inguinal ligament, border of the scapula, intergluteal cleft, gluteal fold, front border of the arm). The navel is a pit on the linea alba.
+5. Skin: the outside of all that, with a 1 px blur as skin tension.
+
+WDI stylisation kept (WDI proportions win): the trunk is 245 px tall for 190 wide and 147 deep, the shoulders sit level with the neck base, so the neck base and the upper trapezius are one dome 50 px above the clavicle, the abdomen is 80 px for a 136 px chest, and the thighs are cut at the hip crease (the "thigh stump" closes the bottom as a wedge). The genitals are not in the stack; the viewer's `organes` checkbox still draws them.
+
+Fit to WDI (`Fit`, `Fits`): the model is first tuned by its parameters, then the whole stack (bones, muscles and skin together) gets a row-wise affine: width scale, front shift and back shift per row, smoothed along the rows (two passes, sigma 6 then 4 rows; `FIT_SIGMAS` overrides), plus one vertical scale and offset. Not painting, not a bump: every layer moves with the skin. Its size is the honest measure of what the parameters do not reach yet.
+
+Export and viewer: `stack3d_export.py` writes `out/stack3d-mesh.json` (not committed). The skin is 360 rings of 240 points cast from the axis of each row (one vertex every 2 px all around; the wdi3d mesh has one every 4 px across); rows with two pieces (above the neck dip, below the crotch) are separate ring stacks (`horns`, `legs`). Ink, tone and gate maps keep the wdi3d format but come from the stack's own surface: ink = depth of its narrow hollows, tone = top light with the wdi3d transfer, gate = 1; only the areola colour is read from the sprite. `layers` holds the bones as one mesh and each muscle and fat pad as its own mesh. `body3d_build.py` puts the stack body in the place of the wdi3d one. Viewer: `squelette` shows the bone mesh through a faint skin, `muscles` replaces the skin by the muscle layer (fat pads in yellow); `?sk=1`, `?mu=1` preset them; a body may carry its own ring size (`A`) and normal smoothing (`sn`, 2 passes here instead of 60).
+
+Run: `uv run --with numpy --with pillow --with scipy --with scikit-image python stack3d.py 1 <tag>` (boards `captures/2026-11-10_stack3d-<tag>-Male-views.png` and `-lit.png`; `2` instead of `1` and `nofit` for tuning), then `... python stack3d_export.py`, `uv run python body3d_build.py`, `... python east_check.py stack3d-mesh.json`, `ORTHO=1 ... python viewcap.py <tag> Male`, `... python viewscore.py <tag> Male`, `... python obliq.py <tag> Male ["?mu=1" | "?sk=1"]`.
+
+Scores (tag s4, boards `captures/2026-11-10_stack3d-s4-Male-*.png`, `2026-11-10_viewer-s4-Male.png`, `2026-11-10_obliq-s4-Male.png`, `-s4mu-`, `-s4sk-`):
+
+| Measure | Value |
+|---|---|
+| Model against the silhouettes before the fit (px, mean / p95): half width, front, back | 1.12 / 2.71, 2.07 / 5.34, 1.51 / 3.18 (worst rows: top of the dome and bottom of the stump) |
+| Left after the fit (px, mean / p95) | 0.26 / 1.11, 0.48 / 1.97, 0.26 / 0.68 |
+| Mesh against the east sprite, `east_check.py` (abs p95, px) | 0.89 (front 1.24, back 0.50, max 3.44) |
+| Viewer silhouette p95 (px), south / east / north, `viewscore.py` | 2.0 / 1.0 / 2.0 |
+| Viewer luminance gap, south / east / north (blank white: 0.085 / 0.070 / 0.057) | 0.133 / 0.116 / 0.111 |
+
+The luminance gap is worse than a blank white body and far from the wdi3d viewer (0.036 to 0.058). That is expected and it is the open work: the wdi3d tone was fitted to the drawing, this one is the top light on real volumes, with no reference to the drawing.
+
+Read from the boards:
+- Reads right: in 3/4 the skin is two pectoral lobes over an abdomen, a deltoid cap, a back with the blade mounds and the erectors, two gluteal bubbles each side (medius above, maximus below) with a short low cleft and a fold; the muscle view shows bounded volumes resting on the bones; the three sprite views are the same geometry as the 3/4 views, so they agree by construction; the three silhouettes follow WDI.
+- Reads wrong: (1) the capture is busier than WDI: grey on the lower third of the pectorals and under the blade mounds, where WDI is white (the WDI chest recedes there too, so the top-light rule and the drawing disagree); (2) faint horizontal bands on the belly and the flank in the east view, from the row-wise fit where the model and the profile differ by 2 to 5 px (pectoral shelf, armpit, top of the dome, bottom of the stump); (3) the east view is a jumble below the arm: WDI draws one smooth oval for the arm and a clean flank; (4) the sternum line and the pectoral fold are heavier than drawn, the clavicle shows as a full-width band where WDI has two short wings and a notch; (5) the abdomen shows four blocks where WDI has one intersection line; (6) the back shows two dark hollows at the waist between the latissimus and the gluteal top, and no blade crescent as drawn; (7) the muscle view has ragged sheet borders (the display cut, not the volume); (8) top front of the dome is 5 to 12 px proud before the fit.
+
+Tried and rejected in this pass: a gradient-normalised distance for the lofted barrel taken at each point (it collapses far from the slanted inlet and laid a plane across the body; the row gradient is now taken at the surface); the fat fill on the raw field (the field is only a distance near the stack, so the blur saw the far value and filled nothing; the field is clamped first); a fit with sigma 9 and 6 (bands hardly change, the east profile rises to p95 3.0); a fit with sigma 5 and 2.5 (profile 0.9 but strong bands).
+
+Next: (1) cut the fit, not smooth it: move the pectoral shelf, the armpit, the dome top and the stump bottom by their parameters until the residual before the fit is under 2 px, then the bands go; (2) the arm as one smooth oval in the east view and a clean flank; (3) the blade crescent and the waist; (4) only then Thin, Hulk, the female bodies (breast pads) and the fat bodies (pads and folds) from the same layers.
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:
