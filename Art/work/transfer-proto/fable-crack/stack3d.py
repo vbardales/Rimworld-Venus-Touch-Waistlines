@@ -326,6 +326,11 @@ class Stack:
     def mark(self, layer):
         self.layer_d[layer] = self.d.copy()
 
+    def show(self, name, prim, colour=(233, 228, 212), layer="bone"):
+        """Display volume only: drawn by the viewer, not part of the stack (the stack keeps its simple solids)."""
+        sl, a = self._eval(prim, 6.0)
+        self.parts.append((name, layer, colour, sl, a))
+
 
 # ---------------------------------------------------------------- lofted solids (rib barrel, viscera)
 def loft(G, ctrl, p=2.3, cap_top=6.0, cap_bot=6.0, cut=None):
@@ -439,8 +444,8 @@ def build_male(G, T, prm=MALE, ty=None):
         zs = float(fsp(r)); zb = zs + (17 if r > 306 else 14)
         body_pts.append((0, r, zb))
         S.add(f"vertebra {i}", "bone", cone((0, r - 1.5, zb - 3), (0, r + 2.0, zs + 2.2), 4.2, 2.2), colour=BONE, show=False)
-    S.add("spine", "bone", tube(body_pts, [6.5] * 14 + [7.8] * 5), colour=BONE)
-    S.add("spinous processes", "bone", tube([(0, r + 2.0, float(fsp(r)) + 2.4) for r in vr], 2.3), colour=BONE)
+    S.add("spine", "bone", tube(body_pts, [6.5] * 14 + [7.8] * 5), colour=BONE, show=False)
+    S.add("spinous processes", "bone", tube([(0, r + 2.0, float(fsp(r)) + 2.4) for r in vr], 2.3), colour=BONE, show=False)
 
     def costal(a, R):                                         # lower edge of the barrel: xiphoid, flank, 12th rib
         a = np.abs(a)
@@ -452,28 +457,29 @@ def build_male(G, T, prm=MALE, ty=None):
     X, R, Z = G.coords(csl)                                   # display: ribs = a shell of the barrel cut into slanted bands
     q = (R - 0.22 * (Z - 200.0)) / 11.5
     ribs = np.maximum(np.abs(cd + 2.6) - 2.6, (np.abs(q - np.round(q)) - 0.30) * 9.0).astype(np.float32)
-    add_raw(S, "rib cage", "bone", csl, cd, colour=BONE, disp=ribs)
-    S.add("sternum", "bone", tube([(0, 214, float(cf(214)) + 0.5), (0, 250, float(cf(250)) + 0.5), (0, 285, float(cf(285)) + 0.5), (0, 314, float(cf(314)) - 2.0)], [5.6, 5.2, 4.6, 3.0]), colour=BONE)
+    add_raw(S, "rib cage", "bone", csl, cd, colour=BONE, show=False)
+    S.add("sternum", "bone", tube([(0, 214, float(cf(214)) + 0.5), (0, 250, float(cf(250)) + 0.5), (0, 285, float(cf(285)) + 0.5), (0, 314, float(cf(314)) - 2.0)], [5.6, 5.2, 4.6, 3.0]), colour=BONE, show=False)
     # clavicle: under the skin at the base of the neck (Virginie: near the top of the sprite, not at the shoulder tip), from the
     # notch outward, slightly up and back to the acromion at the corner of the shoulder
-    S.add("clavicle", "bone", tube([(5, 212, 300), (24, 211, 302), (46, 207, 296), (64, 204, 278), (78, 203, 256)], [4.2, 3.6, 3.4, 3.4, 3.8]), colour=BONE)
+    S.add("clavicle", "bone", tube([(5, 212, 300), (24, 211, 302), (46, 207, 296), (64, 204, 278), (78, 203, 256)], [4.2, 3.6, 3.4, 3.4, 3.8]), colour=BONE, show=False)
     # scapula: blade on the back of the barrel, spine of the scapula up to the acromion
     sup, inf, gle, med = (21, 198, 201), (25, 258, 196.5), (64, 224, 232), (19.5, 222, 195.5)
-    S.add("scapula", "bone", tri(sup, inf, gle, 1.8), colour=BONE)
+    S.add("scapula", "bone", tri(sup, inf, gle, 1.8), colour=BONE, show=False)
     S.add("scapula medial", "bone", tri(sup, med, inf, 1.8), colour=BONE, show=False)
-    S.add("scapular spine", "bone", tube([(20, 212, 194), (46, 209, 200), (68, 205, 228), (78, 203, 256)], [2.6, 3.0, 3.6, 4.0]), colour=BONE)
-    S.add("humerus", "bone", tube([(76, 222, 254), (79, 250, 252), (81, 296, 250)], [12.0, 6.5, 6.0]), colour=BONE)
+    S.add("scapular spine", "bone", tube([(20, 212, 194), (46, 209, 200), (68, 205, 228), (78, 203, 256)], [2.6, 3.0, 3.6, 4.0]), colour=BONE, show=False)
+    S.add("humerus", "bone", tube([(76, 222, 254), (79, 250, 252), (81, 296, 250)], [12.0, 6.5, 6.0]), colour=BONE, show=False)
     # pelvis
     psis, crest1, crest2, tub, asis = (13, 330, 200.5), (36, 323, 210), (56, 328, 233), (63, 337, 256), (51, 352, 286)
     acet, pub, isch = (37, 387, 250), (0, 400, 284), (27, 411, 233)
-    S.add("iliac crest", "bone", tube([psis, crest1, crest2, tub, asis], [4.0, 3.6, 3.6, 3.8, 4.2]), colour=BONE)
+    S.add("iliac crest", "bone", tube([psis, crest1, crest2, tub, asis], [4.0, 3.6, 3.6, 3.8, 4.2]), colour=BONE, show=False)
     for i, (a, b) in enumerate(((psis, crest1), (crest1, crest2), (crest2, tub), (tub, asis))):
-        S.add(f"iliac wing {i}", "bone", tri(a, b, acet, 2.4), colour=BONE)
-    S.add("sacrum", "bone", tri((-13, 330, 199.5), (13, 330, 199.5), (0, 372, 203), 4.5), colour=BONE)
-    S.add("coccyx", "bone", cone((0, 372, 203), (0, 388, 214), 3.2, 2.0), colour=BONE)
+        S.add(f"iliac wing {i}", "bone", tri(a, b, acet, 2.4), colour=BONE, show=False)
+    S.add("sacrum", "bone", tri((-13, 330, 199.5), (13, 330, 199.5), (0, 372, 203), 4.5), colour=BONE, show=False)
+    S.add("coccyx", "bone", cone((0, 372, 203), (0, 388, 214), 3.2, 2.0), colour=BONE, show=False)
     S.add("pubis", "bone", tube([pub, (18, 394, 276), acet], [5.0, 4.6, 6.0]), colour=BONE)
     S.add("ischium", "bone", tube([acet, isch, (6, 406, 262), pub], [6.0, 6.5, 3.6, 4.0]), colour=BONE)
     S.add("femur", "bone", tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247)], [11.0, 7.0, 7.5, 5.5]), colour=BONE)
+    skeleton_detail(S, prm, fsp, ca, cf, cb)                   # what the viewer shows of the spine, the cage and the pelvis
     S.mark("bone")
 
     # ---- viscera
@@ -564,16 +570,180 @@ def build_male(G, T, prm=MALE, ty=None):
     return S
 
 
+# ribs 1..12 of the Male frame: angle around the trunk axis (degrees, 0 = sternum, 180 = spine) and row of the
+# costochondral junction, then where the cartilage ends: "st" on the sternum at that row, "arch" on the costal arch at
+# (angle, row), None for the floating ribs
+# Placed on the surface landmarks of the Male sprite (south rows): under-chest fold 322 = lower border of the pectoral,
+# on the 6th rib; waist 338 = between the costal margin (flank, 334) and the iliac crest; hip 350 and navel 358 = top
+# of the iliac crest (L4); sex 406 = just under the pubic symphysis; shoulder tip 254 and armpit 298 = the deltoid
+# over the head of the humerus, so the acromion is at 232.
+RIBS = [(35, 213, "st", 214), (30, 233, "st", 228), (28, 252, "st", 243), (27, 271, "st", 258), (27, 290, "st", 273),
+        (28, 306, "st", 288), (31, 317, "st", 302), (40, 324, "arch", (16, 309)), (50, 329, "arch", (28, 316)),
+        (62, 333, "arch", (40, 322)), (88, 334, None, None), (125, 324, None, None)]
+T_ROWS = [196.0 + 9.8 * i for i in range(12)]                  # T1..T12
+L_ROWS = [313.5 + 9.5 * i for i in range(5)]                   # L1..L5: L4 (342) at the top of the iliac crest
+
+
+def skeleton_detail(S, prm, fsp, ca, cf, cb):
+    """The bones as bones: vertebrae with their processes, twelve pairs of ribs running down and forward around the
+    barrel with their cartilages, a sternum in three pieces, the iliac wings as surfaces, the sacrum. Display only:
+    every piece lies on or inside the solids of the stack (the barrel, the spine tube, the pelvic plates)."""
+    p = prm["cage_p"]
+
+    def surf(th, r, inset=3.0):
+        rr = float(np.clip(r, 190.5, 345.5))
+        a, zf, zb = float(ca(rr)), float(cf(rr)), float(cb(rr))
+        zm, c = 0.5 * (zf + zb), 0.5 * (zf - zb)
+        s, co = np.sin(np.radians(th)), np.cos(np.radians(th))
+        rho = (abs(s / a) ** p + abs(co / c) ** p) ** (-1.0 / p)
+        rho = max(rho - inset, 2.0)
+        return (rho * s, r, zm + rho * co)
+
+    # ---- vertebrae
+    for i, r in enumerate(T_ROWS):
+        zs = float(fsp(r)); zv = zs + 14.0
+        S.show(f"T{i + 1} body", ell((0, r, zv), (7.0 + 0.12 * i, 4.0, 6.0 + 0.1 * i)))
+        S.show(f"T{i + 1} transverse process", tube([(5.0, r, zv - 6.0), (9.0, r - 0.5, zs + 7.0), (13.5, r - 1.5, zs + 5.5)], [2.6, 2.4, 2.2]))
+        S.show(f"T{i + 1} spinous process", cone((0, r, zv - 7.0), (0, r + 5.0, zs + 1.8), 2.6, 1.9))
+    for i, r in enumerate(L_ROWS):
+        zs = float(fsp(min(r, 334.0))); zv = zs + 17.0
+        S.show(f"L{i + 1} body", ell((0, r, zv), (10.0, 2.3, 8.0)))
+        S.show(f"L{i + 1} transverse process", tube([(6.0, r, zv - 8.0), (19.0, r, zv - 9.5)], [1.9, 1.4]))
+        S.show(f"L{i + 1} spinous process", cone((0, r, zv - 8.5), (0, r + 1.0, zs + 2.0), 2.1, 2.1))
+
+    # ---- ribs: head on the vertebral body, neck to the transverse process, then around the barrel, lower in front
+    for i, (thc, rc, kind, end) in enumerate(RIBS):
+        rh = T_ROWS[i]; zv = float(fsp(rh)) + 14.0
+        n = max(int((160 - thc) / 6), 5)
+        pts = [(6.5, rh, zv - 2.0), (11.0, rh - 0.5, float(fsp(rh)) + 6.5)]
+        for th in np.linspace(160, thc, n):
+            u = (160 - th) / (160 - thc)
+            pts.append(surf(th, rh + (rc - rh) * (0.5 * u + 0.5 * sstep(u))))
+        rad = [2.8, 2.5] + [2.4] * n
+        if kind is None:                                      # floating rib: tapers to its free end
+            rad[-2:] = [2.0, 1.5]
+        S.show(f"rib {i + 1}", tube(pts, rad))
+        if kind == "st":                                      # cartilage up to the edge of the sternum
+            cp = [pts[-1]] + [surf(thc + (9 - thc) * v, rc + (end - rc) * v) for v in (0.35, 0.7)] + [(5.5, end, float(cf(end)) - 1.5)]
+            S.show(f"costal cartilage {i + 1}", tube(cp, 2.1))
+        elif kind == "arch":                                  # cartilage up along the costal arch to the one above
+            cp = [pts[-1]] + [surf(thc + (end[0] - thc) * v, rc + (end[1] - rc) * v) for v in (0.33, 0.66, 1.0)]
+            S.show(f"costal cartilage {i + 1}", tube(cp, 2.0))
+    S.show("costal arch", tube([surf(40, 322), surf(28, 316), surf(16, 309), (5.5, 304, float(cf(304)) - 1.5)], 2.0))
+
+    # ---- sternum: manubrium, body, xiphoid process
+    zf = lambda r: float(cf(r)) - 1.5
+    S.show("manubrium", tri((-13, 210, zf(210)), (13, 210, zf(210)), (8.5, 228, zf(228)), 2.6))
+    S.show("manubrium b", tri((-13, 210, zf(210)), (8.5, 228, zf(228)), (-8.5, 228, zf(228)), 2.6))
+    for ra, rb, wa, wb in ((229, 268, 7.0, 8.5), (268, 306, 8.5, 7.5)):
+        S.show(f"sternal body {ra}", tri((-wa, ra, zf(ra)), (wa, ra, zf(ra)), (wb, rb, zf(rb)), 2.4))
+        S.show(f"sternal body {ra} b", tri((-wa, ra, zf(ra)), (wb, rb, zf(rb)), (-wb, rb, zf(rb)), 2.4))
+    S.show("xiphoid process", cone((0, 307, zf(307)), (0, 318, float(cf(318)) - 4.0), 3.2, 1.7))
+
+    # ---- shoulder girdle: the clavicle from the manubrium to the acromion, the scapula on ribs 2 to 7 with its spine,
+    # acromion, coracoid process and glenoid, the head of the humerus in the glenoid under the acromion
+    # Width: the armpit landmark (x 84 at row 298) is the inner face of the arm, so the shaft of the humerus runs at
+    # x 100 and the acromion is at x 92 (1.3 x the half width of the cage). The shoulder of the sprite is a cut stump:
+    # the head of the humerus and the arm are outside its silhouette.
+    acr = (92, 232, 254)
+    S.show("clavicle", tube([(6, 211, zf(211) + 2.0), (28, 212, 305), (54, 215, 300), (76, 222, 282), acr], [4.4, 3.6, 3.3, 3.3, 3.8]))
+    sup, inf, gle, med = (36, 212, 202), (38, 272, 198.5), (81, 241, 235), (32, 238, 197)
+    S.show("scapula", tri(sup, inf, gle, 1.7))
+    S.show("scapula (medial)", tri(sup, med, inf, 1.7))
+    S.show("scapula (lateral border)", tube([inf, (62, 256, 217), gle], [2.2, 2.4, 3.4]))
+    S.show("scapular spine", tube([(33, 228, 196.5), (56, 227, 203), (80, 228, 228), acr], [2.4, 3.0, 3.6, 4.4]))
+    S.show("glenoid", ell((83, 242, 238), (3.0, 8.0, 6.0)))
+    S.show("coracoid process", tube([(77, 235, 242), (80, 232, 258), (75, 237, 268)], [3.0, 2.6, 2.2]))
+    # the humerus itself is a ghost limb (build_ghost): it hangs outside the silhouette from its head down
+
+    # ---- pelvis: the iliac wing as a surface from the crest (hip landmark) down to the body of the ilium, the sacrum
+    # with its alae between the two wings, the coccyx. The hip joint and the pubis stay where the stack has them.
+    crest = [(13, 356, 201), (25, 351, 204), (36, 348, 210), (47, 347.5, 220), (57, 349, 233), (63, 351, 246), (66, 354, 257),
+             (61, 358, 272), (52, 362, 286)]
+    arc = [(21, 372, 216), (27, 375, 228), (34, 377, 240), (40, 378, 252), (44, 376, 263), (46, 373, 274)]
+    S.show("iliac crest", tube(crest, [4.0, 3.6, 3.4, 3.4, 3.6, 3.6, 3.8, 3.8, 4.2]))
+    for i in range(len(crest) - 1):
+        a, b = crest[i], crest[i + 1]
+        j0 = int(round(i * (len(arc) - 1) / (len(crest) - 1))); j1 = int(round((i + 1) * (len(arc) - 1) / (len(crest) - 1)))
+        S.show(f"ilium {i}", tri(a, b, arc[j0], 1.7))
+        if j1 != j0:
+            S.show(f"ilium {i} b", tri(b, arc[j1], arc[j0], 1.7))
+    S.show("body of the ilium", tube([arc[0], arc[2], (37, 381, 250), arc[5]], [3.2, 4.0, 5.0, 3.6]))
+    S.show("acetabular rim", tube([(27, 380, 244), (36, 376, 252), (46, 381, 258), (47, 391, 256)], 2.6))
+    S.show("anterior inferior iliac spine", cone((46, 373, 274), (45, 368, 280), 3.2, 2.4))
+    S.show("ischial tuberosity", ell((27, 412, 232), (6.0, 7.0, 7.0)))
+    S.show("sacral ala", tri((-21, 357, 204), (21, 357, 204), (0, 392, 204), 3.6))
+    S.show("sacral promontory", ell((0, 359, 214), (10.5, 4.0, 6.5)))
+    for k in range(4):                                        # the four pairs of sacral foramina read as ridges between them
+        r = 364.0 + 6.5 * k
+        S.show(f"sacral ridge {k}", tube([(0, r, 200.5), (12.0 - 2.4 * k, r - 1.0, 201.5)], 1.6))
+    S.show("coccyx", cone((0, 392, 204), (0, 406, 213), 3.0, 1.8))
+
+
+def carve(prim, *holes):
+    """A primitive with other primitives taken out of it (orbits, nasal opening)."""
+    fn, lo, hi = prim
+
+    def out(X, R, Z):
+        d = fn(X, R, Z)
+        for h in holes:
+            d = np.maximum(d, -h[0](X, R, Z))
+        return d
+
+    return out, lo, hi
+
+
+# cervical vertebrae C1..C7 of the Male frame: row, z of the spinous tip. 9 px a vertebra (4.75 px per cm: 12.5 cm of
+# neck). The tips follow on the thoracic ones (MALE["sp"] starts at (190, 222)); C7 is the long one, C2 the thick one.
+CERV = [(131.0, 234.5), (140.0, 229.0), (149.0, 234.0), (158.0, 233.0), (167.0, 231.0), (176.5, 227.0), (186.0, 221.5)]
+CERV_BODY = [(128, 243), (140, 245), (152, 246), (163, 245), (174, 242), (186, 237), (192, 234.5)]   # centre line of the bodies (r, z)
+
+
+def cervical_spine(S):
+    zb = spline(CERV_BODY)
+    for i, (r, zt) in enumerate(CERV):
+        z = float(zb(r)); n = f"C{i + 1}"
+        if i == 0:                                             # atlas: a ring, two lateral masses, no body, wide transverse processes
+            S.add(n + " lateral mass", "bone", ell((9.5, r, z), (5.0, 3.6, 5.5)), colour=BONE)
+            S.add(n + " anterior arch", "bone", tube([(9, r, z + 4.5), (4, r, z + 7.5), (0, r, z + 8.5)], 1.9), colour=BONE)
+            S.add(n + " posterior arch", "bone", tube([(9, r, z - 4.5), (5, r + 0.5, z - 8.5), (0, r + 1.0, zt)], [2.0, 1.9, 2.3]), colour=BONE)
+            S.add(n + " transverse process", "bone", tube([(12, r, z), (18.5, r + 0.5, z - 1.5)], [2.8, 2.2]), colour=BONE)
+            continue
+        wide = 14.5 if i == 6 else 12.0
+        S.add(n + " body", "bone", ell((0, r + (1.0 if i == 1 else 0.0), z), (5.6 + 0.25 * i, 4.4 if i == 1 else 3.3, 4.2 + 0.12 * i)), colour=BONE)
+        if i == 1:                                             # axis: the dens goes up through the ring of the atlas
+            S.add(n + " dens", "bone", cone((0, r - 2.0, z + 1.0), (0, r - 10.5, z + 2.0), 2.6, 1.9), colour=BONE)
+        S.add(n + " transverse process", "bone", tube([(4.5, r, z - 0.5), (wide, r + 1.0, z - 2.0)], [2.6, 2.0]), colour=BONE)
+        S.add(n + " arch", "bone", tube([(5.0, r, z - 3.5), (6.5, r + 0.5, z - 7.5), (3.0, r + 1.5, z - 10.5), (0, r + 2.0, z - 11.5)], [2.2, 2.6, 2.0, 2.2]), colour=BONE)
+        S.add(n + " spinous process", "bone", cone((0, r + 2.0, z - 11.0), (0, r + (4.0 if i == 6 else 3.0), zt), 2.3, 3.0 if i in (1, 6) else 2.0), colour=BONE)
+
+
+def skull(S):
+    """Schematic skull on the atlas: vault, face with orbits and nasal opening, cheek arch, mastoid, mandible, hyoid."""
+    vault = ell((0, 90, 256), (34, 34, 44), rad2=(34, 36, 44))
+    S.add("cranium", "bone", vault, colour=BONE)
+    face = ell((0, 118, 284), (24, 17, 15), rad2=(24, 20, 15))
+    orbit = ell((14.5, 105, 298), (8.5, 7.5, 9.0))
+    nose = ell((0, 119, 300), (4.5, 8.5, 6.0), rad2=(4.5, 5.0, 6.0))
+    S.add("face", "bone", carve(face, orbit, nose), colour=BONE)
+    S.add("brow and cheek", "bone", tube([(4, 95, 297), (16, 94, 296), (27, 99, 288), (28, 111, 287), (20, 117, 292)], [3.0, 3.2, 3.0, 3.4, 3.0]), colour=BONE)
+    S.add("zygomatic arch", "bone", tube([(28, 111, 287), (34, 112, 272), (33, 113, 259)], [3.0, 2.2, 2.4]), colour=BONE)
+    S.add("mastoid", "bone", cone((28, 116, 248), (26, 127, 249), 5.5, 3.0), colour=BONE)
+    S.add("occipital condyle", "bone", ell((9, 125.5, 244), (4.5, 3.2, 6.0)), colour=BONE)
+    S.add("mandible (ramus)", "bone", tube([(31, 114, 262), (30, 128, 261), (29, 142, 259)], [3.2, 3.0, 3.8]), colour=BONE)
+    S.add("mandible (body)", "bone", tube([(29, 142, 259), (22, 149, 280), (10, 153, 294), (0, 154, 297)], [3.8, 3.8, 4.2, 4.8]), colour=BONE)
+    S.add("teeth", "bone", tube([(21, 137, 284), (12, 137.5, 296), (0, 138, 300)], 3.2), colour=BONE)
+    S.add("hyoid", "bone", tube([(0, 160, 281), (8, 159, 275), (13, 156, 265)], [1.8, 1.7, 1.5]), colour=BONE)
+
+
 def build_ghost(G, T, prm=MALE):
     """The limbs the sprite cuts off: neck, arms to the elbow, thighs to the knee. Real anatomy that continues the
     stack outside the WDI frame; its own stack, never unioned with the body, so the viewer can take it away."""
     zc = lambda R: np.interp(R, T.rows, T.zc).astype(np.float32)
     S = Stack(G, zc)
-    # ---- neck: cervical spine, the column of deep neck muscles, sternocleidomastoid, the trapezius up to the skull
-    csp = spline([(125, 230), (140, 229), (160, 227), (176, 225), (190, 222)])
-    cr = np.linspace(128, 188, 7)
-    S.add("cervical spine", "bone", tube([(0, r, float(csp(r)) + 13) for r in cr], 6.0), colour=BONE)
-    S.add("cervical spinous processes", "bone", tube([(0, r + 2.0, float(csp(r)) + 2.4) for r in cr], 2.2), colour=BONE)
+    # ---- neck: the seven cervical vertebrae (lordosis: convex to the front), each with its body, transverse processes,
+    # arch and spinous process; the deep neck muscles, sternocleidomastoid and trapezius come over them
+    cervical_spine(S)
     # a neck is about a third of the shoulder width; the two bumps on top of the sprite (40 px each side) are the
     # trapezius, not the neck
     nsl, nd, _ = loft(G, [(120, 16, 256, 222), (150, 16.5, 258, 221), (180, 18, 262, 220), (198, 22, 268, 218), (214, 28, 280, 214)], p=2.2, cap_top=3.0, cap_bot=6.0)
@@ -581,11 +751,16 @@ def build_ghost(G, T, prm=MALE):
     S.add("trapezius (neck part)", "muscle", cone((38, 206, 230), (12, 134, 229), 15.0, 7.0), k=8.0, colour=COL["trap"], km=6.0)
     S.add("sternocleidomastoid", "muscle", cone((17, 128, 236), (6, 212, 299), 4.5, 4.0), k=1.5, colour=COL["pec"])
     # ---- arm: humerus to the elbow, biceps in front, triceps behind
-    S.add("humerus (shaft)", "bone", tube([(81, 290, 250), (86, 350, 251), (90, 402, 252)], [6.0, 5.5, 8.5]), colour=BONE)
-    S.add("biceps, brachialis", "muscle", ell((86, 346, 261), (10.0, 50, 11.0), rot=(5, 0, 0)), k=2.0, colour=COL["arm"])
-    S.add("triceps", "muscle", ell((87, 340, 242), (10.5, 56, 12.5), rot=(5, 0, 0)), k=2.0, colour=COL["delt"])
+    S.add("head of the humerus", "bone", ell((92.5, 244, 248), (10.0, 10.0, 10.0)), colour=BONE)
+    S.add("greater tubercle", "bone", ell((100.5, 243, 252), (4.5, 6.5, 6.0)), colour=BONE)
+    S.add("humerus (shaft)", "bone", tube([(95, 250, 250), (99, 266, 251), (100.5, 297, 251), (103, 350, 252), (105, 402, 253)], [8.0, 6.3, 6.0, 5.5, 8.5]), colour=BONE)
+    S.add("biceps, brachialis", "muscle", ell((103, 346, 262), (10.0, 50, 11.0), rot=(3, 0, 0)), k=2.0, colour=COL["arm"])
+    S.add("triceps", "muscle", ell((104, 340, 243), (10.5, 56, 12.5), rot=(3, 0, 0)), k=2.0, colour=COL["delt"])
+    S.add("humeral condyle", "bone", tube([(95, 403, 254), (105, 404, 255), (114, 402, 252)], [5.0, 5.5, 4.0]), colour=BONE)
     # ---- thigh: femur to the knee, quadriceps, hamstrings, adductors
     S.add("femur (shaft)", "bone", tube([(47, 400, 247), (44, 470, 250), (42, 540, 252)], [6.0, 6.0, 10.0]), colour=BONE)
+    S.add("femoral condyles", "bone", ell((34.5, 543, 250), (7.0, 8.5, 10.0)), colour=BONE)
+    S.add("femoral condyle (lateral)", "bone", ell((50, 543, 250), (7.0, 8.0, 9.5)), colour=BONE)
     S.add("quadriceps", "muscle", ell((41, 468, 263), (21.0, 80, 21.0)), k=3.0, colour=COL["thigh"])
     S.add("hamstrings", "muscle", ell((37, 470, 233), (19.5, 78, 19.0)), k=3.0, colour=COL["glmax"])
     S.add("adductors", "muscle", ell((19, 446, 249), (15.0, 52, 22.0), rot=(-6, 0, 0)), k=3.0, colour=COL["tfl"], km=1.0)
@@ -596,6 +771,7 @@ def build_ghost(G, T, prm=MALE):
             bone[sl] = np.minimum(bone[sl], a)
     d = np.minimum(S.d - prm["fat"], bone - prm["fat_bone"])
     S.skin = ndi.gaussian_filter(np.clip(d, -20, 20), 1.5 / G.h, mode=SYM).astype(np.float32)
+    skull(S)                                                  # after the skin: the head is skeleton only for now
     return S
 
 
@@ -1023,7 +1199,7 @@ def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
     K = dict(body=body, ty=ty, T=T, G0=G0, G=G, S=S, d0=d0, d=d, steps=steps, pre=pre, owner=np.round(owner).astype(np.int16),
              left=Fit(G, d, T, 1.0).stats() if fit else pre, frame=frame)
     if ghost:
-        K["G2"] = Grid(2.0, x1=126.0, r0=100.0, r1=566.0, z0=150.0, z1=360.0)   # the cut limbs are smooth: a coarser, taller grid
+        K["G2"] = Grid(1.0, x1=136.0, r0=40.0, r1=566.0, z0=150.0, z1=360.0)    # taller grid: skull above, elbow and knee below; 1 px for the vertebrae
         K["ghost"] = build_ghost(K["G2"], TM)
     return K
 

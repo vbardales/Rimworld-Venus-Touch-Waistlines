@@ -260,7 +260,7 @@ function build(){
   sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
   // with the ghost limbs shown the camera steps back and centres on the whole figure; with them off nothing moves
-  if(e.layers&&e.layers.ghost&&$('gh').checked){const v=e.layers.ghost.skin.v;for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
+  if(e.layers&&e.layers.ghost&&$('gh').checked){const v=$('sk').checked?e.layers.ghost.skin.v.concat(e.layers.ghost.bone.v):e.layers.ghost.skin.v;for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
     const c2=new THREE.Vector3();bb.getCenter(c2);G.position.y-=c2.y-c.y}
   fitD=Math.max(bb.max.y-bb.min.y,(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
   apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode];
@@ -286,6 +286,7 @@ addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProje
   wdiMat.uniforms.cdir.value.copy(cam.position).sub(ctl.target).normalize();
   const sz=new THREE.Vector2();ren.getDrawingBufferSize(sz);
   if(RT.width!==sz.x||RT.height!==sz.y)RT.setSize(sz.x,sz.y);
+  pmat.uniforms.on.value=$('sk').checked?0:1;   // no sprite outline around the bones
   if(cur===wdiMat){pmat.uniforms.px.value.set(1/sz.x,1/sz.y);pmat.uniforms.r.value=wdiMat.uniforms.pxw.value;
     ren.setRenderTarget(RT);ren.setClearColor(0x000000,0);ren.clear();ren.render(sc,cam);ren.setRenderTarget(null);ren.clear();ren.render(post,pcam)}
   else ren.render(sc,cam)})();

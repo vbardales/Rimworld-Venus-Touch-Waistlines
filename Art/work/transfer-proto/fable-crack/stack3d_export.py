@@ -28,6 +28,7 @@ import wdi3d_export as we
 R_RINGS = 300
 A_RING = 200
 STEP = 0.5          # px along a ray
+ARM_X, ARM_ROW = 82.0, 244.0   # Male frame: beyond this x a ghost vertex belongs to the arm; row of the head of the humerus
 
 
 def sample(G, d, r, x, z):
@@ -149,14 +150,18 @@ def one(body, h=1.0):
     lm_m = s.MALE["lm"]
     clamp = (lm_m[0] + 31.0, lm_m[4] - 27.0)                   # rows of the Male frame where the fit is well defined
 
-    def pack(vf, clamp=None):
+    def pack(vf, clamp=None, fine=False):
         if vf is None:
             return {"v": [], "i": []}
         v, f = vf
+        if clamp is not None:                                 # ghost limbs: the arm is outside the silhouette from the shoulder down,
+            arm = np.abs(v[:, 0]) > ARM_X                     # it takes the correction of the shoulder row as one rigid piece
+            clamp = (np.where(arm, ARM_ROW, clamp[0]), np.where(arm, ARM_ROW, clamp[1]))
         x, r, z = s.chain_forward(steps, v[:, 0], v[:, 1], v[:, 2], clamp)
-        return {"v": np.round(np.stack([x, -r, z - zmean], 1).reshape(-1)).astype(int).tolist(), "i": f.reshape(-1).astype(int).tolist()}
+        co = np.stack([x, -r, z - zmean], 1).reshape(-1)
+        return {"v": np.round(co, 1).tolist() if fine else np.round(co).astype(int).tolist(), "i": f.reshape(-1).astype(int).tolist()}
 
-    def layer_set(S_, G_, st, clamp=None):
+    def layer_set(S_, G_, st, clamp=None, bst=None):
         bone = G_.full(); parts = []
         for name, layer, colour, sl, a in S_.parts:
             if a is None:
@@ -166,15 +171,16 @@ def one(body, h=1.0):
                 continue
             parts.append({"n": name, "l": layer, "c": [int(c) for c in colour], **pack(mesh_of(a, sl, G_, st), clamp)})
         full = tuple(slice(0, n) for n in G_.shape)
-        return pack(mesh_of(bone, full, G_, max(st - 1, 1)), clamp), [p for p in parts if p["v"]], full
+        return pack(mesh_of(bone, full, G_, bst or max(st - 1, 1)), clamp, bst == 1), [p for p in parts if p["v"]], full
 
-    bone, parts, _ = layer_set(S, G0, step)
+    bone, parts, _ = layer_set(S, G0, step, None, 1)           # the bones every px: ribs and processes are 4 to 5 px thick
     layers = {"bone": bone, "parts": parts}
     # ghost limbs (neck, arms, thighs): outside the rows of the sprite a ghost takes the correction of the nearest
     # well-defined row of the body and its own height
     G2, S2 = K["G2"], K["ghost"]
-    gbone, gparts, full2 = layer_set(S2, G2, 2, clamp)
-    layers["ghost"] = {"skin": pack(mesh_of(S2.skin, full2, G2, 2), clamp), "bone": gbone, "parts": gparts}
+    gst = max(int(round(4.0 / G2.h)), 1)                       # skin and muscles every 4 px, the bones (vertebrae, skull) every px
+    gbone, gparts, full2 = layer_set(S2, G2, gst, clamp, 1)
+    layers["ghost"] = {"skin": pack(mesh_of(S2.skin, full2, G2, gst), clamp), "bone": gbone, "parts": gparts}
     return {"rows": flat(rings), "legs": legs, "horns": horns, "lm": lm,
             "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": 2, "layers": layers,
             "outline": round(float(np.mean([w.outline_width(T.imgs[f], T.M[f]) for f in T.imgs])), 1),
