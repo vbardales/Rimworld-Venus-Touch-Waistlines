@@ -50,10 +50,10 @@ const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THRE
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
 const Q=new URLSearchParams(location.search);
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
- uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)}},
+ uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){vP=position;vNo=normal;vNr=normalMatrix*normal;vNv=normalMatrix*vec3(normal.x,normal.y+tilt*normal.z,normal.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`const float Q0=.45;const float Q1=.8;uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform sampler2D bS;uniform sampler2D bN;uniform sampler2D bE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;uniform float fl;uniform float lc;
+ fragmentShader:`uniform vec3 cdir;uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform sampler2D bS;uniform sampler2D bN;uniform sampler2D bE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;uniform float fl;uniform float lc;
 varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){
  vec3 nv=normalize(vNv);vec3 no=normalize(vNo);vec3 nr=normalize(vNr);
@@ -66,9 +66,13 @@ void main(){
  a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.55,.8,abs(no.x)));
  float gt=no.z>0.?texture2D(gS,uvS).r:texture2D(gN,uvN).r;
  gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));
- float eb=smoothstep(.55,.8,abs(no.x));
- float lb=(no.z>0.?texture2D(bS,uvS).r:texture2D(bN,uvN).r);lb=mix(lb,texture2D(bE,uvE).r,eb)*.6;
- float wa=mix(smoothstep(Q0,Q1,abs(no.z)),smoothstep(Q0,Q1,abs(no.x)),eb);
+ // looking along one of the three sprite axes: the sprite's own maps (albedo, ink, baked tone) are shown whatever the normal says, so the view is the 2D capture;
+ // turned away, the mesh light and the normal-chosen maps take over
+float lb=0.;float wS=smoothstep(.93,.99,cdir.z),wN=smoothstep(.93,.99,-cdir.z),wE=smoothstep(.93,.99,-cdir.x),wa=wS+wN+wE;
+ if(wa>0.){
+  vec3 aC=(wS*texture2D(tS,uvS).rgb+wN*texture2D(tN,uvN).rgb+wE*texture2D(tE,uvE).rgb)/wa;a=mix(a,aC,wa);
+  float lC=(wS*texture2D(bS,uvS).r+wN*texture2D(bN,uvN).r+wE*texture2D(bE,uvE).r)/wa*.6;
+  lb=lC;}
  float s=-nv.y/max(nv.z,.05);
  float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,lc);
  float form=mix(mix(fl,1.,wa),1.,clamp(dot(nr,normalize(vec3(-.3,.5,.8)))*.5+.5,0.,1.));
@@ -251,6 +255,7 @@ addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProje
 (function loop(){requestAnimationFrame(loop);ctl.update();
   // outline width of the sprite (world px) in device pixels at the current zoom
   wdiMat.uniforms.pxw.value=outlinePx*innerHeight*ren.getPixelRatio()/(2*Math.tan(cam.fov*Math.PI/360)*cam.position.distanceTo(ctl.target));
+  wdiMat.uniforms.cdir.value.copy(cam.position).sub(ctl.target).normalize();
   const sz=new THREE.Vector2();ren.getDrawingBufferSize(sz);
   if(RT.width!==sz.x||RT.height!==sz.y)RT.setSize(sz.x,sz.y);
   if(cur===wdiMat){pmat.uniforms.px.value.set(1/sz.x,1/sz.y);pmat.uniforms.r.value=wdiMat.uniforms.pxw.value;

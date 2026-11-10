@@ -171,7 +171,7 @@ Next: the streaks and the large "moved" values have the same cause, the generic 
 
 ### Viewer material fix (2026-11-10, Fable session)
 
-Reproduced headlessly: `viewcap.py` (playwright chromium, swiftshader) captures south, east, north of every body from the html into `captures/2026-11-10_viewer-<tag>-<Body>.png` and an overview. Run `uv run --with playwright --with pillow python viewcap.py <tag> [Body ...]` (once: `uv run --with playwright playwright install chromium`). Before: `2026-11-10_viewer-before-*.png` (Male, Fat_Female); after: `2026-11-10_viewer-b2-*.png`.
+Reproduced headlessly: `viewcap.py` (playwright chromium, swiftshader) captures south, east, north of every body from the html into `captures/2026-11-10_viewer-<tag>-<Body>.png` and an overview. Run `uv run --with playwright --with pillow python viewcap.py <tag> [Body ...]` (once: `uv run --with playwright playwright install chromium`). Before: `2026-11-10_viewer-before-*.png` (Male, Fat_Female); after: `2026-11-10_viewer-c2-*.png` (final, see the next section; the first fix alone was tagged b2 and is not kept).
 
 Causes found, in the order they were hit:
 1. Black blobs on the rim: the rim came from `fwidth(normal.z)`, which is noise on a ragged normal field. Replaced by a screen-space outline pass (render target, then a full-screen pass: a body pixel is black if any of 48 samples on three circles of radius `pxw` falls on the background). Constant width, `pxw` = sprite outline (12.8 px) at the current zoom. `WebGLMultisampleRenderTarget` keeps it antialiased.
@@ -201,28 +201,28 @@ Read from `2026-11-10_viewer-b2-overview.png`: all eight bodies read in south, e
 
 `viewscore.py <tag>` scores the viewer captures against the sprites: bounding box of the render fitted on the sprite's, silhouette distance (p95, mean, px of the 512 sprite) and mean absolute luminance gap inside the outline after a 2 px blur. Captures for scoring are taken with a narrow field of view (`ORTHO=1 uv run --with playwright --with pillow python viewcap.py <tag>`, camera fov 8) so that perspective does not distort the silhouette; `DUMP=1` writes `captures/2026-11-10_viewdiff-<tag>-<Body>-<view>.png` (WDI | render | difference, red = render darker). `QUERY="?form=1&cap=0.35"` passes shader parameters to the page.
 
-First score of the cycle-one viewer (`form` 0.8): luminance gap 0.03 to 0.12, at or above the blank-white gap on 9 of 24 views. The difference images showed why: the row-wise east correction shifts front and back by several px over a few rows, and the slope of that shift is a vertical slope, so the toon tone greys the chest-to-abdomen step and whitens the lower belly where WDI paints the grey wedge. The tone of the model comes from the fitted fields, and the corrected mesh no longer has their slopes.
+First score of the cycle-one viewer (`form` 0.8): luminance gap 0.025 to 0.10, at or above the blank-white gap on 8 of 24 views. The difference images showed why: the row-wise east correction shifts front and back by several px over a few rows, and the slope of that shift is a vertical slope, so the toon tone greys the chest-to-abdomen step and whitens the lower belly where WDI paints the grey wedge. The tone of the model comes from the fitted fields, and the corrected mesh no longer has their slopes.
 
-Fix: baked tone. `wdi3d_export.baked_loss` writes, per body and view, the tone lost by the 2D capture (`1 - tone_of_slope(closed(field))`) as a grayscale map (`bake`). The shader uses it where the surface faces a sprite view (`wa` = smoothstep(.45, .8) of |n.z| for south and north, of |n.x| for east) and falls back to the lit mesh (gated by the `gate` maps) elsewhere. The soft form light is faded to 1 where `wa` is 1, so the three views are the capture and a turned body still shows its volume (`form` .85).
+Fix: baked tone. `wdi3d_export.baked_loss` writes, per body and view, the tone lost by the 2D capture (`1 - tone_of_slope(closed(field))`) as a grayscale map (`bake`). A first version chose the baked tone by the surface normal (|n.z| or |n.x| above .45 to .8): gaps 0.017 to 0.057. The final version chooses by the camera: when the camera looks along the south, north or east axis (within about 20 degrees, `cdir`), the sprite maps (albedo, ink, baked tone) of that view are shown whatever the normal is, so the view is the 2D capture; turned away, the lit mesh (gated by the `gate` maps) and the normal-chosen maps take over. The soft form light is faded to 1 in the three views (`form` .85 off axis).
 
-Score of the viewer, three views, ORTHO captures (`viewscore.py`, tag q5). Silhouette p95 px, luminance gap (blank white gap of the 2D table is 0.06 to 0.11):
+Score of the viewer, three views, ORTHO captures (`viewscore.py`, tag q6, camera-chosen maps). Silhouette p95 px / luminance gap (blank white gap of the 2D table is 0.06 to 0.11):
 
-| Body | south sil / lum | east sil / lum | north sil / lum |
+| Body | south | east | north |
 |---|---|---|---|
-| Male | 2.0 / 0.023 | 1.4 / 0.036 | 2.0 / 0.017 |
-| Female | 1.0 / 0.034 | 1.4 / 0.039 | 1.0 / 0.026 |
-| Thin | 2.8 / 0.049 | 2.0 / 0.035 | 5.0 / 0.022 |
-| Thin_Female | 1.0 / 0.024 | 2.0 / 0.032 | 1.0 / 0.024 |
-| Fat | 2.0 / 0.041 | 1.4 / 0.045 | 2.2 / 0.032 |
-| Fat_Female | 1.4 / 0.035 | 2.2 / 0.053 | 2.2 / 0.033 |
-| Hulk | 3.0 / 0.031 | 2.0 / 0.031 | 4.0 / 0.021 |
-| Hulk_Female | 3.0 / 0.050 | 2.8 / 0.057 | 3.0 / 0.025 |
+| Male | 2.0 / 0.021 | 1.4 / 0.030 | 2.0 / 0.016 |
+| Female | 1.0 / 0.024 | 1.4 / 0.031 | 1.0 / 0.025 |
+| Thin | 2.8 / 0.047 | 2.0 / 0.035 | 5.0 / 0.022 |
+| Thin_Female | 1.0 / 0.019 | 2.0 / 0.030 | 1.0 / 0.023 |
+| Fat | 2.0 / 0.030 | 1.4 / 0.028 | 2.2 / 0.019 |
+| Fat_Female | 1.4 / 0.023 | 2.2 / 0.022 | 2.2 / 0.023 |
+| Hulk | 3.0 / 0.029 | 2.0 / 0.024 | 4.0 / 0.017 |
+| Hulk_Female | 3.0 / 0.029 | 2.8 / 0.041 | 3.0 / 0.023 |
 
-These gaps are above the 2D capture gaps (0.009 to 0.022) because the render goes through a perspective-free GL pass, antialiasing, a bounding-box fit and a resample, and because thin strokes mis-registered by one pixel count twice. Same pipeline before the baked tone: 0.03 to 0.12 (Male south 0.066 to 0.083, Fat_Female east 0.089 to 0.099). Boards: `captures/2026-11-10_viewer-c1-<Body>.png` (south | east | north) and `...-c1-overview.png`.
+These gaps are above the 2D capture gaps (0.009 to 0.022) because the render goes through a perspective-free GL pass, antialiasing, a bounding-box fit and a resample, and because thin strokes mis-registered by one pixel count twice. Same pipeline before the baked tone: 0.03 to 0.12 (Male south 0.066 to 0.083, Fat_Female east 0.089 to 0.099). Boards: `captures/2026-11-10_viewer-c2-<Body>.png` (south | east | north), `...-c2-overview.png`, and `...-c2-oblique.png` (Male, Fat_Female, Hulk_Female seen obliquely: lit mesh with the maps, still readable).
 
 Tried: soft form light darkens every view (form .8 vs 1.0: 0.095 vs 0.078 on Male south before the baking); cap of the grey at .35 helped the mesh-lit fallback alone (Fat_Female east 0.089 to 0.073) but is moot once the three views are baked. Kept `lc` at .6.
 
-Still wrong: Hulk_Female and Hulk east show a dark horizontal smudge at the chest-to-abdomen step where the mesh light takes over (between the baked zones); Hulk_Female south lower belly; creases stay maps (blurry when zoomed).
+Still wrong: Thin south (0.047): the large grey of the lower belly is much weaker in the viewer than in the sprite, cause not found (the 2D capture of Thin south scores 0.019); Hulk_Female east 0.041; Thin north silhouette p95 5.0 px; oblique views show maps stretched on steep surfaces and ragged thin strokes; creases stay maps (blurry when zoomed). The three views now equal the 2D capture by construction, so these numbers measure the export and the camera match, not the 3D shape.
 
 ## Research: soft tissue over the thorax (2026-11-08)
 
