@@ -469,13 +469,16 @@ def build_male(G, T, prm=MALE, ty=None):
     S.add("scapular spine", "bone", tube([(20, 212, 194), (46, 209, 200), (68, 205, 228), (78, 203, 256)], [2.6, 3.0, 3.6, 4.0]), colour=BONE, show=False)
     S.add("humerus", "bone", tube([(76, 222, 254), (79, 250, 252), (81, 296, 250)], [12.0, 6.5, 6.0]), colour=BONE, show=False)
     # pelvis
-    psis, crest1, crest2, tub, asis = (13, 330, 200.5), (36, 323, 210), (56, 328, 233), (63, 337, 256), (51, 352, 286)
+    # crest at the hip landmark (row 350), as the display skeleton (compared 2026-11-10 with the first stack, crest at 323:
+    # same silhouette, luminance gap south 0.1101 -> 0.1113, north 0.1152 -> 0.1100, east 0.1216 -> 0.1205; kept by Virginie)
+    psis, crest1, crest2, tub, asis = (13, 356, 201), (36, 348, 210), (57, 349, 233), (66, 354, 257), (52, 362, 286)
+    sac0, sac1, coc = 356.0, 392.0, 406.0
     acet, pub, isch = (37, 387, 250), (0, 400, 284), (27, 411, 233)
     S.add("iliac crest", "bone", tube([psis, crest1, crest2, tub, asis], [4.0, 3.6, 3.6, 3.8, 4.2]), colour=BONE, show=False)
     for i, (a, b) in enumerate(((psis, crest1), (crest1, crest2), (crest2, tub), (tub, asis))):
         S.add(f"iliac wing {i}", "bone", tri(a, b, acet, 2.4), colour=BONE, show=False)
-    S.add("sacrum", "bone", tri((-13, 330, 199.5), (13, 330, 199.5), (0, 372, 203), 4.5), colour=BONE, show=False)
-    S.add("coccyx", "bone", cone((0, 372, 203), (0, 388, 214), 3.2, 2.0), colour=BONE, show=False)
+    S.add("sacrum", "bone", tri((-13, sac0, 199.5), (13, sac0, 199.5), (0, sac1, 203), 4.5), colour=BONE, show=False)
+    S.add("coccyx", "bone", cone((0, sac1, 203), (0, coc, 214), 3.2, 2.0), colour=BONE, show=False)
     S.add("pubis", "bone", tube([pub, (18, 394, 276), acet], [5.0, 4.6, 6.0]), colour=BONE)
     S.add("ischium", "bone", tube([acet, isch, (6, 406, 262), pub], [6.0, 6.5, 3.6, 4.0]), colour=BONE)
     S.add("femur", "bone", tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247)], [11.0, 7.0, 7.5, 5.5]), colour=BONE)
@@ -529,7 +532,7 @@ def build_male(G, T, prm=MALE, ty=None):
     S.add("erector spinae", "muscle", tube([(x, r, float(fsp(r)) + dz) for x, r, rad, dz in er], [p[2] for p in er]), k=1.5,
           colour=COL["erec"], km=1.0)
 
-    scap = [(19, 206), (19, 246), (24, 258), (44, 262), (66, 264), (84, 254), (88, 236), (76, 214), (44, 208)]
+    scap = [(19, 214), (19, 254), (24, 266), (44, 270), (66, 272), (84, 262), (88, 244), (76, 222), (44, 216)]   # on the scapula (ribs 2 to 7)
     S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
            mod=lambda u, v: 1.0 - 0.3 * sstep((v - 236.0) / 26.0))
 
@@ -551,7 +554,8 @@ def build_male(G, T, prm=MALE, ty=None):
     S.add("deltoid", "muscle", ell((78, 250, 254), (16.5, 52, 30), rad2=(16.5, 48, 30)), k=1.5, colour=COL["delt"])
 
     # ---- pelvis and thigh stump
-    S.add("gluteus medius", "muscle", ell((48, 346, 236), (24, 25, 34), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
+    # gluteus medius: from the iliac crest (row 347) down to the greater trochanter (391)
+    S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
     S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
     S.add("tensor fasciae latae, hip flexors", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
     S.add("thigh stump (quadriceps, adductors, hamstrings)", "muscle", ell((35, 396, 242.5), (19, 36, 44), rad2=(19, 36, 47), rot=(-46, 0, 0)), k=6.0,
@@ -744,18 +748,35 @@ def build_ghost(G, T, prm=MALE):
     # ---- neck: the seven cervical vertebrae (lordosis: convex to the front), each with its body, transverse processes,
     # arch and spinous process; the deep neck muscles, sternocleidomastoid and trapezius come over them
     cervical_spine(S)
-    # a neck is about a third of the shoulder width; the two bumps on top of the sprite (40 px each side) are the
-    # trapezius, not the neck
-    nsl, nd, _ = loft(G, [(120, 16, 256, 222), (150, 16.5, 258, 221), (180, 18, 262, 220), (198, 22, 268, 218), (214, 28, 280, 214)], p=2.2, cap_top=3.0, cap_bot=6.0)
-    add_raw(S, "neck (scalenes, levator, splenius)", "muscle", nsl, nd, colour=COL["neck"])
-    S.add("trapezius (neck part)", "muscle", cone((38, 206, 230), (12, 134, 229), 15.0, 7.0), k=8.0, colour=COL["trap"], km=6.0)
-    S.add("sternocleidomastoid", "muscle", cone((17, 128, 236), (6, 212, 299), 4.5, 4.0), k=1.5, colour=COL["pec"])
+    # Muscles on the cervical spine. Widths from the sprite: the neck base landmarks are at x 40 (row 186), the east
+    # profile gives z 214 behind and 278 in front (row 198). Above, the neck narrows to the width of the skull base.
+    # deep column around the vertebrae: longus colli in front, scalenes at the sides, semispinalis and splenius behind
+    nsl, nd, _ = loft(G, [(124, 19, 257, 224), (150, 20.5, 259, 223), (170, 23.5, 261, 221), (186, 28, 265, 218), (202, 32, 270, 215)],
+                      p=2.2, cap_top=3.0, cap_bot=6.0)
+    add_raw(S, "deep neck muscles (longus, scalenes, splenius)", "muscle", nsl, nd, colour=COL["neck"])
+    # airway in front of the column: thyroid cartilage under the hyoid, trachea down to the jugular notch
+    S.add("larynx", "muscle", ell((0, 168, 272), (8.5, 10.0, 8.5)), k=2.0, colour=COL["visc"])
+    S.add("trachea", "muscle", tube([(0, 176, 271), (0, 192, 275), (0, 206, 282)], [6.0, 5.5, 5.5]), k=2.0, colour=COL["visc"])
+    # levator scapulae and the scalenes down to the first ribs: the side of the neck base
+    S.add("levator scapulae, scalenes", "muscle", tube([(17, 140, 240), (24, 166, 240), (33, 190, 240), (38, 206, 238)], [6.0, 8.0, 10.5, 12.0]), k=5.0,
+          colour=COL["neck"])
+    # trapezius: from the occiput and the ligament of the neck down and out to the clavicle, the acromion and the scapular spine
+    S.add("trapezius (neck part)", "muscle", tube([(8, 121, 224), (13, 148, 222), (24, 174, 222), (42, 192, 226), (60, 205, 234)], [5.0, 7.0, 10.0, 12.0, 8.0]),
+          k=6.0, colour=COL["trap"], km=5.0)
+    # sternocleidomastoid: from the mastoid down and forward, a sternal head on the manubrium and a clavicular head
+    S.add("sternocleidomastoid", "muscle", tube([(27, 124, 249), (24, 150, 258), (17, 180, 276), (7, 208, 298)], [5.5, 5.5, 5.0, 3.6]), k=1.5, colour=COL["pec"])
+    S.add("sternocleidomastoid (clavicular head)", "muscle", tube([(21, 166, 266), (24, 190, 282), (25, 210, 298)], [4.0, 4.2, 3.4]), k=1.5, colour=COL["pec"])
+    # ---- shoulder: the deltoid caps the head of the humerus from the acromion down to the middle of the shaft; the
+    # tendons of the pectoral (front) and of the latissimus and teres (back) reach the humerus and make the armpit (row 298)
+    S.add("deltoid", "muscle", ell((97.5, 262, 251), (15.0, 42.0, 24.0), rad2=(15.0, 33.0, 24.0)), k=2.0, colour=COL["delt"])
+    S.add("pectoralis major (tendon to the humerus)", "muscle", cone((80, 280, 266), (99, 276, 258), 9.0, 7.0), k=3.0, colour=COL["pec"])
+    S.add("latissimus dorsi, teres major (to the humerus)", "muscle", cone((80, 283, 236), (99, 280, 246), 9.0, 7.0), k=3.0, colour=COL["lat"])
     # ---- arm: humerus to the elbow, biceps in front, triceps behind
     S.add("head of the humerus", "bone", ell((92.5, 244, 248), (10.0, 10.0, 10.0)), colour=BONE)
     S.add("greater tubercle", "bone", ell((100.5, 243, 252), (4.5, 6.5, 6.0)), colour=BONE)
     S.add("humerus (shaft)", "bone", tube([(95, 250, 250), (99, 266, 251), (100.5, 297, 251), (103, 350, 252), (105, 402, 253)], [8.0, 6.3, 6.0, 5.5, 8.5]), colour=BONE)
-    S.add("biceps, brachialis", "muscle", ell((103, 346, 262), (10.0, 50, 11.0), rot=(3, 0, 0)), k=2.0, colour=COL["arm"])
-    S.add("triceps", "muscle", ell((104, 340, 243), (10.5, 56, 12.5), rot=(3, 0, 0)), k=2.0, colour=COL["delt"])
+    S.add("biceps, brachialis", "muscle", ell((101, 346, 262), (15.0, 50, 11.5), rot=(3, 0, 0)), k=2.0, colour=COL["arm"])
+    S.add("triceps", "muscle", ell((101.5, 340, 243), (16.0, 56, 13.0), rot=(3, 0, 0)), k=2.0, colour=COL["delt"])
     S.add("humeral condyle", "bone", tube([(95, 403, 254), (105, 404, 255), (114, 402, 252)], [5.0, 5.5, 4.0]), colour=BONE)
     # ---- thigh: femur to the knee, quadriceps, hamstrings, adductors
     S.add("femur (shaft)", "bone", tube([(47, 400, 247), (44, 470, 250), (42, 540, 252)], [6.0, 6.0, 10.0]), colour=BONE)
