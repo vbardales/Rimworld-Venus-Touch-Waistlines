@@ -234,6 +234,14 @@ Stopped here: the next cycle has nothing measurable. All three views of every bo
 
 Recommendation for the next step: (1) garment fitting on Male and Hulk, whose base is good, using the mesh for the relief map and the three baked views as reference; (2) per-body fat-pad and muscle volumes of `ANATOMY-LAYERS.md` (belly apron, breast lobes, gluteal lobes) if an oblique reference is wanted: without a 3/4 view of WDI, there is nothing to score them against, so ask Virginie for a reference first; (3) Thin south lower belly grey (0.047) and the Hulk_Female east smudge (0.041) are the two open viewer defects.
 
+
+### Hollows in the mesh, fourth cycle (2026-11-10, Virginie's review of the 3/4 views)
+
+Virginie saw no hollows between the breasts, the abs and the shoulder blades in 3/4, a flat Hulk buttock, a weak Hulk_Female profile, and a front that is grey while the back is white. Causes: (1) the mesh was built from `closed()` volumes, which have no creases by design, and the creases lived only in the maps; (2) off axis the lit mesh was limited by the grey gate of the sprite, and the north sprites hold little grey, so the back stayed white. The normal smoothing is not the cause (`?sn=0` renders the same 3/4).
+
+Changes: `wdi3d_export.py` `hollowed()` subtracts from the exported volumes (a) the blur of the artist's thin strokes (`HOLLOW` 18 px, `HOLLOW_SIGMA` 9) and (b) a median valley along the centre of each row, tapered at shoulders and pelvis (`MIDLINE` 18 px, sigma 6 percent of the row width), both scaled by local height so they die at the silhouette. The viewer gate is relaxed off axis (`?gm=`, default 0.6; 1 removes it and bands the planes). `?sn=` sets the number of normal smoothing passes. `obliq.py <tag> <Body> [query]` captures four 3/4 views.
+
+Check: the three canonical views are unchanged (baked tone): luminance gap 0.016 to 0.045, silhouette p95 1.0 to 5.0 px (tag q7); mesh against the east sprite p95 0.25 to 0.68 px. The 3/4 views now show the sternum valley, the spine groove and shading at the scapulae; front and back are closer in tone. Not scored: no 3/4 WDI reference exists, only Virginie's eye. Still weak: valleys are soft (top light barely shades vertical walls); buttock volume has no gluteal lobes or sub-gluteal fold in geometry.
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:

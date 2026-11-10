@@ -15,6 +15,7 @@ then: uv run python body3d_build.py
 import base64
 import io
 import json
+import os
 import pathlib
 import sys
 
@@ -78,10 +79,42 @@ def gray_uri(g):
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
 
+HOLLOW = float(os.environ.get("HOLLOW", 18.0))        # px of depth of the broad hollows (0 = none)
+MIDLINE = float(os.environ.get("MIDLINE", 18.0))     # px of depth of the median valley
+HOLLOW_SIGMA = float(os.environ.get("HOLLOW_SIGMA", 9.0))
+
+
+def hollowed(h, img, m, width):
+    """Crease-free volume with broad soft hollows along the artist's creases (sternum, ab grooves, spine, scapulae).
+
+    The creases are thin strokes; the hollow is their blur, scaled by the local height so it dies at the silhouette.
+    The 3/4 views then have a valley where the drawing has a line; the three sprite views keep the baked tone.
+    """
+    L = w.wdi_lines(img, m, width)
+    b = ndi.gaussian_filter(L, HOLLOW_SIGMA)
+    b = np.clip(b / max(float(np.percentile(b[m > 0], 99)), 1e-6), 0, 1)
+    hc = w.closed(h)
+    rel = np.clip(hc / max(float(hc.max()), 1e-6) * 2.0, 0, 1)
+    ys, xs = np.nonzero(m)
+    y0, y1 = ys.min(), ys.max()
+    yy, xx = np.mgrid[0:N, 0:N]
+    mid = np.zeros((N, N))
+    for y in range(y0, y1 + 1):                       # median valley: sternum and abdomen (south), spine (north)
+        r = np.nonzero(m[y])[0]
+        if len(r) < 8:
+            continue
+        cx, s = 0.5 * (r[0] + r[-1]), max(0.06 * (r[-1] - r[0]), 3.0)
+        mid[y] = np.exp(-0.5 * ((np.arange(N) - cx) / s) ** 2)
+    t = (yy - y0) / max(y1 - y0, 1)                   # 0 top .. 1 bottom of the sprite: taper in at the shoulders, out at the pelvis
+    mid *= np.clip((t - 0.10) / 0.12, 0, 1) * np.clip((0.80 - t) / 0.12, 0, 1)
+    return np.maximum(hc - HOLLOW * b * rel - MIDLINE * mid * rel, 0.0) * m
+
+
 def one(body):
     z = np.load(HERE / "out" / f"wdi3d-{body}.npz")
     imgs, M, _ = w.load(body)
-    fields = {"south": w.closed(z["south"]) * M["south"], "north": w.closed(z["north"]) * M["north"], "zc": z["zc"]}
+    wd = {f: w.outline_width(imgs[f], M[f]) for f in imgs}
+    fields = {"south": hollowed(z["south"], imgs["south"], M["south"], wd["south"]), "north": hollowed(z["north"], imgs["north"], M["north"], wd["north"]), "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
     e["bake"] = {f[0]: gray_uri(baked_loss(z[f], M[f])) for f in ("south", "north", "east")}

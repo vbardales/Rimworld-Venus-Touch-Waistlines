@@ -36,7 +36,7 @@ const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);globalTh
 const ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
 ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(devicePixelRatio);
 document.body.appendChild(ren.domElement);
-const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;
+const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;globalThis.__ctl=ctl;
 sc.add(new THREE.HemisphereLight(0xffffff,0x555566,.75));
 const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(200,300,400);sc.add(dl);
 const $=id=>document.getElementById(id);
@@ -50,10 +50,10 @@ const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THRE
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
 const Q=new URLSearchParams(location.search);
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
- uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)}},
+ uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)},gm:{value:+(Q.get('gm')||.6)}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){vP=position;vNo=normal;vNr=normalMatrix*normal;vNv=normalMatrix*vec3(normal.x,normal.y+tilt*normal.z,normal.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`uniform vec3 cdir;uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform sampler2D bS;uniform sampler2D bN;uniform sampler2D bE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;uniform float fl;uniform float lc;
+ fragmentShader:`uniform vec3 cdir;uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform sampler2D bS;uniform sampler2D bN;uniform sampler2D bE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;uniform float fl;uniform float lc;uniform float gm;
 varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){
  vec3 nv=normalize(vNv);vec3 no=normalize(vNo);vec3 nr=normalize(vNr);
@@ -65,7 +65,7 @@ void main(){
  vec3 a=no.z>0.?texture2D(tS,uvS).rgb:texture2D(tN,uvN).rgb;
  a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.55,.8,abs(no.x)));
  float gt=no.z>0.?texture2D(gS,uvS).r:texture2D(gN,uvN).r;
- gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));
+ gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));gt=mix(gt,1.,gm);
  // looking along one of the three sprite axes: the sprite's own maps (albedo, ink, baked tone) are shown whatever the normal says, so the view is the 2D capture;
  // turned away, the mesh light and the normal-chosen maps take over
 float lb=0.;float wS=smoothstep(.93,.99,cdir.z),wN=smoothstep(.93,.99,-cdir.z),wE=smoothstep(.93,.99,-cdir.x),wa=wS+wN+wE;
@@ -101,7 +101,7 @@ function smoothNormals(g,R,A){const n=g.attributes.normal.array,m=R*A,t=new Floa
     if(rowDir){a=Math.max(0,i-1)*A+k;b=Math.min(R-1,i+1)*A+k}else{a=i*A+(k+A-1)%A;b=i*A+(k+1)%A}
     const c=i*A+k;for(let j=0;j<3;j++)t[c*3+j]=.5*n[c*3+j]+.25*n[a*3+j]+.25*n[b*3+j]}
     for(let c=0;c<m;c++){const x=t[c*3],y=t[c*3+1],z=t[c*3+2],l=Math.hypot(x,y,z)||1;n[c*3]=x/l;n[c*3+1]=y/l;n[c*3+2]=z/l}};
-  for(let s=0;s<60;s++)pass(true);pass(false);pass(false);g.attributes.normal.needsUpdate=true}
+  for(let s=0;s<+(Q.get('sn')||60);s++)pass(true);pass(false);pass(false);g.attributes.normal.needsUpdate=true}
 function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null}={}){
   const R=rows.length,pos=[],idx=[];
   for(let i=0;i<R;i++)for(let k=0;k<A;k++){const j=k*3;pos.push(rows[i][j],rows[i][j+1],rows[i][j+2])}
@@ -247,7 +247,7 @@ function apply(){
   cur.wireframe=$('w').checked;cur.transparent=(sk||op<1);cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=!(sk||op<1);cur.needsUpdate=true;
   G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked});
 }
-function view(v){const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
+function view(v){globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
 sel.onchange=msel.onchange=build;['sk','og','w','op'].forEach(i=>$(i).oninput=apply);
 document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
 build();view(0);sel.addEventListener('change',()=>view(0));msel.addEventListener('change',()=>view(0));
