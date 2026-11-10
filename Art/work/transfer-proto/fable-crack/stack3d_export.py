@@ -145,7 +145,7 @@ def one(body, h=1.0):
         print(f"  {f:6s} field vs sprite: sil p95 {p95:.2f} mean {mean:.2f} | lum {mae:.4f} (blank {blank:.4f})", flush=True)
     # layers: bones as one mesh, muscles, viscera and fat pads one mesh each (right half), carried from the Male frame
     # onto this body by the same frame fit and skin fits as the skin
-    step = max(int(round(3.0 / G0.h)), 1)
+    step = max(int(round(4.0 / G0.h)), 1)
     lm_m = s.MALE["lm"]
     clamp = (lm_m[0] + 31.0, lm_m[4] - 27.0)                   # rows of the Male frame where the fit is well defined
 

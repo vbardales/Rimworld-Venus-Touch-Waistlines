@@ -350,7 +350,7 @@ def loft(G, ctrl, p=2.3, cap_top=6.0, cap_bot=6.0, cut=None):
     # f + 1 is homogeneous in the row plane, so the in-plane gradient is constant along a ray from the axis while the
     # row gradient grows with the radius: take the row gradient at the surface (divide by f + 1), otherwise the distance
     # collapses far from a part whose section changes fast (the slanted inlet)
-    gr = np.where((R >= r0) & (R <= r1), g[0] / np.maximum(f + 1.0, 0.3), g[0])
+    gr = g[0] / np.maximum(f + 1.0, 0.3)
     d = f / np.maximum(np.sqrt(gr ** 2 + g[1] ** 2 + g[2] ** 2), 1e-3)
     if cut is not None:
         th = np.arctan2(X, Z - zm)
@@ -376,12 +376,12 @@ COL = {
 
 MALE = dict(
     # spinous tips (r, z); the vertebral bodies sit in front of them
-    sp=[(198, 215), (210, 204), (222, 197.5), (235, 194), (250, 194.5), (268, 196.5), (285, 198.5), (300, 199.5), (318, 200),
+    sp=[(190, 222), (198, 214), (210, 204), (222, 197.5), (235, 194), (250, 194.5), (268, 196.5), (285, 198.5), (300, 199.5), (318, 200),
         (334, 199.5)],
     # rib barrel: r, half width, front (sternum line), back (rib angles). Slanted inlet from T1 (back, r 212) to the
     # manubrium (front, r 250); widest at the lower ribs.
-    cage=[(208, 8, 224, 214), (214, 26, 246, 203), (222, 40, 270, 198), (232, 50, 292, 195.5), (242, 57, 308, 195),
-          (250, 61, 319, 195.5), (260, 65, 322, 197), (272, 69, 323, 200), (285, 72, 322.5, 202.5), (300, 73, 320, 204.5),
+    cage=[(190, 16, 232, 214), (196, 28, 250, 205), (204, 42, 276, 199), (212, 52, 296, 196), (222, 58, 310, 195), (232, 62, 317, 195), (242, 64, 320, 195),
+          (250, 65.5, 321, 195.5), (260, 67, 322, 197), (272, 69, 323, 200), (285, 72, 322.5, 202.5), (300, 73, 320, 204.5),
           (312, 72.5, 315, 206), (324, 70.5, 310, 207.5), (336, 66, 303, 209), (346, 62, 297, 211)],
     cage_p=2.7,
     # abdominal cavity: r, half width, front, back
@@ -403,6 +403,7 @@ MALE = dict(
     skin_blur=1.0,    # skin tension
     navel=(7.0, 3.2, 6.0, 7.0),     # rows below the navel landmark, half width, half height, depth
     lm=(184.0, 298.0, 322.0, 358.0, 422.0, 429.0),   # south rows: top, armpit, under-chest fold, navel, crotch, bottom
+    neck_cut=186.5,   # row of the flat section where the sprite cuts the neck (the skin adds the fat above it)
 )
 
 # Body types. ms: thickness of the sheet muscles; pads: named fat pads; tf: fat the frame fit leaves room for (px);
@@ -432,13 +433,13 @@ def build_male(G, T, prm=MALE, ty=None):
 
     # ---- bones
     # spine: vertebral bodies in front of the spinous tips, one capsule per vertebra from the body to the tip
-    vr = np.concatenate([np.linspace(200, 304, 13), np.linspace(310, 334, 5)])
+    vr = np.concatenate([np.linspace(192, 304, 14), np.linspace(310, 334, 5)])
     body_pts = []
     for i, r in enumerate(vr):
         zs = float(fsp(r)); zb = zs + (17 if r > 306 else 14)
         body_pts.append((0, r, zb))
         S.add(f"vertebra {i}", "bone", cone((0, r - 1.5, zb - 3), (0, r + 2.0, zs + 2.2), 4.2, 2.2), colour=BONE, show=False)
-    S.add("spine", "bone", tube(body_pts, [6.5] * 13 + [7.8] * 5), colour=BONE)
+    S.add("spine", "bone", tube(body_pts, [6.5] * 14 + [7.8] * 5), colour=BONE)
     S.add("spinous processes", "bone", tube([(0, r + 2.0, float(fsp(r)) + 2.4) for r in vr], 2.3), colour=BONE)
 
     def costal(a, R):                                         # lower edge of the barrel: xiphoid, flank, 12th rib
@@ -452,14 +453,16 @@ def build_male(G, T, prm=MALE, ty=None):
     q = (R - 0.22 * (Z - 200.0)) / 11.5
     ribs = np.maximum(np.abs(cd + 2.6) - 2.6, (np.abs(q - np.round(q)) - 0.30) * 9.0).astype(np.float32)
     add_raw(S, "rib cage", "bone", csl, cd, colour=BONE, disp=ribs)
-    S.add("sternum", "bone", tube([(0, 249, float(cf(249)) + 0.5), (0, 285, float(cf(285)) + 0.5), (0, 314, float(cf(314)) - 2.0)], [5.2, 4.6, 3.0]), colour=BONE)
-    S.add("clavicle", "bone", tube([(5, 251, 321), (22, 253, 321.5), (44, 247, 316), (60, 241, 302), (74, 236, 281)], [4.2, 3.6, 3.4, 3.4, 3.8]), colour=BONE)
+    S.add("sternum", "bone", tube([(0, 214, float(cf(214)) + 0.5), (0, 250, float(cf(250)) + 0.5), (0, 285, float(cf(285)) + 0.5), (0, 314, float(cf(314)) - 2.0)], [5.6, 5.2, 4.6, 3.0]), colour=BONE)
+    # clavicle: under the skin at the base of the neck (Virginie: near the top of the sprite, not at the shoulder tip), from the
+    # notch outward, slightly up and back to the acromion at the corner of the shoulder
+    S.add("clavicle", "bone", tube([(5, 212, 300), (24, 211, 302), (46, 207, 296), (64, 204, 278), (78, 203, 256)], [4.2, 3.6, 3.4, 3.4, 3.8]), colour=BONE)
     # scapula: blade on the back of the barrel, spine of the scapula up to the acromion
-    sup, inf, gle, med = (21, 209, 199.5), (25, 258, 196.5), (63, 240, 228), (19.5, 224, 195.5)
+    sup, inf, gle, med = (21, 198, 201), (25, 258, 196.5), (64, 224, 232), (19.5, 222, 195.5)
     S.add("scapula", "bone", tri(sup, inf, gle, 1.8), colour=BONE)
     S.add("scapula medial", "bone", tri(sup, med, inf, 1.8), colour=BONE, show=False)
-    S.add("scapular spine", "bone", tube([(20, 221, 193.5), (48, 226, 200), (70, 232, 228), (76, 234.5, 262), (74, 236, 280)], [2.6, 3.0, 3.6, 4.0, 3.6]), colour=BONE)
-    S.add("humerus", "bone", tube([(76, 252, 256), (79, 272, 252), (81, 296, 250)], [12.0, 6.5, 6.0]), colour=BONE)
+    S.add("scapular spine", "bone", tube([(20, 212, 194), (46, 209, 200), (68, 205, 228), (78, 203, 256)], [2.6, 3.0, 3.6, 4.0]), colour=BONE)
+    S.add("humerus", "bone", tube([(76, 222, 254), (79, 250, 252), (81, 296, 250)], [12.0, 6.5, 6.0]), colour=BONE)
     # pelvis
     psis, crest1, crest2, tub, asis = (13, 330, 200.5), (36, 323, 210), (56, 328, 233), (63, 337, 256), (51, 352, 286)
     acet, pub, isch = (37, 387, 250), (0, 400, 284), (27, 411, 233)
@@ -480,8 +483,10 @@ def build_male(G, T, prm=MALE, ty=None):
 
     # ---- deep masses: arm stump, and the WDI dome above the clavicle and the scapular spine (neck base, upper trapezius)
     S.add("arm stump (humerus muscles)", "muscle", ell((81, 278, 251), (11.5, 27, 16)), k=2.0, colour=COL["arm"])
-    S.add("neck base", "muscle", ell((0, 240, 246), (46, 30, 70), rad2=(46, 49, 58)), k=2.0, colour=COL["neck"])
-    S.add("trapezius (upper)", "muscle", ell((37, 240, 234), (55, 60, 88), rad2=(55, 53.5, 49)), k=8.0, colour=COL["trap"], km=8.0)
+    # base of the neck inside the sprite (scalenes, the feet of the sternocleidomastoids): the neck is cut just above it
+    S.add("neck root", "muscle", ell((0, 212, 262), (38, 20, 38), rad2=(38, 36, 30)), k=4.0, colour=COL["neck"])
+    # upper trapezius: the slope from the side of the neck down to the acromion and the spine of the scapula
+    S.add("trapezius (upper)", "muscle", ell((38, 214, 232), (44, 30, 34), rad2=(44, 34, 44)), k=6.0, colour=COL["trap"], km=6.0)
 
     # ---- trunk, front
     def serr(i, zc_, rc_):
@@ -495,10 +500,10 @@ def build_male(G, T, prm=MALE, ty=None):
 
     # the two pectorals meet on the sternum (the polygon crosses the midline, so the pair is one sheet there); they thin
     # toward it, which leaves the sternal furrow as a shallow valley and not a bare strip of bone
-    pec = [(-1, 255), (-1, 309), (11, 316), (26, 322.5), (42, 325.5), (56, 323), (68, 315), (76, 305), (80, 288), (80, 268),
-           (78, 252), (72, 243), (60, 244.5), (44, 250), (24, 256), (8, 255)]
+    pec = [(-1, 217), (-1, 309), (11, 316), (26, 322.5), (42, 325.5), (56, 323), (68, 315), (76, 305), (80, 288), (80, 250),
+           (78, 226), (72, 213), (62, 209.5), (46, 212.5), (24, 216.5), (8, 217)]
     S.lens("pectoralis major", "muscle", "F", pec, 11.5, 5.5, colour=COL["pec"],
-           mod=lambda u, v: (0.7 + 0.3 * sstep((v - (255.0 - 0.17 * np.abs(u))) / 38.0)) * (0.68 + 0.32 * sstep(np.abs(u) / 14.0)))
+           mod=lambda u, v: (0.6 + 0.4 * sstep((v - (217.0 - 0.1 * np.abs(u))) / 70.0)) * (0.68 + 0.32 * sstep(np.abs(u) / 14.0)))
 
     # rectus abdominis: four blocks a side, tendinous intersections between them, linea alba at the midline
     xo = lambda r: 26.0 - 9.0 * sstep((r - 330.0) / 68.0)
@@ -514,11 +519,11 @@ def build_male(G, T, prm=MALE, ty=None):
            mod=lambda u, v: (0.4 + 0.6 * sstep((u - 30.0) / 55.0)) * (0.45 + 0.55 * sstep((v - 322.0) / 18.0)))
 
     # ---- trunk, back
-    er = [(6.5, 224, 5.0, 4.5), (7, 250, 6.0, 4.5), (8.5, 285, 8.0, 6.5), (10.5, 310, 10.0, 8.5), (9.5, 332, 8.5, 6.7), (6.5, 346, 5.0, 5.5)]
+    er = [(6.5, 212, 5.0, 4.5), (7, 250, 6.0, 4.5), (8.5, 285, 8.0, 6.5), (10.5, 310, 10.0, 8.5), (9.5, 332, 8.5, 6.7), (6.5, 346, 5.0, 5.5)]
     S.add("erector spinae", "muscle", tube([(x, r, float(fsp(r)) + dz) for x, r, rad, dz in er], [p[2] for p in er]), k=1.5,
           colour=COL["erec"], km=1.0)
 
-    scap = [(19, 208), (19, 246), (24, 258), (44, 262), (66, 264), (84, 254), (88, 238), (72, 222), (44, 212)]
+    scap = [(19, 206), (19, 246), (24, 258), (44, 262), (66, 264), (84, 254), (88, 236), (76, 214), (44, 208)]
     S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
            mod=lambda u, v: 1.0 - 0.3 * sstep((v - 236.0) / 26.0))
 
@@ -529,14 +534,15 @@ def build_male(G, T, prm=MALE, ty=None):
     S.lens("latissimus dorsi", "muscle", "W", deg(lat), 8.0, 10.0, colour=COL["lat"], prof=1.25,
            mod=lambda u, v: 0.55 + 0.45 * sstep((228.0 - u) / 70.0))
 
-    trap = [(-1, 215), (30, 215), (62, 224), (80, 234), (62, 240), (38, 236), (22, 246), (9, 272), (-1, 302)]
+    trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
     S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
     # thoracolumbar fascia with the multifidus under it: from the lumbar erectors onto the sacrum, between the two PSIS
     S.lens("thoracolumbar fascia, multifidus", "muscle", "B", [(-1, 296), (24, 302), (38, 318), (30, 332), (15, 341), (-1, 354)], 2.6, 11.0,
            colour=COL["erec"], prof=1.2)
 
     # ---- shoulder
-    S.add("deltoid", "muscle", ell((78, 264, 254), (16.5, 38, 30), rad2=(16.5, 30, 30)), k=1.5, colour=COL["delt"])
+    # deltoid: cap over the shoulder joint from the clavicle, the acromion and the spine of the scapula down to the humerus
+    S.add("deltoid", "muscle", ell((78, 250, 254), (16.5, 52, 30), rad2=(16.5, 48, 30)), k=1.5, colour=COL["delt"])
 
     # ---- pelvis and thigh stump
     S.add("gluteus medius", "muscle", ell((48, 346, 236), (24, 25, 34), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
@@ -544,6 +550,9 @@ def build_male(G, T, prm=MALE, ty=None):
     S.add("tensor fasciae latae, hip flexors", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
     S.add("thigh stump (quadriceps, adductors, hamstrings)", "muscle", ell((35, 396, 242.5), (19, 36, 44), rad2=(19, 36, 47), rot=(-46, 0, 0)), k=6.0,
           colour=COL["thigh"], km=2.0)
+    # the sprite cuts the neck flat: the neck root and the trapezius end on that section, they do not close in a tip
+    S.d = smax(S.d, (prm["neck_cut"] - G.r)[:, None, None].astype(np.float32), 2.0)
+    S.layer_d["bone"] = np.maximum(S.layer_d["bone"], (prm["neck_cut"] + 3.0 - G.r)[:, None, None].astype(np.float32))   # the spine goes on in the ghost neck
     S.mark("muscle")
 
     # ---- named fat pads (the fat layer itself is solved per body: fat_field)
@@ -561,16 +570,16 @@ def build_ghost(G, T, prm=MALE):
     zc = lambda R: np.interp(R, T.rows, T.zc).astype(np.float32)
     S = Stack(G, zc)
     # ---- neck: cervical spine, the column of deep neck muscles, sternocleidomastoid, the trapezius up to the skull
-    csp = spline([(125, 230), (140, 229), (160, 226), (180, 221), (198, 215)])
-    cr = np.linspace(128, 196, 7)
+    csp = spline([(125, 230), (140, 229), (160, 227), (176, 225), (190, 222)])
+    cr = np.linspace(128, 188, 7)
     S.add("cervical spine", "bone", tube([(0, r, float(csp(r)) + 13) for r in cr], 6.0), colour=BONE)
     S.add("cervical spinous processes", "bone", tube([(0, r + 2.0, float(csp(r)) + 2.4) for r in cr], 2.2), colour=BONE)
     # a neck is about a third of the shoulder width; the two bumps on top of the sprite (40 px each side) are the
     # trapezius, not the neck
-    nsl, nd, _ = loft(G, [(120, 16, 256, 222), (150, 16.5, 258, 221), (180, 18, 262, 219), (200, 22, 268, 216), (228, 30, 284, 210)], p=2.2, cap_top=3.0, cap_bot=6.0)
+    nsl, nd, _ = loft(G, [(120, 16, 256, 222), (150, 16.5, 258, 221), (180, 18, 262, 220), (198, 22, 268, 218), (214, 28, 280, 214)], p=2.2, cap_top=3.0, cap_bot=6.0)
     add_raw(S, "neck (scalenes, levator, splenius)", "muscle", nsl, nd, colour=COL["neck"])
-    S.add("trapezius (neck part)", "muscle", cone((40, 214, 226), (12, 134, 229), 17.0, 7.0), k=8.0, colour=COL["trap"], km=6.0)
-    S.add("sternocleidomastoid", "muscle", cone((17, 128, 236), (6, 249, 316), 4.5, 4.0), k=1.5, colour=COL["pec"])
+    S.add("trapezius (neck part)", "muscle", cone((38, 206, 230), (12, 134, 229), 15.0, 7.0), k=8.0, colour=COL["trap"], km=6.0)
+    S.add("sternocleidomastoid", "muscle", cone((17, 128, 236), (6, 212, 299), 4.5, 4.0), k=1.5, colour=COL["pec"])
     # ---- arm: humerus to the elbow, biceps in front, triceps behind
     S.add("humerus (shaft)", "bone", tube([(81, 290, 250), (86, 350, 251), (90, 402, 252)], [6.0, 5.5, 8.5]), colour=BONE)
     S.add("biceps, brachialis", "muscle", ell((86, 346, 261), (10.0, 50, 11.0), rot=(5, 0, 0)), k=2.0, colour=COL["arm"])
@@ -745,7 +754,9 @@ def lin(x, xp, fp):
     """np.interp with linear extrapolation past both ends."""
     xp = np.asarray(xp, float); fp = np.asarray(fp, float); x = np.asarray(x, float)
     y = np.interp(x, xp, fp)
-    s0 = (fp[1] - fp[0]) / (xp[1] - xp[0]); s1 = (fp[-1] - fp[-2]) / (xp[-1] - xp[-2])
+    # past the ends: the overall slope, not that of the last segment (the crotch-to-bottom segment of a sprite is a few
+    # rows long and says nothing about the length of a thigh)
+    s0 = s1 = (fp[-1] - fp[0]) / (xp[-1] - xp[0])
     return np.where(x < xp[0], fp[0] + (x - xp[0]) * s0, np.where(x > xp[-1], fp[-1] + (x - xp[-1]) * s1, y))
 
 
@@ -775,7 +786,7 @@ class Fit:
             a[:j0] = a[j0]; a[j1 + 1:] = a[j1]
         sg = sigma / G.h
         self.r = G.r.astype(float)
-        self.sx = np.clip(ndi.gaussian_filter1d(sx, sg, mode="nearest"), 0.4, 2.2)
+        self.sx = np.clip(ndi.gaussian_filter1d(np.clip(sx, 0.4, 2.2), sg, mode="nearest"), 0.4, 2.2)
         self.df = ndi.gaussian_filter1d(df, sg, mode="nearest"); self.db = ndi.gaussian_filter1d(db, sg, mode="nearest")
         if lim:
             self.sx = np.clip(self.sx, lim[0], lim[1]); self.df = np.clip(self.df, -lim[2], lim[2]); self.db = np.clip(self.db, -lim[2], lim[2])
