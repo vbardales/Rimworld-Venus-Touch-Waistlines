@@ -237,7 +237,8 @@ class Target:
 class Stack:
     """Accumulates the layers. d = current outside of the stack; parts = display volumes of each bone and muscle."""
 
-    def __init__(self, G, zc):
+    def __init__(self, G, zc, ms=1.0, ps=1.0):
+        self.ms, self.ps = ms, ps                              # thickness scale of the sheet muscles and of the fat pads
         self.G = G
         self.zc = zc                                           # centre plane z as a function of r (callable)
         self.d = G.full()
@@ -273,6 +274,7 @@ class Stack:
         mod(u, v) -> factor on T (u, v = the polygon coordinates). prof: 2 = quarter-circle shoulder, lower = softer.
         """
         V = chaikin(poly, rnd) if rnd else np.asarray(poly, float)
+        T = T * (self.ms if layer == "muscle" else self.ps if layer == "fat" else 1.0)
         G = self.G
         if proj in ("F", "B"):
             sgn = 1.0 if proj == "F" else -1.0
@@ -385,14 +387,13 @@ MALE = dict(
     # abdominal cavity: r, half width, front, back
     visc=[(308, 60, 306, 206), (320, 64, 311.5, 206), (332, 65.5, 311.5, 206), (345, 63.5, 310.5, 206), (357, 61, 307, 205),
           (369, 58, 300, 206), (382, 53, 293.5, 210), (394, 44, 287.5, 216), (402, 34, 283, 224)],
-    fat=2.5,          # thin layer over the muscles
+    fat=2.5,          # thin layer over the muscles (ghost limbs; the body's own fat is solved per body)
     fat_bone=3.5,     # floor over bare bone
-    fill_sigma=5.0,   # fat fills the notches: hollows narrower than about this are bridged ...
-    fill_gap=0.3,     # ... up to this depth under their rims
+    fill_gap=0.3,     # fat fills the notches up to this depth under their rims (their width is the type's "fill")
     # skin tethers: lines where the skin is tied to what is below it, so the fat does not bridge the crease there
     # (side, radius px, points (x, r)); ANATOMY-LAYERS section 3: a fold is where a pad meets a bone-tied band
     tethers=[
-        ("F", 5.0, [(4, 312.5), (12, 318), (26, 324.5), (42, 327.5), (56, 325), (68, 317), (76, 308)]),   # lower border of the pectoral
+        ("P", 5.0, [(4, 312.5), (12, 318), (26, 324.5), (42, 327.5), (56, 325), (68, 317), (76, 308)]),   # lower border of the pectoral (front; not on a body with breasts)
         ("F", 4.0, [(48, 357), (36, 371), (26, 385), (12, 397)]),                                      # inguinal ligament
         ("B", 4.0, [(19, 214), (19, 246), (24, 259), (44, 263.5), (66, 265.5)]),                       # medial and inferior border of the scapula
         ("B", 3.0, [(0, 368), (0, 412)]),                                                              # intergluteal cleft
@@ -400,13 +401,31 @@ MALE = dict(
         ("B", 5.0, [(2, 404), (20, 407), (40, 405), (52, 399)]),                                       # gluteal fold
     ],
     skin_blur=1.0,    # skin tension
-    navel=(365.0, 3.2, 6.0, 7.0),   # row, half width, half height, depth
+    navel=(7.0, 3.2, 6.0, 7.0),     # rows below the navel landmark, half width, half height, depth
+    lm=(184.0, 298.0, 322.0, 358.0, 422.0, 429.0),   # south rows: top, armpit, under-chest fold, navel, crotch, bottom
 )
 
+# Body types. ms: thickness of the sheet muscles; pads: named fat pads; tf: fat the frame fit leaves room for (px);
+# tmin: least fat anywhere; fill: width of the notches the fat bridges (px); breast: two lobes at the apex landmarks;
+# lim: (least, most width scale, most depth shift px) of the frame for the bodies whose size is fat, not bone.
+TYPES = {
+    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0),
+    "Thin": dict(ms=0.6, pads=0.4, tf=1.8, tmin=1.5, fill=4.0),
+    "Hulk": dict(ms=1.35, pads=0.8, tf=2.5, tmin=2.0, fill=4.5),
+    "Fat": dict(ms=0.9, pads=1.0, tf=6.0, tmin=4.0, fill=9.0, breast=True, lim=(0.85, 1.15, 12.0)),
+    "Female": dict(ms=0.7, pads=1.5, tf=4.0, tmin=3.0, fill=7.0, breast=True),
+    "Thin_Female": dict(ms=0.55, pads=0.8, tf=2.5, tmin=2.0, fill=6.0, breast=True),
+    "Fat_Female": dict(ms=0.8, pads=1.2, tf=7.0, tmin=4.5, fill=10.0, breast=True, lim=(0.85, 1.15, 12.0)),
+    "Hulk_Female": dict(ms=1.15, pads=1.0, tf=3.0, tmin=2.5, fill=5.0, breast=True),
+}
 
-def build_male(G, T, prm=MALE):
+
+def build_male(G, T, prm=MALE, ty=None):
+    """The lean stack in the Male frame: bones, viscera, muscles, then the named fat pads. ty = body type (TYPES):
+    it scales the sheet muscles and the pads; the fat layer itself is solved per body afterwards (fat_field)."""
+    ty = ty or TYPES["Male"]
     zc = lambda R: np.interp(R, T.rows, T.zc).astype(np.float32)
-    S = Stack(G, zc)
+    S = Stack(G, zc, ty["ms"], ty["pads"])
     fsp = spline(prm["sp"])
     th = RW * np.pi / 180.0
     deg = lambda pts: [(a * th, r) for a, r in pts]
@@ -474,10 +493,12 @@ def build_male(G, T, prm=MALE):
     for i, (z_, r_) in enumerate(((270, 297), (274, 307), (277, 317), (279, 327))):
         serr(i, z_, r_)
 
-    pec = [(2, 255), (2, 308), (11, 316), (26, 322.5), (42, 325.5), (56, 323), (68, 315), (76, 305), (80, 288), (80, 268),
+    # the two pectorals meet on the sternum (the polygon crosses the midline, so the pair is one sheet there); they thin
+    # toward it, which leaves the sternal furrow as a shallow valley and not a bare strip of bone
+    pec = [(-1, 255), (-1, 309), (11, 316), (26, 322.5), (42, 325.5), (56, 323), (68, 315), (76, 305), (80, 288), (80, 268),
            (78, 252), (72, 243), (60, 244.5), (44, 250), (24, 256), (8, 255)]
     S.lens("pectoralis major", "muscle", "F", pec, 11.5, 5.5, colour=COL["pec"],
-           mod=lambda u, v: (0.7 + 0.3 * sstep((v - (255.0 - 0.17 * np.abs(u))) / 38.0)) * (0.6 + 0.4 * sstep((np.abs(u) - 2.0) / 26.0)))
+           mod=lambda u, v: (0.7 + 0.3 * sstep((v - (255.0 - 0.17 * np.abs(u))) / 38.0)) * (0.68 + 0.32 * sstep(np.abs(u) / 14.0)))
 
     # rectus abdominis: four blocks a side, tendinous intersections between them, linea alba at the midline
     xo = lambda r: 26.0 - 9.0 * sstep((r - 330.0) / 68.0)
@@ -501,9 +522,12 @@ def build_male(G, T, prm=MALE):
     S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
            mod=lambda u, v: 1.0 - 0.3 * sstep((v - 236.0) / 26.0))
 
-    lat = [(174, 258), (150, 258), (125, 270), (103, 288), (99, 310), (97, 330), (104, 341), (135, 341), (160, 335), (174, 318)]
-    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 8.5, 12.0, colour=COL["lat"], prof=1.25,
-           mod=lambda u, v: 0.35 + 0.65 * sstep((215.0 - u) / 55.0))
+    # latissimus dorsi: one fan. Origin on the spine from T7 down to the sacrum and along the iliac crest, free border
+    # up the flank, all fibres converging on the humerus behind the armpit; thinner over its lumbar aponeurosis
+    lat = [(181, 262), (181, 340), (150, 343), (122, 343), (102, 336), (97, 314), (98, 298), (103, 286), (112, 277), (130, 266),
+           (154, 258)]
+    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 8.0, 10.0, colour=COL["lat"], prof=1.25,
+           mod=lambda u, v: 0.55 + 0.45 * sstep((228.0 - u) / 70.0))
 
     trap = [(-1, 215), (30, 215), (62, 224), (80, 234), (62, 240), (38, 236), (22, 246), (9, 272), (-1, 302)]
     S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
@@ -522,14 +546,12 @@ def build_male(G, T, prm=MALE):
           colour=COL["thigh"], km=2.0)
     S.mark("muscle")
 
-    # ---- fat: thin layer, floor over bare bone, male pads
-    S.d = np.minimum(S.d - prm["fat"], S.layer_d["bone"] - prm["fat_bone"]).astype(np.float32)
+    # ---- named fat pads (the fat layer itself is solved per body: fat_field)
     soft = dict(prof=1.0, rnd=2, colour=COL["fat"])
     S.lens("fat pad, flank", "fat", "W", deg([(88, 324), (130, 318), (156, 332), (136, 354), (98, 358), (80, 342)]), 2.5, 16.0, **soft)
     S.lens("fat pad, lower abdomen", "fat", "F", [(0, 362), (26, 362), (40, 378), (30, 394), (12, 399), (0, 399)], 2.2, 16.0, **soft)
     S.lens("fat pad, pubis", "fat", "F", [(0, 392), (10, 392), (16, 400), (9, 409), (0, 409)], 4.0, 7.0, **soft)
     S.lens("fat pad, lower medial gluteal", "fat", "B", [(4, 382), (24, 379), (40, 390), (30, 402), (8, 404)], 2.5, 12.0, **soft)
-    S.mark("fat")
     return S
 
 
@@ -543,11 +565,12 @@ def build_ghost(G, T, prm=MALE):
     cr = np.linspace(128, 196, 7)
     S.add("cervical spine", "bone", tube([(0, r, float(csp(r)) + 13) for r in cr], 6.0), colour=BONE)
     S.add("cervical spinous processes", "bone", tube([(0, r + 2.0, float(csp(r)) + 2.4) for r in cr], 2.2), colour=BONE)
-    S.mark("bone")
-    nsl, nd, _ = loft(G, [(120, 29, 262, 216), (150, 30, 264, 214), (180, 33, 270, 212), (200, 38, 278, 210), (228, 42, 292, 208)], p=2.2, cap_top=3.0, cap_bot=6.0)
+    # a neck is about a third of the shoulder width; the two bumps on top of the sprite (40 px each side) are the
+    # trapezius, not the neck
+    nsl, nd, _ = loft(G, [(120, 16, 256, 222), (150, 16.5, 258, 221), (180, 18, 262, 219), (200, 22, 268, 216), (228, 30, 284, 210)], p=2.2, cap_top=3.0, cap_bot=6.0)
     add_raw(S, "neck (scalenes, levator, splenius)", "muscle", nsl, nd, colour=COL["neck"])
-    S.add("trapezius (neck part)", "muscle", cone((44, 216, 224), (22, 132, 226), 26.0, 13.0), k=8.0, colour=COL["trap"], km=6.0)
-    S.add("sternocleidomastoid", "muscle", cone((28, 128, 238), (7, 249, 316), 5.5, 4.5), k=1.5, colour=COL["pec"])
+    S.add("trapezius (neck part)", "muscle", cone((40, 214, 226), (12, 134, 229), 17.0, 7.0), k=8.0, colour=COL["trap"], km=6.0)
+    S.add("sternocleidomastoid", "muscle", cone((17, 128, 236), (6, 249, 316), 4.5, 4.0), k=1.5, colour=COL["pec"])
     # ---- arm: humerus to the elbow, biceps in front, triceps behind
     S.add("humerus (shaft)", "bone", tube([(81, 290, 250), (86, 350, 251), (90, 402, 252)], [6.0, 5.5, 8.5]), colour=BONE)
     S.add("biceps, brachialis", "muscle", ell((86, 346, 261), (10.0, 50, 11.0), rot=(5, 0, 0)), k=2.0, colour=COL["arm"])
@@ -563,42 +586,131 @@ def build_ghost(G, T, prm=MALE):
         if layer == "bone" and a is not None:
             bone[sl] = np.minimum(bone[sl], a)
     d = np.minimum(S.d - prm["fat"], bone - prm["fat_bone"])
-    S.skin = ndi.gaussian_filter(np.clip(d, -20, 20), 1.5 / G.h, mode="nearest").astype(np.float32)
+    S.skin = ndi.gaussian_filter(np.clip(d, -20, 20), 1.5 / G.h, mode=SYM).astype(np.float32)
     return S
 
 
-def skin_of(S, prm=MALE):
-    """Skin = outside of the stack. Fat fills the notches (a narrow hollow is bridged, a ridge is kept), the navel is a
-    pit tied to the linea alba, and the skin tension is a small blur (a crease keeps a finite radius)."""
-    G = S.G
-    d = S.d
-    if prm["fill_sigma"] > 0:
+SYM = ("nearest", "mirror", "nearest")     # x = 0 is the mirror plane of the half grid [r, x, z]
+
+
+def breast_rows(T):
+    """(top row, apex row, fold row, apex half spacing) of the breast lobes from the south landmarks, or None."""
+    P = T.P["south"]
+    if "breast apex L" not in P or "under-breast fold L" not in P:
+        return None
+    xa = abs(P["breast apex L"][0] - T.cxs); ra = P["breast apex L"][1]; rf = P["under-breast fold L"][1]
+    return ra - 2.2 * (rf - ra), ra, rf, xa
+
+
+def frame_target(T, ty):
+    """Silhouettes the frame (bones and muscles) is fitted to. On a body with breasts the front is bridged over the
+    breast rows, so the frame follows the chest wall and the lobes are left to the fat."""
+    zf = T.zf.copy()
+    br = breast_rows(T) if ty.get("breast") else None
+    if br:
+        a, b = br[0], br[2] + 6.0
+        sel = (T.rows >= a) & (T.rows <= b)
+        za, zb = T.at(T.zf, a), T.at(T.zf, b)
+        zf[sel] = np.minimum(zf[sel], za + (T.rows[sel] - a) / (b - a) * (zb - za))
+    return T.hw, zf, T.zb
+
+
+def redistance(G, d, keep=4.0):
+    """A field that is a distance everywhere: the stack's own field near its surface (it is exact there), the
+    Euclidean distance to that surface beyond. The fat of a fat body is thicker than the range of the stack's field."""
+    inside = d < 0
+    far = (ndi.distance_transform_edt(~inside) - ndi.distance_transform_edt(inside)) * G.h
+    far = ndi.gaussian_filter(far - 0.5 * G.h * np.sign(far), 1.0, mode=SYM)
+    w_ = sstep((np.abs(far) - keep) / keep)
+    return (np.clip(d, -3 * keep, 3 * keep) * (1 - w_) + far * w_).astype(np.float32)
+
+
+def fat_field(G, lean, bone, T, ty, prm=MALE):
+    """Fat solved per body: per row, what the three silhouettes show beyond the lean stack is fat, spread around the
+    section (front, flanks, back), never under the type's least thickness, never under the floor over bare bone.
+    On a body with breasts the front fat of the breast rows gathers in two lobes at the apex landmarks."""
+    hw, zf, zb = profiles(G, lean)
+    ok = np.isfinite(hw) & np.isfinite(zf)
+    i0, i1 = np.flatnonzero(ok)[[0, -1]]
+    r = G.r.astype(float)
+    es = np.interp(r, T.rows, T.hw) - hw; ef = np.interp(r, T.rows, T.zf) - zf; eb = zb - np.interp(r, T.rows, T.zb)
+    # near the two tips the surface is almost horizontal, a depth difference there is not a thickness: taper to the base fat
+    edge = sstep((r - r[i0]) / 16.0) * sstep((r[i1] - r) / 16.0)
+    out = []
+    for e in (es, ef, eb):
+        e = np.where(ok, e, 0.0); e[:i0] = e[i0]; e[i1 + 1:] = e[i1]
+        e = ty["tf"] + (e - ty["tf"]) * edge
+        out.append(ndi.gaussian_filter1d(e, 5.0 / G.h, mode="nearest"))
+    es, ef, eb = (e[:, None, None] for e in out)
+    X, R, Z = G.coords((slice(None), slice(None), slice(None)))
+    zc = np.interp(R, T.rows, T.zc)
+    rho = np.maximum(np.hypot(X, Z - zc), 1e-3)
+    c = (Z - zc) / rho; s2 = (X / rho) ** 2
+    wf = np.clip(c, 0, 1) ** 2; wb = np.clip(-c, 0, 1) ** 2
+    br = breast_rows(T) if ty.get("breast") else None
+    if br:
+        top, ra, rf, xa = br
+        rowgate = sstep((R - top) / max(ra - top, 1.0)) * (1.0 - sstep((R - rf) / max(0.4 * (rf - ra), 5.0)))
+        lobes = np.exp(-((X - xa) / (0.72 * xa)) ** 2)        # two lobes (the mirror gives the other), a cleavage between them
+        wf = wf * (1.0 - rowgate) + rowgate * (0.25 * wf + 0.75 * lobes * (c > 0))
+    t = np.maximum(ef * wf + eb * wb + es * s2, ty["tmin"])
+    return np.minimum(redistance(G, lean) - t, bone - prm["fat_bone"]).astype(np.float32)
+
+
+def skin_of(G, d, T, ty, frame, prm=MALE):
+    """Skin = outside of the stack with its fat. Fat fills the notches (a narrow hollow is bridged, a ridge is kept)
+    except along the skin tethers, the navel is a pit tied to the linea alba, and the skin tension is a small blur
+    (a crease keeps a finite radius). frame: the Fit that put the Male frame on this body (tethers follow it)."""
+    zc = np.interp(G.r, T.rows, T.zc)
+    sig = ty["fill"]
+    if sig > 0:
         # 1 = the fat may bridge, 0 = tethered; front and back maps in (r, x), flank map in (r, z)
         free = {"F": np.ones(d.shape[:2], np.float32), "B": np.ones(d.shape[:2], np.float32), "S": np.ones((d.shape[0], d.shape[2]), np.float32)}
         R2 = G.r[:, None].astype(float)
+        teth = []
         for side, rho, pts in prm.get("tethers", ()):
+            if side == "P":                                    # pectoral border: only where no breast hides it
+                if ty.get("breast"):
+                    continue
+                side = "F"
+            a = np.asarray(pts, float)
+            if side == "S":
+                _, rr, zz = frame.forward(np.full(len(a), 60.0), a[:, 1], a[:, 0])
+                teth.append((side, rho, np.stack([zz, rr], 1)))
+            else:
+                xx, rr, _ = frame.forward(a[:, 0], a[:, 1], np.full(len(a), 260.0))
+                teth.append((side, rho, np.stack([xx, rr], 1)))
+        br = breast_rows(T) if ty.get("breast") else None
+        if br:                                                 # the under-breast fold
+            top, ra, rf, xa = br
+            teth.append(("F", 4.0, np.array([(0.3 * xa, rf - 1.0), (xa, rf + 1.5), (1.7 * xa, rf - 2.0)])))
+        for side, rho, pts in teth:
             U2 = (G.z if side == "S" else G.x)[None, :].astype(float)
             dist = np.full((R2.shape[0], U2.shape[1]), 1e9)
-            for (xa, ra), (xb, rb) in zip(pts[:-1], pts[1:]):
-                ex, er = xb - xa, rb - ra
-                t = np.clip(((U2 - xa) * ex + (R2 - ra) * er) / (ex * ex + er * er), 0, 1)
-                dist = np.minimum(dist, np.hypot(U2 - xa - ex * t, R2 - ra - er * t))
+            for (xa_, ra_), (xb_, rb_) in zip(pts[:-1], pts[1:]):
+                ex, er = xb_ - xa_, rb_ - ra_
+                t = np.clip(((U2 - xa_) * ex + (R2 - ra_) * er) / (ex * ex + er * er), 0, 1)
+                dist = np.minimum(dist, np.hypot(U2 - xa_ - ex * t, R2 - ra_ - er * t))
             free[side] = np.minimum(free[side], sstep((dist - 0.5 * rho) / rho))
-        front = (G.z[None, None, :] > S.zc(G.r)[:, None, None])
+        front = (G.z[None, None, :] > zc[:, None, None])
         wgt = np.where(front, free["F"][:, :, None], free["B"][:, :, None])
         wgt = np.where(G.x[None, :, None] > 45.0, np.minimum(wgt, free["S"][:, None, :]), wgt)
-        band = 2.0 * prm["fill_sigma"]                         # the field is only a distance near the stack: clamp it before the blur
-        d = np.minimum(d, ndi.gaussian_filter(np.clip(d, -band, band), prm["fill_sigma"] / G.h, mode="nearest") + prm["fill_gap"] + 8.0 * (1.0 - wgt))
-    if prm.get("navel"):
-        r0, a, b, c = prm["navel"]
+        band = 2.0 * sig                                       # the field is only a distance near the stack: clamp it before the blur
+        d = np.minimum(d, ndi.gaussian_filter(np.clip(d, -band, band), sig / G.h, mode=SYM) + prm["fill_gap"] + 8.0 * (1.0 - wgt))
+    P = T.P["south"]
+    if prm.get("navel") and "navel" in P:
+        k = (T.s1 - T.s0) / 245.0
+        dr, a, b, c = prm["navel"]
+        r0 = P["navel"][1] + dr * k
         i = int(np.argmin(np.abs(G.r - r0)))
         zs = float(last_cross(d[i:i + 1, 0:1, :], 2, G.z)[0, 0])
-        fn, lo, hi = ell((0, r0, zs + 0.5), (a, b, c))
-        sl = G.box(lo, hi, 4.0)
-        d = d.copy()
-        d[sl] = smax(d[sl], -np.broadcast_to(fn(*G.coords(sl)), d[sl].shape).astype(np.float32), 1.5)
+        if np.isfinite(zs):
+            fn, lo, hi = ell((0, r0, zs + 0.5), (a * k, b * k, c * k))
+            sl = G.box(lo, hi, 4.0)
+            d = d.copy()
+            d[sl] = smax(d[sl], -np.broadcast_to(fn(*G.coords(sl)), d[sl].shape).astype(np.float32), 1.5)
     if prm["skin_blur"] > 0:
-        d = ndi.gaussian_filter(d, prm["skin_blur"] / G.h, mode="nearest")
+        d = ndi.gaussian_filter(d, prm["skin_blur"] / G.h, mode=SYM)
     return d.astype(np.float32)
 
 
@@ -629,30 +741,48 @@ def profiles(G, d):
 
 
 # ---------------------------------------------------------------- fit: row-wise affine of the whole stack onto the silhouettes
-class Fit:
-    """x' = x * sx(r); z' moves the front by df(r) and the back by db(r), linearly from the mid depth; r' = a*r + b."""
+def lin(x, xp, fp):
+    """np.interp with linear extrapolation past both ends."""
+    xp = np.asarray(xp, float); fp = np.asarray(fp, float); x = np.asarray(x, float)
+    y = np.interp(x, xp, fp)
+    s0 = (fp[1] - fp[0]) / (xp[1] - xp[0]); s1 = (fp[-1] - fp[-2]) / (xp[-1] - xp[-2])
+    return np.where(x < xp[0], fp[0] + (x - xp[0]) * s0, np.where(x > xp[-1], fp[-1] + (x - xp[-1]) * s1, y))
 
-    def __init__(self, G, d, T, sigma=5.0):
+
+class Fit:
+    """x' = x * sx(r); z' moves the front by df(r) and the back by db(r), linearly from the mid depth; r' = rowmap(r).
+
+    rowmap: (source rows, target rows), piecewise linear (default: top and bottom of the solid onto the sprite's).
+    shrink: px taken off the target on every side (room left for the fat). tgt: (hw, zf, zb) on T.rows instead of
+    T's own. lim: (least, most width scale, most depth shift) for a frame that must not grow with the fat.
+    """
+
+    def __init__(self, G, d, T, sigma=5.0, rowmap=None, shrink=0.0, tgt=None, lim=None, trim=0.0):
         hw, zf, zb = profiles(G, d)
         ok = np.isfinite(hw) & np.isfinite(zf)
         r = G.r[ok]
-        self.ra = (T.s1 - T.s0) / (r[-1] - r[0] + 0.0)        # vertical affine: model top/bottom onto the sprite's
-        self.rb = T.s0 - self.ra * r[0]
-        rt = self.ra * G.r + self.rb                           # target row of each grid row
-        hw_t = np.interp(rt, T.rows, T.hw); zf_t = np.interp(rt, T.rows, T.zf); zb_t = np.interp(rt, T.rows, T.zb)
+        if rowmap is None:
+            rowmap = ([r[0], r[-1]], [T.s0, T.s1])
+        self.rm = (np.asarray(rowmap[0], float), np.asarray(rowmap[1], float))
+        rt = lin(G.r, *self.rm)                                # target row of each grid row
+        thw, tzf, tzb = tgt if tgt is not None else (T.hw, T.zf, T.zb)
+        hw_t = np.interp(rt, T.rows, thw) - shrink; zf_t = np.interp(rt, T.rows, tzf) - shrink; zb_t = np.interp(rt, T.rows, tzb) + shrink
         sx = np.where(ok, hw_t / np.maximum(hw, 1.0), 1.0)
         df = np.where(ok, zf_t - zf, 0.0); db = np.where(ok, zb_t - zb, 0.0)
         i0, i1 = np.flatnonzero(ok)[[0, -1]]
+        j0, j1 = i0 + int(trim / G.h), i1 - int(trim / G.h)   # trim: the closing tips say nothing about the frame
         for a in (sx, df, db):
-            a[:i0] = a[i0]; a[i1 + 1:] = a[i1]
+            a[:j0] = a[j0]; a[j1 + 1:] = a[j1]
         sg = sigma / G.h
         self.r = G.r.astype(float)
-        self.sx = np.clip(ndi.gaussian_filter1d(sx, sg, mode="nearest"), 0.7, 1.4)
+        self.sx = np.clip(ndi.gaussian_filter1d(sx, sg, mode="nearest"), 0.4, 2.2)
         self.df = ndi.gaussian_filter1d(df, sg, mode="nearest"); self.db = ndi.gaussian_filter1d(db, sg, mode="nearest")
+        if lim:
+            self.sx = np.clip(self.sx, lim[0], lim[1]); self.df = np.clip(self.df, -lim[2], lim[2]); self.db = np.clip(self.db, -lim[2], lim[2])
         self.zf = np.where(ok, zf, np.nan); self.zb = np.where(ok, zb, np.nan)
         for a in (self.zf, self.zb):
             a[:i0] = a[i0]; a[i1 + 1:] = a[i1]
-        self.zm = 0.5 * (self.zf + self.zb)
+        self.valid = (float(r[0]), float(r[-1]))               # source rows where the solid exists
         self.raw = dict(hw=np.where(ok, hw_t - hw, np.nan), df=np.where(ok, df, np.nan), db=np.where(ok, db, np.nan))
 
     def stats(self):
@@ -662,27 +792,32 @@ class Fit:
             out[k] = (float(v.mean()), float(np.percentile(v, 95)), float(v.max()))
         return out
 
-    def forward(self, x, r, z):
-        """Model point -> fitted point (arrays)."""
+    def _row(self, r):
         sx = np.interp(r, self.r, self.sx); df = np.interp(r, self.r, self.df); db = np.interp(r, self.r, self.db)
         zf = np.interp(r, self.r, self.zf); zb = np.interp(r, self.r, self.zb); zm = 0.5 * (zf + zb)
-        up = np.clip((z - zm) / np.maximum(zf - zm, 1e-3), 0, 1); dn = np.clip((zm - z) / np.maximum(zm - zb, 1e-3), 0, 1)
-        return x * sx, self.ra * r + self.rb, z + up * df + dn * db
+        # the shift of one side never exceeds 3/4 of the half depth of its row: the map stays one to one at the tips
+        hf = np.maximum(zf - zm, 1e-3); hb = np.maximum(zm - zb, 1e-3)
+        return sx, np.maximum(df, -0.75 * hf), np.minimum(db, 0.75 * hb), zf, zb, zm, hf, hb
 
-    def warp(self, G, d, order=1):
-        """The field of the fitted solid on the same grid (inverse map, then resample)."""
-        r_src = (G.r.astype(float) - self.rb) / self.ra
-        sx = np.interp(r_src, self.r, self.sx); df = np.interp(r_src, self.r, self.df); db = np.interp(r_src, self.r, self.db)
-        zf = np.interp(r_src, self.r, self.zf); zb = np.interp(r_src, self.r, self.zb); zm = 0.5 * (zf + zb)
-        kf = 1.0 + df / np.maximum(zf - zm, 1e-3); kb = 1.0 - db / np.maximum(zm - zb, 1e-3)
-        Z = G.z.astype(float)[None, :]
+    def forward(self, x, r, z, rc=None):
+        """Model point -> fitted point (arrays). rc: rows to read the width and depth correction from (default r)."""
+        sx, df, db, zf, zb, zm, hf, hb = self._row(r if rc is None else rc)
+        up = np.clip((z - zm) / hf, 0, 1); dn = np.clip((zm - z) / hb, 0, 1)
+        return x * sx, lin(r, *self.rm), z + up * df + dn * db
+
+    def warp(self, G, d, order=1, Gd=None):
+        """The field of the fitted solid on the grid Gd (default: the same grid): inverse map, then resample."""
+        Gd = Gd or G
+        r_src = lin(Gd.r, self.rm[1], self.rm[0])
+        sx, df, db, zf, zb, zm, hf, hb = self._row(r_src)
+        kf = 1.0 + df / hf; kb = 1.0 - db / hb
+        Z = Gd.z.astype(float)[None, :]
         zs = np.where(Z >= zm[:, None], zm[:, None] + (Z - zm[:, None]) / kf[:, None], zm[:, None] - (zm[:, None] - Z) / kb[:, None])
         zs = np.where(Z > (zf + df)[:, None], Z - df[:, None], zs); zs = np.where(Z < (zb + db)[:, None], Z - db[:, None], zs)
         ri = (r_src - G.r[0]) / G.h
-        xi = (G.x.astype(float)[None, :] / sx[:, None]) / G.h
+        xi = (Gd.x.astype(float)[None, :] / sx[:, None]) / G.h
         zi = (zs - G.z[0]) / G.h
-        shp = G.shape
-        co = np.empty((3,) + shp, np.float32)
+        co = np.empty((3,) + Gd.shape, np.float32)
         co[0] = ri[:, None, None]; co[1] = xi[:, :, None]; co[2] = zi[:, None, :]
         return ndi.map_coordinates(d, co, order=order, mode="nearest").astype(np.float32)
 
@@ -764,7 +899,7 @@ def palette_of(S):
     return pal
 
 
-def board(S, G, d, T, tag, extra=""):
+def board(S, G, d, T, tag, owner, extra=""):
     """Two boards: <tag>-views (WDI | toon capture of the stack | outlines, three views) and <tag>-lit (lit previews,
     plain and coloured by muscle, at 0, 35, 90, 145, 180 degrees)."""
     F = sprite_fields(G, d, T)
@@ -793,7 +928,7 @@ def board(S, G, d, T, tag, extra=""):
     path = CAPT / f"2026-11-10_stack3d-{tag}-{T.body}-views.png"
     out.save(path)
     pal = palette_of(S); white = np.full_like(pal, 236.0)
-    cols_ = [oblique(G, d, S.owner, (white, pal), a, 1.3) for a in (0, 35, 90, 145, 180)]
+    cols_ = [oblique(G, d, owner, (white, pal), a, 1.3) for a in (0, 35, 90, 145, 180)]
     rows_ = [[c[j] for c in cols_] for j in (0, 1)]
     Wd = sum(o.width + 6 for o in rows_[0]); Hh = max(o.height for o in rows_[0])
     lit_ = Image.new("RGB", (Wd, 2 * Hh + 6), (235, 235, 230))
@@ -806,7 +941,7 @@ def board(S, G, d, T, tag, extra=""):
 
 
 class Fits:
-    """Two passes of the row-wise affine: a broad one, then a finer one on what is left."""
+    """Passes of the row-wise affine on the finished skin: what the frame and the fat left."""
 
     def __init__(self, G, d, T, sigmas=None, order=1):
         sigmas = sigmas or tuple(float(v) for v in os.environ.get("FIT_SIGMAS", "6,4").split(","))
@@ -816,53 +951,89 @@ class Fits:
             d = f.warp(G, d, order)
             self.steps.append(f)
         self.d = d
-        self.left = Fit(G, d, T, 1.0).stats()                 # what remains after the fit
 
     def stats(self):
         return self.steps[0].stats()
 
-    def forward(self, x, r, z):
-        for f in self.steps:
+
+def chain_forward(steps, x, r, z, clamp=None):
+    """A point of the Male frame through the frame fit and the skin fits. clamp = (lo, hi) rows of the Male frame:
+    a ghost limb outside them takes the width and depth correction of the nearest row inside, and its own height."""
+    rc = None if clamp is None else np.clip(r, *clamp)
+    for f in steps:
+        if rc is None:
             x, r, z = f.forward(x, r, z)
-        return x, r, z
-
-    def warp(self, G, a, order=1):
-        for f in self.steps:
-            a = f.warp(G, a, order)
-        return a
+        else:
+            x, r2, z = f.forward(x, r, z, rc)
+            rc = lin(rc, *f.rm); r = r2
+    return x, r, z
 
 
-def make(h=1.0, fit=True, order=1):
-    """Build the Male stack, fit it to the silhouettes. Returns everything the export needs."""
-    T = Target("Male")
-    G = Grid(h)
-    S = build_male(G, T)
-    d0 = skin_of(S)
+def body_grid(T, h):
+    """Grid of a body: its sprite extents with a margin, voxels no finer than h and about five million of them."""
+    x1 = float(T.hw.max()) + 14.0; z0 = float(T.zb.min()) - 14.0; z1 = float(T.zf.max()) + 14.0
+    r0 = float(T.s0) - 12.0; r1 = float(T.s1) + 12.0
+    hb = max(h, round(float((x1 * (r1 - r0) * (z1 - z0) / 5.5e6) ** (1 / 3)), 2))
+    return Grid(hb, x1=x1, r0=r0, r1=r1, z0=z0, z1=z1)
+
+
+def landmark_rows(T):
+    """South rows: top, armpit, under-chest fold, navel, crotch, bottom (strictly increasing)."""
+    P = T.P["south"]
+    rows = [float(T.s0)]
+    for nm in ("armpit L", "under-breast fold L", "navel", "crotch point"):
+        rows.append(float(P[nm][1]))
+    rows.append(float(T.s1))
+    for i in range(1, len(rows)):
+        rows[i] = max(rows[i], rows[i - 1] + 2.0)
+    return rows
+
+
+def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
+    """Build the stack of a body: the lean stack in the Male frame (muscles and pads scaled by the type), the frame
+    put on the body by its landmark rows and a broad row-wise affine, the fat solved from the silhouettes, the skin,
+    then the fine fit. Returns everything the boards and the export need."""
+    ty = TYPES[body]
+    TM = Target("Male")
+    T = TM if body == "Male" else Target(body)
+    G0 = Grid(h)
+    S = build_male(G0, TM, ty=ty)
+    G = body_grid(T, h)
+    frame = Fit(G0, S.d, T, sigma=14.0, rowmap=(MALE["lm"], landmark_rows(T)), shrink=ty["tf"], tgt=frame_target(T, ty), lim=ty.get("lim"), trim=16.0)
+    lean = frame.warp(G0, S.d, order, G); bone = frame.warp(G0, S.layer_d["bone"], order, G)
+    d0 = skin_of(G, fat_field(G, lean, bone, T, ty), T, ty, frame)
+    pre = Fit(G, d0, T, 1.0).stats()                           # the model against the silhouettes before the fine fit
     F = Fits(G, d0, T, order=order) if fit else None
-    G2 = Grid(2.0, x1=126.0, r0=100.0, r1=566.0, z0=150.0, z1=360.0)   # the cut limbs are smooth: a coarser, taller grid
-    return dict(T=T, G=G, S=S, d0=d0, d=F.d if fit else d0, fit=F, G2=G2, ghost=build_ghost(G2, T))
+    steps = [frame] + (F.steps if fit else [])
+    d = F.d if fit else d0
+    owner = frame.warp(G0, S.owner.astype(np.float32), 0, G)
+    for f in steps[1:]:
+        owner = f.warp(G, owner, 0)
+    K = dict(body=body, ty=ty, T=T, G0=G0, G=G, S=S, d0=d0, d=d, steps=steps, pre=pre, owner=np.round(owner).astype(np.int16),
+             left=Fit(G, d, T, 1.0).stats() if fit else pre, frame=frame)
+    if ghost:
+        K["G2"] = Grid(2.0, x1=126.0, r0=100.0, r1=566.0, z0=150.0, z1=360.0)   # the cut limbs are smooth: a coarser, taller grid
+        K["ghost"] = build_ghost(K["G2"], TM)
+    return K
 
 
 def main():
-    h = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
-    tag = sys.argv[2] if len(sys.argv) > 2 else "t"
+    args = [a for a in sys.argv[1:] if a != "nofit"]
+    h = float(args[0]) if args else 2.0
+    tag = args[1] if len(args) > 1 else "t"
+    names = [a for a in args[2:] if a in TYPES] or ["Male"]
     nofit = "nofit" in sys.argv
-    K = make(h, fit=not nofit)
-    F = K["fit"].steps[0] if K["fit"] else Fit(K["G"], K["d0"], K["T"])
-    st = F.stats()
-    print("fit residual before the warp (px, mean / p95 / max): " + "  ".join(f"{k} {v[0]:.2f}/{v[1]:.2f}/{v[2]:.2f}" for k, v in st.items()))
-    if K["fit"]:
-        print("left after the fit: " + "  ".join(f"{k} {v[0]:.2f}/{v[1]:.2f}/{v[2]:.2f}" for k, v in K["fit"].left.items()))
-    print(f"rows: scale {F.ra:.4f} offset {F.rb:.2f}")
-    if not nofit:                                             # owner follows the warp too (nearest)
-        K["S"].owner = np.round(K["fit"].warp(K["G"], K["S"].owner.astype(np.float32), 0)).astype(np.int16)
-    rr = np.arange(184, 432, 12.0)
-    for nm in ("hw", "df", "db"):
-        print(f"  {nm} residual by row " + " ".join(f"{int(r)}:{np.interp(r, F.r, np.nan_to_num(F.raw[nm])):+.1f}" for r in rr))
-    rep, path = board(K["S"], K["G"], K["d"], K["T"], tag, extra="(no fit)" if nofit else "")
-    for f, r in rep.items():
-        print(f"{f:6s} sil p95 {r['p95']:.2f} mean {r['mean']:.2f} max {r['max']:.1f} | lum {r['mae']:.4f} (blank {r['blank']:.4f})")
-    print(path)
+    fmt = lambda st: "  ".join(f"{k} {v[0]:.2f}/{v[1]:.2f}/{v[2]:.2f}" for k, v in st.items())
+    for body in names:
+        K = make(body, h, fit=not nofit)
+        print(f"== {body}: grid h {K['G'].h}, frame width scale {K['frame'].sx.min():.2f} to {K['frame'].sx.max():.2f}")
+        print("frame against the silhouettes less the fat (px, mean / p95 / max): " + fmt(K["frame"].stats()))
+        print("skin before the fine fit: " + fmt(K["pre"]))
+        print("left after the fine fit:  " + fmt(K["left"]))
+        rep, path = board(K["S"], K["G"], K["d"], K["T"], tag, K["owner"], extra="(no fit)" if nofit else "")
+        for f, r in rep.items():
+            print(f"{f:6s} sil p95 {r['p95']:.2f} mean {r['mean']:.2f} max {r['max']:.1f} | lum {r['mae']:.4f} (blank {r['blank']:.4f})")
+        print(path, flush=True)
 
 
 if __name__ == "__main__":

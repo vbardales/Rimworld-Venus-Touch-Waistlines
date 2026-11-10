@@ -23,7 +23,8 @@ with sync_playwright() as p:
     pg = br.new_page(viewport={"width": W, "height": H})
     msgs = []
     pg.on("console", lambda m: msgs.append(m.text) if m.type in ("error", "warning") else None)
-    pg.goto(html.as_uri() + __import__("os").environ.get("QUERY", ""))
+    # scoring captures (ORTHO) are of the body alone: the ghost limbs of the stack bodies are off unless QUERY says otherwise
+    pg.goto(html.as_uri() + __import__("os").environ.get("QUERY", "?gh=0" if "ORTHO" in __import__("os").environ else ""))
     pg.wait_for_function("document.getElementById('b') && document.getElementById('b').options.length>0", timeout=60000)
     if "ORTHO" in __import__("os").environ:   # narrow field of view: the silhouette then matches the sprite mask (scoring)
         pg.evaluate("__cam.fov=8;__cam.far=200000;__cam.updateProjectionMatrix()")

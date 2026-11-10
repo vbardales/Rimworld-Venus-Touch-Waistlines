@@ -267,10 +267,11 @@ function build(){
 }
 function apply(){
   const sk=$('sk').checked,mu=$('mu').checked,gh=$('gh').checked,op=+$('op').value/100;
+  const hasMu=G.children.some(o=>o.userData.k==='mu');   // a body without a muscle layer keeps its skin
   const o=sk?Math.min(op,.3):op;
   cur.wireframe=$('w').checked;cur.transparent=(sk||op<1);cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=!(sk||op<1);cur.needsUpdate=true;
   // the muscle layer replaces the skin (the skin is its outside plus the fat); the skeleton shows through a faint skin
-  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='skin')o.visible=!mu;
+  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='skin')o.visible=!(mu&&hasMu);
     if(o.userData.k==='ghs')o.visible=gh&&!mu&&!sk;if(o.userData.k==='ghb')o.visible=gh&&sk;if(o.userData.k==='ghm')o.visible=gh&&mu});
 }
 function view(v){globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}

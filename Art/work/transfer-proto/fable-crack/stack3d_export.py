@@ -1,15 +1,17 @@
 """Export of the stack model (stack3d.py) for the 3D viewer (2026-11-10).
 
-Writes out/stack3d-mesh.json: {"R", "bodies": {"Male": entry}}; body3d_build.py puts each entry in the place of the wdi3d
+Writes out/stack3d-mesh.json: {"R", "bodies": {body: entry}}; body3d_build.py puts each entry in the place of the wdi3d
 body of the same name (the wdi3d one stays in the list as "<Body> (wdi3d)"). The entry has the fields of
 wdi3d_export.py, all computed from the geometry of the stack, nothing read from the drawing except the areola colour:
   rows   R rings of A points, cast from the axis of each row to the skin (so the mesh has the same density all around);
   horns, legs   the same for the rows above the neck dip and below the crotch, where a row has two pieces;
   tex    areola albedo x (1 - ink), ink = depth of the narrow hollows of the stack's own surface;
   bake   tone of the top light on that surface (same transfer as wdi3d.py); gate = 1 (no gate from the drawing);
-  layers the bones and each muscle and fat pad as their own meshes (right half; the viewer mirrors them).
+  layers the bones and each muscle and fat pad as their own meshes (right half; the viewer mirrors them), and the
+         ghost limbs (neck, arms, thighs: skin, bones, muscles).
 
-Run: uv run --with numpy --with pillow --with scipy --with scikit-image python stack3d_export.py [h]
+Run: uv run --with numpy --with pillow --with scipy --with scikit-image python stack3d_export.py [h] [Body ...]
+  (bodies already in the file are kept when only some are named)
 then: uv run python body3d_build.py
 """
 import json
@@ -23,8 +25,8 @@ import stack3d as s
 import wdi3d as w
 import wdi3d_export as we
 
-R_RINGS = 360
-A_RING = 240
+R_RINGS = 300
+A_RING = 200
 STEP = 0.5          # px along a ray
 
 
@@ -33,7 +35,7 @@ def sample(G, d, r, x, z):
     return ndi.map_coordinates(d, co, order=1, mode="nearest")
 
 
-def ring_stack(G, d, rows, cx, cz, first, rmax=130.0):
+def ring_stack(G, d, rows, cx, cz, first, rmax):
     """Rings of A_RING points around the axis (cx, cz) of each row. first: take the first exit along the ray (a piece
     beside another one), else the outermost one. Order: left, front, right, back, as relief_export2."""
     phi = -np.pi / 2 + 2 * np.pi * np.arange(A_RING) / A_RING
@@ -71,9 +73,10 @@ def pieces(G, d):
 
 
 def mesh_of(field, sl, G, step):
-    """Marching cubes of one display field (its sub-box) -> vertices (x, r, z) and triangles."""
-    if field.min() >= 0 or min(field.shape) < 2 * step + 2:
+    """Marching cubes of one display field (its sub-box) -> vertices (x, r, z) and triangles, or None when empty."""
+    if field.min() >= 0:
         return None
+    step = step if min(field.shape) >= 2 * step + 2 else 1    # a thin part keeps its mesh at the finest step
     try:
         v, f, _, _ = measure.marching_cubes(field, 0.0, step_size=step, allow_degenerate=False)
     except (ValueError, RuntimeError):
@@ -82,25 +85,25 @@ def mesh_of(field, sl, G, step):
     return np.stack([x, r, z], 1), f
 
 
-def one(h=1.0):
-    K = s.make(h)
-    T, G, S, d, F = K["T"], K["G"], K["S"], K["d"], K["fit"]
-    st = F.stats()
-    print("fit residual before the warp (px, mean / p95 / max): " + "  ".join(f"{k} {v[0]:.2f}/{v[1]:.2f}/{v[2]:.2f}" for k, v in st.items()), flush=True)
+def one(body, h=1.0):
+    K = s.make(body, h, ghost=True)
+    T, G, G0, S, d, steps = K["T"], K["G"], K["G0"], K["S"], K["d"], K["steps"]
+    fmt = lambda st: "  ".join(f"{k} {v[0]:.2f}/{v[1]:.2f}/{v[2]:.2f}" for k, v in st.items())
+    print(f"== {body}: skin before the fine fit (px, mean / p95 / max): {fmt(K['pre'])}", flush=True)
     mid, any_, cx, cz, zmid = pieces(G, d)
     rows_in = G.r[any_]; r_top, r_bot = float(rows_in[0]), float(rows_in[-1])
     rm = G.r[mid]; t0, t1 = float(rm[0]), float(rm[-1])       # rows where the section is one piece through the midline
     zc_fun = lambda r: np.interp(r, G.r[mid], ndi.gaussian_filter1d(zmid[mid], 4.0 / G.h, mode="nearest"))
-    # torso
+    rmax = float(np.hypot(T.hw.max(), 0.5 * (T.zf.max() - T.zb.min()))) + 30.0
     rows = np.linspace(t0 + 0.4, t1 - 0.4, R_RINGS)
-    rings = ring_stack(G, d, rows, np.zeros(R_RINGS), zc_fun(rows), first=False)
+    rings = ring_stack(G, d, rows, np.zeros(R_RINGS), zc_fun(rows), False, rmax)
     zmean = float(rings[..., 2].mean())
 
     def two(ra, rb, n):
         """The right piece of the rows ra..rb as rings around its own centroid, and its mirror image."""
         rr = np.linspace(ra, rb, n)
         c_x = np.interp(rr, G.r, cx); c_z = np.interp(rr, G.r, cz)
-        Rr = ring_stack(G, d, rr, c_x, c_z, first=True, rmax=90.0)
+        Rr = ring_stack(G, d, rr, c_x, c_z, True, rmax)
         L = Rr[:, ::-1].copy(); L[..., 0] *= -1
         L = np.roll(L, 1 - A_RING // 2, axis=1)               # same angular origin (left extreme) as the other rings
         return L, Rr
@@ -109,13 +112,14 @@ def one(h=1.0):
         b = a.copy(); b[..., 1] = -a[..., 1]; b[..., 2] = a[..., 2] - zmean
         return b
 
+    flat = lambda a: np.round(to_world(a).reshape(len(a), -1), 2).tolist()
     horns = legs = None
     if t0 - r_top > 1.0:
         L, Rr = two(r_top + 0.3, t0 + 0.4, max(int((t0 - r_top) / 0.5), 3))
-        horns = {"L": np.round(to_world(L).reshape(len(L), -1), 2).tolist(), "R": np.round(to_world(Rr).reshape(len(Rr), -1), 2).tolist()}
+        horns = {"L": flat(L), "R": flat(Rr)}
     if r_bot - t1 > 1.0:
         L, Rr = two(t1 - 0.4, r_bot - 0.3, max(int((r_bot - t1) / 0.5), 3))
-        legs = {"L": np.round(to_world(L).reshape(len(L), -1), 2).tolist(), "R": np.round(to_world(Rr).reshape(len(Rr), -1), 2).tolist(), "mode": "stack"}
+        legs = {"L": flat(L), "R": flat(Rr), "mode": "stack"}
     P = T.P["south"]
     lm = {"top": -r_top, "bottom": -r_bot, "split": -t1}
     for key, nm in (("apex", "breast apex L"), ("fold", "under-breast fold L"), ("navel", "navel"), ("sex", "sex"),
@@ -125,18 +129,12 @@ def one(h=1.0):
     frame = {"s": [int(T.s0), int(T.s1)], "n": [int(T.n0), int(T.n1)], "e": [int(T.e0), int(T.e1)],
              "cxs": round(T.cxs, 2), "cxn": round(T.cxn, 2), "zmean": round(zmean, 2),
              "zc": np.round(np.interp(np.arange(T.s0, T.s1 + 1), T.rows, T.zc) - zmean, 2).tolist()}
-    # maps from the stack's own surface
+    # maps from the stack's own surface (same ink and tone rules as the wdi3d bodies)
     fields = s.sprite_fields(G, d, T)
     tex, bake, gate, rep = {}, {}, {}, {}
     for f in ("south", "north", "east"):
         hf, m = fields[f]
-        ink = np.clip((w.closed(hf) - hf) * m / w.GROOVE, 0, 1)
-        albedo = np.ones((w.N, w.N, 3))
-        yy, xx = np.mgrid[0:w.N, 0:w.N]
-        for (x, y, r, col) in w.areolae(T.imgs[f], T.M[f]):
-            a = np.clip(r + 0.5 - np.hypot(xx - x, yy - y), 0, 1)[..., None]
-            albedo = albedo * (1 - a) + col * a
-        tex[f[0]] = we.data_uri(albedo * (1 - ink[..., None]))
+        tex[f[0]] = we.data_uri(we.ink_map(hf, T.imgs[f], m))
         bake[f[0]] = we.gray_uri(we.baked_loss(hf, m))
         gate[f[0]] = we.gray_uri(np.ones((w.N, w.N)))
         wd = w.outline_width(T.imgs[f], T.M[f])
@@ -144,68 +142,57 @@ def one(h=1.0):
         mae, blank = w.score(cap, T.imgs[f], T.M[f], wd)
         p95, mean, mx = s.sil_error(m, T.M[f])
         rep[f] = {"sil_p95": round(p95, 2), "sil_mean": round(mean, 2), "lum": round(mae, 4), "blank": round(blank, 4)}
-        print(f"{f:6s} field vs sprite: sil p95 {p95:.2f} mean {mean:.2f} | lum {mae:.4f} (blank {blank:.4f})", flush=True)
-    # layers: bones as one mesh, muscles, viscera and fat pads one mesh each (right half, fitted like the skin)
-    step = max(int(round(3.0 / G.h)), 1)
+        print(f"  {f:6s} field vs sprite: sil p95 {p95:.2f} mean {mean:.2f} | lum {mae:.4f} (blank {blank:.4f})", flush=True)
+    # layers: bones as one mesh, muscles, viscera and fat pads one mesh each (right half), carried from the Male frame
+    # onto this body by the same frame fit and skin fits as the skin
+    step = max(int(round(3.0 / G0.h)), 1)
+    lm_m = s.MALE["lm"]
+    clamp = (lm_m[0] + 31.0, lm_m[4] - 27.0)                   # rows of the Male frame where the fit is well defined
 
-    def pack(vf):
+    def pack(vf, clamp=None):
+        if vf is None:
+            return {"v": [], "i": []}
         v, f = vf
-        x, r, z = F.forward(v[:, 0], v[:, 1], v[:, 2])
-        return {"v": np.round(np.stack([x, -r, z - zmean], 1).reshape(-1), 1).tolist(), "i": f.reshape(-1).astype(int).tolist()}
+        x, r, z = s.chain_forward(steps, v[:, 0], v[:, 1], v[:, 2], clamp)
+        return {"v": np.round(np.stack([x, -r, z - zmean], 1).reshape(-1)).astype(int).tolist(), "i": f.reshape(-1).astype(int).tolist()}
 
-    bone = G.full()
-    layers = {"bone": None, "parts": []}
-    for name, layer, colour, sl, a in S.parts:
-        if a is None:
-            continue
-        if layer == "bone":
-            bone[sl] = np.minimum(bone[sl], a)
-            continue
-        m_ = mesh_of(a, sl, G, step)
-        if m_ is not None:
-            layers["parts"].append({"n": name, "l": layer, "c": [int(c) for c in colour], **pack(m_)})
-    full = (slice(0, G.shape[0]), slice(0, G.shape[1]), slice(0, G.shape[2]))
-    layers["bone"] = pack(mesh_of(bone, full, G, max(step - 1, 1)))   # bones are thin: finer than the muscles
-    # ghost limbs (neck, arms, thighs): their skin, bones and muscles, fitted with the same affine as the body
+    def layer_set(S_, G_, st, clamp=None):
+        bone = G_.full(); parts = []
+        for name, layer, colour, sl, a in S_.parts:
+            if a is None:
+                continue
+            if layer == "bone":
+                bone[sl] = np.minimum(bone[sl], a)
+                continue
+            parts.append({"n": name, "l": layer, "c": [int(c) for c in colour], **pack(mesh_of(a, sl, G_, st), clamp)})
+        full = tuple(slice(0, n) for n in G_.shape)
+        return pack(mesh_of(bone, full, G_, max(st - 1, 1)), clamp), [p for p in parts if p["v"]], full
+
+    bone, parts, _ = layer_set(S, G0, step)
+    layers = {"bone": bone, "parts": parts}
+    # ghost limbs (neck, arms, thighs): outside the rows of the sprite a ghost takes the correction of the nearest
+    # well-defined row of the body and its own height
     G2, S2 = K["G2"], K["ghost"]
-    full2 = (slice(0, G2.shape[0]), slice(0, G2.shape[1]), slice(0, G2.shape[2]))
-    gbone = G2.full()
-    def gpack(vf):
-        """Outside the rows of the sprite the fit has nothing to say: a ghost limb takes the correction of the nearest
-        well-defined body row (not of the closing tips) and the vertical scale of the body."""
-        v, f = vf
-        rc = np.clip(v[:, 1], 215.0, 395.0)
-        x, _, z = F.forward(v[:, 0], rc, v[:, 2])
-        r = F.forward(v[:, 0], v[:, 1], v[:, 2])[1]
-        return {"v": np.round(np.stack([x, -r, z - zmean], 1).reshape(-1), 1).tolist(), "i": f.reshape(-1).astype(int).tolist()}
-
-    ghost = {"skin": gpack(mesh_of(S2.skin, full2, G2, 1)), "bone": None, "parts": []}
-    for name, layer, colour, sl, a in S2.parts:
-        if a is None:
-            continue
-        if layer == "bone":
-            gbone[sl] = np.minimum(gbone[sl], a)
-            continue
-        m_ = mesh_of(a, sl, G2, 1)
-        if m_ is not None:
-            ghost["parts"].append({"n": name, "l": layer, "c": [int(c) for c in colour], **gpack(m_)})
-    ghost["bone"] = gpack(mesh_of(gbone, full2, G2, 1))
-    layers["ghost"] = ghost
-    e = {"rows": np.round(to_world(rings).reshape(R_RINGS, -1), 2).tolist(), "legs": legs, "horns": horns, "lm": lm,
-         "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": 2, "layers": layers,
-         "outline": round(float(np.mean([w.outline_width(T.imgs[f], T.M[f]) for f in T.imgs])), 1),
-         "fit": {k: [round(x, 2) for x in v] for k, v in st.items()}, "score2d": rep}
-    return e
+    gbone, gparts, full2 = layer_set(S2, G2, 2, clamp)
+    layers["ghost"] = {"skin": pack(mesh_of(S2.skin, full2, G2, 2), clamp), "bone": gbone, "parts": gparts}
+    return {"rows": flat(rings), "legs": legs, "horns": horns, "lm": lm,
+            "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": 2, "layers": layers,
+            "outline": round(float(np.mean([w.outline_width(T.imgs[f], T.M[f]) for f in T.imgs])), 1),
+            "fit": {"pre": {k: [round(x, 2) for x in v] for k, v in K["pre"].items()}, "left": {k: [round(x, 2) for x in v] for k, v in K["left"].items()}},
+            "score2d": rep}
 
 
 def main():
-    h = float(sys.argv[1]) if len(sys.argv) > 1 else 1.0
-    out = {"Male": one(h)}
+    args = sys.argv[1:]
+    h = float(args[0]) if args and args[0] not in s.TYPES else 1.0
+    names = [a for a in args if a in s.TYPES] or list(w.BODIES)
     path = s.HERE / "out" / "stack3d-mesh.json"
-    path.write_text(json.dumps({"R": R_RINGS, "U": A_RING // 2, "bodies": out}, separators=(",", ":")), encoding="utf-8")
-    e = out["Male"]
-    print("ok", path, f"{path.stat().st_size / 1e6:.1f} MB", "parts", len(e["layers"]["parts"]),
-          "horns", None if e["horns"] is None else len(e["horns"]["L"]), "legs", None if e["legs"] is None else len(e["legs"]["L"]))
+    out = json.loads(path.read_text(encoding="utf-8"))["bodies"] if path.exists() and len(names) < len(w.BODIES) else {}
+    for b in names:
+        out[b] = one(b, h)
+        path.write_text(json.dumps({"R": R_RINGS, "U": A_RING // 2, "bodies": {k: out[k] for k in w.BODIES if k in out}}, separators=(",", ":")), encoding="utf-8")
+        print(f"  written {b}: {path.stat().st_size / 1e6:.1f} MB, parts {len(out[b]['layers']['parts'])}", flush=True)
+    print("ok", path)
 
 
 if __name__ == "__main__":
