@@ -15,6 +15,7 @@ label{margin-right:10px;white-space:nowrap}
 <button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><br>
 <label><input type="checkbox" id="sk"> squelette</label>
 <label><input type="checkbox" id="mu"> muscles</label>
+<label><input type="checkbox" id="gh" checked> membres fantômes</label>
 <label><input type="checkbox" id="og"> organes (corps masculins)</label>
 <label><input type="checkbox" id="w"> fil de fer</label>
 <label>peau <input type="range" id="op" min="10" max="100" value="100"></label>
@@ -101,6 +102,7 @@ const texOf=u=>{const t=new THREE.TextureLoader().load(u);t.flipY=false;t.genera
 let cur=skin,outlinePx=13;
 const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
 const boneL=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6,side:THREE.DoubleSide});
+const ghostL=new THREE.MeshStandardMaterial({color:0xdde3ea,emissive:0x3c4046,roughness:.95,side:THREE.DoubleSide});
 // a layer of the stack model (right half): its mesh and the mirror image
 function layerMesh(L,mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L.v,3));g.setIndex(L.i);g.computeVertexNormals();
   const grp=new THREE.Group(),a=new THREE.Mesh(g,mat),b=new THREE.Mesh(g,mat);b.scale.x=-1;grp.add(a);grp.add(b);return grp}
@@ -243,7 +245,11 @@ function build(){
     u.rows.value.set(F.s[0],F.s[1],F.n[0],F.n[1]);u.erow.value.set(F.e[0],F.e[1]);u.off.value.set(F.cxs,F.cxn,F.zmean);outlinePx=e.outline||13}
   const sk=e.layers?layerMesh(e.layers.bone,boneL):(e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null);
   if(e.layers){const mu=new THREE.Group();e.layers.parts.forEach(p=>mu.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.75,side:THREE.DoubleSide}))));
-    mu.userData.k='mu';mu.visible=$('mu').checked;G.add(mu)}
+    mu.userData.k='mu';mu.visible=$('mu').checked;G.add(mu);
+    // ghost limbs: what the sprite cuts off (neck, arms, thighs), as skin, bones and muscles of their own
+    const gh=e.layers.ghost;if(gh){const add=(o,k)=>{o.userData.k=k;G.add(o)};
+      add(layerMesh(gh.skin,ghostL),'ghs');add(layerMesh(gh.bone,boneL),'ghb');
+      const gm=new THREE.Group();gh.parts.forEach(p=>gm.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.75,side:THREE.DoubleSide}))));add(gm,'ghm')}}
   const zc=e.frame&&e.frame.zc,tilt=zc?y=>{const r=Math.max(1,Math.min(zc.length-2,Math.round(-y-e.frame.s[0])));return -(zc[r+1]-zc[r-1])/2}:null;
   const torso=meshOf(e.rows,A,{capTop:!e.horns,capBottom:!e.legs,tilt,sn});torso.userData.k='skin';G.add(torso);
   const piece=(rows,o)=>{const m=meshOf(rows,A,{...o,tilt,sn});m.userData.k='skin';G.add(m)};
@@ -253,19 +259,23 @@ function build(){
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
+  // with the ghost limbs shown the camera steps back and centres on the whole figure; with them off nothing moves
+  if(e.layers&&e.layers.ghost&&$('gh').checked){const v=e.layers.ghost.skin.v;for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
+    const c2=new THREE.Vector3();bb.getCenter(c2);G.position.y-=c2.y-c.y}
   fitD=Math.max(bb.max.y-bb.min.y,(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
   apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode];
 }
 function apply(){
-  const sk=$('sk').checked,mu=$('mu').checked,op=+$('op').value/100;
+  const sk=$('sk').checked,mu=$('mu').checked,gh=$('gh').checked,op=+$('op').value/100;
   const o=sk?Math.min(op,.3):op;
   cur.wireframe=$('w').checked;cur.transparent=(sk||op<1);cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=!(sk||op<1);cur.needsUpdate=true;
   // the muscle layer replaces the skin (the skin is its outside plus the fat); the skeleton shows through a faint skin
-  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='skin')o.visible=!mu});
+  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='skin')o.visible=!mu;
+    if(o.userData.k==='ghs')o.visible=gh&&!mu&&!sk;if(o.userData.k==='ghb')o.visible=gh&&sk;if(o.userData.k==='ghm')o.visible=gh&&mu});
 }
 function view(v){globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
-sel.onchange=msel.onchange=build;['sk','mu','og','w','op'].forEach(i=>$(i).oninput=apply);
-['sk','mu','og'].forEach(i=>{if(Q.get(i))$(i).checked=true});
+sel.onchange=msel.onchange=build;['sk','mu','gh','og','w','op'].forEach(i=>$(i).oninput=apply);
+['sk','mu','og'].forEach(i=>{if(Q.get(i))$(i).checked=true});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
 document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
 build();view(0);sel.addEventListener('change',()=>view(0));msel.addEventListener('change',()=>view(0));
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});

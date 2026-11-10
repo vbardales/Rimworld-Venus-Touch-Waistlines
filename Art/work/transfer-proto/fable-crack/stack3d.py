@@ -434,7 +434,7 @@ def build_male(G, T, prm=MALE):
     ribs = np.maximum(np.abs(cd + 2.6) - 2.6, (np.abs(q - np.round(q)) - 0.30) * 9.0).astype(np.float32)
     add_raw(S, "rib cage", "bone", csl, cd, colour=BONE, disp=ribs)
     S.add("sternum", "bone", tube([(0, 249, float(cf(249)) + 0.5), (0, 285, float(cf(285)) + 0.5), (0, 314, float(cf(314)) - 2.0)], [5.2, 4.6, 3.0]), colour=BONE)
-    S.add("clavicle", "bone", tube([(5, 251, 315.5), (22, 253, 316), (44, 247, 310.5), (60, 241, 297), (74, 236, 278)], [4.2, 3.6, 3.4, 3.4, 3.8]), colour=BONE)
+    S.add("clavicle", "bone", tube([(5, 251, 321), (22, 253, 321.5), (44, 247, 316), (60, 241, 302), (74, 236, 281)], [4.2, 3.6, 3.4, 3.4, 3.8]), colour=BONE)
     # scapula: blade on the back of the barrel, spine of the scapula up to the acromion
     sup, inf, gle, med = (21, 209, 199.5), (25, 258, 196.5), (63, 240, 228), (19.5, 224, 195.5)
     S.add("scapula", "bone", tri(sup, inf, gle, 1.8), colour=BONE)
@@ -530,6 +530,40 @@ def build_male(G, T, prm=MALE):
     S.lens("fat pad, pubis", "fat", "F", [(0, 392), (10, 392), (16, 400), (9, 409), (0, 409)], 4.0, 7.0, **soft)
     S.lens("fat pad, lower medial gluteal", "fat", "B", [(4, 382), (24, 379), (40, 390), (30, 402), (8, 404)], 2.5, 12.0, **soft)
     S.mark("fat")
+    return S
+
+
+def build_ghost(G, T, prm=MALE):
+    """The limbs the sprite cuts off: neck, arms to the elbow, thighs to the knee. Real anatomy that continues the
+    stack outside the WDI frame; its own stack, never unioned with the body, so the viewer can take it away."""
+    zc = lambda R: np.interp(R, T.rows, T.zc).astype(np.float32)
+    S = Stack(G, zc)
+    # ---- neck: cervical spine, the column of deep neck muscles, sternocleidomastoid, the trapezius up to the skull
+    csp = spline([(125, 230), (140, 229), (160, 226), (180, 221), (198, 215)])
+    cr = np.linspace(128, 196, 7)
+    S.add("cervical spine", "bone", tube([(0, r, float(csp(r)) + 13) for r in cr], 6.0), colour=BONE)
+    S.add("cervical spinous processes", "bone", tube([(0, r + 2.0, float(csp(r)) + 2.4) for r in cr], 2.2), colour=BONE)
+    S.mark("bone")
+    nsl, nd, _ = loft(G, [(120, 29, 262, 216), (150, 30, 264, 214), (180, 33, 270, 212), (200, 38, 278, 210), (228, 42, 292, 208)], p=2.2, cap_top=3.0, cap_bot=6.0)
+    add_raw(S, "neck (scalenes, levator, splenius)", "muscle", nsl, nd, colour=COL["neck"])
+    S.add("trapezius (neck part)", "muscle", cone((44, 216, 224), (22, 132, 226), 26.0, 13.0), k=8.0, colour=COL["trap"], km=6.0)
+    S.add("sternocleidomastoid", "muscle", cone((28, 128, 238), (7, 249, 316), 5.5, 4.5), k=1.5, colour=COL["pec"])
+    # ---- arm: humerus to the elbow, biceps in front, triceps behind
+    S.add("humerus (shaft)", "bone", tube([(81, 290, 250), (86, 350, 251), (90, 402, 252)], [6.0, 5.5, 8.5]), colour=BONE)
+    S.add("biceps, brachialis", "muscle", ell((86, 346, 261), (10.0, 50, 11.0), rot=(5, 0, 0)), k=2.0, colour=COL["arm"])
+    S.add("triceps", "muscle", ell((87, 340, 242), (10.5, 56, 12.5), rot=(5, 0, 0)), k=2.0, colour=COL["delt"])
+    # ---- thigh: femur to the knee, quadriceps, hamstrings, adductors
+    S.add("femur (shaft)", "bone", tube([(47, 400, 247), (44, 470, 250), (42, 540, 252)], [6.0, 6.0, 10.0]), colour=BONE)
+    S.add("quadriceps", "muscle", ell((41, 468, 263), (21.0, 80, 21.0)), k=3.0, colour=COL["thigh"])
+    S.add("hamstrings", "muscle", ell((37, 470, 233), (19.5, 78, 19.0)), k=3.0, colour=COL["glmax"])
+    S.add("adductors", "muscle", ell((19, 446, 249), (15.0, 52, 22.0), rot=(-6, 0, 0)), k=3.0, colour=COL["tfl"], km=1.0)
+    S.mark("muscle")
+    bone = G.full()
+    for name, layer, colour, sl, a in S.parts:
+        if layer == "bone" and a is not None:
+            bone[sl] = np.minimum(bone[sl], a)
+    d = np.minimum(S.d - prm["fat"], bone - prm["fat_bone"])
+    S.skin = ndi.gaussian_filter(np.clip(d, -20, 20), 1.5 / G.h, mode="nearest").astype(np.float32)
     return S
 
 
@@ -805,7 +839,8 @@ def make(h=1.0, fit=True, order=1):
     S = build_male(G, T)
     d0 = skin_of(S)
     F = Fits(G, d0, T, order=order) if fit else None
-    return dict(T=T, G=G, S=S, d0=d0, d=F.d if fit else d0, fit=F)
+    G2 = Grid(2.0, x1=126.0, r0=100.0, r1=566.0, z0=150.0, z1=360.0)   # the cut limbs are smooth: a coarser, taller grid
+    return dict(T=T, G=G, S=S, d0=d0, d=F.d if fit else d0, fit=F, G2=G2, ghost=build_ghost(G2, T))
 
 
 def main():

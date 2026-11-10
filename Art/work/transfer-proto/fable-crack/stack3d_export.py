@@ -166,6 +166,31 @@ def one(h=1.0):
             layers["parts"].append({"n": name, "l": layer, "c": [int(c) for c in colour], **pack(m_)})
     full = (slice(0, G.shape[0]), slice(0, G.shape[1]), slice(0, G.shape[2]))
     layers["bone"] = pack(mesh_of(bone, full, G, max(step - 1, 1)))   # bones are thin: finer than the muscles
+    # ghost limbs (neck, arms, thighs): their skin, bones and muscles, fitted with the same affine as the body
+    G2, S2 = K["G2"], K["ghost"]
+    full2 = (slice(0, G2.shape[0]), slice(0, G2.shape[1]), slice(0, G2.shape[2]))
+    gbone = G2.full()
+    def gpack(vf):
+        """Outside the rows of the sprite the fit has nothing to say: a ghost limb takes the correction of the nearest
+        well-defined body row (not of the closing tips) and the vertical scale of the body."""
+        v, f = vf
+        rc = np.clip(v[:, 1], 215.0, 395.0)
+        x, _, z = F.forward(v[:, 0], rc, v[:, 2])
+        r = F.forward(v[:, 0], v[:, 1], v[:, 2])[1]
+        return {"v": np.round(np.stack([x, -r, z - zmean], 1).reshape(-1), 1).tolist(), "i": f.reshape(-1).astype(int).tolist()}
+
+    ghost = {"skin": gpack(mesh_of(S2.skin, full2, G2, 1)), "bone": None, "parts": []}
+    for name, layer, colour, sl, a in S2.parts:
+        if a is None:
+            continue
+        if layer == "bone":
+            gbone[sl] = np.minimum(gbone[sl], a)
+            continue
+        m_ = mesh_of(a, sl, G2, 1)
+        if m_ is not None:
+            ghost["parts"].append({"n": name, "l": layer, "c": [int(c) for c in colour], **gpack(m_)})
+    ghost["bone"] = gpack(mesh_of(gbone, full2, G2, 1))
+    layers["ghost"] = ghost
     e = {"rows": np.round(to_world(rings).reshape(R_RINGS, -1), 2).tolist(), "legs": legs, "horns": horns, "lm": lm,
          "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": 2, "layers": layers,
          "outline": round(float(np.mean([w.outline_width(T.imgs[f], T.M[f]) for f in T.imgs])), 1),
