@@ -80,11 +80,13 @@ def gray_uri(g):
 
 
 HOLLOW = float(os.environ.get("HOLLOW", 18.0))        # px of depth of the broad hollows (0 = none)
+GLUTE = float(os.environ.get("GLUTE", 22.0))         # px of extra cleft depth between the buttocks
+GLUTE_CURL = float(os.environ.get("GLUTE_CURL", 24.0))   # px the lower edge of the lobes curls under
 MIDLINE = float(os.environ.get("MIDLINE", 18.0))     # px of depth of the median valley
 HOLLOW_SIGMA = float(os.environ.get("HOLLOW_SIGMA", 9.0))
 
 
-def hollowed(h, img, m, width):
+def hollowed(h, img, m, width, back=False):
     """Crease-free volume with broad soft hollows along the artist's creases (sternum, ab grooves, spine, scapulae).
 
     The creases are thin strokes; the hollow is their blur, scaled by the local height so it dies at the silhouette.
@@ -106,15 +108,18 @@ def hollowed(h, img, m, width):
         cx, s = 0.5 * (r[0] + r[-1]), max(0.06 * (r[-1] - r[0]), 3.0)
         mid[y] = np.exp(-0.5 * ((np.arange(N) - cx) / s) ** 2)
     t = (yy - y0) / max(y1 - y0, 1)                   # 0 top .. 1 bottom of the sprite: taper in at the shoulders, out at the pelvis
-    mid *= np.clip((t - 0.10) / 0.12, 0, 1) * np.clip((0.80 - t) / 0.12, 0, 1)
-    return np.maximum(hc - HOLLOW * b * rel - MIDLINE * mid * rel, 0.0) * m
+    mid *= np.clip((t - 0.10) / 0.12, 0, 1) * (np.clip((0.80 - t) / 0.12, 0, 1) if not back else 1.0)
+    glute = np.zeros((N, N))
+    if back:                                            # buttocks: deeper cleft in the lower rows, lower edge of each lobe curls under (sub-gluteal fold)
+        glute = GLUTE * mid * np.clip((t - 0.62) / 0.12, 0, 1) + GLUTE_CURL * np.clip((t - 0.90) / 0.10, 0, 1) ** 2
+    return np.maximum(hc - HOLLOW * b * rel - MIDLINE * mid * rel - glute * rel, 0.0) * m
 
 
 def one(body):
     z = np.load(HERE / "out" / f"wdi3d-{body}.npz")
     imgs, M, _ = w.load(body)
     wd = {f: w.outline_width(imgs[f], M[f]) for f in imgs}
-    fields = {"south": hollowed(z["south"], imgs["south"], M["south"], wd["south"]), "north": hollowed(z["north"], imgs["north"], M["north"], wd["north"]), "zc": z["zc"]}
+    fields = {"south": hollowed(z["south"], imgs["south"], M["south"], wd["south"]), "north": hollowed(z["north"], imgs["north"], M["north"], wd["north"], back=True), "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
     e["bake"] = {f[0]: gray_uri(baked_loss(z[f], M[f])) for f in ("south", "north", "east")}
