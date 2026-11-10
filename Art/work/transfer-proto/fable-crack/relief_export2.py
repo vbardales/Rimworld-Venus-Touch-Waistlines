@@ -397,7 +397,7 @@ def one(body, fields=None):
     if fields is None or cap_mode == "hard":
         profile_rows = constrain_east_profile(rows, ms, me, zmean)
     elif cap_mode == "smooth":
-        profile_rows = correct_east_profile(rows, ms, me, zmean, float(os.environ.get("WDI_CAP_SIGMA", 6.0)))
+        profile_rows = correct_east_profile(rows, ms, me, zmean, float(os.environ.get("WDI_CAP_SIGMA", 3.0)))
     else:
         profile_rows = 0
     legs = None
