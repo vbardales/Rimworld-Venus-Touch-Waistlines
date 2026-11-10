@@ -32,7 +32,7 @@ const NOTES={
  relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
  simple:"simple volume: superellipse sections from the E masks."};
 const sc=new THREE.Scene();
-const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);
+const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);globalThis.__cam=cam;
 const ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
 ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(devicePixelRatio);
 document.body.appendChild(ren.domElement);
@@ -48,11 +48,12 @@ Object.keys(DATA.shade.bodies).forEach(k=>{const o=document.createElement('optio
 let G=null,fitD=1000;
 const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THREE.DoubleSide});
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
+const Q=new URLSearchParams(location.search);
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
- uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1}},
+ uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){vP=position;vNo=normal;vNr=normalMatrix*normal;vNv=normalMatrix*vec3(normal.x,normal.y+tilt*normal.z,normal.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;
+ fragmentShader:`const float Q0=.45;const float Q1=.8;uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform sampler2D bS;uniform sampler2D bN;uniform sampler2D bE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;uniform float fl;uniform float lc;
 varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){
  vec3 nv=normalize(vNv);vec3 no=normalize(vNo);vec3 nr=normalize(vNr);
@@ -65,10 +66,13 @@ void main(){
  a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.55,.8,abs(no.x)));
  float gt=no.z>0.?texture2D(gS,uvS).r:texture2D(gN,uvN).r;
  gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));
+ float eb=smoothstep(.55,.8,abs(no.x));
+ float lb=(no.z>0.?texture2D(bS,uvS).r:texture2D(bN,uvN).r);lb=mix(lb,texture2D(bE,uvE).r,eb)*.6;
+ float wa=mix(smoothstep(Q0,Q1,abs(no.z)),smoothstep(Q0,Q1,abs(no.x)),eb);
  float s=-nv.y/max(nv.z,.05);
- float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,.6);
- float form=mix(.8,1.,clamp(dot(nr,normalize(vec3(-.3,.5,.8)))*.5+.5,0.,1.));
- gl_FragColor=vec4(a*(1.-loss*gt)*form,opacity);
+ float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,lc);
+ float form=mix(mix(fl,1.,wa),1.,clamp(dot(nr,normalize(vec3(-.3,.5,.8)))*.5+.5,0.,1.));
+ gl_FragColor=vec4(a*(1.-mix(loss*gt,lb,wa))*form,opacity);
 }`});
 // constant-width black outline: screen-space pass on the body mask (the sprite outline is a fixed width inside the silhouette)
 const RT=new THREE.WebGLMultisampleRenderTarget(2,2,{format:THREE.RGBAFormat});
@@ -219,6 +223,7 @@ function build(){
   G=new THREE.Group();
   cur=isWdi(e)?wdiMat:skin;
   if(isWdi(e)){const u=wdiMat.uniforms,F=e.frame;u.tS.value=texOf(e.tex.s);u.tN.value=texOf(e.tex.n);u.tE.value=texOf(e.tex.e);
+    u.bS.value=texOf(e.bake.s);u.bN.value=texOf(e.bake.n);u.bE.value=texOf(e.bake.e);
     u.gS.value=texOf(e.gate.s);u.gN.value=texOf(e.gate.n);u.gE.value=texOf(e.gate.e);
     u.rows.value.set(F.s[0],F.s[1],F.n[0],F.n[1]);u.erow.value.set(F.e[0],F.e[1]);u.off.value.set(F.cxs,F.cxn,F.zmean);outlinePx=e.outline||13}
   const sk=e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null;

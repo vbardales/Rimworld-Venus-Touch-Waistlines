@@ -60,6 +60,18 @@ def grey_gate(img, m):
     return np.clip(1.6 * ndi.gaussian_filter(g, 4.0), 0, 1)
 
 
+BAKE_MAX = 0.6     # loss range of the baked tone map (the shader caps the loss there too)
+
+
+def baked_loss(h, m):
+    """Tone lost by the capture of wdi3d.py (top light on the crease-free volumes), 0..1 = 0..BAKE_MAX.
+
+    At the three sprite views the viewer shows exactly this tone, so it equals the 2D capture; turned away from
+    a view, it falls back to the lit mesh.
+    """
+    return np.clip((1.0 - w.tone_of_slope(w.closed(h))) * m / BAKE_MAX, 0, 1)
+
+
 def gray_uri(g):
     buf = io.BytesIO()
     Image.fromarray(np.clip(255 * g + 0.5, 0, 255).astype(np.uint8)).save(buf, "PNG", optimize=True)
@@ -72,6 +84,7 @@ def one(body):
     fields = {"south": w.closed(z["south"]) * M["south"], "north": w.closed(z["north"]) * M["north"], "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
+    e["bake"] = {f[0]: gray_uri(baked_loss(z[f], M[f])) for f in ("south", "north", "east")}
     e["gate"] = {f[0]: gray_uri(grey_gate(imgs[f], M[f])) for f in ("south", "north", "east")}
     e["outline"] = round(float(np.mean([w.outline_width(imgs[f], M[f]) for f in imgs])), 1)
     return e

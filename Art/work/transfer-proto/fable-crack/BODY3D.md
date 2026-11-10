@@ -197,6 +197,33 @@ Without any east correction the viewer east silhouettes were slabs (no breast, n
 
 Read from `2026-11-10_viewer-b2-overview.png`: all eight bodies read in south, east, north; constant black outline; no blobs; chest, belly and hips show; the fine banding is gone. Still wrong: Hulk_Female south and Hulk east keep a grey blotch at the chest-to-abdomen step (a real profile step, drawn grey there in WDI too, but wider in the mesh); the buttock base greys on the north views as a flat strip; the outline is as thick as WDI's, which hides the flanks at 560 px; creases are maps, not geometry.
 
+#### Viewer vs WDI score and baked tone (2026-11-10, second cycle)
+
+`viewscore.py <tag>` scores the viewer captures against the sprites: bounding box of the render fitted on the sprite's, silhouette distance (p95, mean, px of the 512 sprite) and mean absolute luminance gap inside the outline after a 2 px blur. Captures for scoring are taken with a narrow field of view (`ORTHO=1 uv run --with playwright --with pillow python viewcap.py <tag>`, camera fov 8) so that perspective does not distort the silhouette; `DUMP=1` writes `captures/2026-11-10_viewdiff-<tag>-<Body>-<view>.png` (WDI | render | difference, red = render darker). `QUERY="?form=1&cap=0.35"` passes shader parameters to the page.
+
+First score of the cycle-one viewer (`form` 0.8): luminance gap 0.03 to 0.12, at or above the blank-white gap on 9 of 24 views. The difference images showed why: the row-wise east correction shifts front and back by several px over a few rows, and the slope of that shift is a vertical slope, so the toon tone greys the chest-to-abdomen step and whitens the lower belly where WDI paints the grey wedge. The tone of the model comes from the fitted fields, and the corrected mesh no longer has their slopes.
+
+Fix: baked tone. `wdi3d_export.baked_loss` writes, per body and view, the tone lost by the 2D capture (`1 - tone_of_slope(closed(field))`) as a grayscale map (`bake`). The shader uses it where the surface faces a sprite view (`wa` = smoothstep(.45, .8) of |n.z| for south and north, of |n.x| for east) and falls back to the lit mesh (gated by the `gate` maps) elsewhere. The soft form light is faded to 1 where `wa` is 1, so the three views are the capture and a turned body still shows its volume (`form` .85).
+
+Score of the viewer, three views, ORTHO captures (`viewscore.py`, tag q5). Silhouette p95 px, luminance gap (blank white gap of the 2D table is 0.06 to 0.11):
+
+| Body | south sil / lum | east sil / lum | north sil / lum |
+|---|---|---|---|
+| Male | 2.0 / 0.023 | 1.4 / 0.036 | 2.0 / 0.017 |
+| Female | 1.0 / 0.034 | 1.4 / 0.039 | 1.0 / 0.026 |
+| Thin | 2.8 / 0.049 | 2.0 / 0.035 | 5.0 / 0.022 |
+| Thin_Female | 1.0 / 0.024 | 2.0 / 0.032 | 1.0 / 0.024 |
+| Fat | 2.0 / 0.041 | 1.4 / 0.045 | 2.2 / 0.032 |
+| Fat_Female | 1.4 / 0.035 | 2.2 / 0.053 | 2.2 / 0.033 |
+| Hulk | 3.0 / 0.031 | 2.0 / 0.031 | 4.0 / 0.021 |
+| Hulk_Female | 3.0 / 0.050 | 2.8 / 0.057 | 3.0 / 0.025 |
+
+These gaps are above the 2D capture gaps (0.009 to 0.022) because the render goes through a perspective-free GL pass, antialiasing, a bounding-box fit and a resample, and because thin strokes mis-registered by one pixel count twice. Same pipeline before the baked tone: 0.03 to 0.12 (Male south 0.066 to 0.083, Fat_Female east 0.089 to 0.099). Boards: `captures/2026-11-10_viewer-c1-<Body>.png` (south | east | north) and `...-c1-overview.png`.
+
+Tried: soft form light darkens every view (form .8 vs 1.0: 0.095 vs 0.078 on Male south before the baking); cap of the grey at .35 helped the mesh-lit fallback alone (Fat_Female east 0.089 to 0.073) but is moot once the three views are baked. Kept `lc` at .6.
+
+Still wrong: Hulk_Female and Hulk east show a dark horizontal smudge at the chest-to-abdomen step where the mesh light takes over (between the baked zones); Hulk_Female south lower belly; creases stay maps (blurry when zoomed).
+
 ## Research: soft tissue over the thorax (2026-11-08)
 
 Question: how thick is the layer between skin and rib cage where there is no muscle, to set the depth of the skin on the cage. No source gives a direct skin-to-bone table for the thorax. What was found:
