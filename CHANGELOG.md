@@ -16,7 +16,7 @@ Targets 1.0.0, the first public version.
   female Thin, Fat and Hulk get their own copy of AB's shell; Fat trousers keep AB's full
   width; the gap between the legs is painted, not cut; the low-resolution silhouette is
   softened; children's trousers have their own drop.
-- **Shirts end just under the trousers' top edge**, every facing, so no belly skin
+- **Shirts end just under the trousers' top edge**, in every facing, so no belly skin
   shows: cut on WDI's own art for Fat and Hulk, compressed into the band elsewhere;
   jackets and other shell-layer torso garments stay full length.
 - **Long jackets stop a little below the crotch** of the trousers instead of at their hem,

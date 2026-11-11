@@ -68,7 +68,7 @@ Sanctuaire mods (`wsl-deps.sanctuary.map` as a model), plus WDI, AB and General.
 ## 3. Thank-you comments
 
 One main comment per recipient page for the whole collection: `WORKSHOP_COMMENTS.md` (monorepo) decides
-whether one is still to post. To post after the item is public, since a link to a private item opens for
+whether one is still to be posted. To post after the item is public, since a link to a private item opens for
 nobody.
 
 | Workshop ID | Recipient | State here | Registry row |
