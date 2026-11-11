@@ -9,7 +9,7 @@ workflow_stage: code[1.0.0]
 workflow_audited: 2026-10-31 (replay of the chain, code[1.0.0] unchanged: 3.a open, the outline feature still waits for Virginie's verdicts and three tickets are queued; previous passes 2026-10-29, 2026-10-12, 2026-10-06, 2026-09-21, 2026-09-20)
 localization: complete
 translation_en: complete
-translation_fr: complete
+translation_fr: pending_review
 settings_audit: complete
 dependencies_audit: complete
 licence:      original

@@ -120,7 +120,8 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=3806769245
 
 Read from `Mod/About/About.xml` on 2026-09-25; the sources were checked in the 2026-09-21 audit and not reopened for this note:
 
-- **Hard:** Harmony, and TailorMade (`astryl.tailormade`): the mod is Harmony patches on its internals.
+- **Hard:** Harmony only (`brrainz.harmony`), the one `modDependencies` entry of `About.xml`.
+- **Optional integration, `loadAfter`:** TailorMade (`astryl.tailormade`). The band settings are Harmony patches on its internals and do nothing without it.
 - **`loadAfter`, not dependencies:** AB's Visible Pants and General Textures Collection. The trouser step acts
   only where AB is active; without AB, nothing is drawn or registered; without General, its retexture is unavailable
   and the details are drawn onto AB's shell instead.
