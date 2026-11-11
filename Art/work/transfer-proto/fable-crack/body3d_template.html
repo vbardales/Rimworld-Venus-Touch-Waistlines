@@ -99,10 +99,11 @@ void main(){vec4 c=texture2D(tD,u);if(c.a<.01){gl_FragColor=vec4(0.);return;}
  gl_FragColor=vec4(mix(c.rgb/c.a,vec3(.03,.03,.04),e),max(c.a,e));}`});
 post.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),pmat));
 const texOf=u=>{const t=new THREE.TextureLoader().load(u);t.flipY=false;t.generateMipmaps=false;t.minFilter=t.magFilter=THREE.LinearFilter;return t};
-let cur=skin,outlinePx=13;
+let cur=skin,outlinePx=4;
 const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
 const boneL=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6,side:THREE.DoubleSide});
-const ghostL=new THREE.MeshStandardMaterial({color:0xdde3ea,emissive:0x3c4046,roughness:.95,side:THREE.DoubleSide});
+// same white as the torso skin (which is unlit, tone baked): mostly emissive, a little light left to read the volume
+const ghostL=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xd2d2d2,roughness:1,side:THREE.DoubleSide});
 // a layer of the stack model (right half): its mesh and the mirror image
 function layerMesh(L,mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L.v,3));g.setIndex(L.i);g.computeVertexNormals();
   const grp=new THREE.Group(),a=new THREE.Mesh(g,mat),b=new THREE.Mesh(g,mat);b.scale.x=-1;grp.add(a);grp.add(b);return grp}
@@ -217,19 +218,25 @@ function organs(rows,A,lm){
   // shoulder width from the top rows
   let sw=0;for(let r=2;r<14;r++){let a=1e9,b=-1e9;for(let k=0;k<A;k++){a=Math.min(a,rows[r][k*3]);b=Math.max(b,rows[r][k*3])}sw=Math.max(sw,b-a)}
   const cx=(xa+xb)/2,g=new THREE.Group();
-  // flaccid, sized on Veale et al. 2015 (BJU Int 115:978: pendulous length 9.16 cm, circumference 9.31 cm; shoulder width taken as 42 cm): the shaft leaves the pubis forward and slightly down, then sags (angle under the horizontal grows from 20 to 75 degrees)
-  const L=0.22*sw,r=0.048*sw,root=new THREE.Vector3(cx,sy+0.02*sw,zb-0.04*sw),pts=[root.clone()];
+  // Keep the anatomy inside the crotch fork.  The source only establishes the
+  // torso and leg roots, so this is deliberately short and tucked: its root is
+  // on the pubis, the sac is in the fork, and the shaft ends there rather than
+  // hanging below the lower torso cut.
+  const crotch=lm.crotch??sy,pubisY=Math.min(sy+0.05*sw,crotch+0.10*sw);
+  const L=0.115*sw,r=0.043*sw,root=new THREE.Vector3(cx,pubisY,zb-0.025*sw),pts=[root.clone()];
   let p=root.clone();const NSEG=14;
-  for(let s=1;s<=NSEG;s++){const t=(s-0.5)/NSEG,a=0.50+0.85*t*t;p=p.clone();p.y-=L/NSEG*Math.sin(a);p.z+=L/NSEG*Math.cos(a);pts.push(p)}
+  for(let s=1;s<=NSEG;s++){const t=(s-0.5)/NSEG,a=0.95+0.35*t*t;p=p.clone();p.y-=L/NSEG*Math.sin(a);p.z+=L/NSEG*Math.cos(a);pts.push(p)}
   const c=new THREE.CatmullRomCurve3(pts);
   g.add(new THREE.Mesh(new THREE.TubeGeometry(c,40,r,14,false),flesh));
   const tip=pts[pts.length-1];
   g.add(ball([tip.x,tip.y-0.2*r,tip.z+0.1*r],r*1.02,r*1.15,r*1.02,flesh));
   g.add(ball([root.x,root.y,root.z],r*1.25,r*1.25,r*1.25,flesh));
-  // one sac, two testes that share it: a narrow neck under the root, two overlapping lobes (the left one hangs a little lower)
-  g.add(ball([cx,sy-0.060*sw,zb-0.055*sw],0.050*sw,0.050*sw,0.040*sw,flesh));
-  g.add(ball([cx-0.030*sw,sy-0.118*sw,zb-0.072*sw],0.046*sw,0.062*sw,0.050*sw,flesh));
-  g.add(ball([cx+0.030*sw,sy-0.108*sw,zb-0.072*sw],0.046*sw,0.058*sw,0.050*sw,flesh));
+  // One sac, two testes that share it.  Their centres remain within the fork
+  // rather than becoming a pendant mass below it.
+  const sacY=Math.min(root.y-0.050*sw,crotch+0.025*sw);
+  g.add(ball([cx,sacY,zb-0.040*sw],0.046*sw,0.045*sw,0.037*sw,flesh));
+  g.add(ball([cx-0.027*sw,sacY-0.026*sw,zb-0.052*sw],0.040*sw,0.046*sw,0.044*sw,flesh));
+  g.add(ball([cx+0.027*sw,sacY-0.018*sw,zb-0.052*sw],0.040*sw,0.043*sw,0.044*sw,flesh));
   return g;
 }
 function build(){
@@ -242,7 +249,7 @@ function build(){
   if(isWdi(e)){const u=wdiMat.uniforms,F=e.frame;u.tS.value=texOf(e.tex.s);u.tN.value=texOf(e.tex.n);u.tE.value=texOf(e.tex.e);
     u.bS.value=texOf(e.bake.s);u.bN.value=texOf(e.bake.n);u.bE.value=texOf(e.bake.e);
     u.gS.value=texOf(e.gate.s);u.gN.value=texOf(e.gate.n);u.gE.value=texOf(e.gate.e);
-    u.rows.value.set(F.s[0],F.s[1],F.n[0],F.n[1]);u.erow.value.set(F.e[0],F.e[1]);u.off.value.set(F.cxs,F.cxn,F.zmean);outlinePx=e.outline||13}
+    u.rows.value.set(F.s[0],F.s[1],F.n[0],F.n[1]);u.erow.value.set(F.e[0],F.e[1]);u.off.value.set(F.cxs,F.cxn,F.zmean);outlinePx=4}
   const sk=e.layers?layerMesh(e.layers.bone,boneL):(e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null);
   if(e.layers){const mu=new THREE.Group();e.layers.parts.forEach(p=>mu.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.75,side:THREE.DoubleSide}))));
     mu.userData.k='mu';mu.visible=$('mu').checked;G.add(mu);
@@ -259,10 +266,11 @@ function build(){
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
-  // with the ghost limbs shown the camera steps back and centres on the whole figure; with them off nothing moves
+  // with the ghost limbs shown the camera steps back to hold the whole figure; with them off nothing moves
   if(e.layers&&e.layers.ghost&&$('gh').checked){const v=$('sk').checked?e.layers.ghost.skin.v.concat(e.layers.ghost.bone.v):e.layers.ghost.skin.v;for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
-    const c2=new THREE.Vector3();bb.getCenter(c2);G.position.y-=c2.y-c.y}
-  fitD=Math.max(bb.max.y-bb.min.y,(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
+  }
+  // the target stays on the torso centre (a recentred figure shifts the shoulders by parallax): fit the taller half twice
+  fitD=Math.max(2*Math.max(bb.max.y-c.y,c.y-bb.min.y),(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
   apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode];
 }
 function apply(){

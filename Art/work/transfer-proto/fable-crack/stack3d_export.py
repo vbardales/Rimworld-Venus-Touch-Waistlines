@@ -29,7 +29,7 @@ R_RINGS = 300
 A_RING = 200
 STEP = 0.5          # px along a ray
 BST = int(__import__("os").environ.get("BONE_STEP", "2"))   # px between the vertices of the bone meshes
-ARM_X, ARM_ROW = 76.0, 244.0   # Male frame: beyond this x a ghost vertex belongs to the arm; row of the head of the humerus
+ARM_X, ARM_ROW = 112.0, 244.0  # past the deltoid cap, a ghost arm takes the shoulder-row correction as one rigid limb
 
 
 def sample(G, d, r, x, z):
@@ -156,8 +156,8 @@ def one(body, h=1.0):
             return {"v": [], "i": []}
         v, f = vf
         if clamp is not None:                                 # ghost limbs: the arm is outside the silhouette from the shoulder down,
-            arm = np.clip((np.abs(v[:, 0]) - ARM_X) / 12.0, 0, 1)   # it takes the correction of the shoulder row as one rigid piece
-            arm = arm * arm * (3 - 2 * arm)                   # (blended over 12 px, so the mesh does not tear where it leaves the trunk)
+            arm = np.clip((np.abs(v[:, 0]) - ARM_X) / 16.0, 0, 1)   # hand/forearm keep the shoulder correction as one rigid limb
+            arm = arm * arm * (3 - 2 * arm)                   # blended across the upper arm, so the cap remains attached to the torso
             clamp = (clamp[0] + (ARM_ROW - clamp[0]) * arm, clamp[1] + (ARM_ROW - clamp[1]) * arm)
         x, r, z = s.chain_forward(steps, v[:, 0], v[:, 1], v[:, 2], clamp)
         co = np.stack([x, -r, z - zmean], 1).reshape(-1)
@@ -180,11 +180,15 @@ def one(body, h=1.0):
     # ghost limbs (neck, arms, thighs): outside the rows of the sprite a ghost takes the correction of the nearest
     # well-defined row of the body and its own height
     G2, S2 = K["G2"], K["ghost"]
-    gst = max(int(round(4.0 / G2.h)), 1)                       # skin and muscles every 4 px, the bones (vertebrae, skull) every px
+    gst = max(int(round(2.0 / G2.h)), 1)                       # denser outer skin prevents a faceted ghost beside the torso; bones stay at 1 px
     gbone, gparts, full2 = layer_set(S2, G2, gst, clamp, BST)
     layers["ghost"] = {"skin": pack(mesh_of(S2.skin, full2, G2, gst), clamp), "bone": gbone, "parts": gparts}
+    # Male is the active anatomy pass.  Give its dense mesh enough row-normal
+    # smoothing to remove the regular render bands without changing vertices,
+    # silhouette, or the still-unreviewed smoothing of the other body types.
+    normal_smoothing = 6 if body == "Male" else 2
     return {"rows": flat(rings), "legs": legs, "horns": horns, "lm": lm,
-            "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": 2, "layers": layers,
+            "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": normal_smoothing, "layers": layers,
             "outline": round(float(np.mean([w.outline_width(T.imgs[f], T.M[f]) for f in T.imgs])), 1),
             "fit": {"pre": {k: [round(x, 2) for x in v] for k, v in K["pre"].items()}, "left": {k: [round(x, 2) for x in v] for k, v in K["left"].items()}},
             "score2d": rep}
