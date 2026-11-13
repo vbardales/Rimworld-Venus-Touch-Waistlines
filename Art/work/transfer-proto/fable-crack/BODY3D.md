@@ -366,3 +366,29 @@ Consequences taken (estimates, not published measurements):
 - Real-texture rerun: the mesh export, compare and render ran on the real textures on 2026-11-09. `heightmode.py all` and `garmentstudy.py all` are not rerun yet.
 - Cloth surface as a low-pass of the volume; tucked and untucked rules; AB Pants; isoRim variant.
 - Docs of section C3 (`docs/GARMENT-FIT-PROCESS.md`) exist only on remote branch `nelim/lucid-davinci-jsbif5`, not merged.
+
+## Garment mapping on the 3D body (2026-11-13, `garment3d.py`, Male and Hulk)
+
+What it does. Same path as `garmentmap.py` (vanilla garment prepared as in B2, carried by `reliefmap.build` with 28 px of ease, no clip, no outline), but the relief of the WDI body no longer comes from the drawing (`relief3d.height`: three-view envelope plus zones between drawn lines). It comes from the skin of the stack model in `out/stack3d-mesh.json`: the ring points (main rings, horns, legs) are put in the sprite frame of each view (`frame.cxs`, `cxn`, `zmean`; rows matched by the silhouette's top and bottom), the outermost point per pixel is kept and interpolated. South: height of the front half of each ring above its rim (the two side extremes, smoothed along the rings); north: the back half, columns mirrored; east: the half width `|x|`. `reliefmap.cloth` then bridges the hollows as before. The vanilla side is unchanged (no vanilla mesh). The three WDI sprite views are the reference under the garment and for the edge check. `reliefmap.py` is not edited: `garment3d.build` swaps `body_side` for the call.
+
+Garments: `ShirtBasic` (vanilla, `core17`) and trousers. There is no trousers art in this tree (vanilla has none, the other mods' art has no licence), so the trousers are the stand-in shape of `pants.py` (a bowl from the vanilla hip row down, 70 percent of the body height). They prove the map below the waist, not a look.
+
+Run: `uv run --with numpy --with pillow --with scipy --with scikit-image python garment3d.py [Male Hulk]` (about 40 s per body the first time: the 170 MB mesh file is read once, then cached as `out/garment3d-rings-<Body>.npz`). Needs `out/stack3d-mesh.json` (`stack3d_export.py`). Boards `captures/2026-11-13_garment-map-Male.png`, `-Hulk.png`: row 1 the sprite beside the mesh relief lit, sprite edge in red; then per garment and facing, relief from the drawing beside relief from the mesh. Numbers in `out/garment3d.json`.
+
+| Body, facing | Mesh footprint against sprite edge, p95 px | Weak share of the map (area change beyond x1.5), drawing / mesh | Shirt area, mesh over drawing | Trousers area, mesh over drawing |
+|---|---|---|---|---|
+| Male south | 2.8 | 2 % / 13 % | 0.99 | 1.01 |
+| Male east | 1.0 | 6 % / 24 % | 0.96 | 1.01 |
+| Male north | 2.0 | 2 % / 15 % | 1.00 | 1.02 |
+| Hulk south | 4.0 | 1 % / 13 % | 0.94 | 1.01 |
+| Hulk east | 2.0 | 9 % / 28 % | 0.96 | 1.02 |
+| Hulk north | 4.0 | 1 % / 19 % | 1.00 | 1.03 |
+
+Read from the boards: the path works on both bodies and the three facings; shirt and trousers land on the body, the south and north results are close to the drawing-relief ones (collar, hem and waistband within a few px). The mesh relief is not better yet, it is rougher: the weak share is 13 to 28 percent against 1 to 9. Cause visible in row 1: the stack surface has real steps (pectoral shelf, abdominal blocks, blade mounds, row bands of the fine fit) that the envelope does not have, and `cloth()` (closing 14 px, hang 0.6) does not bridge them all. Worst place: the east view, where the trousers waistband dips 15 to 25 px at mid depth (the flank hollow between the latissimus and the gluteal top, already listed as wrong in the stack section) and the shirt hem is ragged at the back.
+
+Open:
+- Cloth surface as a real low-pass of the volume (wider closing, or a convex wrap per row) before the map: the next step, it should remove the east waistband dip. Not tuned here.
+- Real trousers art (a licensed source or a drawn one) in place of the stand-in.
+- Clip and outline (B5, B6), tucked and untucked rules: untouched.
+- The six other bodies are not run: their stack is a first pass (frame of Female, breast lobes, fat folds, Hulk_Female tips; see the stack section), and that skeleton and crotch work is the dependency. `garment3d.py <Body>` runs on them as soon as the mesh is good.
+- Hulk south and north footprint is 4 px off the sprite (the known Hulk tips, 5 px in the viewer score).
