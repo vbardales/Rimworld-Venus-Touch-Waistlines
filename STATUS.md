@@ -14,8 +14,7 @@ settings_audit: complete
 dependencies_audit: complete
 licence:      original
 licence_at:   "MIT, chosen 2026-09-20 (LICENSE at the root and in Mod/), matching TailorMade, which is MIT. Nothing is copied from it: it is referenced at build time and patched through Harmony. Mod/ is publishable: one assembly of our own, patching TailorMade, which is MIT. Parked/ is not, and never ships - its textures are computed from General Textures Collection (3789119336) and WDI's Realistic Bodies (3527486510), neither of which grants a licence. Steam uploads Mod/ only, which is the safeguard, and Parked/, Art/ and the GIMP projects are kept out of the public repository by .gitignore. See ATTRIBUTION.md."
-upstream_mod_remotes:
-  - N/A
+upstream_mod_remotes: []
 dependencies: "Required: brrainz.harmony only (About.xml, re-read 2026-11-07). loadAfter, all read in the assembly when active: astryl.tailormade, ab.vplrf, Kas.GeneralCollection, nalsnoir.ApparelPaperPattern, WRK.APPBodyTypeOverrider, WDI.Realistic.Bodies. Optional without load order, declared in Mod/About/OptionalCompat.xml (AUDIT 4.b, 4.e, 2026-11-07; Check-OptionalCompat OK, 0 patched targets, 2 declared): VanillaExpanded.VAPPE (1814987817, texture: blouse art read for the male trouser line) and kaitorisenkou.Swimwear (2840348927, texture: swim trunks art mended). No XML patch targets another mod."
 original:     none
 showcase:     PREVIEW re-validated by Virginie 2026-11-09 on the render of the grouped config 2920e8b (Preview.png re-rendered from Art/Preview.config.json, config unchanged, no key touched by me). Earlier: PREVIEW VALIDATED 2026-11-09 (icon badge bottom-left, main dd310c1, config key icon.corner). Mod/About/Preview.png (896x504, 564827 B, regenerated 2026-10-25 from Virginie's Art/Preview.config.json, commit 493ea48, not yet inspected by me; title overlay, the ModIcon badge bottom-left) and Mod/About/ModIcon.png (128x128, 36332 B), both regenerated 2026-10-06 by scripts/Render-Preview.cjs from Art/ModIcon-source.png (config key modIconSource) and Art/Preview-source.png, and the Preview inspected. The renderer also wrote Art/Gallery/0-preview.png (byte for byte the Preview), Art/Preview.ico and Art/ModIcon.ico. Local sources in Art/ (ignored by git): Preview-source.png, ModIcon-source.png, echo.png, Preview.config.json; the checks live in Art/.render/
@@ -64,7 +63,7 @@ remaining:
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 publication_changelog_review_sha: b083afbf2c36b906c562272fc3719a556c5922e2
 updated:      2026-11-10
-protocols_read_sha: b04475c28fcbf27bd47f4ee877f08147e180efb9
+protocols_read_sha: 7d513dbcd17727687565649bbc7968f9ea4c85f9
 ---
 ## Earlier journal
 
