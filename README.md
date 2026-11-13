@@ -190,7 +190,7 @@ sliders here, and its MIT licence is what makes that possible. To brrainz for
 Harmony, without which no mod reaches another's internals. To aedbia, whose
 AB's Visible Pants supplies the trousers vanilla never draws, and whose
 assembly was read to learn how it assigns them. To Windonsi and Starkz, whose [WDI's Realistic Bodies](https://steamcommunity.com/sharedfiles/filedetails/?id=3527486510)
-draws bodies without legs, which is the reason this mod exists at all, and the bodies every test of it is played on.
+draws bodies without legs, which is the reason this mod exists at all, and the bodies on which every test of it is played.
 To NALS for Apparel Paper Pattern and WRelicK for APP Utilities: Venus references
 their public runtime contracts only and ships neither assembly nor their assets.
 

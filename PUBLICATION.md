@@ -29,7 +29,7 @@ The thanks sentence for the authors of WDI's Realistic Bodies, approved by Virgi
 `THANKS`:
 
 ```
-and to Windonsi and Starkz, whose [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3527486510]WDI's Realistic Bodies[/url] draws bodies without legs, which is the reason this mod exists at all, and the bodies every test of it is played on.
+and to Windonsi and Starkz, whose [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3527486510]WDI's Realistic Bodies[/url] draws bodies without legs, which is the reason this mod exists at all, and the bodies on which every test of it is played.
 ```
 
 ## 2. Gallery, in upload order
