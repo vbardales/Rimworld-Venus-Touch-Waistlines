@@ -5,8 +5,8 @@ Sent to ChatGPT with every review page, so a decided name is never raised again.
 | Name | Decision | Reason | Date |
 |---|---|---|---|
 | TailorMade | Translated to `TailorMade (Sur mesure)` | Mod title; the stylised English name stays, the French gloss gives its meaning. | 2026-11-13 |
-| WDI | Never `WDI` alone for the mod (decided); French form PROPOSED by VTW, awaiting her yes: `WDI's Realistic Bodies (Corps réalistes, par WDI)` | Mod title (3527486510); WDI is the author, the bare acronym does not say which mod. `WDI APP` in the experimental setting label stays as an identifier. | 2026-11-13 |
+| WDI | Never `WDI` alone for the mod (decided): `WDI's Realistic Bodies (Corps réalistes, par WDI)` | Mod title (3527486510); WDI is the author, the bare acronym does not say which mod. `WDI APP` in the experimental setting label stays as an identifier. | 2026-11-13 |
 | Apparel Paper Pattern | Translated to `Apparel Paper Pattern (Patrons vestimentaires en calques)` | Mod title; the acronym APP stays in `WDI APP`. | 2026-11-13 (changed same day from 'Patron de vêtements en papier') |
-| AB's Visible Pants | PROPOSED (Virginie's '?', awaiting her yes): translated to `AB's Visible Pants (Pantalons visibles, par AB)` | Mod title; AB is the author. `la coque d'AB` stays as the short form after the first mention. | 2026-11-13 |
-| General Textures Collection | PROPOSED (Virginie's '?', awaiting her yes): translated to `General Textures Collection (Collection de textures diverses)` | Mod title; "General" means miscellaneous here, not "générale". | 2026-11-13 |
-| XeoNovaDan's Visible Pants | PROPOSED (Virginie's '?', awaiting her yes; Steam title is '[XND] Visible Pants'): translated to `XeoNovaDan's Visible Pants (Pantalons visibles, par XeoNovaDan)` | Mod title; XeoNovaDan is the author. | 2026-11-13 |
+| AB's Visible Pants | Translated to `AB's Visible Pants (Pantalons visibles, par AB)` | Mod title; AB is the author. `la coque d'AB` stays as the short form after the first mention. | 2026-11-13 |
+| General Textures Collection | Translated to `General Textures Collection (Collection de textures diverses)` | Mod title; "General" means miscellaneous here, not "générale". | 2026-11-13 |
+| XeoNovaDan's Visible Pants | Translated to (Steam title '[XND] Visible Pants'; the readable form is kept) `XeoNovaDan's Visible Pants (Pantalons visibles, par XeoNovaDan)` | Mod title; XeoNovaDan is the author. | 2026-11-13 |
