@@ -60,9 +60,13 @@ remaining:
   - "feature/housekeeping: ModsConfig.xml still lists the retired packageId nelim.tailoredpants beside nelim.venustouch.waistlines; RimSort shows it as a missing active mod. She chose to remove it herself; nothing was touched."
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 publication_changelog_review_sha: b083afbf2c36b906c562272fc3719a556c5922e2
-updated:      2026-11-10
+updated:      2026-11-13
 protocols_read_sha: 61aebffdd2790f3f440cd90488973b8705718c8a
 ---
+## Ecosystem, 2026-11-13 (AUDIT.md 1.a and 8.0; PiI study `../docs/inventory/ecosystem-steam/VenusTouchWaistlines.md`, rimworld commit aed3523)
+
+No duplicate or fork of waistline, tuck or hem on WDI bodies; nothing subscribed by PiI. Only other code patch on TailorMade: WRelicK's APP Utilities 2839443438 (`1.6/TailorMadePatch`, same family as THIGAPPE 2839518933, both installed): check the overlap in play tests (same garment nodes?). TailorMade ecosystem: Unlock Fix 3769650943, zh-CN translation 3769651338. WDI ecosystem: our Rhyaeth patch and Biotech Bodies, Body Traits 3805486882, Exosuit 3808873627, all needing Female Body/Apparel Variants. Visible pants: three implementations (AB 2986402536, XND 2264108215, Pawn Visible Pants 2985986536) and retextures 3671309201 and 3772689105, none WDI specific. PiI notes the registry row for 3806769245 still carries the old name "TailorMade Waistlines" and the old package id: reported to Audit.
+
 ## Earlier journal
 
 Dated sections 2026-09-20 to 2026-10-06 (CI/CD note, earlier remaining entries, three first audits, Pickle suite history, frame fix) in [docs/runs/status-journal-2026-09-20_2026-10-06.md](docs/runs/status-journal-2026-09-20_2026-10-06.md).
