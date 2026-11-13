@@ -36,6 +36,16 @@ def data_uri(rgb):
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
 
+def rgba_uri(rgb, alpha):
+    """Original WDI pixels with their body mask as alpha, for an opt-in comparison overlay in the viewer."""
+    out = np.empty((*rgb.shape[:2], 4), np.uint8)
+    out[..., :3] = np.clip(255 * rgb[..., :3] + 0.5, 0, 255).astype(np.uint8)
+    out[..., 3] = np.clip(255 * alpha + 0.5, 0, 255).astype(np.uint8)
+    buf = io.BytesIO()
+    Image.fromarray(out, "RGBA").save(buf, "PNG", optimize=True)
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+
 def ink_map(h, img, m):
     """Albedo x (1 - ink) of one view; white outside the creases and the areolae."""
     ink = np.clip((w.closed(h) - h) * m / w.GROOVE, 0, 1)
@@ -148,6 +158,7 @@ def one(body):
     fields = {"south": hollowed(zf["south"], imgs["south"], M["south"], wd["south"], fill=FAT_FILL.get(body, 1.0)), "north": hollowed(zf["north"], imgs["north"], M["north"], wd["north"], back=True, fill=FAT_FILL.get(body, 1.0)), "zc": z["zc"]}
     e = rx.one(body, fields)
     e["tex"] = {f[0]: data_uri(ink_map(z[f], imgs[f], M[f])) for f in ("south", "north", "east")}
+    e["wdi"] = {f[0]: rgba_uri(imgs[f], M[f]) for f in ("south", "north", "east")}
     e["bake"] = {"s": gray_uri(baked_open(fields["south"], M["south"])), "n": gray_uri(baked_open(fields["north"], M["north"])), "e": gray_uri(baked_loss(zf["east"], M["east"]))}
     e["gate"] = {f[0]: gray_uri(grey_gate(imgs[f], M[f])) for f in ("south", "north", "east")}
     e["outline"] = round(float(np.mean([w.outline_width(imgs[f], M[f]) for f in imgs])), 1)

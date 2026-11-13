@@ -14,10 +14,15 @@ label{margin-right:10px;white-space:nowrap}
 <select id="b"></select><select id="m"></select>
 <button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><br>
 <label><input type="checkbox" id="sk"> squelette</label>
+<label><input type="checkbox" id="rb"> os BP3D (référence)</label>
 <label><input type="checkbox" id="mu"> muscles</label>
+<label><input type="checkbox" id="fa"> graisse</label>
+<label><input type="checkbox" id="rm"> muscles BP3D (référence)</label>
+<label><input type="checkbox" id="ref"> calque WDI</label>
+<label>WDI <input type="range" id="ro" min="5" max="90" value="35"></label>
+<label><input type="checkbox" id="zen" checked> éclairage zénithal</label>
 <label><input type="checkbox" id="gh" checked> membres fantômes</label>
 <label><input type="checkbox" id="og"> organes (corps masculins)</label>
-<label><input type="checkbox" id="w"> fil de fer</label>
 <label>peau <input type="range" id="op" min="10" max="100" value="100"></label>
 </div>
 <div id="note"></div>
@@ -29,7 +34,7 @@ if(!DATA){
   document.body.innerHTML='<main style="max-width:42rem;margin:12vh auto;padding:2rem;line-height:1.5"><h1>Gabarit Body 3D</h1><p>Ce fichier est le gabarit du visualiseur : il ne contient volontairement aucune donnée de maillage.</p><p><a href="../../captures/2026-11-08_body3d.html">Ouvrir le visualiseur généré</a>, ou exécuter <code>uv run python body3d_build.py</code> après l’export.</p></main>';
 }else{
 const NOTES={
- stack:"Stack model (stack3d): skeleton, viscera, muscle volumes, thin fat; the skin is the outside of the stack, fitted to the three WDI silhouettes by a row-wise affine of the whole stack. Tone, ink and creases come from this geometry (top light, ink in its narrow hollows); only the areola colour is read from the sprite. 'squelette' and 'muscles' show the layers the skin is made of (fat pads in yellow).",
+ stack:"Stack model (stack3d): skeleton, viscera, muscle volumes, thin fat; the skin is the outside of the stack, fitted to the three WDI silhouettes by a row-wise affine of the whole stack. Tone, ink and creases come from this geometry (top light, ink in its narrow hollows); only the areola colour is read from the sprite. 'squelette' and 'muscles' show the layers the skin is made of (fat pads in yellow). 'muscles BP3D' is an optional anatomical comparison layer, not the fitted skin.",
  wdi:"wdi3d model (core + masses fitted to the WDI drawing). Mesh = crease-free volumes of the south and north fields. Material: white skin, light from the top of the screen, taken relative to the body's centre plane (flat grey on skin that faces down, same transfer as wdi3d.py), creases and areolae from the model's crease maps (south, north, east, chosen by the surface normal), black rim. Not reproduced: the rim is a screen-space estimate (uneven width, thin on flat flanks), the east greys come from the south/north volumes and not from the east fit, creases are maps and not geometry.",
  shade:"relief + ombres + jambes: shading read as a zenithal light, outline = rim of the body, nipples raised, navel hollowed, sex = dome in the groin creases, legs split below the crotch: the drawn notch when present, otherwise an internal medial seam from the crotch landmark. Skeleton = schematic, fitted on the landmark rows (not anatomical bone shapes). Organs = a first volume from a profile reference (shaft hanging forward and down from the pubis, scrotum below and behind), proportioned on the shoulder width.",
  relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
@@ -40,50 +45,30 @@ const ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
 ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(devicePixelRatio);
 document.body.appendChild(ren.domElement);
 const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;globalThis.__ctl=ctl;
-sc.add(new THREE.HemisphereLight(0xffffff,0x555566,.75));
-const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(200,300,400);sc.add(dl);
+// Without zenithal modelling this is a neutral white illumination; with it, leave enough ambient room for the relief.
+const fill=new THREE.AmbientLight(0xffffff,.95);sc.add(fill);
+const dl=new THREE.DirectionalLight(0xffffff,.75);dl.position.set(0,900,0);sc.add(dl); // optional zenithal accent; no WDI colour on skin
 const $=id=>document.getElementById(id);
 const sel=$('b'),msel=$('m');
 const isWdi=e=>!!(e&&e.tex);
 const WDI=isWdi(Object.values(DATA.shade.bodies)[0]);
-Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:WDI?'modèle WDI (wdi3d)':'relief + ombres + jambes',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
+Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:'stack anatomique',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
 Object.keys(DATA.shade.bodies).forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
-let G=null,fitD=1000;
-const skin=new THREE.MeshStandardMaterial({color:0xd9b39a,roughness:.8,side:THREE.DoubleSide});
+let G=null,fitD=1000,refBox=null,activeView=0;
+const skin=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.88,side:THREE.DoubleSide});
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
 const Q=new URLSearchParams(location.search);
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
- uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)},gm:{value:+(Q.get('gm')||.6)}},
+ uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},zen:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)},gm:{value:+(Q.get('gm')||.6)}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
 void main(){vP=position;vNo=normal;vNr=normalMatrix*normal;vNv=normalMatrix*vec3(normal.x,normal.y+tilt*normal.z,normal.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
- fragmentShader:`uniform vec3 cdir;uniform sampler2D tS;uniform sampler2D tN;uniform sampler2D tE;uniform sampler2D gS;uniform sampler2D gN;uniform sampler2D gE;uniform sampler2D bS;uniform sampler2D bN;uniform sampler2D bE;uniform vec4 rows;uniform vec2 erow;uniform vec3 off;uniform float pxw;uniform float opacity;uniform float fl;uniform float lc;uniform float gm;
-varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
+ fragmentShader:`uniform float opacity;uniform float zen;varying vec3 vNo;
 void main(){
- vec3 nv=normalize(vNv);vec3 no=normalize(vNo);vec3 nr=normalize(vNr);
- if(nr.z<0.){nv=-nv;no=-no;nr=-nr;}
- float ys=-vP.y;float f=(ys-rows.x)/(rows.y-rows.x);
- vec2 uvS=vec2(vP.x+off.x+.5,ys+.5)/512.;
- vec2 uvN=vec2(off.y-vP.x+.5,rows.z+f*(rows.w-rows.z)+.5)/512.;
- vec2 uvE=vec2(vP.z+off.z+.5,erow.x+f*(erow.y-erow.x)+.5)/512.;
- vec3 a=no.z>0.?texture2D(tS,uvS).rgb:texture2D(tN,uvN).rgb;
- a=mix(a,texture2D(tE,uvE).rgb,smoothstep(.55,.8,abs(no.x)));
- a=mix(vec3(1.),a,smoothstep(.45,.8,max(abs(no.z),abs(no.x))));
- float gt=no.z>0.?texture2D(gS,uvS).r:texture2D(gN,uvN).r;
- gt=mix(gt,texture2D(gE,uvE).r,smoothstep(.55,.8,abs(no.x)));gt=mix(gt,1.,gm);
- // looking along one of the three sprite axes: the sprite's own maps (albedo, ink, baked tone) are shown whatever the normal says, so the view is the 2D capture;
- // turned away, the mesh light and the normal-chosen maps take over
-float lb=0.;float wS=smoothstep(.93,.99,cdir.z),wN=smoothstep(.93,.99,-cdir.z),wE=smoothstep(.93,.99,-cdir.x),wa=wS+wN+wE;
- if(wa>0.){
-  vec3 aC=(wS*texture2D(tS,uvS).rgb+wN*texture2D(tN,uvN).rgb+wE*texture2D(tE,uvE).rgb)/wa;a=mix(a,aC,wa);
-  float lC=(wS*texture2D(bS,uvS).r+wN*texture2D(bN,uvN).r+wE*texture2D(bE,uvE).r)/wa*.6;
-  lb=lC;}
- float s=-nv.y/max(nv.z,.05);
- float loss=clamp(.15*clamp((s-.15)/.10,0.,1.)+.5*max(s-.25,0.),0.,lc);
- float form=mix(mix(fl,1.,wa),1.,clamp(dot(nr,normalize(vec3(-.3,.5,.8)))*.5+.5,0.,1.));
- float lbn=no.z>0.?texture2D(bS,uvS).r:texture2D(bN,uvN).r;lbn=mix(lbn,texture2D(bE,uvE).r,smoothstep(.55,.8,abs(no.x)))*.6;
- float wb=smoothstep(.74,.97,max(abs(no.z),abs(no.x)));
- vec3 col=a*(1.-mix(mix(loss*gt,lbn,wb),lb,wa))*form;
- gl_FragColor=vec4(col,opacity);
+ vec3 n=normalize(vNo);if(n.z<0.)n=-n;
+ // No WDI colour, ink, crease or baked-shadow map is painted on the skin.  The only tone is continuous lighting.
+ float lambert=clamp(dot(n,normalize(vec3(0.,1.,0.45)))*.5+.5,0.,1.);
+ float shade=mix(1.,mix(.72,1.,pow(lambert,.8)),zen);
+ gl_FragColor=vec4(vec3(shade),opacity);
 }`});
 // constant-width black outline: screen-space pass on the body mask (the sprite outline is a fixed width inside the silhouette)
 const RT=new THREE.WebGLMultisampleRenderTarget(2,2,{format:THREE.RGBAFormat});
@@ -99,11 +84,13 @@ void main(){vec4 c=texture2D(tD,u);if(c.a<.01){gl_FragColor=vec4(0.);return;}
  gl_FragColor=vec4(mix(c.rgb/c.a,vec3(.03,.03,.04),e),max(c.a,e));}`});
 post.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),pmat));
 const texOf=u=>{const t=new THREE.TextureLoader().load(u);t.flipY=false;t.generateMipmaps=false;t.minFilter=t.magFilter=THREE.LinearFilter;return t};
+// WDI is a source image, unlike the projection maps above: keep its conventional top-to-bottom orientation on a plane.
+const refTexOf=u=>{const t=new THREE.TextureLoader().load(u);t.flipY=true;t.generateMipmaps=false;t.minFilter=t.magFilter=THREE.LinearFilter;return t};
 let cur=skin,outlinePx=4;
 const bone=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6});
 const boneL=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6,side:THREE.DoubleSide});
-// same white as the torso skin (which is unlit, tone baked): mostly emissive, a little light left to read the volume
-const ghostL=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xd2d2d2,roughness:1,side:THREE.DoubleSide});
+const fatL=new THREE.MeshStandardMaterial({color:0xd0a64c,roughness:.85,transparent:true,opacity:.78,side:THREE.DoubleSide});
+const ghostL=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,side:THREE.DoubleSide});
 // a layer of the stack model (right half): its mesh and the mirror image
 function layerMesh(L,mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L.v,3));g.setIndex(L.i);g.computeVertexNormals();
   const grp=new THREE.Group(),a=new THREE.Mesh(g,mat),b=new THREE.Mesh(g,mat);b.scale.x=-1;grp.add(a);grp.add(b);return grp}
@@ -137,6 +124,29 @@ function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null,sn=null}={}){
 }
 function tube(pts,r,mat,seg){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));return new THREE.Mesh(new THREE.TubeGeometry(c,seg||24,r,6,false),mat||bone)}
 function ball(p,rx,ry,rz,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),mat||bone);m.scale.set(rx,ry,rz);m.position.set(...p);return m}
+function setReferenceBox(){
+  if(!refBox)return;const q=refBox,e=q.e,F=e.frame,b=q.b,c=q.c,show=$('ref').checked,o=+$('ro').value/100;
+  // Four real faces surround the body.  Only the camera-facing one is drawn, preventing the opposite translucent
+  // drawing from bleeding through the skin while retaining a correctly placed WDI image on every cardinal face.
+  const put=(key,s,rot,pos)=>{const qf=q.faces[key];qf.p.rotation.set(...rot);qf.p.scale.set(...s);qf.p.position.set(...pos);qf.m.opacity=o;qf.m.needsUpdate=true;};
+  let z=b.max.z+.5,zw=z+G.position.z,s=(fitD-zw)/fitD;
+  put('s',[s,s,1],[0,0,0],[c.x+s*(256-F.cxs-c.x),c.y+s*(-256-c.y),z]);
+  z=b.min.z-.5;zw=z+G.position.z;s=(fitD+zw)/fitD;
+  put('n',[-s,s,1],[0,0,0],[c.x+s*(F.cxn-256-c.x),c.y+s*(-256-c.y),z]);
+  let x=b.min.x-.5,xw=x+G.position.x;s=(fitD+xw)/fitD;
+  put('e',[s,s,1],[0,-Math.PI/2,0],[x,c.y+s*(-256-c.y),c.z+s*(256-F.zmean-c.z)]);
+  x=b.max.x+.5;xw=x+G.position.x;s=(fitD-xw)/fitD;
+  put('w',[s,s,1],[0,Math.PI/2,0],[x,c.y+s*(-256-c.y),c.z+s*(F.zmean-256-c.z)]);
+  const dx=cam.position.x-ctl.target.x,dz=cam.position.z-ctl.target.z;
+  const face=Math.abs(dz)>=Math.abs(dx)?(dz>=0?'s':'n'):(dx<0?'e':'w');
+  for(const [key,qf] of Object.entries(q.faces))qf.p.visible=show&&key===face;
+}
+function addReferenceOverlay(e,b,c){
+  if(!e.wdi||!e.frame)return;
+  const maps={s:refTexOf(e.wdi.s),n:refTexOf(e.wdi.n),e:refTexOf(e.wdi.e)};
+  const face=(map)=>{const m=new THREE.MeshBasicMaterial({map,transparent:true,opacity:+$('ro').value/100,depthTest:true,depthWrite:false,side:THREE.DoubleSide});const p=new THREE.Mesh(new THREE.PlaneGeometry(512,512),m);p.renderOrder=20;p.userData.k='ref';G.add(p);return{p,m}};
+  refBox={e,b:b.clone(),c:c.clone(),faces:{s:face(maps.s),n:face(maps.n),e:face(maps.e),w:face(maps.e)}};setReferenceBox();
+}
 function skeleton(rows,A,lm,legs,cage){
   const g=new THREE.Group(),R=rows.length;
   const y0=rows[0][1],y1=rows[R-1][1];
@@ -240,7 +250,7 @@ function organs(rows,A,lm){
   return g;
 }
 function build(){
-  if(G){sc.remove(G)}
+  if(G){sc.remove(G)}refBox=null;
   const mode=msel.value,name=sel.value;let e=DATA[mode].bodies[name];
   if(Array.isArray(e))e={rows:e,legs:null,lm:null};
   const A=e.A||DATA[mode].A,sn=e.sn??null;
@@ -253,6 +263,9 @@ function build(){
   const sk=e.layers?layerMesh(e.layers.bone,boneL):(e.lm?skeleton(e.rows,A,e.lm,e.legs,e.cage):null);
   if(e.layers){const mu=new THREE.Group();e.layers.parts.forEach(p=>mu.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.75,side:THREE.DoubleSide}))));
     mu.userData.k='mu';mu.visible=$('mu').checked;G.add(mu);
+    if(e.layers.fat){const fa=layerMesh(e.layers.fat,fatL);fa.userData.k='fa';fa.visible=$('fa').checked;G.add(fa)}
+    if(e.layers.reference_bones){const rb=new THREE.Group(),B=e.layers.reference_bones;for(const p of [B.torso,B.ghost])if(p&&p.v.length)rb.add(layerMesh(p,boneL));rb.userData.k='rb';rb.visible=$('rb').checked;G.add(rb)}
+    if(e.layers.reference_muscles){const rm=new THREE.Group();e.layers.reference_muscles.forEach(p=>rm.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.8,side:THREE.DoubleSide}))));rm.userData.k='rm';rm.visible=$('rm').checked;G.add(rm)}
     // ghost limbs: what the sprite cuts off (neck, arms, thighs), as skin, bones and muscles of their own
     const gh=e.layers.ghost;if(gh){const add=(o,k)=>{o.userData.k=k;G.add(o)};
       add(layerMesh(gh.skin,ghostL),'ghs');add(layerMesh(gh.bone,boneL),'ghb');
@@ -264,28 +277,34 @@ function build(){
   if(e.horns){piece(e.horns.L,{capTop:true});piece(e.horns.R,{capTop:true})}
   if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
-  sc.add(G);
   const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
+  $('ref').disabled=!e.wdi;$('ro').disabled=!e.wdi;$('rb').disabled=!e.layers?.reference_bones;addReferenceOverlay(e,bb,c);
+  sc.add(G);
   // with the ghost limbs shown the camera steps back to hold the whole figure; with them off nothing moves
-  if(e.layers&&e.layers.ghost&&$('gh').checked){const v=$('sk').checked?e.layers.ghost.skin.v.concat(e.layers.ghost.bone.v):e.layers.ghost.skin.v;for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
+  if(e.layers&&e.layers.ghost&&$('gh').checked){const v=e.layers.ghost.skin.v.concat(e.layers.ghost.bone.v);for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
   }
   // the target stays on the torso centre (a recentred figure shifts the shoulders by parallax): fit the taller half twice
   fitD=Math.max(2*Math.max(bb.max.y-c.y,c.y-bb.min.y),(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
   apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode];
 }
 function apply(){
-  const sk=$('sk').checked,mu=$('mu').checked,gh=$('gh').checked,op=+$('op').value/100;
+  const sk=$('sk').checked,rb=$('rb').checked,mu=$('mu').checked,fa=$('fa').checked,rm=$('rm').checked,gh=$('gh').checked,op=+$('op').value/100;
   const hasMu=G.children.some(o=>o.userData.k==='mu');   // a body without a muscle layer keeps its skin
-  const o=sk?Math.min(op,.3):op;
-  cur.wireframe=$('w').checked;cur.transparent=(sk||op<1);cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=!(sk||op<1);cur.needsUpdate=true;
-  // the muscle layer replaces the skin (the skin is its outside plus the fat); the skeleton shows through a faint skin
-  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='skin')o.visible=!(mu&&hasMu);
-    if(o.userData.k==='ghs')o.visible=gh&&!mu&&!sk;if(o.userData.k==='ghb')o.visible=gh&&sk;if(o.userData.k==='ghm')o.visible=gh&&mu});
+  const o=op;
+  cur.wireframe=false;cur.transparent=op<1;cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=op===1;cur.needsUpdate=true;
+  // Ghost limbs use a separate material, but are still skin: keep their opacity and depth behaviour identical.
+  ghostL.transparent=op<1;ghostL.opacity=o;ghostL.depthWrite=op===1;ghostL.needsUpdate=true;
+  // Visibility controls never rewrite the skin: transparency alone decides whether bones and muscles show through it.
+  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='rb')o.visible=rb;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='fa')o.visible=fa;if(o.userData.k==='rm')o.visible=rm;if(o.userData.k==='skin')o.visible=true;
+    if(o.userData.k==='ghs')o.visible=gh;if(o.userData.k==='ghb')o.visible=gh&&sk;if(o.userData.k==='ghm')o.visible=gh&&mu});
+  const zen=$('zen').checked;fill.intensity=zen?.38:.95;dl.visible=zen;if(cur.uniforms)cur.uniforms.zen.value=zen?1:0;
+  setReferenceBox();
 }
-function view(v){globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update()}
-sel.onchange=msel.onchange=build;['sk','mu','gh','og','w','op'].forEach(i=>$(i).oninput=apply);
-['sk','mu','og'].forEach(i=>{if(Q.get(i))$(i).checked=true});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
+function view(v){activeView=v;globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update();setReferenceBox()}
+sel.onchange=msel.onchange=build;['sk','rb','mu','fa','rm','ref','ro','zen','gh','og','op'].forEach(i=>$(i).oninput=apply);
+['sk','rb','mu','fa','rm','ref','zen','og'].forEach(i=>{if(Q.get(i))$(i).checked=true});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
 document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
+ctl.addEventListener('change',setReferenceBox);
 build();view(0);sel.addEventListener('change',()=>view(0));msel.addEventListener('change',()=>view(0));
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
 (function loop(){requestAnimationFrame(loop);ctl.update();

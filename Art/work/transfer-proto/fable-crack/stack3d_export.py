@@ -29,7 +29,12 @@ R_RINGS = 300
 A_RING = 200
 STEP = 0.5          # px along a ray
 BST = int(__import__("os").environ.get("BONE_STEP", "2"))   # px between the vertices of the bone meshes
-ARM_X, ARM_ROW = 112.0, 244.0  # past the deltoid cap, a ghost arm takes the shoulder-row correction as one rigid limb
+ARM_X, ARM_ROW = 112.0, 232.0  # past the deltoid cap, a ghost arm takes the shoulder-row correction as one rigid limb
+# Ghost limbs take the proportions of the sprite torso (wide and short against a real body, reference skeleton laid on
+# the Male 2026-11-11): head and neck are squashed toward the neck cut, the head widened, the legs shortened from the hip.
+# The skull keeps a believable shape (0.85 high, 1.18 wide: the 1.4 distortion of the reference); the lower neck takes the rest.
+GH_NECK, GH_NECK_K, GH_HEAD_K, GH_CHIN, GH_HEAD_W = 186.5, 0.60, 0.85, 155.0, 1.18
+GH_HIP, GH_LEG_K = 400.0, 0.88
 
 
 def sample(G, d, r, x, z):
@@ -151,12 +156,20 @@ def one(body, h=1.0):
     lm_m = s.MALE["lm"]
     clamp = (lm_m[0] + 31.0, lm_m[4] - 27.0)                   # rows of the Male frame where the fit is well defined
 
-    def pack(vf, clamp=None, fine=False):
+    def pack(vf, clamp=None, fine=False, squash=True):
         if vf is None:
             return {"v": [], "i": []}
         v, f = vf
+        if clamp is not None and squash:
+            v = v.astype(np.float32).copy(); r0 = v[:, 1].copy()
+            w = np.clip((GH_CHIN + 12.0 - r0) / 24.0, 0, 1); w = w * w * (3 - 2 * w)
+            v[:, 0] *= 1.0 + (GH_HEAD_W - 1.0) * w
+            up = GH_NECK - (GH_NECK - np.maximum(r0, GH_CHIN)) * GH_NECK_K - np.maximum(GH_CHIN - r0, 0.0) * GH_HEAD_K
+            v[:, 1] = np.where(r0 < GH_NECK, up, r0)
+            leg = (r0 > GH_HIP) & (np.abs(v[:, 0]) < ARM_X)
+            v[:, 1] = np.where(leg, GH_HIP + (r0 - GH_HIP) * GH_LEG_K, v[:, 1])
         if clamp is not None:                                 # ghost limbs: the arm is outside the silhouette from the shoulder down,
-            arm = np.clip((np.abs(v[:, 0]) - ARM_X) / 16.0, 0, 1)   # hand/forearm keep the shoulder correction as one rigid limb
+            arm = np.clip((np.abs(v[:, 0]) - ARM_X + 20.0) / 44.0, 0, 1)   # hand/forearm keep the shoulder correction as one rigid limb
             arm = arm * arm * (3 - 2 * arm)                   # blended across the upper arm, so the cap remains attached to the torso
             clamp = (clamp[0] + (ARM_ROW - clamp[0]) * arm, clamp[1] + (ARM_ROW - clamp[1]) * arm)
         x, r, z = s.chain_forward(steps, v[:, 0], v[:, 1], v[:, 2], clamp)
@@ -175,20 +188,41 @@ def one(body, h=1.0):
         full = tuple(slice(0, n) for n in G_.shape)
         return pack(mesh_of(bone, full, G_, bst or max(st - 1, 1)), clamp, bst is not None), [p for p in parts if p["v"]], full
 
-    bone, parts, _ = layer_set(S, G0, step, None, BST)         # the bones every px: ribs and processes are 4 to 5 px thick
-    layers = {"bone": bone, "parts": parts}
+    bone, parts, full = layer_set(S, G0, step, None, BST)      # the bones every px: ribs and processes are 4 to 5 px thick
+    # This is the same solved fat field that supports the skin, exported as an optional translucent layer for inspection.
+    layers = {"bone": bone, "parts": parts, "fat": pack(mesh_of(K["fat"], full, G, step), None)}
     # ghost limbs (neck, arms, thighs): outside the rows of the sprite a ghost takes the correction of the nearest
     # well-defined row of the body and its own height
     G2, S2 = K["G2"], K["ghost"]
     gst = max(int(round(2.0 / G2.h)), 1)                       # denser outer skin prevents a faceted ghost beside the torso; bones stay at 1 px
     gbone, gparts, full2 = layer_set(S2, G2, gst, clamp, BST)
     layers["ghost"] = {"skin": pack(mesh_of(S2.skin, full2, G2, gst), clamp), "bone": gbone, "parts": gparts}
+    # Reference skeleton (bp3d_import.py, work aid, data out of git): retain it as a comparison layer.  The normal
+    # skeleton remains the exact bone field that participated in the muscle/fat/skin stack above.
+    ref = __import__("pathlib").Path(__file__).parent / "out" / "bp3d" / "bones.npz"
+    if ref.exists() and __import__("os").environ.get("REF_BONES", "1") != "0":
+        R = np.load(ref)
+        layers["reference_bones"] = {
+            "torso": pack((R["tv"], R["tf"]), None, True),
+            "ghost": pack((R["gv"], R["gf"]), clamp, True),
+        }
+    # Selected BodyParts3D muscles are a separate, opt-in anatomical reference layer.  They guide the next
+    # cervico-thoracic reconstruction; unlike the stack muscles, they are not source-fitted and never replace skin.
+    refm = __import__("pathlib").Path(__file__).parent / "out" / "bp3d" / "muscles.npz"
+    if refm.exists() and __import__("os").environ.get("REF_MUSCLES", "1") != "0":
+        Rm = np.load(refm)
+        ref_parts = []
+        for i, name in enumerate(Rm["names"]):
+            ref_parts.append({"n": str(name), "c": [166, 91, 79], **pack((Rm[f"v{i}"], Rm[f"f{i}"]), None, True)})
+        layers["reference_muscles"] = ref_parts
     # Male is the active anatomy pass.  Give its dense mesh enough row-normal
     # smoothing to remove the regular render bands without changing vertices,
     # silhouette, or the still-unreviewed smoothing of the other body types.
     normal_smoothing = 6 if body == "Male" else 2
     return {"rows": flat(rings), "legs": legs, "horns": horns, "lm": lm,
-            "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate, "A": A_RING, "sn": normal_smoothing, "layers": layers,
+            "cage": {"moved": 0}, "frame": frame, "tex": tex, "bake": bake, "gate": gate,
+            "wdi": {f[0]: we.rgba_uri(T.imgs[f], T.M[f]) for f in ("south", "north", "east")},
+            "A": A_RING, "sn": normal_smoothing, "layers": layers,
             "outline": round(float(np.mean([w.outline_width(T.imgs[f], T.M[f]) for f in T.imgs])), 1),
             "fit": {"pre": {k: [round(x, 2) for x in v] for k, v in K["pre"].items()}, "left": {k: [round(x, 2) for x in v] for k, v in K["left"].items()}},
             "score2d": rep}

@@ -172,8 +172,8 @@ def tri(a, b, c, th):
 
 def sd_poly(px, py, V):
     """Signed distance (negative inside) to the polygon V (n, 2), any orientation."""
-    V = np.asarray(V, float); n = len(V)
-    d = np.full(np.broadcast(px, py).shape, 1e12); s = np.ones(d.shape)
+    V = np.asarray(V, np.float32); n = len(V)
+    d = np.full(np.broadcast(px, py).shape, 1e12, np.float32); s = np.ones(d.shape, np.float32)
     for i in range(n):
         j = (i - 1) % n
         ex, ey = V[j, 0] - V[i, 0], V[j, 1] - V[i, 1]
@@ -186,7 +186,7 @@ def sd_poly(px, py, V):
 
 
 def chaikin(V, n=2):
-    V = np.asarray(V, float)
+    V = np.asarray(V, np.float32)
     for _ in range(n):
         Q = 0.75 * V + 0.25 * np.roll(V, -1, axis=0); Rr = 0.25 * V + 0.75 * np.roll(V, -1, axis=0)
         V = np.stack([Q, Rr], axis=1).reshape(-1, 2)
@@ -421,14 +421,21 @@ TYPES = {
     "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5),
     "Thin": dict(ms=0.6, pads=0.4, tf=1.8, tmin=1.5, fill=4.0),
     "Hulk": dict(ms=1.35, pads=0.8, tf=2.5, tmin=2.0, fill=4.5),
-    "Fat": dict(ms=0.9, pads=1.0, tf=6.0, tmin=4.0, fill=9.0, breast=True, lim=(0.85, 1.15, 12.0)),
+    "Fat": dict(ms=0.9, pads=1.0, tf=6.0, tmin=4.0, fill=9.0, lim=(0.85, 1.15, 12.0)),
     "Female": dict(ms=0.7, pads=1.5, tf=4.0, tmin=3.0, fill=7.0, breast=True,
                    breast_shape=dict(rise=1.7, sag=0.20, tail=0.65, width=0.60,
                                      cleft_width=0.34, cleft_strength=0.72, base=0.55,
                                      fold_radius=0.75)),
-    "Thin_Female": dict(ms=0.55, pads=0.8, tf=2.5, tmin=2.0, fill=6.0, breast=True),
-    "Fat_Female": dict(ms=0.8, pads=1.2, tf=7.0, tmin=4.5, fill=10.0, breast=True, lim=(0.85, 1.15, 12.0)),
-    "Hulk_Female": dict(ms=1.15, pads=1.0, tf=3.0, tmin=2.5, fill=5.0, breast=True),
+    "Thin_Female": dict(ms=0.55, pads=0.8, tf=2.5, tmin=2.0, fill=6.0, breast=True,
+                        breast_shape=dict(rise=1.45, sag=0.13, tail=0.48, width=0.52,
+                                          cleft_width=0.30, cleft_strength=0.70, base=0.46, fold_radius=0.62)),
+    "Fat_Female": dict(ms=0.8, pads=1.2, tf=7.0, tmin=4.5, fill=10.0, breast=True,
+                       breast_shape=dict(rise=1.75, sag=0.38, tail=0.92, width=0.78,
+                                         cleft_width=0.42, cleft_strength=0.52, base=0.68, fold_radius=1.15),
+                       lim=(0.85, 1.15, 12.0)),
+    "Hulk_Female": dict(ms=1.15, pads=1.0, tf=3.0, tmin=2.5, fill=5.0, breast=True,
+                        breast_shape=dict(rise=1.55, sag=0.18, tail=0.58, width=0.68,
+                                          cleft_width=0.32, cleft_strength=0.60, base=0.52, fold_radius=0.72)),
 }
 
 
@@ -658,16 +665,16 @@ def skeleton_detail(S, prm, fsp, ca, cf, cb):
     # Width: the armpit landmark (x 84 at row 298) is the inner face of the arm, so the shaft of the humerus runs at
     # x 100 and the acromion is at x 92 (1.3 x the half width of the cage). The shoulder of the sprite is a cut stump:
     # the head of the humerus and the arm are outside its silhouette.
-    acr = (90, 226, 252)            # the arms are stretched in the sprite: the joint is high, under the clavicle (drawn by Virginie 2026-11-11), the arm leaves it at 45 deg
-    S.show("clavicle", tube([(6, 201, zf(201) + 2.0), (28, 202, 301), (54, 205, 296), (70, 210, 284), (80, 218, 268), acr], [4.4, 3.6, 3.3, 3.3, 3.4, 3.8]))
-    sup, inf, gle, med = (36, 212, 202), (38, 272, 198.5), (76, 237, 235), (32, 238, 197)
+    acr = (88, 214, 252)            # joint high under a near-level clavicle (reference skeleton laid on the Male, Virginie 2026-11-11); the skin starts at row 207 at this x
+    S.show("clavicle", tube([(6, 201, zf(201) + 2.0), (28, 202, 301), (54, 204, 296), (70, 206, 284), (80, 210, 268), acr], [4.4, 3.6, 3.3, 3.3, 3.4, 3.8]))
+    sup, inf, gle, med = (36, 202, 202), (38, 262, 198.5), (76, 225, 235), (32, 228, 197)
     S.show("scapula", tri(sup, inf, gle, 1.7))
     S.show("scapula (medial)", tri(sup, med, inf, 1.7))
-    S.show("scapula (lateral border)", tube([inf, (62, 256, 217), gle], [2.2, 2.4, 3.4]))
-    S.show("scapular spine", tube([(33, 228, 196.5), (56, 227, 203), (74, 228, 230), (82, 227, 242), acr], [2.4, 3.0, 3.6, 4.0, 4.4]))
-    S.show("acromion", ell((87, 226, 251), (8.0, 2.4, 9.5), rot=(0, 0, 0)))
-    S.show("glenoid", ell((78, 237, 238), (3.0, 8.0, 6.0)))
-    S.show("coracoid process", tube([(73, 232, 242), (76, 229, 258), (71, 234, 268)], [3.0, 2.6, 2.2]))
+    S.show("scapula (lateral border)", tube([inf, (62, 245, 217), gle], [2.2, 2.4, 3.4]))
+    S.show("scapular spine", tube([(33, 217, 196.5), (56, 216, 203), (74, 217, 230), (82, 216, 242), acr], [2.4, 3.0, 3.6, 4.0, 4.4]))
+    S.show("acromion", ell((85, 214, 251), (8.0, 2.4, 9.5), rot=(0, 0, 0)))
+    S.show("glenoid", ell((78, 225, 238), (3.0, 8.0, 6.0)))
+    S.show("coracoid process", tube([(73, 220, 242), (76, 217, 258), (71, 222, 268)], [3.0, 2.6, 2.2]))
     # the humerus itself is a ghost limb (build_ghost): it hangs outside the silhouette from its head down
 
     # ---- pelvis: the iliac wing as a surface from the crest (hip landmark) down to the body of the ilium, the sacrum
@@ -758,6 +765,8 @@ def build_ghost(G, T, prm=MALE):
     # ---- neck: the seven cervical vertebrae (lordosis: convex to the front), each with its body, transverse processes,
     # arch and spinous process; the deep neck muscles, sternocleidomastoid and trapezius come over them
     cervical_spine(S)
+    # The skull is part of the physical stack, not a viewer-only insert: the head skin must be an envelope around it.
+    skull(S)
     # Muscles on the cervical spine. Widths from the sprite: the neck base landmarks are at x 40 (row 186), the east
     # profile gives z 214 behind and 278 in front (row 198). Above, the neck narrows to the width of the skull base.
     # deep column around the vertebrae: longus colli in front, scalenes at the sides, semispinalis and splenius behind
@@ -774,12 +783,12 @@ def build_ghost(G, T, prm=MALE):
     # trapezius: from the occiput and the ligament of the neck down and out to the clavicle, the acromion and the scapular spine
     # The trap rises from the neck then falls broadly toward the acromion.  Its old outer endpoint at row 205 sat above
     # the deltoid and formed a stepped shoulder; this lower, longer path makes one continuous clavicle-to-cap slope.
-    S.add("trapezius (neck part)", "muscle", tube([(7, 140, 224), (13, 164, 223), (23, 188, 224), (39, 216, 231), (57, 238, 242)], [4.0, 5.0, 6.5, 8.0, 5.5]),
+    S.add("trapezius (neck part)", "muscle", tube([(7, 140, 224), (13, 164, 223), (23, 188, 224), (39, 214, 231), (57, 230, 242)], [4.0, 5.0, 6.5, 8.0, 5.5]),
           k=5.0, colour=COL["trap"], km=4.0)
     # Broad, shallow bridges make the neck, clavicle and deltoid read as one surface.  They are deliberately smoother
     # than the display anatomy underneath: the ghost skin must show the body envelope, not every cervical attachment.
     S.add("cervicothoracic root", "muscle", ell((0, 218, 248), (28.0, 15.0, 23.0), rad2=(28.0, 13.0, 22.0)), k=6.0, colour=COL["trap"], km=6.0)
-    S.add("acromial bridge", "muscle", tube([(36, 223, 245), (54, 234, 247), (76, 248, 249), (96, 261, 250)], [5.0, 7.0, 9.0, 10.0]),
+    S.add("acromial bridge", "muscle", tube([(36, 221, 245), (54, 229, 247), (76, 240, 249), (96, 250, 250)], [5.0, 7.0, 9.0, 10.0]),
           k=5.0, colour=COL["trap"])
     # sternocleidomastoid: from the mastoid down and forward, a sternal head on the manubrium and a clavicular head
     S.add("sternocleidomastoid", "muscle", tube([(27, 124, 249), (24, 150, 258), (17, 180, 276), (7, 208, 298)], [5.5, 5.5, 5.0, 3.6]), k=1.5, colour=COL["pec"])
@@ -787,14 +796,14 @@ def build_ghost(G, T, prm=MALE):
     # ---- shoulder and arm.  These volumes are authored directly in the displayed A-pose.  The old exporter rotated a
     # vertical arm after meshing: that twisted the deltoid with the forearm, produced a hard shoulder seam, and stopped
     # at the elbow.  The cap stays on the trunk; the humerus, forearm and hand now follow one articulated silhouette.
-    S.add("deltoid cap", "muscle", ell((99, 265, 251), (17.0, 21.0, 25.0), rad2=(15.0, 19.0, 24.0)), k=5.0, colour=COL["delt"])
-    S.add("pectoralis major (tendon to humerus)", "muscle", cone((80, 280, 266), (108, 264, 260), 9.0, 6.5), k=3.0, colour=COL["pec"])
-    S.add("latissimus, teres major (to humerus)", "muscle", cone((80, 283, 236), (108, 266, 244), 9.0, 6.5), k=3.0, colour=COL["lat"])
-    S.add("head of the humerus", "bone", ell((92.5, 244, 248), (10.0, 10.0, 10.0)), colour=BONE)
-    S.add("greater tubercle", "bone", ell((101.0, 246, 252), (4.5, 6.0, 6.0)), colour=BONE)
-    S.add("humerus", "bone", tube([(96, 250, 250), (112, 261, 251), (132, 280, 251), (150, 304, 252), (158, 324, 253)], [8.0, 6.5, 6.0, 5.5, 8.0]), colour=BONE)
-    S.add("biceps, brachialis", "muscle", tube([(102, 261, 264), (117, 274, 266), (136, 296, 265), (152, 317, 260)], [7.0, 12.0, 13.0, 5.0]), k=3.0, colour=COL["arm"])
-    S.add("triceps", "muscle", tube([(101, 260, 239), (117, 276, 239), (138, 299, 240), (154, 318, 247)], [8.0, 13.0, 14.0, 6.0]), k=3.0, colour=COL["delt"])
+    S.add("deltoid cap", "muscle", ell((99, 254, 251), (17.0, 21.0, 25.0), rad2=(15.0, 19.0, 24.0)), k=5.0, colour=COL["delt"])
+    S.add("pectoralis major (tendon to humerus)", "muscle", cone((80, 280, 266), (108, 254, 260), 9.0, 6.5), k=3.0, colour=COL["pec"])
+    S.add("latissimus, teres major (to humerus)", "muscle", cone((80, 283, 236), (108, 256, 244), 9.0, 6.5), k=3.0, colour=COL["lat"])
+    S.add("head of the humerus", "bone", ell((92.5, 232, 248), (10.0, 10.0, 10.0)), colour=BONE)
+    S.add("greater tubercle", "bone", ell((101.0, 234, 252), (4.5, 6.0, 6.0)), colour=BONE)
+    S.add("humerus", "bone", tube([(96, 239, 250), (112, 251.5, 251), (132, 273.5, 251), (150, 301, 252), (158, 324, 253)], [8.0, 6.5, 6.0, 5.5, 8.0]), colour=BONE)
+    S.add("biceps, brachialis", "muscle", tube([(102, 251.5, 264), (117, 266.5, 266), (136, 292, 265), (152, 316, 260)], [7.0, 12.0, 13.0, 5.0]), k=3.0, colour=COL["arm"])
+    S.add("triceps", "muscle", tube([(101, 250.5, 239), (117, 269, 239), (138, 295, 240), (154, 317, 247)], [8.0, 13.0, 14.0, 6.0]), k=3.0, colour=COL["delt"])
     S.add("elbow condyles", "bone", ell((158, 324, 252), (8.0, 7.0, 8.0)), colour=BONE)
     S.add("radius", "bone", tube([(160, 326, 258), (181, 350, 259), (204, 374, 258)], [4.2, 3.5, 3.0]), colour=BONE)
     S.add("ulna", "bone", tube([(158, 327, 246), (180, 352, 246), (202, 376, 248)], [4.5, 3.7, 3.0]), colour=BONE)
@@ -841,7 +850,6 @@ def build_ghost(G, T, prm=MALE):
     broad = ndi.gaussian_filter(raw, 4.0 / G.h, mode=SYM)
     upper = sstep((302.0 - G.r[:, None, None]) / 42.0)
     S.skin = ((1.0 - upper) * fine + upper * broad).astype(np.float32)
-    skull(S)                                                  # head is deliberately skeleton-only pending a proper head pass
     return S
 
 
@@ -1026,13 +1034,15 @@ def profiles(G, d):
 
 # ---------------------------------------------------------------- fit: row-wise affine of the whole stack onto the silhouettes
 def lin(x, xp, fp):
-    """np.interp with linear extrapolation past both ends."""
-    xp = np.asarray(xp, float); fp = np.asarray(fp, float); x = np.asarray(x, float)
-    y = np.interp(x, xp, fp)
+    """Piecewise-linear interpolation/extrapolation in float32 (the volume coordinate precision)."""
+    xp = np.asarray(xp, np.float32); fp = np.asarray(fp, np.float32); x = np.asarray(x, np.float32)
+    i = np.clip(np.searchsorted(xp, x, side="right") - 1, 0, len(xp) - 2)
+    slope = (fp[1:] - fp[:-1]) / (xp[1:] - xp[:-1])
+    y = fp[i] + (x - xp[i]) * slope[i]
     # past the ends: the overall slope, not that of the last segment (the crotch-to-bottom segment of a sprite is a few
     # rows long and says nothing about the length of a thigh)
     s0 = s1 = (fp[-1] - fp[0]) / (xp[-1] - xp[0])
-    return np.where(x < xp[0], fp[0] + (x - xp[0]) * s0, np.where(x > xp[-1], fp[-1] + (x - xp[-1]) * s1, y))
+    return np.where(x < xp[0], fp[0] + (x - xp[0]) * s0, np.where(x > xp[-1], fp[-1] + (x - xp[-1]) * s1, y)).astype(np.float32, copy=False)
 
 
 class Fit:
@@ -1288,15 +1298,17 @@ def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
     target = frame_target(T, ty)
     frame = Fit(G0, S.d, T, sigma=14.0, rowmap=(MALE["lm"], landmark_rows(T)), shrink=ty["tf"], tgt=target, lim=ty.get("lim"), trim=16.0)
     lean = frame.warp(G0, S.d, order, G); bone = frame.warp(G0, S.layer_d["bone"], order, G)
-    d0 = skin_of(G, fat_field(G, lean, bone, T, ty), T, ty, frame)
+    fat = fat_field(G, lean, bone, T, ty)
+    d0 = skin_of(G, fat, T, ty, frame)
     pre = Fit(G, d0, T, 1.0).stats()                           # the model against the silhouettes before the fine fit
     F = Fits(G, d0, T, order=order, tgt=target) if fit else None
     steps = [frame] + (F.steps if fit else [])
     d = F.d if fit else d0
-    owner = frame.warp(G0, S.owner.astype(np.float32), 0, G)
+    # Categorical ownership is sampled nearest-neighbour; keep its compact int16 storage until the sampler output.
+    owner = frame.warp(G0, S.owner, 0, G)
     for f in steps[1:]:
         owner = f.warp(G, owner, 0)
-    K = dict(body=body, ty=ty, T=T, G0=G0, G=G, S=S, d0=d0, d=d, steps=steps, pre=pre, owner=np.round(owner).astype(np.int16),
+    K = dict(body=body, ty=ty, T=T, G0=G0, G=G, S=S, fat=fat, d0=d0, d=d, steps=steps, pre=pre, owner=np.round(owner).astype(np.int16),
              left=Fit(G, d, T, 1.0).stats() if fit else pre, frame=frame)
     if ghost:
         K["G2"] = Grid(1.0, x1=236.0, r0=40.0, r1=705.0, z0=175.0, z1=335.0)    # full ghost: skull, hands and feet; 1 px retains joints and small bones

@@ -20,6 +20,25 @@ data = json.loads(data_line[len("const DATA="):].rstrip(";"))
 source = "relief3d-shade5.json" if "legacy" in sys.argv[1:] else "wdi3d-mesh.json"
 shade = json.loads((here / "out" / source).read_text(encoding="utf-8"))
 shade["A"] = 2 * shade.pop("U")
+refs = {name: {"wdi": entry.get("wdi"), "frame": entry.get("frame")} for name, entry in shade["bodies"].items()}
+
+# The simple and relief meshes use the same source coordinate system.  Give every one the original WDI pixels and its
+# frame so the comparison overlay is available in all three model families, not only in the stack export.
+for mode, collection in data.items():
+    if mode == "shade" or not isinstance(collection, dict):
+        continue
+    bodies = collection.get("bodies")
+    if not isinstance(bodies, dict):
+        continue
+    for name, entry in list(bodies.items()):
+        ref = refs.get(name.split(" (")[0])
+        if not ref or not ref["wdi"]:
+            continue
+        if isinstance(entry, list):
+            bodies[name] = {"rows": entry, "legs": None, "lm": None, "frame": ref["frame"], "wdi": ref["wdi"]}
+        elif isinstance(entry, dict):
+            entry.setdefault("frame", ref["frame"])
+            entry.setdefault("wdi", ref["wdi"])
 stack_path = here / "out" / "stack3d-mesh.json"
 if stack_path.exists() and "nostack" not in sys.argv[1:] and "legacy" not in sys.argv[1:]:
     stack = json.loads(stack_path.read_text(encoding="utf-8"))["bodies"]
