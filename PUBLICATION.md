@@ -45,7 +45,7 @@ Rule (PUBLISHING.md, 2026-10-02 and 2026-10-06): every capture is a staged photo
 from the empty photographs of every place of the Sanctuaire (`PickleTools/docs/GALERIE.md`, `SANCTUAIRE-LIEUX.md`), not from its name;
 each played image is opened and read; an anomaly of the scene or of the shared tool goes to PickleTools (NPT), never worked around here.
 
-Story: *the fitting*. Nelim (Virginie, the only colonist of the fixture) tries one pair of trousers on five bodies, then one body in
+Story: *the fitting*. Nelim (Virginie, the only colonist of the fixture) tries one pair of trousers on five bodies, then one body at
 three waistlines. Subjects are dressed in plain strong colours so the waistband and the hem read, in a palette that suits the cream or
 bare ground.
 
