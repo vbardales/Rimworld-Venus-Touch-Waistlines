@@ -419,8 +419,8 @@ TYPES = {
     # The Male is the active anatomy pass.  A small extra skin-tension blur
     # calms the contiguous muscle volumes without flattening their landmarks.
     "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5,
-                 hollows=(dict(side="F", pts=[(0, 362), (0, 366)], rad=6.0, depth=4.5),                 # navel, round
-                          dict(side="F", pts=[(36, 358), (22, 384), (10, 402)], rad=4.5, depth=2.6),    # groin crease, from the groin landmark to the pubis
+                 hollows=(dict(side="F", pts=[(0, 363), (0, 365)], rad=8.0, depth=5.5),                 # navel, round
+                          dict(side="F", pts=[(36, 358), (22, 384), (12, 398)], rad=4.5, depth=2.6, taper=0.4),    # groin crease, from the groin landmark to the pubis
                           dict(side="B", pts=[(0, 372), (0, 400)], rad=5.0, depth=2.2),                 # lumbar groove
                           dict(side="B", pts=[(12, 398)], rad=3.5, depth=1.8))),                        # sacral dimple
     "Thin": dict(ms=0.6, pads=0.4, tf=1.8, tmin=1.5, fill=4.0),
@@ -955,13 +955,15 @@ def carve_path(G, d, pit):
     cum = np.r_[0, np.cumsum(seg)]
     path = np.stack([np.interp(u, cum, pts[:, 0]), np.interp(u, cum, pts[:, 1])], 1)
     d = d.copy()
-    for x, r in path:
+    ta = float(pit.get("taper", 0.0))
+    for (x, r), t in zip(path, u / max(u[-1], 1e-6)):
+        dp = depth * (max(min(1.0, t / ta, (1.0 - t) / ta), 0.25) if ta > 0 else 1.0)
         i = int(np.argmin(np.abs(G.r - r))); j = int(np.argmin(np.abs(G.x - x)))
         zs = float(last_cross(d[i:i + 1, j:j + 1, :], 2, G.z, outward=front)[0, 0])
         if not np.isfinite(zs):
             continue
         # sphere centre above the skin by (rad - depth): it cuts a bowl `depth` deep and about 2*sqrt(rad*depth) wide
-        zc = zs + (rad - depth) if front else zs - (rad - depth)
+        zc = zs + (rad - dp) if front else zs - (rad - dp)
         fn, lo, hi = ell((x, r, zc), (rad, rad, rad))
         sl = G.box(lo, hi, 4.0)
         d[sl] = smax(d[sl], -np.broadcast_to(fn(*G.coords(sl)), d[sl].shape).astype(np.float32), 1.0)
