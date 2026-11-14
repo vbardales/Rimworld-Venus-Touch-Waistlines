@@ -106,5 +106,55 @@ def main():
         one(b, font)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "depth" not in sys.argv:
     main()
+
+
+# ---------------------------------------------------------------- depth bands of the skin (2026-11-14)
+def depth_board(body, font, band=4.0):
+    """The hollows as well as the bumps: depth of the skin from the front-most point (front) and from the back-most point
+    (back), cut in bands of `band` px. A plane 4 px deep only shows what pokes out; the bands show the navel, the groin
+    folds, the thigh gaps, the lower back and the waist hollow as the places where the skin falls back into a deeper band."""
+    K = s.make(body, 1.0, ghost=True)
+    G, d = K["G"], K["d"]
+    inside = d < 0
+    zs = G.z
+    zf = np.where(inside, zs[None, None, :], -1e9).max(axis=2)
+    zb = np.where(inside, zs[None, None, :], 1e9).min(axis=2)
+    has = inside.any(axis=2)
+    dfront = np.where(has, zf[has].max() - zf, np.nan)
+    dback = np.where(has, zb - zb[has].min(), np.nan)
+    rows = np.nonzero(has.any(axis=1))[0]
+    r0, r1 = rows[0], rows[-1]
+    ims = []
+    for lab, dep in (("front skin, depth from the front-most point", dfront), ("back skin, depth from the back-most point", dback)):
+        dd = dep[r0:r1 + 1]
+        k = np.floor(dd / band)
+        kmax = np.nanmax(k)
+        t = np.clip(k / max(kmax, 1), 0, 1)
+        rgb = np.zeros(dd.shape + (3,), np.float32)
+        rgb[..., 0] = np.clip(1.6 - 3.2 * np.abs(t - 0.15), 0, 1)       # warm = near, cool = deep
+        rgb[..., 1] = np.clip(1.5 - 3.0 * np.abs(t - 0.5), 0, 1)
+        rgb[..., 2] = np.clip(1.6 - 3.2 * np.abs(t - 0.85), 0, 1)
+        rgb[~np.isfinite(dd)] = 0.16
+        full = np.concatenate([rgb[:, :0:-1], rgb], axis=1)
+        kk = np.concatenate([k[:, :0:-1], k], axis=1)
+        im = (full * 255).astype(np.uint8)
+        im = np.kron(im, np.ones((SC, SC, 1), np.uint8))
+        kb = np.kron(np.nan_to_num(kk, nan=-1), np.ones((SC, SC)))
+        edge = (kb != np.roll(kb, 1, 0)) | (kb != np.roll(kb, 1, 1))
+        im[edge] = (25, 25, 25)
+        im = Image.fromarray(im)
+        ImageDraw.Draw(im).text((6, 4), f"{body}: {lab}, bands of {band:.0f} px, deepest band {int(kmax) * band:.0f} px", fill=(255, 255, 255), font=font)
+        ims.append(im)
+    tw, th = ims[0].size
+    board = Image.new("RGB", (2 * tw + 30, th + 20), (235, 235, 230))
+    for i, im in enumerate(ims):
+        board.paste(im, (10 + i * (tw + 10), 10))
+    p = rf"{CAPT}\2026-11-14_depth-{body}.png"
+    board.save(p); print(p)
+
+
+if __name__ == "__main__" and "depth" in sys.argv:
+    for b in [a for a in sys.argv[1:] if a not in ("depth",)] or ["Male", "Female"]:
+        depth_board(b, ImageFont.load_default(size=14))
