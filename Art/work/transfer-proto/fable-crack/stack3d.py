@@ -418,13 +418,13 @@ MALE = dict(
 TYPES = {
     # The Male is the active anatomy pass.  A small extra skin-tension blur
     # calms the contiguous muscle volumes without flattening their landmarks.
-    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5,
+    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5, abs=1.15,
                  hollows=(dict(side="F", pts=[(0, 363), (0, 365)], rad=8.0, depth=5.5),                 # navel, round
                           dict(side="F", pts=[(36, 358), (22, 384), (12, 398)], rad=4.5, depth=2.6, taper=0.4),    # groin crease, from the groin landmark to the pubis
                           dict(side="B", pts=[(0, 372), (0, 400)], rad=5.0, depth=2.2),                 # lumbar groove
                           dict(side="B", pts=[(12, 398)], rad=3.5, depth=1.8))),                        # sacral dimple
     "Thin": dict(ms=0.6, pads=0.4, tf=1.8, tmin=1.5, fill=4.0),
-    "Hulk": dict(ms=1.35, pads=0.8, tf=2.5, tmin=2.0, fill=4.5),
+    "Hulk": dict(ms=1.35, pads=0.8, tf=2.5, tmin=2.0, fill=4.5, abs=1.8),
     "Fat": dict(ms=0.9, pads=1.0, tf=6.0, tmin=4.0, fill=9.0, lim=(0.85, 1.15, 12.0)),
     "Female": dict(ms=0.7, pads=1.5, tf=4.0, tmin=3.0, fill=7.0, breast=True,
                    breast_shape=dict(rise=1.7, sag=0.20, tail=0.65, width=0.60,
@@ -534,11 +534,18 @@ def build_male(G, T, prm=MALE, ty=None):
     S.lens("pectoralis major", "muscle", "F", pec, 11.5, 5.5, colour=COL["pec"],
            mod=lambda u, v: (0.6 + 0.4 * sstep((v - (217.0 - 0.1 * np.abs(u))) / 70.0)) * (0.68 + 0.32 * sstep(np.abs(u) / 14.0)))
 
-    # rectus abdominis: four blocks a side, tendinous intersections between them, linea alba at the midline
+    # rectus abdominis: four blocks a side, tendinous intersections between them, linea alba at the midline.
+    # ty["abs"] (2026-11-14): 1 = the old drawing (blocks touch, soft domes); higher = thicker blocks, tighter edges and real
+    # grooves at the intersections. Average colonists stay near 1, the Hulk (every muscle drawn) goes high.
     xo = lambda r: 26.0 - 9.0 * sstep((r - 330.0) / 68.0)
-    for i, (ra, rb) in enumerate(((325.0, 340.7), (341.0, 353.8), (354.1, 369.8), (370.1, 399.0))):
+    ab = float(ty.get("abs", 1.0)) if ty else 1.0
+    gap = 0.3 + (ab - 1.0) * 2.2
+    wd_ab = max(9.0 - (ab - 1.0) * 5.0, 4.0)
+    cuts = (340.85, 353.95, 369.95)
+    edges = [325.0] + [c + s * gap / 2 for c in cuts for s in (-1, 1)] + [399.0]
+    for i, (ra, rb) in enumerate(zip(edges[0::2], edges[1::2])):
         V = [(0.5, ra), (xo(ra), ra), (xo(rb), rb), (0.5, rb)]
-        S.lens(f"rectus abdominis {i}", "muscle", "F", V, 3.2 if i < 3 else 2.8, 9.0, colour=COL["rectus"], rnd=1, prof=1.3, on="core")
+        S.lens(f"rectus abdominis {i}", "muscle", "F", V, (3.2 if i < 3 else 2.8) * ab, wd_ab, colour=COL["rectus"], rnd=1, prof=1.3, on="core")
 
     # external oblique: from the lower ribs (thin, under the pectoral border) to the iliac crest and the inguinal ligament;
     # its medial edge runs under the rectus sheath
