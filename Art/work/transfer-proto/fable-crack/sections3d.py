@@ -24,6 +24,7 @@ import stack3d as s
 
 CAPT = s.CAPT
 SC = 4
+TAG = ""
 DEPTH = 4.0
 
 
@@ -151,7 +152,7 @@ def depth_board(body, font, band=4.0):
     board = Image.new("RGB", (2 * tw + 30, th + 20), (235, 235, 230))
     for i, im in enumerate(ims):
         board.paste(im, (10 + i * (tw + 10), 10))
-    p = rf"{CAPT}\2026-11-14_depth-{body}.png"
+    p = rf"{CAPT}\2026-11-14_depth-{body}{TAG}.png"
     board.save(p); print(p)
 
 

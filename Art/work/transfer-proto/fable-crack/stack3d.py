@@ -418,7 +418,11 @@ MALE = dict(
 TYPES = {
     # The Male is the active anatomy pass.  A small extra skin-tension blur
     # calms the contiguous muscle volumes without flattening their landmarks.
-    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5),
+    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5,
+                 hollows=(dict(side="F", pts=[(0, 362), (0, 366)], rad=6.0, depth=4.5),                 # navel, round
+                          dict(side="F", pts=[(36, 358), (22, 384), (10, 402)], rad=4.5, depth=2.6),    # groin crease, from the groin landmark to the pubis
+                          dict(side="B", pts=[(0, 372), (0, 400)], rad=5.0, depth=2.2),                 # lumbar groove
+                          dict(side="B", pts=[(12, 398)], rad=3.5, depth=1.8))),                        # sacral dimple
     "Thin": dict(ms=0.6, pads=0.4, tf=1.8, tmin=1.5, fill=4.0),
     "Hulk": dict(ms=1.35, pads=0.8, tf=2.5, tmin=2.0, fill=4.5),
     "Fat": dict(ms=0.9, pads=1.0, tf=6.0, tmin=4.0, fill=9.0, lim=(0.85, 1.15, 12.0)),
@@ -939,6 +943,31 @@ def fat_field(G, lean, bone, T, ty, prm=MALE):
     return np.minimum(redistance(G, lean) - t, bone - prm["fat_bone"]).astype(np.float32)
 
 
+def carve_path(G, d, pit):
+    """A crease or a pit pressed into the skin along a polyline: spheres of radius `rad` laid on the skin surface, `depth`
+    px deep. pit = dict(side 'F' or 'B', pts [(x, r) ...] in px (x >= 0, mirrored by the grid), rad, depth, step)."""
+    pts = np.asarray(pit["pts"], float)
+    rad, depth = float(pit["rad"]), float(pit["depth"])
+    front = pit.get("side", "F") == "F"
+    seg = np.hypot(*np.diff(pts, axis=0).T)
+    n = max(int(seg.sum() / pit.get("step", 1.5)), 2)
+    u = np.linspace(0, seg.sum(), n)
+    cum = np.r_[0, np.cumsum(seg)]
+    path = np.stack([np.interp(u, cum, pts[:, 0]), np.interp(u, cum, pts[:, 1])], 1)
+    d = d.copy()
+    for x, r in path:
+        i = int(np.argmin(np.abs(G.r - r))); j = int(np.argmin(np.abs(G.x - x)))
+        zs = float(last_cross(d[i:i + 1, j:j + 1, :], 2, G.z, outward=front)[0, 0])
+        if not np.isfinite(zs):
+            continue
+        # sphere centre above the skin by (rad - depth): it cuts a bowl `depth` deep and about 2*sqrt(rad*depth) wide
+        zc = zs + (rad - depth) if front else zs - (rad - depth)
+        fn, lo, hi = ell((x, r, zc), (rad, rad, rad))
+        sl = G.box(lo, hi, 4.0)
+        d[sl] = smax(d[sl], -np.broadcast_to(fn(*G.coords(sl)), d[sl].shape).astype(np.float32), 1.0)
+    return d
+
+
 def skin_of(G, d, T, ty, frame, prm=MALE):
     """Skin = outside of the stack with its fat. Fat fills the notches (a narrow hollow is bridged, a ridge is kept)
     except along the skin tethers, the navel is a pit tied to the linea alba, and the skin tension is a small blur
@@ -1000,6 +1029,8 @@ def skin_of(G, d, T, ty, frame, prm=MALE):
             sl = G.box(lo, hi, 4.0)
             d = d.copy()
             d[sl] = smax(d[sl], -np.broadcast_to(fn(*G.coords(sl)), d[sl].shape).astype(np.float32), 1.5)
+    for pit in (ty.get("hollows") or ()):                       # creases carved into the finished skin (Male first, 2026-11-14)
+        d = carve_path(G, d, pit)
     skin_blur = ty.get("skin_blur", prm["skin_blur"])
     if skin_blur > 0:
         d = ndi.gaussian_filter(d, skin_blur / G.h, mode=SYM)
