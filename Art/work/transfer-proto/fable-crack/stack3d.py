@@ -418,7 +418,7 @@ MALE = dict(
 TYPES = {
     # The Male is the active anatomy pass.  A small extra skin-tension blur
     # calms the contiguous muscle volumes without flattening their landmarks.
-    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5, abs=1.15,
+    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5, abs=1.15, wrap=2.0, wrap_cap=2.0,
                  hollows=(dict(side="F", pts=[(0, 363), (0, 365)], rad=8.0, depth=5.5),                 # navel, round
                           dict(side="F", pts=[(36, 358), (22, 384), (12, 398)], rad=4.5, depth=2.6, taper=0.4),    # groin crease, from the groin landmark to the pubis
                           dict(side="B", pts=[(0, 372), (0, 400)], rad=5.0, depth=2.2),                 # lumbar groove
@@ -1344,6 +1344,9 @@ def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
     F = Fits(G, d0, T, order=order, tgt=target) if fit else None
     steps = [frame] + (F.steps if fit else [])
     d = F.d if fit else d0
+    if ty.get("wrap"):                                         # skin lifted onto what holds it: union with the stack plus fat, muscles untouched
+        cap = float(ty.get("wrap_cap", 3.0))                    # a poke larger than the cap is lifted by the cap only: the silhouettes stay close
+        d = smin(d, smax(fat, d - cap, 1.0), float(ty["wrap"]))
     # Categorical ownership is sampled nearest-neighbour; keep its compact int16 storage until the sampler output.
     owner = frame.warp(G0, S.owner, 0, G)
     for f in steps[1:]:
