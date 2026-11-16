@@ -41,7 +41,7 @@ const NOTES={
  simple:"simple volume: superellipse sections from the E masks."};
 const sc=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);globalThis.__cam=cam;
-const ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
+const ren=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
 ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(devicePixelRatio);
 document.body.appendChild(ren.domElement);
 const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;globalThis.__ctl=ctl;
@@ -307,7 +307,7 @@ document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v))
 ctl.addEventListener('change',setReferenceBox);
 build();view(0);sel.addEventListener('change',()=>view(0));msel.addEventListener('change',()=>view(0));
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
-(function loop(){requestAnimationFrame(loop);ctl.update();
+function frame(){ctl.update();
   // outline width of the sprite (world px) in device pixels at the current zoom
   wdiMat.uniforms.pxw.value=outlinePx*innerHeight*ren.getPixelRatio()/(2*Math.tan(cam.fov*Math.PI/360)*cam.position.distanceTo(ctl.target));
   wdiMat.uniforms.cdir.value.copy(cam.position).sub(ctl.target).normalize();
@@ -316,6 +316,7 @@ addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProje
   pmat.uniforms.on.value=$('sk').checked?0:1;   // no sprite outline around the bones
   if(cur===wdiMat){pmat.uniforms.px.value.set(1/sz.x,1/sz.y);pmat.uniforms.r.value=wdiMat.uniforms.pxw.value;
     ren.setRenderTarget(RT);ren.setClearColor(0x000000,0);ren.clear();ren.render(sc,cam);ren.setRenderTarget(null);ren.clear();ren.render(post,pcam)}
-  else ren.render(sc,cam)})();
+  else ren.render(sc,cam)}
+globalThis.__frame=frame;globalThis.__api={view,apply,build};(function loop(){requestAnimationFrame(loop);frame()})();
 }
 </script></body></html>

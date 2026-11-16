@@ -418,7 +418,7 @@ MALE = dict(
 TYPES = {
     # The Male is the active anatomy pass.  A small extra skin-tension blur
     # calms the contiguous muscle volumes without flattening their landmarks.
-    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5, abs=1.15, wrap=2.0, wrap_cap=2.0,
+    "Male": dict(ms=1.0, pads=1.0, tf=2.5, tmin=2.0, fill=5.0, skin_blur=1.5, abs=1.15, clip_lean=True,
                  hollows=(dict(side="F", pts=[(0, 363), (0, 365)], rad=8.0, depth=5.5),                 # navel, round
                           dict(side="F", pts=[(36, 358), (22, 384), (12, 398)], rad=4.5, depth=2.6, taper=0.4),    # groin crease, from the groin landmark to the pubis
                           dict(side="B", pts=[(0, 372), (0, 400)], rad=5.0, depth=2.2),                 # lumbar groove
@@ -1325,6 +1325,86 @@ def landmark_rows(T):
     return rows
 
 
+KMIN = 0.35                                                    # least thickness scale of the lean over its core
+
+
+def clip_lean(S, G0, G, steps, frame, d, fat, tmin):
+    """Lean stack shrunk in thickness to fit under the skin, fat kept at its modelled thickness (2026-11-14, Virginie: not
+    a crop, shrink the muscles in thickness). Per (row, x), front and back: the lean surface may not pass skin minus fat
+    thickness (fat solid minus lean surface, never under tmin). Above its core (the bone surface, else the midline) the
+    lean is scaled in depth by k = room / thickness, so bone stays and muscles keep their shape, thinner. Every display
+    field, the stack field, the layer fields and the owner map are resampled, in the Male frame.
+    Returns dict of stats per side: share of the surface shrunk, mean and max shrink (1 - k)."""
+    lean = frame.warp(G0, S.d, 1, G)
+    bone = frame.warp(G0, S.layer_d["bone"], 1, G)
+    bone_fat = float(MALE["fat_bone"])
+    surf = {}
+    for side, outward in (("F", True), ("B", False)):
+        sg = 1.0 if outward else -1.0
+        zs, zf, zl, zk = (last_cross(f, 2, G.z, outward=outward) for f in (d, fat, lean, bone))
+        t = np.maximum(sg * (zf - zl), tmin)
+        surf[side] = (sg, sg * zs - t, sg * zl, sg * zk)        # all in 'outward' coordinates u = sg * z
+    zmid = 0.5 * (surf["F"][2] - surf["B"][2])                  # midline of the lean (u_front + u_back is z_front - z_back)
+    zmid = 0.5 * (last_cross(lean, 2, G.z, True) + last_cross(lean, 2, G.z, False))
+    out, maps = {}, {}
+    for side in ("F", "B"):
+        sg, allow, ul, uk = surf[side]
+        um = sg * zmid
+        uc = np.where(np.isfinite(uk) & (uk < ul - 1.0), uk, um)   # the core: the bone surface, else the midline
+        # where the bone itself passes the skin (less the fat over bone), the core is the midline: bone and muscles shrink together
+        allow_b = allow + tmin - bone_fat
+        bad = np.isfinite(uk) & np.isfinite(allow_b) & (uk > allow_b)
+        w = ndi.gaussian_filter(bad.astype(np.float32), 2.0, mode="nearest")
+        uc = np.where(np.isfinite(um), w * um + (1 - w) * np.where(np.isfinite(uc), uc, um), uc)
+        uc = np.where(np.isfinite(uc), uc, ul - 1.0)
+        k = np.where(np.isfinite(ul) & np.isfinite(allow) & (ul > allow), (allow - uc) / np.maximum(ul - uc, 1.0), 1.0)
+        kb_ = np.where(bad, (allow_b - uc) / np.maximum(uk - uc, 1.0), 1.0)
+        k = np.minimum(k, np.where(np.isfinite(kb_), kb_, 1.0))
+        k = np.where(np.isfinite(k), k, 1.0)
+        k = ndi.gaussian_filter(np.clip(k, KMIN, 1.0), 1.0, mode="nearest")
+        have = np.isfinite(ul)
+        sh = k[have] < 0.97
+        out[side] = (100.0 * float(sh.mean()), float((1.0 - k[have][sh]).mean()) if sh.any() else 0.0, float(1.0 - k[have].min()))
+        maps[side] = (sg, sg * uc, k)                           # core in true z, thickness scale
+    r_idx = lambda r: (r - G.r[0]) / G.h
+    X, R, Z = (np.broadcast_to(a, G0.shape).astype(np.float32) for a in G0.coords((slice(None),) * 3))
+    xb, rb, zb = chain_forward(steps, X, R, Z)
+    co = np.stack([r_idx(rb), xb / G.h]).reshape(2, -1)
+    def samp(m, fill):
+        m = np.where(np.isfinite(m), m, fill).astype(np.float32)
+        return ndi.map_coordinates(m, co, order=1, mode="nearest").reshape(G0.shape)
+    zcf, kf = samp(maps["F"][1], 1e4), samp(maps["F"][2], 1.0)
+    zcb, kb = samp(maps["B"][1], -1e4), samp(maps["B"][2], 1.0)
+    # inverse map of the thickness shrink: a point at depth dz above the core came from dz / k above it
+    src = zb.copy()
+    fr = (zb > zcf) & (zcf < 1e3); bk = (zb < zcb) & (zcb > -1e3) & ~fr
+    src[fr] = zcf[fr] + (zb[fr] - zcf[fr]) / kf[fr]
+    src[bk] = zcb[bk] - (zcb[bk] - zb[bk]) / kb[bk]
+    zi = ((Z + (src - zb) - G0.z[0]) / G0.h).astype(np.float32)   # source z index of every voxel; the shrink moves nothing in r or x
+    # the skin in the Male frame, to keep what the depth shrink cannot reach (flanks, shoulder tops) inside it
+    dsk = ndi.map_coordinates(d.astype(np.float32), np.stack([co[0].reshape(G0.shape), co[1].reshape(G0.shape), ((zb - G.z[0]) / G.h).astype(np.float32)]),
+                              order=1, mode="nearest").astype(np.float32)
+    del X, R, Z, xb, rb, zb, src, co
+    def rs(a, sl, order=1):
+        z = np.clip(zi[sl] - sl[2].start, 0, a.shape[2] - 1)
+        z0 = np.floor(z).astype(np.intp); z1 = np.minimum(z0 + 1, a.shape[2] - 1)
+        if order == 0:
+            return np.take_along_axis(a, np.rint(z).astype(np.intp), axis=2)
+        w = (z - z0).astype(np.float32)
+        return (np.take_along_axis(a, z0, axis=2) * (1 - w) + np.take_along_axis(a, z1, axis=2) * w).astype(a.dtype)
+    full = tuple(slice(0, n) for n in G0.shape)
+    S.d = rs(S.d, full)
+    S.layer_d = {n: rs(v, full) for n, v in S.layer_d.items()}
+    S.owner = rs(S.owner, full, 0)
+    S.parts = [(name, layer, colour, sl, None if a is None else rs(a, sl)) for name, layer, colour, sl, a in S.parts]
+    # safety: nothing of the lean stays outside the skin (bone keeps the fat-over-bone distance, the rest half a px)
+    mb = dsk + bone_fat; mm = dsk + 0.5
+    S.layer_d["bone"] = np.maximum(S.layer_d["bone"], mb)
+    S.d = np.maximum(S.d, mm)
+    S.parts = [(name, layer, colour, sl, None if a is None else np.maximum(a, (mb if layer == "bone" else mm)[sl])) for name, layer, colour, sl, a in S.parts]
+    return out
+
+
 def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
     """Build the stack of a body: the lean stack in the Male frame (muscles and pads scaled by the type), the frame
     put on the body by its landmark rows and a broad row-wise affine, the fat solved from the silhouettes, the skin,
@@ -1347,11 +1427,15 @@ def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
     if ty.get("wrap"):                                         # skin lifted onto what holds it: union with the stack plus fat, muscles untouched
         cap = float(ty.get("wrap_cap", 3.0))                    # a poke larger than the cap is lifted by the cap only: the silhouettes stay close
         d = smin(d, smax(fat, d - cap, 1.0), float(ty["wrap"]))
+    clip = None
+    if ty.get("clip_lean"):
+        clip = clip_lean(S, G0, G, steps, frame, d, fat, ty["tmin"])
+        fat = np.maximum(fat, d + 1.0)                         # the fat solid stays 1 px inside the skin (the exported meshes are coarser than the skin)
     # Categorical ownership is sampled nearest-neighbour; keep its compact int16 storage until the sampler output.
     owner = frame.warp(G0, S.owner, 0, G)
     for f in steps[1:]:
         owner = f.warp(G, owner, 0)
-    K = dict(body=body, ty=ty, T=T, G0=G0, G=G, S=S, fat=fat, d0=d0, d=d, steps=steps, pre=pre, owner=np.round(owner).astype(np.int16),
+    K = dict(body=body, ty=ty, T=T, G0=G0, G=G, S=S, clip=clip, fat=fat, d0=d0, d=d, steps=steps, pre=pre, owner=np.round(owner).astype(np.int16),
              left=Fit(G, d, T, 1.0).stats() if fit else pre, frame=frame)
     if ghost:
         K["G2"] = Grid(1.0, x1=236.0, r0=40.0, r1=705.0, z0=175.0, z1=335.0)    # full ghost: skull, hands and feet; 1 px retains joints and small bones
