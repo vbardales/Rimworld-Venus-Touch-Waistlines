@@ -35,6 +35,32 @@ ARM_X, ARM_ROW = 112.0, 232.0  # past the deltoid cap, a ghost arm takes the sho
 # The skull keeps a believable shape (0.85 high, 1.18 wide: the 1.4 distortion of the reference); the lower neck takes the rest.
 GH_NECK, GH_NECK_K, GH_HEAD_K, GH_CHIN, GH_HEAD_W = 186.5, 0.60, 0.85, 155.0, 1.18
 GH_HIP, GH_LEG_K = 400.0, 0.88
+# Head and arms are rigid on every body (2026-11-17). A RimWorld head is the same for every body type, so the skull keeps
+# the Male width (the chain's width scale at the neck row was 0.51 on Female, 1.28 on Hulk) and only follows the neck in
+# position. The arm keeps the Male size from the shoulder joint out: the joint follows the body, then the arm is
+# abducted around it until it clears the trunk (it was scaled 0.50 on Female and sank into the hips and the Fat belly).
+HEAD_SX, HEAD_Z = 0.962, 256.0           # Male chain width scale at the neck row (215); centre depth of the vault
+ARM_SX = 0.961                           # Male chain width scale at ARM_ROW
+JOINT = (92.5, 232.0, 248.0)             # head of the humerus (build_ghost), Male frame
+# arm axis in the Male frame with the skin radius around it (muscle plus ghost fat): humerus, forearm, palm
+ARM_AXIS = [((96, 239), 13.0), ((127, 281), 16.0), ((158, 324), 11.0), ((181, 351), 13.0), ((205, 376), 8.0), ((218, 388), 12.0)]
+ARM_GAP, ARM_MAX = 2.0, 40.0             # px left between arm and trunk; most abduction (degrees)
+
+
+def arm_theta(J, T):
+    """Least abduction (degrees, about the joint J) that keeps the arm axis, less its radius, outside the trunk below
+    the body's armpit landmark (above it the arm is the shoulder, attached to the trunk)."""
+    r_ap = float(T.P["south"]["armpit L"][1])
+    for deg in np.arange(0.0, ARM_MAX + 0.5, 0.5):
+        t = np.radians(deg); ok = True
+        for (ax, ar), rad in ARM_AXIS:
+            dx, dr = (ax - JOINT[0]) * ARM_SX, ar - JOINT[1]
+            x = J[0] + dx * np.cos(t) + dr * np.sin(t); r = J[1] - dx * np.sin(t) + dr * np.cos(t)
+            if r_ap < r <= T.rows[-1] and x - rad < float(T.at(T.hw, r)) + ARM_GAP:
+                ok = False; break
+        if ok:
+            return float(deg)
+    return ARM_MAX
 
 
 def sample(G, d, r, x, z):
@@ -155,6 +181,9 @@ def one(body, h=1.0):
     step = max(int(round(4.0 / G0.h)), 1)
     lm_m = s.MALE["lm"]
     clamp = (lm_m[0] + 31.0, lm_m[4] - 27.0)                   # rows of the Male frame where the fit is well defined
+    J = [float(a[0]) for a in s.chain_forward(steps, *(np.array([c]) for c in JOINT), clamp)]   # shoulder joint on this body
+    theta = arm_theta(J, T)
+    print(f"  arm: joint x {J[0]:.1f} row {J[1]:.1f}, abduction {theta:.1f} deg", flush=True)
 
     def pack(vf, clamp=None, fine=False, squash=True):
         if vf is None:
@@ -173,6 +202,14 @@ def one(body, h=1.0):
             arm = arm * arm * (3 - 2 * arm)                   # blended across the upper arm, so the cap remains attached to the torso
             clamp = (clamp[0] + (ARM_ROW - clamp[0]) * arm, clamp[1] + (ARM_ROW - clamp[1]) * arm)
         x, r, z = s.chain_forward(steps, v[:, 0], v[:, 1], v[:, 2], clamp)
+        if clamp is not None and squash:                      # rigid head and arm (HEAD_SX, ARM_SX), blended into the chain
+            one = lambda a: np.full(len(v), a, np.float32)
+            zh = s.chain_forward(steps, one(0.0), v[:, 1], one(HEAD_Z), clamp)[2]
+            x = x + w * (v[:, 0] * HEAD_SX - x); z = z + w * (v[:, 2] + (zh - HEAD_Z) - z)
+            sg = np.sign(v[:, 0]); t = np.radians(theta)
+            dx, dr, dz = (np.abs(v[:, 0]) - JOINT[0]) * ARM_SX, v[:, 1] - JOINT[1], v[:, 2] - JOINT[2]
+            xa = J[0] + dx * np.cos(t) + dr * np.sin(t); ra = J[1] - dx * np.sin(t) + dr * np.cos(t)
+            x = x + arm * (sg * xa - x); r = r + arm * (ra - r); z = z + arm * (J[2] + dz - z)
         co = np.stack([x, -r, z - zmean], 1).reshape(-1)
         return {"v": np.round(co, 1).tolist() if fine else np.round(co).astype(int).tolist(), "i": f.reshape(-1).astype(int).tolist()}
 
