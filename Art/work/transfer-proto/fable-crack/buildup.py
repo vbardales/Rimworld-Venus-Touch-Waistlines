@@ -15,13 +15,13 @@ from PIL import Image, ImageDraw, ImageFont
 import stack3d as s
 
 # (stack part name prefix, French label), in the order they are added
-BONES = [
-    ("spine", "colonne vertébrale"),
-    ("rib cage", "cage thoracique (côtes, cartilages, sternum)"),
-    ("hip bone", "os coxal"),
-    ("clavicle", "clavicule"),
-    ("scapula", "scapula"),
-    ("femur", "fémur (haut, fait main)"),
+BONES = [   # order of Virginie 2026-11-17
+    ("femur", "fémurs proximaux (fait main)"),
+    ("spine", "rachis de T1 au coccyx (BodyParts3D)"),
+    ("rib cage", "cage thoracique et sternum (BodyParts3D)"),
+    ("clavicle", "clavicules (BodyParts3D)"),
+    ("scapula", "scapulas (BodyParts3D)"),
+    ("hip bone", "os coxaux (BodyParts3D)"),
 ]
 MUSCLES = [   # deepest first
     ("thoracolumbar fascia, multifidus", "multifide, fascia thoraco-lombaire"),
