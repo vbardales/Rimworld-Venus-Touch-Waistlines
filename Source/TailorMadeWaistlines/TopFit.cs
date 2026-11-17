@@ -120,7 +120,7 @@ namespace TailorMadeWaistlines
                 // Ours are drawn from the body already; TailorMade's graphics are fitted by TailorMade.
                 if (!(source is Graphic_Multi) || source is NativeWdiPants.NativeGraphicPatch.DirectGraphic
                     || source.GetType().Name == "Graphic_TailorMade") return;
-                WdiVisualProfile profile = WdiVisualProfiles.Resolve(bodyType?.defName, apparel.Wearer.gender);
+                WdiVisualProfile profile = WdiVisualProfiles.ForPawn(apparel.Wearer, bodyType?.defName);
                 if (profile == null) return;
                 try
                 {

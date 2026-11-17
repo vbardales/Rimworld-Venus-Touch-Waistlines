@@ -4,6 +4,9 @@
 
 Targets 1.0.0, the first public version.
 
+- **Pawns not drawn with a WDI body are left alone.** A pawn with Biotech Bodies' vanilla body
+  gene, or whose body texture comes from outside the vanilla body paths, keeps its original
+  trousers and shirt: Venus no longer gives it the art cut for WDI's bodies.
 - **Renamed to Venus Touch Waistlines**, `packageId` `nelim.venustouch.waistlines` (the
   private 0.1.0 item carried the old name).
 - **New option: fit tops to the body's silhouette** (off by default). With a WDI body, every

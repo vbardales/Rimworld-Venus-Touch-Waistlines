@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RimWorld;
 using Verse;
 
 namespace TailorMadeWaistlines
@@ -67,6 +68,35 @@ namespace TailorMadeWaistlines
                 case "Child": return gender == Gender.Female ? KidGirl : KidBoy;
                 default: return null;
             }
+        }
+
+        /// <summary>
+        /// The visual target of one pawn, or null when the pawn is not drawn with a WDI body (owner, 2026-11-17: Venus
+        /// skips those pawns). WDI redraws the vanilla body paths, so a pawn is drawn with a WDI body unless something
+        /// gives it another body texture: Biotech Bodies' gene <c>BiB_VanillaBody</c> (vanilla body from the official
+        /// content), or a body graphic already resolved outside <c>Things/Pawn/Humanlike/Bodies/</c>.
+        /// </summary>
+        public static WdiVisualProfile ForPawn(Pawn pawn, string bodyTypeName)
+        {
+            if (pawn == null || !DrawnWithWdiBody(pawn)) return null;
+            return Resolve(bodyTypeName, pawn.gender);
+        }
+
+        private const string VanillaBodyGene = "BiB_VanillaBody";
+        private const string BodyPaths = "Things/Pawn/Humanlike/Bodies/";
+        private static GeneDef vanillaBody;
+        private static bool vanillaBodyLooked;
+
+        public static bool DrawnWithWdiBody(Pawn pawn)
+        {
+            if (!vanillaBodyLooked)
+            {
+                vanillaBody = DefDatabase<GeneDef>.GetNamedSilentFail(VanillaBodyGene);
+                vanillaBodyLooked = true;
+            }
+            if (vanillaBody != null && pawn.genes != null && pawn.genes.HasActiveGene(vanillaBody)) return false;
+            string path = pawn.Drawer?.renderer?.BodyGraphic?.path;
+            return path == null || path.StartsWith(BodyPaths, StringComparison.Ordinal);
         }
 
         /// <summary>The visual profiles whose WDI texture belongs to a body type.</summary>

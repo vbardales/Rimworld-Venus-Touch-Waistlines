@@ -266,7 +266,7 @@ namespace TailorMadeWaistlines
                     return true;
                 Dictionary<string, Texture2D> source = SourceFor(apparel?.def?.defName);
                 if (source == null || apparel.Wearer == null) return true;
-                WdiVisualProfile profile = WdiVisualProfiles.Resolve(bodyType?.defName, apparel.Wearer.gender);
+                WdiVisualProfile profile = WdiVisualProfiles.ForPawn(apparel.Wearer, bodyType?.defName);
                 if (profile == null || !source.ContainsKey(profile.TextureKey + "_south")) return true;
                 if (traceCount++ < 12)
                     Log.Message("[Venus Touch Waistlines] direct apparel match " + apparel.def.defName + " " + profile.TextureKey + ".");
