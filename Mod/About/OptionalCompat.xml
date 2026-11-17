@@ -7,7 +7,7 @@
   <li><packageId>VanillaExpanded.VAPPE</packageId><workshopId>1814987817</workshopId><kind>texture</kind></li>
   <!-- SplitLegArt: the swimming trunks' front and back art is mended (middle line kept below the crotch, hem gap closed) -->
   <li><packageId>kaitorisenkou.Swimwear</packageId><workshopId>2840348927</workshopId><kind>texture</kind></li>
-  <!-- WdiVisualProfiles.DrawnWithWdiBody: a pawn with the gene BiB_VanillaBody keeps the vanilla body, so Venus leaves its
+  <!-- WdiVisualProfiles.DrawnWithWdiBody: a pawn with the gene BiB_BodyVanilla keeps the vanilla body, so Venus leaves its
        trousers and shirt alone (looked up by defName, nothing happens without the mod) -->
   <li><packageId>nelim.biotechbodies</packageId><workshopId>3838120303</workshopId><kind>synergy</kind></li>
 </OptionalCompat>
