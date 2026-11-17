@@ -39,10 +39,12 @@ MUSCLES = [   # deepest first (Virginie 2026-11-17: multifidus apart, fascia a t
     ("external oblique", "oblique externe"),
     ("thigh stump, front (vastus medialis", "cuisse : vastes médial et intermédiaire"),
     ("thigh stump, inside", "cuisse : adducteurs"),
+    ("thigh stump, pectineus", "cuisse : pectiné (profond, antéro-médial)"),
     ("thigh stump, back", "cuisse : ischio-jambiers"),
     ("thigh stump, front (vastus lateralis)", "cuisse : vaste latéral"),
     ("thigh stump, front (rectus femoris, vasti)", "cuisse : droit fémoral"),
     ("tensor fasciae latae", "tenseur du fascia lata (superficiel, côté de hanche)"),
+    ("thigh stump, sartorius", "sartorius (sangle superficielle en diagonale)"),
     ("gluteus maximus", "grand fessier"),
     ("pectoralis major", "grand pectoral"),
     ("latissimus dorsi", "grand dorsal"),
@@ -63,9 +65,9 @@ def fat_steps(G, S, target):
         if a is not None and layer in un:
             un[layer][sl] = np.minimum(un[layer][sl], a)
     F = {"bone": un["bone"], "muscle": un["muscle"], "pads": un["fat"], "lean": S.d, "fat": G.full()}
-    grow, t, near, comp = proto.solve_fat(G, F, S.d, S.zc(G.r), target)
+    grow, t, near, comp, ref = proto.solve_fat(G, F, S.d, S.zc(G.r), target)
     print(f"fat {target} %: global layer {t:.2f} px; " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
-    return [(f"couche sous-cutanée générale (curseur global, {t:.1f} px)", grow(t, 0.0), FAT),
+    return [(f"couche sous-cutanée générale ({100 * t / ref:.1f} % de la demi-largeur d'épaules)", grow(t, 0.0), FAT),
             ("pads de gras : flancs, bas-ventre, supra-pubien, sous-fessiers médiaux", grow(t), FAT),
             ("peau", grow(t) - SKIN_PX, SKIN)]
 

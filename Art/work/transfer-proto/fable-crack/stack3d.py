@@ -666,6 +666,14 @@ def build_male(G, T, prm=MALE, ty=None):
     S.add("thigh stump, front (vastus medialis, intermedius)", "muscle", cut(tube([(32, 412, 258), (31, 432, 259)], [5.0, 8.0])), k=3.0, colour=COL["thigh"])
     S.add("thigh stump, inside (adductors)", "muscle", cut(tube([(12, 400, 256), (22, 432, 251)], [5.0, 9.5])), k=2.5, colour=COL["tfl"], km=1.0)
     S.add("thigh stump, back (hamstrings)", "muscle", cut(tube([(28, 410, 232), (38, 432, 233)], [6.0, 11.0])), k=3.0, colour=COL["glmax"])
+    # pectineus (Virginie 2026-11-17): small, deep, front and inside, from the pecten of the pubis down to the femur
+    # under the lesser trochanter
+    S.add("thigh stump, pectineus", "muscle", cut(tube([(17, 392, 268), (27, 410, 259), (36, 430, 250)], [4.0, 4.8, 5.0])), k=2.0,
+          colour=COL["tfl"], km=1.0)
+    # sartorius: a thin superficial strap from the anterior superior iliac spine (BodyParts3D hip bone: 62, 359, 277),
+    # in a diagonal in front of the rectus femoris toward the inside of the thigh
+    S.add("thigh stump, sartorius", "muscle", cut(tube([(61, 362, 275), (54, 390, 278), (42, 414, 278), (33, 432, 274)],
+                                                       [2.6, 3.0, 3.0, 3.0])), k=1.5, colour=COL["thigh"], km=0.5)
     # the sprite cuts the neck flat: the neck root and the trapezius end on that section, they do not close in a tip
     S.d = smax(S.d, (prm["neck_cut"] - G.r)[:, None, None].astype(np.float32), 2.0)
     S.layer_d["bone"] = np.maximum(S.layer_d["bone"], (prm["neck_cut"] + 3.0 - G.r)[:, None, None].astype(np.float32))   # the spine goes on in the ghost neck

@@ -36,6 +36,8 @@ NAMES = [
     ("thigh stump, front (vastus medialis", "moignon de cuisse, avant : vastes médial et intermédiaire"),
     ("thigh stump, inside", "moignon de cuisse, intérieur : adducteurs"),
     ("thigh stump, back", "moignon de cuisse, arrière : ischio-jambiers"),
+    ("thigh stump, pectineus", "moignon de cuisse : pectiné"),
+    ("thigh stump, sartorius", "moignon de cuisse : sartorius"),
 ]
 BG = np.array([226, 226, 222])
 

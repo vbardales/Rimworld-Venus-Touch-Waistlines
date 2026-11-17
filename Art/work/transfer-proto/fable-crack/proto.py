@@ -128,10 +128,11 @@ def solve_fat(G, F, d00, zc_rows, target):
     wF = ndi.gaussian_filter((pad & front).any(axis=2).astype(np.float32), sg)
     wB = ndi.gaussian_filter((pad & ~front).any(axis=2).astype(np.float32), sg)
     near = np.where(front, np.clip(wF / 0.5, 0, 1)[:, :, None], np.clip(wB / 0.5, 0, 1)[:, :, None]).astype(np.float32)
-    # the skin field is a true distance only near the surface: grow a redistanced copy, or the far field turns inside
+    # Virginie 2026-11-17: the fat is not an offset of the stacked pieces (it would copy every edge, junction and cut
+    # end of the muscles). It grows from one smooth envelope of the whole body: the pieces as one closed volume
+    # (envelope), the global layer and the pads thickening that envelope, the skin over it.
     ins = d00 < 0
-    dd = ndi.gaussian_filter(((ndi.distance_transform_edt(~ins) - ndi.distance_transform_edt(ins)) * G.h).astype(np.float32), 1.2)
-    dd = np.where(np.abs(d00) < 2.0, d00, dd).astype(np.float32)   # keep the original surface where it is a true distance
+    dd = envelope(G, ins)
     grow = lambda t, gain=PAD_GAIN: dd - t * (1.0 + gain * near)
 
     def share(t):
@@ -144,7 +145,39 @@ def solve_fat(G, F, d00, zc_rows, target):
         c = share(mid)
         lo, hi = (mid, hi) if c["fat"] + c["fat pads"] < target else (lo, mid)
     t = 0.5 * (lo + hi)
-    return grow, t, near, share(t)
+    # the slider as an anatomical thickness: a share of the half width of the shoulders, the same over the whole torso
+    xm = np.nan_to_num(np.nanmax(s.last_cross(d00, 1, G.x), axis=1))
+    ref = float(np.interp(WROWS["shoulders"], G.r, xm))
+    pierce = int(((F["lean"] < -0.5) & (grow(t, 0.0) > 0)).sum())
+    print(f"fat: global layer {t:.2f} px = {100 * t / ref:.1f} % of the shoulder half width; "
+          f"lean voxels outside the fat: {pierce}")
+    return grow, t, near, share(t), ref
+
+
+ENV_CLOSE = 8.0       # px: gaps and hollows narrower than twice this between pieces are filled before the fat
+ENV_SMOOTH = 6.0      # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
+ENV_COVER = 0.8       # px: the least fat over any piece, before the global layer
+
+
+def envelope(G, ins):
+    """Signed distance (px) of one smooth closed envelope of the solid ins: closed (dilated then eroded by ENV_CLOSE,
+    holes filled), redistanced, smoothed over ENV_SMOOTH, then never inside the solid (no piece pierces it)."""
+    out = ndi.distance_transform_edt(~ins) * G.h
+    closed = ndi.distance_transform_edt(out <= ENV_CLOSE) * G.h > ENV_CLOSE
+    closed = ndi.binary_fill_holes(closed | ins)
+    sd = ((ndi.distance_transform_edt(~closed) - ndi.distance_transform_edt(closed)) * G.h).astype(np.float32)
+    sd = ndi.gaussian_filter(sd, ENV_SMOOTH / G.h)
+    # the smoothing shrinks ridges and tips (muscle edges, thigh cut ends) under the envelope. Where a piece would come
+    # within ENV_COVER of it, push the envelope out by a broad smooth amount (a max over the neighbourhood, then the
+    # same smoothing): the envelope swells gently there, it does not copy the edge.
+    lean = ((ndi.distance_transform_edt(~ins) - ndi.distance_transform_edt(ins)) * G.h).astype(np.float32)
+    sg = ENV_SMOOTH / G.h; n = 2 * int(np.ceil(2.0 * sg)) + 1
+    for _ in range(3):
+        need = np.clip(sd - (lean - ENV_COVER), 0.0, None) * (lean < 3.0)
+        if need.max() < 0.05:
+            break
+        sd = sd - ndi.gaussian_filter(ndi.maximum_filter(need, size=n), sg)
+    return np.minimum(sd, lean - ENV_COVER).astype(np.float32)   # safety: what is left is below 0.05 px
 
 
 def fat_map(G, d_before, d_after, near, lean, name):
@@ -196,7 +229,7 @@ def proto_board(name, h):
     # the male distribution (lower belly and flanks first) grows with it. The slider is solved for the target fat share.
     F = layer_fields(K)
     d00 = K["d"]
-    grow, tf, near, comp = solve_fat(G, F, d00, np.interp(G.r, T.rows, T.zc), COMP[name]["fat"])
+    grow, tf, near, comp, ref = solve_fat(G, F, d00, np.interp(G.r, T.rows, T.zc), COMP[name]["fat"])
     print(f"{name}: fat grown {tf:.2f} px; composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
     K = dict(K); K["d"] = grow(tf)
     fat_map(G, d00, K["d"], near, F["lean"], name)
@@ -208,7 +241,7 @@ def proto_board(name, h):
         k = [kk * tgt[n] * sh / hw(WROWS[n]) for kk, n in zip(k, WROWS)]
     d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
     o = np.round(o).astype(np.int16)
-    rep, path = s.board(K["S"], Go, d, T, f"proto{name}", o, extra=f"prototype {name}, fat +{tf:.1f} px")
+    rep, path = s.board(K["S"], Go, d, T, f"proto{name}", o, extra=f"prototype {name}, fat {100 * tf / ref:.1f} % of the shoulder half width")
     for f, r in rep.items():
         print(f"{f:6s} sil p95 {r['p95']:.2f} | lum {r['mae']:.4f}")
     xm = np.nanmax(s.last_cross(d, 1, Go.x), axis=1)
