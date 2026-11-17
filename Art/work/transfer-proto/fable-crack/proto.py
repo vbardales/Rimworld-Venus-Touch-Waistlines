@@ -355,13 +355,40 @@ def fat_map(G, d_before, d_after, near, lean, name):
     out.save(path); print(path)
 
 
+# Virginie 2026-11-17: the prototype is no longer put on the WDI source silhouette (the landmark rows, row-wise affine,
+# fine fit and the fat that filled that silhouette): it is built from the lean stack in the Male frame alone.
+WDI_FIT = False
+
+
+def raw_fields(G, S):
+    """layer_fields on the Male-frame grid of the stack itself (no fit to a silhouette)."""
+    un = {"bone": G.full(), "muscle": G.full(), "fat": G.full()}
+    for nm, layer, colour, sl, a in S.parts:
+        if a is not None and layer in un:
+            un[layer][sl] = np.minimum(un[layer][sl], a)
+    return {"bone": un["bone"], "muscle": un["muscle"], "pads": un["fat"], "lean": S.d, "fat": G.full()}
+
+
+def make_body(name, h):
+    """(K, F) of a prototype: with WDI_FIT the stack put on the WDI silhouette by stack3d.make, else the lean stack in
+    the Male frame. The stump sections are cut either way."""
+    if WDI_FIT:
+        K = s.make("Male", h, ty=TY[name])
+        cut = stump_cut(K); K = dict(K); K["d"] = np.maximum(K["d"], cut)
+        return K, layer_fields(K)
+    G = s.Grid(h); T = s.Target("Male")
+    S = s.build_male(G, T, ty=TY[name])
+    cut = stump_cut(G=G)
+    K = dict(G=G, G0=G, T=T, S=S, d=np.maximum(S.d, cut), owner=S.owner)
+    return K, raw_fields(G, S)
+
+
 def proto_board(name, h):
     """Prototype vs WDI: the Male stack (skin, fat, lean) scaled row by row in width to the prototype's ratios, drawn
     by stack3d.board next to the WDI Male (WDI | stack in WDI style | outlines)."""
     import average as av
     use_env(name)
-    K = s.make("Male", h, ty=TY[name])
-    cut = stump_cut(K); K = dict(K); K["d"] = np.maximum(K["d"], cut)
+    K, F = make_body(name, h)
     G, T = K["G"], K["T"]
     if PROTO[name] is None:                                    # the prototype keeps the widths of the WDI body
         rows, k = list(WROWS.values()), [1.0] * len(WROWS)
@@ -374,7 +401,6 @@ def proto_board(name, h):
     # fat (Virginie 2026-11-17): one global slider t. It thickens the subcutaneous layer of the whole torso by t px, and the
     # four pads (flanks, lower belly, suprapubic cushion, lower medial gluteal) add PAD_GAIN x t more where they lie, so
     # the male distribution (lower belly and flanks first) grows with it. The slider is solved for the target fat share.
-    F = layer_fields(K)
     d00 = K["d"]
     grow, tf, near, comp, ref, mm, bc = solve_comp(G, F, d00, np.interp(G.r, T.rows, T.zc), COMP[name])
     print(f"{name}: fat grown {tf:.2f} px; composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))

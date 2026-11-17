@@ -2,8 +2,7 @@
 
 The same steps as proto.proto_board, each drawn front | side | back in plain grey:
   1 the lean stack (bones and settled muscles) in the Male frame;
-  2 that stack put on the WDI source silhouette (landmark rows, row-wise affine, fine fit);
-  3 the skin of that fit (the fat and skin make() solves to fill the WDI silhouette);
+  (2 and 3, the fit on the WDI source silhouette and its skin, removed 2026-11-17: proto.WDI_FIT)
   4 the smooth envelope of 3 (closing, smoothing), with the muscles thickened and the bones counted for the composition;
   5 plus the global fat layer;
   6 plus the pads;
@@ -39,21 +38,20 @@ def main():
     name = sys.argv[1] if len(sys.argv) > 1 else "M"
     h = float(sys.argv[2]) if len(sys.argv) > 2 else 1.5
     p.use_env(name)
-    K = s.make("Male", h, ty=p.TY[name])
-    cut = p.stump_cut(K); K = dict(K); K["d"] = np.maximum(K["d"], cut)
+    K, F = p.make_body(name, h)
     G, T, G0, S = K["G"], K["T"], K["G0"], K["S"]
-    stages = [("1. le buste maigre : os et muscles empilés, cadre Male", G0, S.d.copy())]
-    F = p.layer_fields(K)
-    stages.append(("2. posé sur la silhouette source WDI (rangs repères, affine par rang, ajustement fin)", G, F["lean"]))
+    stages = [("le buste maigre : os et muscles empilés, cadre Male", G0, S.d.copy())]
+    if p.WDI_FIT:
+        stages.append(("posé sur la silhouette source WDI (rangs repères, affine par rang, ajustement fin)", G, F["lean"]))
+        stages.append(("la peau de cet ajustement : gras et peau qui remplissent la silhouette WDI", G, K["d"]))
     d00 = K["d"]
-    stages.append(("3. la peau de cet ajustement : gras et peau qui remplissent la silhouette WDI", G, d00))
     zc = np.interp(G.r, T.rows, T.zc)
     grow, t, near, comp, ref, m, c = p.solve_comp(G, F, d00, zc, p.COMP[name])
-    stages.append((f"4. l'enveloppe lisse (bouchage {p.ENV_CLOSE:.0f} px, lissage {p.ENV_SMOOTH:.0f} px) ; dedans, muscles "
+    stages.append((f"l'enveloppe lisse (bouchage {p.ENV_CLOSE:.0f} px, lissage {p.ENV_SMOOTH:.0f} px) ; dedans, muscles "
                    f"épaissis de {m:.1f} px, os comptés à {100 * c:.0f} % de leur volume", G, grow(0.0, 0.0)))
-    stages.append((f"5. + la couche de gras globale : {t:.1f} px ({100 * t / ref:.1f} % de la demi-largeur d'épaules)", G, grow(t, 0.0)))
+    stages.append((f"+ la couche de gras globale : {t:.1f} px ({100 * t / ref:.1f} % de la demi-largeur d'épaules)", G, grow(t, 0.0)))
     fin = grow(t)
-    stages.append((f"6. + les pads (x{p.PAD_GAIN} sur {p.PAD_REACH:.0f} px) : gras {comp['fat'] + comp['fat pads']:.1f} %, "
+    stages.append((f"+ les pads (x{p.PAD_GAIN} sur {p.PAD_REACH:.0f} px) : gras {comp['fat'] + comp['fat pads']:.1f} %, "
                    f"muscle {comp['muscle']:.1f} %, os {comp['bone']:.1f} %", G, fin))
     tgt = p.PROTO[name]
     if tgt is not None:
@@ -68,14 +66,14 @@ def main():
             k = [kk * tgt[n] * sh / hw(p.WROWS[n]) for kk, n in zip(k, p.WROWS)]
         flat = {key: 0.0 for key in p.SHAPE[name]}
         d7, = p.shaped(Go, G, [(fin, 1)], rows, k, (T.rows, T.zc), flat)
-        stages.append((f"7. largeurs ramenées aux rapports de {name} : " + " / ".join(f"{tgt[n]:g}" for n in p.WROWS), Go, d7))
+        stages.append((f"largeurs ramenées aux rapports de {name} : " + " / ".join(f"{tgt[n]:g}" for n in p.WROWS), Go, d7))
         d8, = p.shaped(Go, G, [(fin, 1)], rows, k, (T.rows, T.zc), p.SHAPE[name])
         sh_ = p.SHAPE[name]
-        stages.append((f"8. + cage étirée de {sh_['cage']:.0f} px, pectoraux remontés de {sh_['pecs']:.0f} px, fessiers "
+        stages.append((f"+ cage étirée de {sh_['cage']:.0f} px, pectoraux remontés de {sh_['pecs']:.0f} px, fessiers "
                        f"repris de {sh_['glutes']:.0f} px : {name} fini", Go, d8))
     tiles = []
-    for lab, Gx, d in stages:
-        tiles.append((lab, views(Gx, d)))
+    for i_, (lab, Gx, d) in enumerate(stages, 1):
+        tiles.append((f"{i_}. {lab}", views(Gx, d)))
         print(lab, flush=True)
     tw = max(sum(im.width for im in t_[1]) for t_ in tiles) + 16
     th = max(max(im.height for im in t_[1]) for t_ in tiles) + 26
