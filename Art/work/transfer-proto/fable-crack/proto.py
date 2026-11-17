@@ -116,6 +116,37 @@ PAD_GAIN = 2.5        # a pad adds 2.5 times the global layer where it lies
 PAD_REACH = 24.0      # px from a pad over which its extra fat fades (broad: a pad is a zone, not a lump)
 
 
+def solve_fat(G, F, d00, zc_rows, target):
+    """Fat (Virginie 2026-11-17): one global slider t thickens the subcutaneous layer of the whole torso by t px; the four
+    pads (flanks, lower belly, suprapubic cushion, lower medial gluteal) add PAD_GAIN x t more where they lie. t is solved
+    so fat is target % of the mass. Returns grow(t, gain=PAD_GAIN) -> skin field, t, near (pad weight), composition."""
+    # where a pad lies, seen from the front and from the back: its outline on the surface, softened over PAD_REACH px,
+    # applied through the whole depth of that side (the pads lie under the skin, the slider thickens the skin over them)
+    pad = F["pads"] < 0
+    front = G.z[None, None, :] >= np.asarray(zc_rows, np.float32)[:, None, None]
+    sg = PAD_REACH / 2.0 / G.h
+    wF = ndi.gaussian_filter((pad & front).any(axis=2).astype(np.float32), sg)
+    wB = ndi.gaussian_filter((pad & ~front).any(axis=2).astype(np.float32), sg)
+    near = np.where(front, np.clip(wF / 0.5, 0, 1)[:, :, None], np.clip(wB / 0.5, 0, 1)[:, :, None]).astype(np.float32)
+    # the skin field is a true distance only near the surface: grow a redistanced copy, or the far field turns inside
+    ins = d00 < 0
+    dd = ndi.gaussian_filter(((ndi.distance_transform_edt(~ins) - ndi.distance_transform_edt(ins)) * G.h).astype(np.float32), 1.2)
+    dd = np.where(np.abs(d00) < 2.0, d00, dd).astype(np.float32)   # keep the original surface where it is a true distance
+    grow = lambda t, gain=PAD_GAIN: dd - t * (1.0 + gain * near)
+
+    def share(t):
+        dt = grow(t)
+        Ft = dict(F); Ft["grown"] = (dt < 0) & ~ins
+        return composition(Ft, dt, G.h)
+    lo, hi = 0.0, 25.0
+    for _ in range(14):
+        mid = 0.5 * (lo + hi)
+        c = share(mid)
+        lo, hi = (mid, hi) if c["fat"] + c["fat pads"] < target else (lo, mid)
+    t = 0.5 * (lo + hi)
+    return grow, t, near, share(t)
+
+
 def fat_map(G, d_before, d_after, near, lean, name):
     """Board: thickness of the fat over the lean stack, front and back (rows down, x mirrored), before and after the
     slider, and where the four pads act. Colour scale 0 (white) to 16 px (dark orange)."""
@@ -165,31 +196,7 @@ def proto_board(name, h):
     # the male distribution (lower belly and flanks first) grows with it. The slider is solved for the target fat share.
     F = layer_fields(K)
     d00 = K["d"]
-    # where a pad lies, seen from the front and from the back: its outline on the surface, softened over PAD_REACH px,
-    # applied through the whole depth of that side (the pads lie under the skin, the slider thickens the skin over them)
-    pad = F["pads"] < 0
-    zc = np.interp(G.r, T.rows, T.zc).astype(np.float32)[:, None, None]
-    front = G.z[None, None, :] >= zc
-    sg = PAD_REACH / 2.0 / G.h
-    wF = ndi.gaussian_filter((pad & front).any(axis=2).astype(np.float32), sg)
-    wB = ndi.gaussian_filter((pad & ~front).any(axis=2).astype(np.float32), sg)
-    near = np.where(front, np.clip(wF / 0.5, 0, 1)[:, :, None], np.clip(wB / 0.5, 0, 1)[:, :, None]).astype(np.float32)
-    # the skin field is a true distance only near the surface: grow a redistanced copy, or the far field turns inside
-    ins = d00 < 0
-    dd = ndi.gaussian_filter(((ndi.distance_transform_edt(~ins) - ndi.distance_transform_edt(ins)) * G.h).astype(np.float32), 1.2)
-    dd = np.where(np.abs(d00) < 2.0, d00, dd).astype(np.float32)   # keep the original surface where it is a true distance
-    grow = lambda t: dd - t * (1.0 + PAD_GAIN * near)
-    d0 = d00
-    def fat_share(t):
-        dt = grow(t)
-        Ft = dict(F); Ft["grown"] = (dt < 0) & ~(d0 < 0)
-        return composition(Ft, dt, G.h)
-    lo_, hi_ = 0.0, 25.0
-    for _ in range(14):
-        mid = 0.5 * (lo_ + hi_)
-        lo_, hi_ = (mid, hi_) if fat_share(mid)["fat"] + fat_share(mid)["fat pads"] < COMP[name]["fat"] else (lo_, mid)
-    tf = 0.5 * (lo_ + hi_)
-    comp = fat_share(tf)
+    grow, tf, near, comp = solve_fat(G, F, d00, np.interp(G.r, T.rows, T.zc), COMP[name]["fat"])
     print(f"{name}: fat grown {tf:.2f} px; composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
     K = dict(K); K["d"] = grow(tf)
     fat_map(G, d00, K["d"], near, F["lean"], name)

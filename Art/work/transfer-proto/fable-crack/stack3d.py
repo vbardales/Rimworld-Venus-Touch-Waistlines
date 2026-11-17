@@ -608,7 +608,11 @@ def build_male(G, T, prm=MALE, ty=None):
            mod=lambda u, v: (0.4 + 0.6 * sstep((u - 30.0) / 55.0)) * (0.45 + 0.55 * sstep((v - 322.0) / 18.0)))
 
     # ---- trunk, back
-    er = [(6.5, 212, 5.0, 4.5), (7, 250, 6.0, 4.5), (8.5, 285, 8.0, 6.5), (10.5, 310, 10.0, 8.5), (9.5, 332, 8.5, 6.7), (6.5, 346, 5.0, 5.5)]
+    # multifidus (BodyParts3D has none): deep, in the groove beside the lumbar spinous processes down onto the sacrum,
+    # under the erectors (thickness from the bone)
+    S.lens("multifidus", "muscle", "B", [(-1, 288), (12, 292), (17, 314), (16, 340), (10, 360), (-1, 366)], 6.0, 6.0,
+           colour=COL["erec"], prof=1.4, on="bone", k=1.0)
+    er =[(6.5, 212, 5.0, 4.5), (7, 250, 6.0, 4.5), (8.5, 285, 8.0, 6.5), (10.5, 310, 10.0, 8.5), (9.5, 332, 8.5, 6.7), (6.5, 346, 5.0, 5.5)]
     lib("erector spinae", COL["erec"]) or S.add("erector spinae", "muscle", tube([(x, r, float(fsp(r)) + dz) for x, r, rad, dz in er], [p[2] for p in er]), k=1.5,
           colour=COL["erec"], km=1.0)
 
@@ -616,21 +620,23 @@ def build_male(G, T, prm=MALE, ty=None):
     lib("infraspinatus, teres, rhomboid", COL["scap"]) or S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
            mod=lambda u, v: 1.0 - 0.3 * sstep((v - 236.0) / 26.0))
 
-    # thoracolumbar fascia with the multifidus under it: from the lumbar erectors onto the sacrum, between the two PSIS.
-    # Laid before the latissimus, whose lumbar aponeurosis covers it.
-    S.lens("thoracolumbar fascia, multifidus", "muscle", "B", [(-1, 296), (24, 302), (38, 318), (30, 332), (15, 341), (-1, 354)], 2.6, 11.0,
-           colour=COL["erec"], prof=1.2)
+    # posterior thoracolumbar fascia (Virginie 2026-11-17): a thin membrane over the lumbar erectors onto the sacrum,
+    # not a muscle volume; the latissimus and the gluteus maximus attach on it
+    S.lens("thoracolumbar fascia", "muscle", "B", [(-1, 290), (28, 296), (44, 318), (40, 342), (20, 356), (-1, 364)], 0.8, 8.0,
+           colour=COL["erec"], prof=1.2, span=6.0)
 
-    # latissimus dorsi: one fan. Origin on the spine from T7 down to the sacrum and along the iliac crest, free border
-    # up the flank, all fibres converging on the humerus behind the armpit; thinner over its lumbar aponeurosis
-    lat = [(181, 262), (181, 360), (164, 356), (144, 347), (122, 340), (102, 334), (97, 314), (98, 298), (103, 286), (112, 277), (130, 266),
-           (154, 258)]
+    # latissimus dorsi (2026-11-17, Virginie): a broad fan of the back. Wide origin on the thoracolumbar fascia, the
+    # lower spine, the iliac crest and the lower ribs; its mass on the lower back and the back of the flank; it rises in
+    # a diagonal to the back of the armpit and ends in a short oblique cut at the limit of the arm (the posterior
+    # axillary fold; the insertion on the humerus belongs to the arm). It never comes forward of the flank: from the
+    # front only a small edge shows under the armpit. Low relief for an average 23 % fat body.
+    lat = [(181, 262), (181, 362), (164, 359), (144, 351), (124, 345), (108, 338), (104, 318), (105, 302), (116, 280),
+           (132, 268), (156, 260)]
     # fleshy only above and lateral of a diagonal from T8 by the spine (178 deg, row 268) to the iliac crest at the flank
-    # (118 deg, row 342): below and medial of it the lat is its flat lumbar aponeurosis, almost no thickness. The belly
-    # is thickest at the posterior axillary fold, so seen from the back the muscle is a V widening toward the armpits.
+    # (118 deg, row 342): below and medial of it the lat is its flat lumbar aponeurosis
     flesh = lambda u, v: sstep(((178.0 - 60.0 * (v - 268.0) / 74.0) - u / th) / 12.0)
-    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 5.0, 10.0, colour=COL["lat"], prof=1.25, span=8.0,
-           mod=lambda u, v: 0.6 + 0.4 * flesh(u, v))
+    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 3.5, 9.0, colour=COL["lat"], prof=1.25, span=8.0, rnd=1,
+           mod=lambda u, v: 0.65 + 0.35 * flesh(u, v))
 
     trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
     lib("trapezius (middle, lower)", COL["trap"]) or S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
@@ -643,7 +649,10 @@ def build_male(G, T, prm=MALE, ty=None):
     # gluteus medius: from the iliac crest (row 347) down to the greater trochanter (391)
     lib("gluteus medius", COL["glmed"]) or S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
     lib("gluteus maximus", COL["glmax"], km=4.0) or S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
-    lib("tensor fasciae latae, hip flexors", COL["tfl"]) or S.add("tensor fasciae latae, hip flexors", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
+    # psoas and iliacus: deep, inside the pelvis (no hand fallback: they make no outer shape)
+    lib("hip flexors (psoas, iliacus)", COL["tfl"])
+    # tensor fasciae latae: superficial, side of the hip, over the gluteus medius toward the iliotibial band
+    lib("tensor fasciae latae", COL["tfl"]) or S.add("tensor fasciae latae", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
     # thigh stump, by hand (Virginie 2026-11-17): very short proximal volumes, rectus femoris and vasti in front, adductors
     # inside, hamstrings behind, on the lines of the ghost leg's muscles, cut at a plane just under the groin and the
     # gluteal fold (row 426, the crotch at 422 and the gluteal fold at 404 to 407 sit above it)

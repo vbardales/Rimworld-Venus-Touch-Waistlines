@@ -34,7 +34,8 @@ GROUPS = {
                                        "right teres minor", "right rhomboid major", "right rhomboid minor"],
     "gluteus medius": ["right gluteus medius", "right gluteus minimus"],
     "gluteus maximus": ["right gluteus maximus"],
-    "tensor fasciae latae, hip flexors": ["right tensor fasciae latae", "right iliacus", "right psoas major"],
+    "hip flexors (psoas, iliacus)": ["right iliacus", "right psoas major"],
+    "tensor fasciae latae": ["right tensor fasciae latae"],
 }
 
 
