@@ -70,14 +70,17 @@ def composition(F, d, h):
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
 # The three bodies (Virginie 2026-11-17):
 #   WDI source = the stylised starting silhouette; no biological composition is attributed to it.
-#   M1 lean / athletic = a chosen target: about 12 % fat, superficial muscles at about 100 %.
+#   M1 lean / athletic = a chosen target: about 12 to 16 % fat, superficial muscles at about 100 %. A stylised
+#     athletic preset, not a measured reference: its percentages are calculation targets, not facts shown by WDI.
+#   The bone target (4 %) is borrowed from whole-body DXA bone mineral; it is not directly comparable to the whole
+#   bones of a cropped torso, so it stays a calculation target until a coherent definition is chosen.
 #   M average = about 20 to 23 % fat, superficial muscles at about 80 to 90 % of M1, envelope and pads thicker and softer.
 # M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
 PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77},
          "M1": None}   # M1 keeps the widths of the WDI source silhouette (no target of its own yet)
 # Solved together by solve_comp: fat by the slider, bone by the shell counted, muscle by the thickening of the muscles.
 COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0},
-        "M1": {"fat": 12.0, "muscle": 42.0, "bone": 4.0}}
+        "M1": {"fat": 14.0, "muscle": 42.0, "bone": 4.0}}   # M1 fat: middle of 12 to 16 %
 # body type of each prototype. M (average): the superficial muscles at 80 to 90 % of the relief of M1, the upper trapezius
 # toned down most (80 %), the rectus abdominis not reinforced; bones and deep muscles unchanged (Virginie 2026-11-17)
 TY = {"M": dict(s.TYPES["Male"], abs=1.0, relief={"pectoralis major": 0.85, "latissimus dorsi": 0.85, "trapezius (upper)": 0.8,
@@ -146,6 +149,17 @@ PAD_GAIN = 1.5        # a pad adds 1.5 times the global layer where it lies (2.5
 PAD_REACH = 40.0      # px from a pad over which its extra fat fades (broad: a pad melts into the layer, not a lump)
 
 
+def fat_base(G, zc_rows):
+    """Where the global layer goes (1 = everywhere the same). Virginie 2026-11-17: on an average man the extra fat goes
+    first to the lower belly, the flanks and the lower back, much less to the chest; so the front of the chest (rows 240
+    to 325) takes CHEST_FAT of the layer and the lower back (rows 330 to 380) LOWBACK_FAT (the belly and flanks are the pads)."""
+    front = sstep((G.z[None, None, :] - np.asarray(zc_rows, np.float32)[:, None, None]) / 12.0)
+    r = G.r[:, None, None]
+    chest = bump(r, 282.0, 58.0) * front
+    lowback = bump(r, 355.0, 40.0) * (1.0 - front)
+    return (1.0 + (CHEST_FAT - 1.0) * chest + (LOWBACK_FAT - 1.0) * lowback).astype(np.float32)
+
+
 def fat_fields(G, F, d00, zc_rows):
     """near (pad weight) and dd (signed distance of the smooth envelope) for the fat slider."""
     pad = F["pads"] < 0
@@ -180,7 +194,8 @@ def solve_comp(G, F, d00, zc_rows, target):
     mdist = ndi.distance_transform_edt(~mus0) * G.h
     room = ins & ~bone0
     thorax = np.broadcast_to((G.r < DIAPHRAGM)[:, None, None], ins.shape)
-    grow = lambda t, gain=PAD_GAIN: dd - t * (1.0 + gain * near)
+    base = fat_base(G, zc_rows)
+    grow = lambda t, gain=PAD_GAIN: dd - t * (base + gain * near)
 
     def comp(m, c, t):
         dt = grow(t)
@@ -217,7 +232,8 @@ def solve_fat(G, F, d00, zc_rows, target):
     # (envelope), the global layer and the pads thickening that envelope, the skin over it.
     ins = d00 < 0
     dd = envelope(G, ins)
-    grow = lambda t, gain=PAD_GAIN: dd - t * (1.0 + gain * near)
+    base = fat_base(G, zc_rows)
+    grow = lambda t, gain=PAD_GAIN: dd - t * (base + gain * near)
 
     def share(t):
         dt = grow(t)
@@ -243,8 +259,9 @@ def solve_fat(G, F, d00, zc_rows, target):
 ENV_CLOSE = 14.0      # px: gaps and hollows narrower than twice this between pieces are filled before the fat
 ENV_SMOOTH = 12.0     # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
 # envelope and pads of each body: M thicker and softer than M1 (a broader closing and smoothing, broader stronger pads)
-ENV = {"M1": dict(ENV_CLOSE=6.0, ENV_SMOOTH=5.0, PAD_GAIN=1.0, PAD_REACH=28.0),
-       "M": dict(ENV_CLOSE=14.0, ENV_SMOOTH=12.0, PAD_GAIN=1.5, PAD_REACH=40.0)}
+ENV = {"M1": dict(ENV_CLOSE=6.0, ENV_SMOOTH=5.0, PAD_GAIN=1.0, PAD_REACH=28.0, CHEST_FAT=1.0, LOWBACK_FAT=1.0),
+       "M": dict(ENV_CLOSE=14.0, ENV_SMOOTH=12.0, PAD_GAIN=1.5, PAD_REACH=40.0, CHEST_FAT=0.45, LOWBACK_FAT=1.5)}
+CHEST_FAT = LOWBACK_FAT = 1.0
 
 
 def use_env(name):

@@ -28,8 +28,8 @@ BONES = [   # order of Virginie 2026-11-17
     ("hip bone", "os coxaux (BodyParts3D)"),
 ]
 MUSCLES = s.MUSCLE_ORDER   # deepest first (stack3d: the order settle() stacks them in)
-PRESET_NAME = {"M1": "lean / athlétique, gras 12 %, muscles superficiels à 100 %",
-               "M": "moyen, gras 23 %, muscles superficiels à 80-90 % de M1, enveloppe et pads plus épais et plus doux"}
+PRESET_NAME = {"M1": "lean / athlétique stylisé, cible de calcul : gras 14 % (12-16), muscles superficiels 100 %",
+               "M": "moyen, cible de calcul : gras 23 %, muscles superficiels 80-90 % de M1, gras surtout bas-ventre, flancs, bas du dos"}
 FAT = (238, 206, 140)
 SKIN = (226, 184, 156)
 SKIN_PX = 0.8          # the skin drawn as a thin layer over the fat
