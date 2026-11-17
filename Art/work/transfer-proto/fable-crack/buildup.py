@@ -20,7 +20,7 @@ import stack3d as s
 
 # (stack part name prefix, French label), in the order they are added
 BONES = [   # order of Virginie 2026-11-17
-    ("femur", "fémurs proximaux (fait main)"),
+    ("femur", "fémurs proximaux (BodyParts3D, coupés au plan du moignon)"),
     ("spine", "rachis de T1 au coccyx (BodyParts3D)"),
     ("rib cage", "cage thoracique et sternum (BodyParts3D)"),
     ("clavicle", "clavicules (BodyParts3D)"),

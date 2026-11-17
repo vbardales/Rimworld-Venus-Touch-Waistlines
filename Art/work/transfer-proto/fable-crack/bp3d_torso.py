@@ -71,6 +71,7 @@ BONES = {
     "clavicle (BodyParts3D)": ("clavicle",),
     "scapula (BodyParts3D)": ("scapula",),
     "hip bone (BodyParts3D)": ("hip bone",),
+    "femur (BodyParts3D)": ("femur",),   # stack3d cuts it at the thigh stump plane
 }
 
 
@@ -83,7 +84,7 @@ def build_bones(O, T, out):
             if "left" in n.split() or not any(wd in n or n.endswith(wd.strip()) for wd in words):
                 continue
             v = bi.thorax_width(T(O(v)))
-            if any(wd in n for wd in ("hip bone", "sacrum", "coccyx")):
+            if any(wd in n for wd in ("hip bone", "sacrum", "coccyx", "femur")):
                 v = bi.pelvis_width(v)
             V.append(v); F.append(f + off); off += len(v)
         if V:

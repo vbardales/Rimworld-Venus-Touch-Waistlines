@@ -515,11 +515,17 @@ def build_male(G, T, prm=MALE, ty=None):
     # proximal femur, down to the plane of the thigh stump (row 426), where its muscles are cut too
     femur_cut = (lambda X, R, Z: np.broadcast_to(426.0 - R, np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
                  np.array([-200.0, 426.0, 0.0]), np.array([200.0, 900.0, 500.0]))
-    S.add("femur", "bone", carve(tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247), (45, 432, 248)], [11.0, 7.0, 7.5, 5.5, 5.8]),
-                                 femur_cut), colour=BONE)
+    # Virginie 2026-11-17: the whole top of the femur (head, neck, greater and lesser trochanters) from BodyParts3D, laid
+    # with the hip bone; the hand tube is the fallback
+    pf = bp3d_torso.bone_prim("femur (BodyParts3D)") if lib_bones else None
+    if pf is not None:
+        S.add("femur (BodyParts3D)", "bone", carve(pf, femur_cut), colour=BONE)
+    else:
+        S.add("femur", "bone", carve(tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247), (45, 432, 248)], [11.0, 7.0, 7.5, 5.5, 5.8]),
+                                     femur_cut), colour=BONE)
     if lib_bones:
         for key in bp3d_torso.BONES:
-            pb = bp3d_torso.bone_prim(key)
+            pb = None if key.startswith("femur") else bp3d_torso.bone_prim(key)
             if pb is not None:
                 S.show(key, pb)
     else:
