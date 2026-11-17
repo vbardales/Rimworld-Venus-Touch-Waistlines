@@ -16,7 +16,6 @@ import stack3d as s
 
 # stack name prefix -> French name shown on the board
 NAMES = [
-    ("neck root", "racine du cou (scalènes, pieds des sterno-cléido-mastoïdiens)"),
     ("trapezius (upper)", "trapèze, partie haute"),
     ("trapezius (middle, lower)", "trapèze, parties moyenne et basse"),
     ("serratus", "dentelé antérieur (4 digitations)"),

@@ -512,8 +512,8 @@ def build_male(G, T, prm=MALE, ty=None):
 
     # ---- deep masses: the WDI dome above the clavicle and the scapular spine (neck base, upper trapezius). The arm stump
     # (humerus muscles) was removed 2026-11-17 with the deltoid (Virginie): it belongs to the ghost arm.
-    # base of the neck inside the sprite (scalenes, the feet of the sternocleidomastoids): the neck is cut just above it
-    S.add("neck root", "muscle", ell((0, 212, 262), (38, 20, 38), rad2=(38, 36, 30)), k=4.0, colour=COL["neck"])
+    # neck root (scalenes, the feet of the sternocleidomastoids): removed 2026-11-17 (Virginie: ghost limbs of the neck);
+    # build_ghost carries the scalenes and both heads of the sternocleidomastoid.
     # upper trapezius: the slope from the side of the neck down to the acromion and the spine of the scapula
     S.add("trapezius (upper)", "muscle", ell((38, 214, 232), (44, 30, 34), rad2=(44, 34, 44)), k=6.0, colour=COL["trap"], km=6.0)
 
