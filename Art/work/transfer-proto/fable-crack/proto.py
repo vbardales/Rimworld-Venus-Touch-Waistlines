@@ -58,6 +58,7 @@ def composition(F, d, h):
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
 # M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
 PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77}}
+# Only the fat share is solved (solve_fat); the muscle and bone shares are declared targets, not yet constrained.
 COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0}}
 
 
@@ -138,7 +139,7 @@ def solve_fat(G, F, d00, zc_rows, target):
     def share(t):
         dt = grow(t)
         # the subcutaneous fat is what the slider grows over the envelope; the gaps the envelope closes between the
-        # pieces (intermuscular connective tissue) count as the rest, not as fat
+        # pieces count as the rest (internal tissue not modelled: junctions, organs, water, skin), not as fat
         Ft = dict(F); Ft["grown"] = (dt < 0) & ~(dd < 0)
         return composition(Ft, dt, G.h)
     lo, hi = 0.0, 25.0
