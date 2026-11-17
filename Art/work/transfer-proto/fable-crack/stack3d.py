@@ -510,8 +510,8 @@ def build_male(G, T, prm=MALE, ty=None):
     add_raw(S, "viscera", "viscera", vsl, vd, colour=COL["visc"])
     S.mark("core")
 
-    # ---- deep masses: arm stump, and the WDI dome above the clavicle and the scapular spine (neck base, upper trapezius)
-    S.add("arm stump (humerus muscles)", "muscle", ell((81, 278, 251), (11.5, 27, 16)), k=2.0, colour=COL["arm"])
+    # ---- deep masses: the WDI dome above the clavicle and the scapular spine (neck base, upper trapezius). The arm stump
+    # (humerus muscles) was removed 2026-11-17 with the deltoid (Virginie): it belongs to the ghost arm.
     # base of the neck inside the sprite (scalenes, the feet of the sternocleidomastoids): the neck is cut just above it
     S.add("neck root", "muscle", ell((0, 212, 262), (38, 20, 38), rad2=(38, 36, 30)), k=4.0, colour=COL["neck"])
     # upper trapezius: the slope from the side of the neck down to the acromion and the spine of the scapula
