@@ -112,6 +112,43 @@ def shaped(G, Gs, fields, rows, k, zc, sh):
     return out
 
 
+PAD_GAIN = 2.5        # a pad adds 2.5 times the global layer where it lies
+PAD_REACH = 24.0      # px from a pad over which its extra fat fades (broad: a pad is a zone, not a lump)
+
+
+def fat_map(G, d_before, d_after, near, lean, name):
+    """Board: thickness of the fat over the lean stack, front and back (rows down, x mirrored), before and after the
+    slider, and where the four pads act. Colour scale 0 (white) to 16 px (dark orange)."""
+    from PIL import Image, ImageDraw, ImageFont
+    tiles = []
+    for lab, d in (("avant le curseur", d_before), ("après le curseur", d_after)):
+        for side, out in (("face", True), ("dos", False)):
+            zs = s.last_cross(d, 2, G.z, out); zl = s.last_cross(lean, 2, G.z, out)
+            th = np.abs(zs - zl); th = np.where(np.isfinite(th), th, np.nan)
+            k = np.clip(np.nan_to_num(th) / 16.0, 0, 1)
+            img = np.stack([255 - 40 * k, 255 - 150 * k, 255 - 230 * k], -1).astype(np.uint8)
+            img[~np.isfinite(zs)] = (244, 242, 238)
+            full = np.concatenate([img[:, :0:-1], img], axis=1)
+            tiles.append((f"{lab}, {side}", Image.fromarray(full).resize((full.shape[1] * 2, full.shape[0] * 2), Image.NEAREST)))
+    for side, out in (("face", True), ("dos", False)):
+        zs = s.last_cross(d_after, 2, G.z, out)
+        iz = np.clip(np.round((np.nan_to_num(zs) - G.z[0]) / G.h).astype(int) - (0 if out else -1), 0, len(G.z) - 1)
+        w = np.take_along_axis(near, iz[..., None], 2)[..., 0]
+        img = np.stack([255 - 60 * w, 255 - 200 * w, 255 - 60 * w], -1).astype(np.uint8)
+        img[~np.isfinite(zs)] = (244, 242, 238)
+        full = np.concatenate([img[:, :0:-1], img], axis=1)
+        tiles.append((f"pads, {side}", Image.fromarray(full).resize((full.shape[1] * 2, full.shape[0] * 2), Image.NEAREST)))
+    W = sum(t[1].width + 8 for t in tiles); H = max(t[1].height for t in tiles) + 40
+    out = Image.new("RGB", (W, H), (244, 242, 238)); dr = ImageDraw.Draw(out)
+    font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 13)
+    dr.text((4, 4), f"Prototype {name} : épaisseur de graisse sur les muscles (blanc 0, orange foncé 16 px) ; en violet, où agissent les 4 pads", fill=(0, 0, 0), font=font)
+    x = 0
+    for lab, im in tiles:
+        dr.text((x + 4, 22), lab, fill=(0, 0, 0), font=font); out.paste(im, (x, 38)); x += im.width + 8
+    path = s.CAPT / f"2026-11-17_proto{name}-fat.png"
+    out.save(path); print(path)
+
+
 def proto_board(name, h):
     """Prototype vs WDI: the Male stack (skin, fat, lean) scaled row by row in width to the prototype's ratios, drawn
     by stack3d.board next to the WDI Male (WDI | stack in WDI style | outlines)."""
@@ -123,12 +160,30 @@ def proto_board(name, h):
     Go = s.Grid(G.h, x1=float(G.x[-1]) * max(max(k), 1.0) + 4.0, r0=float(G.r[0]), r1=float(G.r[-1]) + 8.0,
                 z0=float(G.z[0]) - 8.0, z1=float(G.z[-1]))
     tgt = PROTO[name]
-    # fat: the skin grown outward by t px (all of it fat) until the fat share of the torso reaches the target
+    # fat (Virginie 2026-11-17): one global slider t. It thickens the subcutaneous layer of the whole torso by t px, and the
+    # four pads (flanks, lower belly, suprapubic cushion, lower medial gluteal) add PAD_GAIN x t more where they lie, so
+    # the male distribution (lower belly and flanks first) grows with it. The slider is solved for the target fat share.
     F = layer_fields(K)
-    d0 = K["d"]
+    d00 = K["d"]
+    # where a pad lies, seen from the front and from the back: its outline on the surface, softened over PAD_REACH px,
+    # applied through the whole depth of that side (the pads lie under the skin, the slider thickens the skin over them)
+    pad = F["pads"] < 0
+    zc = np.interp(G.r, T.rows, T.zc).astype(np.float32)[:, None, None]
+    front = G.z[None, None, :] >= zc
+    sg = PAD_REACH / 2.0 / G.h
+    wF = ndi.gaussian_filter((pad & front).any(axis=2).astype(np.float32), sg)
+    wB = ndi.gaussian_filter((pad & ~front).any(axis=2).astype(np.float32), sg)
+    near = np.where(front, np.clip(wF / 0.5, 0, 1)[:, :, None], np.clip(wB / 0.5, 0, 1)[:, :, None]).astype(np.float32)
+    # the skin field is a true distance only near the surface: grow a redistanced copy, or the far field turns inside
+    ins = d00 < 0
+    dd = ndi.gaussian_filter(((ndi.distance_transform_edt(~ins) - ndi.distance_transform_edt(ins)) * G.h).astype(np.float32), 1.2)
+    dd = np.where(np.abs(d00) < 2.0, d00, dd).astype(np.float32)   # keep the original surface where it is a true distance
+    grow = lambda t: dd - t * (1.0 + PAD_GAIN * near)
+    d0 = d00
     def fat_share(t):
-        Ft = dict(F); Ft["grown"] = (d0 - t < 0) & ~(d0 < 0)
-        return composition(Ft, d0 - t, G.h)
+        dt = grow(t)
+        Ft = dict(F); Ft["grown"] = (dt < 0) & ~(d0 < 0)
+        return composition(Ft, dt, G.h)
     lo_, hi_ = 0.0, 25.0
     for _ in range(14):
         mid = 0.5 * (lo_ + hi_)
@@ -136,7 +191,8 @@ def proto_board(name, h):
     tf = 0.5 * (lo_ + hi_)
     comp = fat_share(tf)
     print(f"{name}: fat grown {tf:.2f} px; composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
-    K = dict(K); K["d"] = d0 - tf
+    K = dict(K); K["d"] = grow(tf)
+    fat_map(G, d00, K["d"], near, F["lean"], name)
     for it in range(4):                                        # the shape edits move the rows: re-solve the widths on the result
         d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
         xm = np.nan_to_num(np.nanmax(s.last_cross(d, 1, Go.x), axis=1))
