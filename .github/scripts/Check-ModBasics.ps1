@@ -28,13 +28,21 @@
            (-Unofficial or a name ending "(unofficial)"), starts with `UNOFFICIAL.` (PUBLISHING.md);
        9.3 nothing ships in Mod/ that must not: .pdb, a .dds with no PNG sibling, editor or intermediate files
            (.psd .xcf .kra .blend .aseprite .bak .tmp .orig .user .log, Thumbs.db), a DLL when the repo has no Source/;
-       9.4 every IfModActive id of LoadFolders.xml is in About.xml loadAfter (WARN); a loadAfter id that gates no
+       9.4 every IfModActive or IfModActiveAll id of LoadFolders.xml is in About.xml loadAfter (WARN); a loadAfter id that gates no
            folder is only a NOTE;
        9.5 README.md, ATTRIBUTION.md, LICENSE and STATUS.md at the mod root hold no French (8+ French function
            words and 3+ accented letters, code and URLs ignored).
        9.6 the mod root and Art/ hold only what the closed lists allow (STYLE_RIMWORLD.md, "Dossiers a la racine d'un
            mod"); tracked or untracked-not-ignored entries, so ignored Build/ and local files do not count.
        The LICENSE / ATTRIBUTION copy comparison (rule 5 above) already existed and is an error.
+
+   10. Added 2026-11-05 (shared-scripts group 1), all errors:
+       10.1 two abstract defs share a Name inside one load folder (the game inherits from one of them, silently);
+       10.2 two tracked paths under Mod/Languages differ only by case (Windows hides it, Linux and the game do not;
+            read from `git ls-files`, so it needs a git repository);
+       10.3 -Dll: the DLL file names under Mod/ are exactly the listed ones (a missing or an extra DLL is an error).
+       -Strict turns two WARNs into errors: 9.2 (source link and UNOFFICIAL opening) and the 9.3 documents that
+       must not ship in Mod/ (STATUS.md, README.md, CHANGELOG.md). Default stays WARN so no mod turns red by surprise.
 
     powershell -File scripts\Check-ModBasics.ps1 -ModRoot C:\Users\nelim\Documents\rimworld\BeefEatersRenew -Unofficial
 #>
@@ -43,7 +51,11 @@ param(
   # Require the "(unofficial)" suffix in the mod name (a Renew port of somebody else's mod).
   [switch]$Unofficial,
   # The workshop id of the ORIGINAL mod: PublishedFileId.txt must never hold it.
-  [string]$OriginalWorkshopId
+  [string]$OriginalWorkshopId,
+  # Promote 9.2 (description source link, UNOFFICIAL opening) and the 9.3 documents in Mod/ from WARN to error.
+  [switch]$Strict,
+  # The exact set of DLL file names that must ship under Mod/ (e.g. -Dll Foo.dll). Not given: DLLs are not checked here.
+  [string[]]$Dll
 )
 $ErrorActionPreference = 'Stop'
 $ModRoot = (Resolve-Path $ModRoot).Path
@@ -56,6 +68,7 @@ function Rel($p) { $p.Substring($ModRoot.Length + 1) }
 # 1-3: XML
 $files = @(Get-ChildItem $mod -Recurse -Filter *.xml -File)
 $seen = @{}
+$seenAbstract = @{}
 foreach ($f in $files) {
   $doc = New-Object System.Xml.XmlDocument
   try { $doc.Load($f.FullName) } catch { Find "Malformed XML: $(Rel $f.FullName): $($_.Exception.InnerException.Message)"; continue }
@@ -63,6 +76,13 @@ foreach ($f in $files) {
   if ($inDefs -and $doc.DocumentElement.LocalName -eq 'Defs') {
     foreach ($d in $doc.DocumentElement.ChildNodes) {
       if ($d.NodeType -ne 'Element') { continue }
+      $abs = $d.GetAttribute('Abstract'); $nm = $d.GetAttribute('Name')
+      if ($nm -and $abs -ieq 'true') {
+        # one load folder = the first path segment under Mod/ (v1.6, Common, Defs...): the same Name in two folders is legitimate
+        $lfKey = (($f.FullName.Substring($mod.Length + 1)) -split '[\\/]')[0]
+        $ak = "$lfKey|$($d.LocalName):$nm"
+        if ($seenAbstract.ContainsKey($ak)) { Find "Duplicate abstract Name $($d.LocalName):$nm in $(Rel $f.FullName) and $($seenAbstract[$ak])" } else { $seenAbstract[$ak] = Rel $f.FullName }
+      }
       $dn = $d.SelectSingleNode('defName')
       if (-not $dn) { continue }
       $key = $d.LocalName + ':' + $dn.InnerText.Trim()
@@ -158,23 +178,37 @@ if ($about2) {
   $url = ([string]$meta2.SelectSingleNode('url').InnerText).Trim()
   $name2 = ([string]$meta2.SelectSingleNode('name').InnerText).Trim()
   if ($desc) {
-    if (-not $url) { $warnings.Add('About: no <url> field (the repository link of the description has nothing to match)') }
+    if ($Strict) { $sink = $findings } else { $sink = $warnings }
+    if (-not $url) { $sink.Add('About: no <url> field (the repository link of the description has nothing to match)') }
     else {
       $link = "[url=$url]Source code on GitHub[/url]"
-      if (-not $desc.EndsWith($link)) { $warnings.Add("About: description must end with $link") }
+      if (-not $desc.EndsWith($link)) { $sink.Add("About: description must end with $link") }
     }
     $isPort = $Unofficial -or $name2 -match '\(unofficial\)$'
-    if ($isPort -and -not $desc.StartsWith('UNOFFICIAL.')) { $warnings.Add('About: a port (unofficial) must open its description with the UNOFFICIAL. notice') }
+    if ($isPort -and -not $desc.StartsWith('UNOFFICIAL.')) { $sink.Add('About: a port (unofficial) must open its description with the UNOFFICIAL. notice') }
   }
 }
 # 9.3 files that must not ship in Mod/ ("has Source" = a Source/ folder, or any .cs outside Mod/ such as the per-tool folders of PickleTools)
 $hasSource = $null   # computed on the first DLL only
 foreach ($f in Get-ChildItem $mod -Recurse -File) {
   $r = Rel $f.FullName; $ext = $f.Extension.ToLower()
-  if ($ext -eq '.pdb') { $warnings.Add("${r}: debug symbols must not ship") }
+  # A CHANGELOG.md copy in the distributed folder is allowed (AUDIT 1.g, "copies dans dossier distribue si requises", ParaBellum and JapaneseHomestead 2026-11-12) as long as it
+  # is byte for byte the root one; a different copy is a stale copy and is reported.
+  if ($f.DirectoryName -eq $mod -and $f.Name -eq 'CHANGELOG.md' -and (Test-Path (Join-Path $ModRoot 'CHANGELOG.md'))) {
+    $same = ([IO.File]::ReadAllText($f.FullName) -ceq [IO.File]::ReadAllText((Join-Path $ModRoot 'CHANGELOG.md')))
+    if (-not $same) { $warnings.Add("${r}: differs from the root CHANGELOG.md (the copy in Mod/ must be identical; resync it)") }
+  }
+  elseif ($f.DirectoryName -eq $mod -and $f.Name -in 'STATUS.md', 'README.md', 'CHANGELOG.md') { if ($Strict) { Find "${r}: this document belongs at the repo root, not in Mod/" } else { $warnings.Add("${r}: this document belongs at the repo root, not in Mod/") } }
+  elseif ($ext -eq '.pdb') { $warnings.Add("${r}: debug symbols must not ship") }
   elseif ($ext -eq '.dds') { if (-not (Test-Path ([IO.Path]::ChangeExtension($f.FullName, '.png')))) { $warnings.Add("${r}: .dds with no PNG sibling (.dds is a local derivative, never the only copy)") } }
   elseif ($ext -in '.psd', '.xcf', '.kra', '.blend', '.aseprite', '.ase', '.bak', '.tmp', '.orig', '.rej', '.user', '.log' -or $f.Name -eq 'Thumbs.db') { $warnings.Add("${r}: intermediate or editor file must not ship") }
   elseif ($ext -eq '.dll' -and -not $(if ($null -eq $hasSource) { $hasSource = (Test-Path (Join-Path $ModRoot 'Source')) -or [bool](Get-ChildItem $ModRoot -Recurse -Filter *.cs -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notlike "$mod*" } | Select-Object -First 1) }; $hasSource)) { $warnings.Add("${r}: bundled DLL but the mod has no Source/") }
+}
+# 10.3 exact DLL set
+if ($PSBoundParameters.ContainsKey('Dll')) {
+  $have = @(Get-ChildItem $mod -Recurse -File -Filter *.dll | ForEach-Object { $_.Name } | Sort-Object -Unique)
+  foreach ($d in $Dll) { if ($have -notcontains $d) { Find "DLL $d is missing under Mod/" } }
+  foreach ($h in $have) { if ($Dll -notcontains $h) { Find "DLL $h under Mod/ is not in the expected set ($($Dll -join ', '))" } }
 }
 # 9.4 LoadFolders.xml IfModActive ids vs About.xml loadAfter
 $lfPath = @('LoadFolders.xml', 'loadFolders.xml') | ForEach-Object { Join-Path $mod $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
@@ -183,11 +217,14 @@ if ($lfPath -and $about2) {
   $gated = @{}
   try {
     $lf.Load($lfPath)
-    foreach ($li in $lf.SelectNodes('//li[@IfModActive]')) { foreach ($id in ($li.GetAttribute('IfModActive') -split ',')) { if ($id.Trim()) { $gated[$id.Trim().ToLower()] = $true } } }
+    # IfModActive (any of) and IfModActiveAll (all of) both gate a folder on mods that must be in loadAfter; IfModNotActive gates too (no loadAfter demanded, it only stops the NOTE below)
+    foreach ($li in $lf.SelectNodes('//li[@IfModActive or @IfModActiveAll]')) { foreach ($attr in 'IfModActive', 'IfModActiveAll') { foreach ($id in ($li.GetAttribute($attr) -split ',')) { if ($id.Trim()) { $gated[$id.Trim().ToLower()] = $true } } } }
+    $gatedNot = @{}
+    foreach ($li in $lf.SelectNodes('//li[@IfModNotActive]')) { foreach ($id in ($li.GetAttribute('IfModNotActive') -split ',')) { if ($id.Trim()) { $gatedNot[$id.Trim().ToLower()] = $true } } }
     $after = @{}
     foreach ($li in $about2.DocumentElement.SelectNodes('loadAfter/li | loadAfterByVersion//li')) { $after[$li.InnerText.Trim().ToLower()] = $true }
     foreach ($id in $gated.Keys) { if (-not $after.ContainsKey($id)) { $warnings.Add("LoadFolders.xml gates a folder on $id, which is not in About.xml loadAfter") } }
-    foreach ($id in $after.Keys) { if (-not $gated.ContainsKey($id) -and $id -notlike 'ludeon.*' -and $id -ne 'brrainz.harmony') { $notes.Add("About.xml loadAfter $id gates no folder in LoadFolders.xml") } }
+    foreach ($id in $after.Keys) { if (-not $gated.ContainsKey($id) -and -not $gatedNot.ContainsKey($id) -and $id -notlike 'ludeon.*' -and $id -ne 'brrainz.harmony') { $notes.Add("About.xml loadAfter $id gates no folder in LoadFolders.xml") } }
   } catch { $warnings.Add("LoadFolders.xml is not readable: $($_.Exception.Message)") }
 }
 # 9.5 root docs in English: cheap scan of French function words (code, links and URLs removed first)
@@ -204,8 +241,8 @@ foreach ($n in 'README.md', 'ATTRIBUTION.md', 'LICENSE', 'STATUS.md') {
   if ($hits -ge 8 -and $accents -ge 3) { $warnings.Add("$n looks French ($hits function-word hits, $accents accented letters); docs are English only") }
 }
 # 9.6 closed list of the mod root and of Art/ (owner 2026-10-28, STYLE_RIMWORLD.md "Dossiers a la racine d'un mod"): tracked or untracked-not-ignored entries only
-$rootOk = 'Mod', 'Art', 'Source', 'Tests', 'Docs', 'Build', '.github', '.git', '.claude', 'STATUS.md', 'README.md', 'ATTRIBUTION.md', 'CHANGELOG.md', 'LICENSE', 'TESTING.md', 'PUBLICATION.md', 'FRENCH_REVIEW.md', 'BACKLOG.md', 'mod.json', '.gitignore', '.gitattributes', 'desktop.ini'
-$artOk = 'Preview-source.png', 'ModIcon-source.png', 'echo-source.png', 'echo-preview.png', 'echo-concept.png', 'Preview.config.json', 'Preview.ico', 'ModIcon.ico', 'Gallery', 'Gallery-clean', '.render', 'desktop.ini'
+$rootOk = 'Mod', 'Art', 'Source', 'Tests', 'Docs', 'Build', '.github', '.git', '.claude', 'STATUS.md', 'README.md', 'ATTRIBUTION.md', 'CHANGELOG.md', 'LICENSE', 'TESTING.md', 'PUBLICATION.md', 'TRANSLATION_REVIEW.md', 'FRENCH_REVIEW.md', 'BACKLOG.md', 'mod.json', '.gitignore', '.gitattributes', 'desktop.ini'
+$artOk = 'Preview-source.png', 'ModIcon-source.png', 'echo-source.png', 'echo-preview.png', 'echo-concept.png', 'Preview.config.json', 'Preview.ico', 'preview.psd', 'ModIcon.ico', 'Gallery', 'Gallery-clean', 'Work', 'Locations', 'Assets', '.render', 'desktop.ini'
 $listed = $null
 if (Test-Path (Join-Path $ModRoot '.git')) {
   $listed = @(& git -C $ModRoot -c core.quotepath=off ls-files --cached --others --exclude-standard 2>$null)
@@ -220,6 +257,22 @@ if ($listed) {
   }
   $art = $listed | Where-Object { $_ -like 'Art/*' } | ForEach-Object { ($_ -split '/')[1] } | Sort-Object -Unique
   foreach ($a in $art) { if ($artOk -notcontains $a) { $warnings.Add("Art/$a is not in the closed Art/ set (STYLE_RIMWORLD.md)") } }
+}
+
+# 10.2 Languages paths that differ only by case (git index; the working tree of a case-insensitive disk cannot show it)
+if ($listed) {
+  $dirs = @{}
+  foreach ($l in $listed) {
+    if ($l -notmatch '^Mod/(.*/)?Languages/') { continue }
+    $parts = $l -split '/'
+    for ($i = 1; $i -lt $parts.Count - 1; $i++) {
+      $pre = ($parts[0..$i] -join '/')
+      $k = $pre.ToLower()
+      if (-not $dirs.ContainsKey($k)) { $dirs[$k] = New-Object 'System.Collections.Generic.HashSet[string]' }  # a PowerShell hashtable ignores case: the set must not
+      [void]$dirs[$k].Add($pre)
+    }
+  }
+  foreach ($k in $dirs.Keys) { if ($dirs[$k].Count -gt 1) { Find "Folder case clash in git: $((@($dirs[$k]) | Sort-Object) -join ' vs ')" } }
 }
 
 foreach ($w in $notes) { Write-Host "NOTE: $w" -ForegroundColor Cyan }

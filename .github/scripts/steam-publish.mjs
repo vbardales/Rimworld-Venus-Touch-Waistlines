@@ -26,7 +26,6 @@ const dryRun = process.env.DRY_RUN !== 'false';
 const updatePreview = flag('UPDATE_PREVIEW');
 const updateDescription = flag('UPDATE_DESCRIPTION');
 const updateTitle = flag('UPDATE_TITLE');
-const updateTags = flag('UPDATE_TAGS');
 const version = required('VERSION');
 const commitDir = required('TAG_DIR');
 const modPath = join(commitDir, 'Mod');
@@ -51,14 +50,14 @@ if (typeof uploadWorkshopItem !== 'function' || typeof createWorkshopVdf !== 'fu
 }
 // steamcmd does not apply the tags key of workshop.vdf: the tags are set after the upload by steam-set-tags.mjs, through the
 // Steam client protocol, which needs STEAM_REFRESH_TOKEN. Stop before the upload rather than after it.
-if (updateTags && !dryRun) required('STEAM_REFRESH_TOKEN');
+if (!dryRun) required('STEAM_REFRESH_TOKEN');
 const stagePath = await stageModContent({ modPath });
 const { files, bytes } = await measure(stagePath);
 console.log(`staged ${files} files, ${(bytes / 1e6).toFixed(2)} MB, from ${modPath}`);
 console.log(`content by top-level entry:\n${formatSummary(await topLevelSummary(stagePath))}`);
 console.log(`target: Workshop item ${config.workshopId} (app ${APP_ID}); visibility is never sent`);
 console.log(`publish template: ${config.templateStamp ?? 'unknown'}`);
-console.log(`options: update_preview=${updatePreview} update_description=${updateDescription} update_title=${updateTitle} update_tags=${updateTags}`);
+console.log(`options: update_preview=${updatePreview} update_description=${updateDescription} update_title=${updateTitle}`);
 console.log(`change note (from PUBLICATION.md, section ${version}):\n${changenote}`);
 if (config.galleryDir) {
   // Not an option: SteamCMD cannot send gallery images, so this only lists what is to be uploaded by hand.
@@ -130,18 +129,13 @@ if (updateTitle) {
   console.log('title: not sent (update_title is false)');
 }
 
-let tags;
-if (updateTags) {
-  tags = tagsFor(about);
-  console.log(`tags to send (the whole set, replacing the page's): ${tags.join(', ')}`);
-  if (page) {
-    const removed = page.tags.filter((tag) => !tags.includes(tag));
-    const added = tags.filter((tag) => !page.tags.includes(tag));
-    console.log(`tags on the page now: ${page.tags.join(', ') || '(none)'}`);
-    console.log(removed.length + added.length === 0 ? 'the page already has these tags: nothing would change' : `tags removed: ${removed.join(', ') || '(none)'}; tags added: ${added.join(', ') || '(none)'}`);
-  }
-} else {
-  console.log('tags: not sent (update_tags is false)');
+const tags = tagsFor(about);
+console.log(`tags to send (the whole set, replacing the page's): ${tags.join(', ')}`);
+if (page) {
+  const removed = page.tags.filter((tag) => !tags.includes(tag));
+  const added = tags.filter((tag) => !page.tags.includes(tag));
+  console.log(`tags on the page now: ${page.tags.join(', ') || '(none)'}`);
+  console.log(removed.length + added.length === 0 ? 'the page already has these tags: nothing would change' : `tags removed: ${removed.join(', ') || '(none)'}; tags added: ${added.join(', ') || '(none)'}`);
 }
 
 if (dryRun) {

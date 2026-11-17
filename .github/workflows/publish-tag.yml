@@ -7,10 +7,11 @@ name: publish to Steam, then tag (approval gated)
 # what is uploaded after the dry-run. Only this workflow file itself is read from the dispatched
 # branch.
 #
-# update_preview, update_description, update_title and update_tags are off by default. When on, the
-# dry-run prints what would be sent next to what the public page has now (size and SHA-256 of the image;
-# length, SHA-256 and a line diff of the description; the title; the whole tag list, which replaces the
-# page's) and only a publish run with the same options sends it, after the approval of steam-production.
+# update_preview, update_description and update_title are off by default. When on, the dry-run prints what
+# would be sent next to what the public page has now (size and SHA-256 of the image; length, SHA-256 and a
+# line diff of the description; the title) and only a publish run with the same options sends it, after the
+# approval of steam-production. The tags are not an option: every publish replaces the whole tag set with Mod
+# plus one tag per supportedVersions entry of About.xml, and the dry-run prints it next to the page's tags.
 # Visibility is never sent.
 #
 # If the upload succeeds and the tag-and-release job fails, use "Re-run failed jobs", never
@@ -44,11 +45,6 @@ name: publish to Steam, then tag (approval gated)
         type: boolean
       update_title:
         description: Also replace the Workshop title with the <name> of Mod/About/About.xml. Off by default.
-        required: true
-        default: false
-        type: boolean
-      update_tags:
-        description: Also replace the whole tag set with Mod plus one tag per supportedVersions entry of About.xml. Off by default.
         required: true
         default: false
         type: boolean
@@ -109,7 +105,7 @@ jobs:
           done
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "Publishing $sha as version $VERSION"
-          echo "Commit $sha, version $VERSION, mode $MODE, update_preview=${{ inputs.update_preview }}, update_description=${{ inputs.update_description }}, update_title=${{ inputs.update_title }}, update_tags=${{ inputs.update_tags }}. To publish exactly this commit with these options, dispatch with ref=$sha." >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit $sha, version $VERSION, mode $MODE, update_preview=${{ inputs.update_preview }}, update_description=${{ inputs.update_description }}, update_title=${{ inputs.update_title }}. To publish exactly this commit with these options, dispatch with ref=$sha." >> "$GITHUB_STEP_SUMMARY"
 
       # The scripts come from the pinned commit but this file comes from the dispatched branch: its blob is logged so that
       # dispatch-publish.sh refuses a publish when the file changed after the dry-run that was shown.
@@ -172,7 +168,6 @@ jobs:
           UPDATE_PREVIEW: ${{ inputs.update_preview }}
           UPDATE_DESCRIPTION: ${{ inputs.update_description }}
           UPDATE_TITLE: ${{ inputs.update_title }}
-          UPDATE_TAGS: ${{ inputs.update_tags }}
           STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
           STEAM_REFRESH_TOKEN: ${{ secrets.STEAM_REFRESH_TOKEN }}
         run: node .github/scripts/steam-publish.mjs
@@ -181,7 +176,7 @@ jobs:
       # back. A failure does not stop the tag and the release (the upload is done): tag-and-release ends red instead.
       - name: Set the Workshop tags
         id: tags
-        if: inputs.mode == 'publish' && inputs.update_tags
+        if: inputs.mode == 'publish'
         continue-on-error: true
         working-directory: release
         env:

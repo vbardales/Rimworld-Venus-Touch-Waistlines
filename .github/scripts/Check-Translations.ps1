@@ -110,7 +110,7 @@ function Add-Text($type, $key, $value) {
 }
 $sources = @()
 # every Defs/ and Patches/ folder under Mod/, loadFolders subfolders included (Mod/Integrations/<X>/Patches, ...)
-foreach ($d in Get-ChildItem $modDir -Recurse -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -in 'Defs', 'Patches' -and $_.FullName -notmatch '[\\/](Languages|\.claude|\.local)[\\/]' }) { $sources += Get-ChildItem $d.FullName -Recurse -Filter *.xml -File }
+foreach ($d in Get-ChildItem $modDir -Recurse -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -in 'Defs', 'Patches' -and $_.FullName.Substring($modDir.Length) -notmatch '[\\/](Languages|\.claude|\.local|Tests)[\\/]' }) { $sources += Get-ChildItem $d.FullName -Recurse -Filter *.xml -File }
 # A git repository: files ignored by git are never shipped (local diagnostic defs, scratch patches), so they are not inventoried.
 # Not a repository, or git missing: nothing is skipped.
 if ($sources.Count -gt 0 -and (Test-Path (Join-Path $ModRoot '.git'))) {
@@ -179,7 +179,11 @@ function Invoke-Inventory($docs) {
       $stageIndex++
       $handle = ([string]$stage.label) -replace '[^a-zA-Z0-9_ ]', '' -replace ' +', '_'
       # A label with no letter ({0}, a bare number) is no usable name: the stage is injected by its index (PreciousStonesAndJewelryRenew, 2026-11-02).
-      if ($handle -match '^[0-9_]*$') { $handle = [string]$stageIndex; $stageSeen[$handle] = 1 }
+      # A label that sanitizes to digits only ("（+1）" gives "1") is addressed as "_1" by the game (Check-DefInjected: "element 1 of <stages> is addressed as '_1'", stages.1 is an error): index only when nothing is left (FoodCourt, 2026-11-12).
+      # A label made only of tokens ({0}) keeps the index handle (PreciousStonesAndJewelryRenew, played).
+      $tokenOnly = ([string]$stage.label) -match '^\s*(\{[^{}]*\}\s*)+$'
+      if ($handle -match '^[0-9]+$' -and -not $tokenOnly) { $handle = "_$handle" }
+      elseif ($handle -match '^[0-9_]*$') { $handle = [string]$stageIndex; $stageSeen[$handle] = 1 }
       if ($handle -and @($stageHandles | Where-Object { $_ -ceq $handle }).Count -gt 1) { $n = [int]$stageSeen[$handle]; $stageSeen[$handle] = $n + 1; $handle = "$handle-$n" }
       if (-not $handle) { $m = "Stage without a usable label handle (index or manual review): $($def.defName)"; if ($Strict) { Find $m } else { Warn $m }; continue }
       foreach ($node in $stage.SelectNodes('label|description')) { if ($node.InnerText -match '^\s*(\{[^{}]*\}\s*)+$') { $own += $node; continue }  # a text made only of tokens ({0}) is filled in by code: nothing to translate
@@ -192,7 +196,9 @@ function Invoke-Inventory($docs) {
       # (Check-DefInjected.ps1 proves a key resolves), but it can still be COUNTED: see the nested count check below.
       # <verb> of a ManeuverDef is a nested VerbProperties struct, not a text
       if ($node.SelectSingleNode('*')) { continue }
-      if ($own -notcontains $node) { $k = "$($def.LocalName)/$($def.defName)|$($node.LocalName)"; $nested[$k] = 1 + [int]$nested[$k] }
+      # An empty element (<customLabel></customLabel>) holds nothing to translate (FoodCourt, 2026-11-12).
+      if ([string]::IsNullOrWhiteSpace($node.InnerText)) { continue }
+      if ($own -notcontains $node) { $k ="$($def.LocalName)/$($def.defName)|$($node.LocalName)"; $nested[$k] = 1 + [int]$nested[$k] }
     }
   }
   $script:curSoft = $false
@@ -209,7 +215,7 @@ function Invoke-Inventory($docs) {
 # --- language files ---------------------------------------------------------
 function Read-Language($language, $kind) {
   # Languages/ folders anywhere under Mod/: a loadFolders subfolder carries its own (Mod/Integrations/<X>/Languages/...)
-  $dirs = @(Get-ChildItem $modDir -Recurse -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq $kind -and $_.Parent.Name -eq $language -and $_.Parent.Parent.Name -eq 'Languages' -and $_.FullName -notmatch '[\\/](\.claude|\.local)[\\/]' })
+  $dirs = @(Get-ChildItem $modDir -Recurse -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq $kind -and $_.Parent.Name -eq $language -and $_.Parent.Parent.Name -eq 'Languages' -and $_.FullName.Substring($modDir.Length) -notmatch '[\\/](\.claude|\.local|Tests)[\\/]' })
   return Read-LanguageFiles @($dirs | ForEach-Object { Get-ChildItem $_.FullName -Recurse -Filter *.xml -File }) $language $kind
 }
 function Read-LanguageFiles($files, $language, $kind) {
@@ -374,8 +380,9 @@ if (-not $NoKeyed) {
   if ($haveSource) {
     $code = (Get-ChildItem $srcDir -Filter *.cs -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/](obj|bin)[\\/]' } | ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join "`n"
     # a Keyed key can also be consumed by an XML def (<li>MM_Yes</li>, a report key): its name as an element text counts as a use
-    $xmlText = (Get-ChildItem $modDir -Recurse -Filter *.xml -File | Where-Object { $_.FullName -notmatch '[\\/](Languages|\.claude|\.local)[\\/]' } | ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join "`n"
-    $prefixes = @([regex]::Matches($code, '"([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*\.)"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+    $xmlText = (Get-ChildItem $modDir -Recurse -Filter *.xml -File | Where-Object { $_.FullName.Substring($modDir.Length) -notmatch '[\\/](Languages|\.claude|\.local|Tests)[\\/]' } | ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join "`n"
+    # a literal ending with "." or "_" that is concatenated with "+" is the prefix of a key built at run time ("BluesAct_" + d.defName, SharedJoys 2026-11-12)
+    $prefixes = @(@([regex]::Matches($code, '"([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*\.)"')) + @([regex]::Matches($code, '"([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*_)"\s*\+')) | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
     $calls = @([regex]::Matches($code, '"((?=[A-Za-z0-9_.]*[._])[A-Za-z0-9_.]+)"\s*\.Translate(?:Simple)?\(') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
     foreach ($key in $calls) {
       if ($VanillaKeyed -ccontains $key -or $coreKeyed.ContainsKey($key)) { continue }

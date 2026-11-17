@@ -3,7 +3,7 @@
   Dot-sourced library: which folders, files and defs of a mod the game loads for a given set of active mods.
 
 .DESCRIPTION
-  One reading of LoadFolders.xml and MayRequire, written once (registre local-scripts-sharing 2026-11-03: the same walk
+  One reading of LoadFolders.xml and MayRequire, written once (docs/LOCAL-SCRIPTS-SHARING-STUDY.md, 2026-11-03: the same walk
   was hand-written in ForTheOccasion, HandMeDowns, MechanoidFactory, EdenGarden, Extinguish, InsectsHaveNoBones).
   Game rules, read in Assembly-CSharp 1.6 (Verse.ModLoadFolders, Verse.LoadFolder.ShouldLoad,
   ModContentPack.GetAllFilesForModPreserveOrder):

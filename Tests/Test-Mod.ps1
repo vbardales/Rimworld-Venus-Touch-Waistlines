@@ -33,11 +33,25 @@ function Invoke-SharedOrSkip([string]$Script, [string[]]$Arguments) {
     return $true
 }
 
+# A mod rule that runs a shared check itself, with arguments this skeleton cannot know (Check-DefRefs -AlsoScan for a mod that depends on
+# another), declares it in a comment line of its own file, `# Replaces-Shared: DefRefs ConfigErrors`. The skeleton then does not run that
+# check alone (it would fail on every reference into the dependency) and says which rule covers it. Only DefRefs and ConfigErrors are replaceable.
+$Replaced = @{}
+foreach ($rule in @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter 'Rule-*.ps1' -File | Sort-Object Name)) {
+    foreach ($line in @(Get-Content -LiteralPath $rule.FullName -TotalCount 15)) {
+        if ($line -match '^\s*#\s*Replaces-Shared:\s*(.+)$') { foreach ($n in ($Matches[1] -split '[\s,]+' | Where-Object { $_ })) { if ($n -in 'DefRefs', 'ConfigErrors') { $Replaced[$n] = $rule.Name } } }
+    }
+}
+function Test-Covered([string]$Name) {
+    if ($Replaced.ContainsKey($Name)) { Write-Host "Shared: Check-$Name is run by $($Replaced[$Name]) (Replaces-Shared)" -ForegroundColor Cyan; return $true }
+    return $false
+}
+
 It 'Shared: XML well formed, unique defNames, About.xml, Preview and icon (Check-ModBasics)' { Invoke-Shared 'Check-ModBasics.ps1' '-ModRoot', $ModRoot }
-Test-That 'Shared: every def reference and inheritance parent resolves (Check-DefRefs)' { Invoke-SharedOrSkip 'Check-DefRefs.ps1' '-ModPath', $ModPath, '-Brief' }
+if (-not (Test-Covered 'DefRefs')) { Test-That 'Shared: every def reference and inheritance parent resolves (Check-DefRefs)' { Invoke-SharedOrSkip 'Check-DefRefs.ps1' '-ModPath', $ModPath, '-Brief' } }
 It 'Shared: every texture path resolves to a shipped file (Check-Textures)' { Invoke-Shared 'Check-Textures.ps1' '-ModRoot', $ModRoot }
 Test-That 'Shared: every patch target still exists in the installed mod (Check-PatchTargets)' { Invoke-SharedOrSkip 'Check-PatchTargets.ps1' '-ModRoot', $ModRoot }
-Test-That 'Shared: no config error of the game (Check-ConfigErrors)' { Invoke-SharedOrSkip 'Check-ConfigErrors.ps1' '-ModPath', $ModPath }
+if (-not (Test-Covered 'ConfigErrors')) { Test-That 'Shared: no config error of the game (Check-ConfigErrors)' { Invoke-SharedOrSkip 'Check-ConfigErrors.ps1' '-ModPath', $ModPath } }
 
 # The mod's own rules: one test per script, in name order.
 foreach ($rule in @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter 'Rule-*.ps1' -File | Sort-Object Name)) {
