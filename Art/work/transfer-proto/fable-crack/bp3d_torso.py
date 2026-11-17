@@ -38,6 +38,39 @@ GROUPS = {
 }
 
 
+# bones of the trunk (2026-11-17, Virginie: 'pareil pour les os'): display groups -> name words of BodyParts3D bones
+BONES = {
+    "spine (BodyParts3D)": ("thoracic vertebra", "lumbar vertebra", "sacrum", "coccyx"),
+    "rib cage (BodyParts3D)": (" rib", "costal cartilage", "body of sternum", "manubrium", "xiphoid process"),
+    "clavicle (BodyParts3D)": ("clavicle",),
+    "scapula (BodyParts3D)": ("scapula",),
+    "hip bone (BodyParts3D)": ("hip bone",),
+}
+
+
+def build_bones(O, T, out):
+    import bp3d_import as bi
+    B = bi.load()
+    for key, words in BONES.items():
+        V, F, off = [], [], 0
+        for fj, (n, v, f) in B.items():
+            if "left" in n.split() or not any(wd in n or n.endswith(wd.strip()) for wd in words):
+                continue
+            v = bi.thorax_width(T(O(v)))
+            if any(wd in n for wd in ("hip bone", "sacrum", "coccyx")):
+                v = bi.pelvis_width(v)
+            V.append(v); F.append(f + off); off += len(v)
+        if V:
+            k = "bone_" + key.split(" (")[0].replace(" ", "_")
+            out[f"v_{k}"] = np.concatenate(V); out[f"f_{k}"] = np.concatenate(F)
+            v = out[f"v_{k}"]
+            print(f"  {key:36s} {len(V)} bones  x {v[:, 0].min():.0f}..{v[:, 0].max():.0f}  rows {v[:, 1].min():.0f}..{v[:, 1].max():.0f}  z {v[:, 2].min():.0f}..{v[:, 2].max():.0f}")
+
+
+def bone_prim(key):
+    return prim("bone_" + key.split(" (")[0].replace(" ", "_"))
+
+
 def build():
     import bp3d_import as bi
     O, T = bi.frame()
@@ -66,6 +99,7 @@ def build():
             out[f"v_{k}"] = np.concatenate(V); out[f"f_{k}"] = np.concatenate(F)
             v = out[f"v_{k}"]
             print(f"  {key:36s} {len(names)} parts  x {v[:, 0].min():.0f}..{v[:, 0].max():.0f}  rows {v[:, 1].min():.0f}..{v[:, 1].max():.0f}  z {v[:, 2].min():.0f}..{v[:, 2].max():.0f}")
+    build_bones(O, T, out)
     np.savez_compressed(PATH, **out)
     print(PATH)
 

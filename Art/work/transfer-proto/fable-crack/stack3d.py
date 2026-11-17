@@ -499,10 +499,21 @@ def build_male(G, T, prm=MALE, ty=None):
         S.add(f"iliac wing {i}", "bone", tri(a, b, acet, 2.4), colour=BONE, show=False)
     S.add("sacrum", "bone", tri((-13, sac0, 199.5), (13, sac0, 199.5), (0, sac1, 203), 4.5), colour=BONE, show=False)
     S.add("coccyx", "bone", cone((0, sac1, 203), (0, coc, 214), 3.2, 2.0), colour=BONE, show=False)
-    S.add("pubis", "bone", tube([pub, (18, 394, 276), acet], [5.0, 4.6, 6.0]), colour=BONE)
-    S.add("ischium", "bone", tube([acet, isch, (6, 406, 262), pub], [6.0, 6.5, 3.6, 4.0]), colour=BONE)
+    # BodyParts3D bones (2026-11-17, Virginie: 'pareil pour les os'): what is shown and counted as bone is the library's
+    # spine, rib cage, clavicle, scapula and hip bone (bp3d_torso.BONES); the simple solids above stay the support the
+    # viscera and the hand-made sheets are laid on. HAND_MUSCLES=1 brings the hand-drawn skeleton back.
+    import bp3d_torso
+    lib_bones = os.environ.get("HAND_MUSCLES", "0") != "1" and bp3d_torso.PATH.exists()
+    S.add("pubis", "bone", tube([pub, (18, 394, 276), acet], [5.0, 4.6, 6.0]), colour=BONE, show=not lib_bones)
+    S.add("ischium", "bone", tube([acet, isch, (6, 406, 262), pub], [6.0, 6.5, 3.6, 4.0]), colour=BONE, show=not lib_bones)
     S.add("femur", "bone", tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247)], [11.0, 7.0, 7.5, 5.5]), colour=BONE)
-    skeleton_detail(S, prm, fsp, ca, cf, cb)                   # what the viewer shows of the spine, the cage and the pelvis
+    if lib_bones:
+        for key in bp3d_torso.BONES:
+            pb = bp3d_torso.bone_prim(key)
+            if pb is not None:
+                S.show(key, pb)
+    else:
+        skeleton_detail(S, prm, fsp, ca, cf, cb)               # what the viewer shows of the spine, the cage and the pelvis
     S.mark("bone")
 
     # ---- viscera

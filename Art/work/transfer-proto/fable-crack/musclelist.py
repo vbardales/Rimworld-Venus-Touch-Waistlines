@@ -82,3 +82,40 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def bones(h=2.0):
+    """Same board for the bones shown and counted (bp3d_torso.BONES, or the hand skeleton with HAND_MUSCLES=1)."""
+    G = s.Grid(h)
+    S = s.build_male(G, s.Target("Male"))
+    base = views(G, S.d, (250, 250, 248))
+    groups = {}
+    for name, layer, colour, sl, a in S.parts:
+        if layer == "bone" and a is not None:
+            groups.setdefault(name, []).append((sl, a))
+    tiles = []
+    for i, (name, items) in enumerate(groups.items(), 1):
+        f = G.full()
+        for sl, a in items:
+            f[sl] = np.minimum(f[sl], a)
+        ims = []
+        for b, m in zip(base, views(G, f, (200, 190, 160))):
+            out = np.where((np.abs(b.astype(int) - BG).sum(-1) < 4)[..., None], BG, 0.55 * b + 0.45 * 236).astype(np.uint8)
+            hit = np.abs(m.astype(int) - BG).sum(-1) >= 4
+            out[hit] = m[hit]
+            ims.append(Image.fromarray(out))
+        tiles.append((f"{i}. {name}", ims))
+    tw = sum(im.width for im in tiles[0][1]) + 12; th = max(im.height for im in tiles[0][1]) + 22
+    cols = 3
+    out = Image.new("RGB", (cols * tw, -(-len(tiles) // cols) * th + 22), (244, 242, 238)); dr = ImageDraw.Draw(out)
+    font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 13)
+    dr.text((4, 4), "Os du buste : face | côté | dos, en transparence. Gris pâle = le reste du buste.", fill=(0, 0, 0), font=font)
+    for j, (lab, ims) in enumerate(tiles):
+        x0 = (j % cols) * tw; y0 = 22 + (j // cols) * th
+        dr.text((x0 + 4, y0 + 2), lab, fill=(0, 0, 0), font=font)
+        x = x0 + 2
+        for im in ims:
+            out.paste(im, (x, y0 + 18)); x += im.width + 4
+    path = s.CAPT / "2026-11-17_bones.png"
+    out.save(path)
+    print(path)
