@@ -14,7 +14,9 @@ from scipy import ndimage as ndi
 
 import stack3d as s
 
-DENS = {"bone": 1.85, "viscera": 1.04, "muscle": 1.06, "fat pads": 0.92, "fat": 0.92, "rest": 1.10}   # g/cm3
+DENS = {"bone": 1.85, "viscera": 1.04, "viscera (thorax)": 0.45, "muscle": 1.06, "fat pads": 0.92, "fat": 0.92, "rest": 1.10}   # g/cm3
+# the thoracic cavity holds the lungs (about 0.3 g/cm3, mostly air) and the heart: 0.45 on average, above the diaphragm
+DIAPHRAGM = 300.0
 
 
 def carry(K, a):
@@ -41,13 +43,18 @@ def layer_fields(K):
 def composition(F, d, h):
     """Mass shares (%) inside the skin d: every layer less the ones under it; the fat outside the lean counts as fat."""
     skin = d < 0
-    bone = F["bone"] < 0; musc = (F["muscle"] < 0) & ~bone; pads = (F["pads"] < 0) & ~bone & ~musc
+    bone = F["bone_vox"] if "bone_vox" in F else F["bone"] < 0
+    musc = (F["muscle_vox"] if "muscle_vox" in F else F["muscle"] < 0) & ~bone
+    pads = (F["pads"] < 0) & ~bone & ~musc
     lean = F["lean"] < 0
     fat = (F["fat"] < 0) | F.get("grown", np.zeros_like(skin))   # the skin grown outward (prototype fat) is fat too
     under = bone | musc | pads
     fat = fat & ~lean & ~under
     vox = {"bone": bone, "muscle": musc, "fat pads": pads, "viscera": lean & ~under, "fat": fat,
            "rest": ~fat & ~lean & ~under}
+    if "thorax" in F:
+        vox["viscera (thorax)"] = vox["viscera"] & F["thorax"]
+        vox["viscera"] = vox["viscera"] & ~F["thorax"]
     mass = {k: float((m & skin).sum()) * h ** 3 * DENS[k] for k, m in vox.items()}
     tot = sum(mass.values())
     return {k: 100.0 * v / tot for k, v in mass.items()}
@@ -58,7 +65,7 @@ def composition(F, d, h):
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
 # M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
 PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77}}
-# Only the fat share is solved (solve_fat); the muscle and bone shares are declared targets, not yet constrained.
+# Solved together by solve_comp: fat by the slider, bone by the shell counted, muscle by the thickening of the muscles.
 COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0}}
 
 
@@ -115,6 +122,61 @@ def shaped(G, Gs, fields, rows, k, zc, sh):
 
 PAD_GAIN = 1.5        # a pad adds 1.5 times the global layer where it lies (2.5 made bubbles once the envelope was smooth)
 PAD_REACH = 40.0      # px from a pad over which its extra fat fades (broad: a pad melts into the layer, not a lump)
+
+
+def fat_fields(G, F, d00, zc_rows):
+    """near (pad weight) and dd (signed distance of the smooth envelope) for the fat slider."""
+    pad = F["pads"] < 0
+    front = G.z[None, None, :] >= np.asarray(zc_rows, np.float32)[:, None, None]
+    sg = PAD_REACH / 2.0 / G.h
+    wF = ndi.gaussian_filter((pad & front).any(axis=2).astype(np.float32), sg)
+    wB = ndi.gaussian_filter((pad & ~front).any(axis=2).astype(np.float32), sg)
+    near = np.where(front, np.clip(wF / 0.5, 0, 1)[:, :, None], np.clip(wB / 0.5, 0, 1)[:, :, None]).astype(np.float32)
+    return near, envelope(G, d00 < 0)
+
+
+def bisect(f, target, lo, hi, n=14):
+    """x in [lo, hi] where the increasing f(x) meets target."""
+    for _ in range(n):
+        mid = 0.5 * (lo + hi)
+        lo, hi = (mid, hi) if f(mid) < target else (lo, mid)
+    return 0.5 * (lo + hi)
+
+
+def solve_comp(G, F, d00, zc_rows, target):
+    """Fat, muscle and bone shares solved together (Virginie 2026-11-17: 'solve them'), the silhouette kept.
+    fat: the global slider t over the smooth envelope, with the pads (as in solve_fat).
+    bone: a bone is counted as its cortical and trabecular shell of thickness c px; the marrow inside is internal tissue
+          (BodyParts3D bones are solid, which counted them all at the density of compact bone).
+    muscle: every muscle thickened by m px into the room under the skin that is not bone (the gaps between pieces, the
+          inside of the envelope): the muscles fill the body instead of floating in unmodelled tissue.
+    The three are solved in turn, four rounds. Returns grow, t, near, composition, ref, m, c."""
+    near, dd = fat_fields(G, F, d00, zc_rows)
+    ins = d00 < 0; envin = dd < 0
+    bone0 = F["bone"] < 0
+    bdepth = ndi.distance_transform_edt(bone0) * G.h
+    mus0 = (F["muscle"] < 0) & ~bone0
+    mdist = ndi.distance_transform_edt(~mus0) * G.h
+    room = ins & ~bone0
+    thorax = np.broadcast_to((G.r < DIAPHRAGM)[:, None, None], ins.shape)
+    grow = lambda t, gain=PAD_GAIN: dd - t * (1.0 + gain * near)
+
+    def comp(m, c, t):
+        dt = grow(t)
+        F2 = dict(F); F2["bone_vox"] = bone0 & (bdepth <= c); F2["muscle_vox"] = mus0 | (room & (mdist <= m))
+        F2["grown"] = (dt < 0) & ~envin; F2["thorax"] = thorax
+        return composition(F2, dt, G.h)
+    m, c, t = 0.0, 40.0, 0.0
+    for _ in range(4):
+        t = bisect(lambda x: (lambda q: q["fat"] + q["fat pads"])(comp(m, c, x)), target["fat"], 0.0, 25.0)
+        c = bisect(lambda x: comp(m, x, t)["bone"], target["bone"], 0.0, 20.0)
+        m = bisect(lambda x: comp(x, c, t)["muscle"], target["muscle"], 0.0, 40.0)
+    t = bisect(lambda x: (lambda q: q["fat"] + q["fat pads"])(comp(m, c, x)), target["fat"], 0.0, 25.0)
+    xm = np.nan_to_num(np.nanmax(s.last_cross(d00, 1, G.x), axis=1))
+    ref = float(np.interp(WROWS["shoulders"], G.r, xm))
+    print(f"solved: fat layer {t:.2f} px ({100 * t / ref:.1f} % of the shoulder half width), bone shell {c:.2f} px, "
+          f"muscles thickened {m:.2f} px")
+    return grow, t, near, comp(m, c, t), ref, m, c
 
 
 def solve_fat(G, F, d00, zc_rows, target):
@@ -232,9 +294,11 @@ def proto_board(name, h):
     # the male distribution (lower belly and flanks first) grows with it. The slider is solved for the target fat share.
     F = layer_fields(K)
     d00 = K["d"]
-    grow, tf, near, comp, ref = solve_fat(G, F, d00, np.interp(G.r, T.rows, T.zc), COMP[name]["fat"])
+    grow, tf, near, comp, ref, mm, bc = solve_comp(G, F, d00, np.interp(G.r, T.rows, T.zc), COMP[name])
     print(f"{name}: fat grown {tf:.2f} px; composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
     K = dict(K); K["d"] = grow(tf)
+    _xm = np.nan_to_num(np.nanmax(s.last_cross(K["d"], 1, G.x), axis=1))
+    print("half widths after the fat:", {n: round(float(np.interp(r, G.r, _xm)), 1) for n, r in WROWS.items()}, "grid x max", float(G.x[-1]))
     fat_map(G, d00, K["d"], near, F["lean"], name)
     for it in range(4):                                        # the shape edits move the rows: re-solve the widths on the result
         d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
