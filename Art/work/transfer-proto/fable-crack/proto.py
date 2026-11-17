@@ -112,8 +112,8 @@ def shaped(G, Gs, fields, rows, k, zc, sh):
     return out
 
 
-PAD_GAIN = 2.5        # a pad adds 2.5 times the global layer where it lies
-PAD_REACH = 24.0      # px from a pad over which its extra fat fades (broad: a pad is a zone, not a lump)
+PAD_GAIN = 1.5        # a pad adds 1.5 times the global layer where it lies (2.5 made bubbles once the envelope was smooth)
+PAD_REACH = 40.0      # px from a pad over which its extra fat fades (broad: a pad melts into the layer, not a lump)
 
 
 def solve_fat(G, F, d00, zc_rows, target):
@@ -156,8 +156,8 @@ def solve_fat(G, F, d00, zc_rows, target):
     return grow, t, near, share(t), ref
 
 
-ENV_CLOSE = 10.0      # px: gaps and hollows narrower than twice this between pieces are filled before the fat
-ENV_SMOOTH = 8.0      # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
+ENV_CLOSE = 14.0      # px: gaps and hollows narrower than twice this between pieces are filled before the fat
+ENV_SMOOTH = 12.0     # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
 ENV_COVER = 0.8       # px: the least fat over any piece, before the global layer
 
 

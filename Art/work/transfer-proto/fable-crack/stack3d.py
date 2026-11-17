@@ -326,7 +326,7 @@ class Stack:
         cur = self.d[sl]
         self.owner[sl][(t > 0.6) & (base > -3.0) & (new < cur + 0.3)] = len(self.parts) + 1
         self.d[sl] = new if on == "stack" else smin(cur, new, k)
-        disp = np.maximum(np.maximum(new, -base - 2.0), 0.3 * T - t)   # the sheet alone, cut where it thins out
+        disp = np.maximum(np.maximum(new, -base - min(2.0, T)), 0.3 * T - t)   # the sheet alone, cut where it thins out (a thin sheet is shown thin)
         self.parts.append((name, layer, colour, sl, disp))
 
     def mark(self, layer):
@@ -602,9 +602,9 @@ def build_male(G, T, prm=MALE, ty=None):
     # its sheath, then the external oblique, whose fleshy part stays on the side: in front of the rectus only its thin
     # aponeurosis passes, so the BodyParts3D muscle is cut away there.
     S.lens("transversus abdominis", "muscle", "W", deg([(22, 300), (60, 304), (100, 318), (150, 324), (162, 344), (140, 360),
-           (100, 370), (60, 384), (22, 394)]), 2.0, 8.0, colour=COL["obl"], prof=1.2, on="core")
+           (100, 370), (60, 384), (22, 394)]), 0.8, 8.0, colour=COL["obl"], prof=1.2, on="core")   # very thin, horizontal fibres: no volume of its own
     S.lens("internal oblique", "muscle", "W", deg([(25, 306), (70, 312), (110, 324), (142, 334), (136, 356), (100, 368), (60, 384),
-           (25, 392)]), 2.5, 8.0, colour=COL["obl"], prof=1.2, on="core")
+           (25, 392)]), 1.6, 8.0, colour=COL["obl"], prof=1.2, on="core")   # fibres up and inward, crossing the external oblique's
     # rectus abdominis: one band a side from the pubis (row 399) up to the cartilages of ribs 5 to 7 (BodyParts3D: rows
     # 242 to 284, x 10 to 50), the linea alba at the midline, three tendinous intersections (near the xiphoid, between,
     # at the navel 358) drawn as shallow grooves across the band, none below the navel.
@@ -656,13 +656,13 @@ def build_male(G, T, prm=MALE, ty=None):
     # 2026-11-17 review: one fan from the lower back to the back of the armpit, not two low wings. The upper border runs
     # from T7 over the lower angle of the scapula and rises to the posterior axillary fold (about 100 deg, row 276), where
     # the muscle is cut at the limit of the arm; the lumbar aponeurosis joins the two sides at the spine.
-    lat = [(181, 262), (181, 362), (164, 359), (144, 351), (124, 345), (108, 338), (103, 318), (100, 298), (99, 282),
-           (104, 272), (118, 266), (140, 262), (160, 259)]
+    lat = [(181, 262), (181, 362), (164, 359), (144, 351), (124, 345), (108, 338), (103, 318), (99, 298), (97, 280),
+           (99, 266), (108, 258), (126, 256), (150, 257), (170, 259)]
     # fleshy only above and lateral of a diagonal from T8 by the spine (178 deg, row 268) to the iliac crest at the flank
     # (118 deg, row 342): below and medial of it the lat is its flat lumbar aponeurosis
     flesh = lambda u, v: sstep(((178.0 - 60.0 * (v - 268.0) / 74.0) - u / th) / 12.0)
     S.lens("latissimus dorsi", "muscle", "W", deg(lat), 3.5, 9.0, colour=COL["lat"], prof=1.25, span=8.0, rnd=1,
-           mod=lambda u, v: 0.7 + 0.3 * flesh(u, v))
+           mod=lambda u, v: (0.7 + 0.3 * flesh(u, v)) * (1.0 + 0.7 * np.exp(-((u / th - 104.0) / 14.0) ** 2 - ((v - 276.0) / 18.0) ** 2)))   # thickest in the posterior axillary fold
 
     trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
     lib("trapezius (middle, lower)", COL["trap"]) or S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
