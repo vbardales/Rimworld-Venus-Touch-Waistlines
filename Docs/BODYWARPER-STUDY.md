@@ -44,4 +44,4 @@ A clean Venus implementation of the idea (about 300 lines) is safer than dependi
 Not an automatic reshape of every body: a way to retouch by hand the occasional garment that the automatic cut leaves
 wrong. So a warp per apparel def (and body type, facing), sculpted in an in-game dev editor in the spirit of
 BodyWarper's vertex grid, saved as data shipped with Venus (a Def or XML, not player settings), applied to that
-garment's render node only. Breasts go to a separate mod (Venus Touch - Breasts).
+garment's render node only. Breasts go to a separate mod (Venus Touch - Breasts). Not for 1.0.0: the version after.
