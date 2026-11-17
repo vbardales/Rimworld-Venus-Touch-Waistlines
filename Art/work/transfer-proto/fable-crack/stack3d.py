@@ -515,7 +515,16 @@ def build_male(G, T, prm=MALE, ty=None):
     # neck root (scalenes, the feet of the sternocleidomastoids): removed 2026-11-17 (Virginie: ghost limbs of the neck);
     # build_ghost carries the scalenes and both heads of the sternocleidomastoid.
     # upper trapezius: the slope from the side of the neck down to the acromion and the spine of the scapula
-    S.add("trapezius (upper)", "muscle", ell((38, 214, 232), (44, 30, 34), rad2=(44, 34, 44)), k=6.0, colour=COL["trap"], km=6.0)
+    # Cut clean at the base of the neck (Virginie 2026-11-17: keep the shoulder slopes, cut sharp toward the neck base): an
+    # upright elliptic cylinder around the neck (half width 36 at the base landmark x 40 less the skin and fat, half depth
+    # 32 about the neck axis z 246) takes out everything of it above row 222, so only the two slopes are left.
+    def neck_hole():
+        def fn(X, R, Z):
+            cyl = (np.sqrt((X / 36.0) ** 2 + ((Z - 246.0) / 32.0) ** 2) - 1.0) * 32.0
+            return np.maximum(cyl, R - 222.0).astype(np.float32)
+        return fn, np.array([-36.0, 140.0, 214.0]), np.array([36.0, 222.0, 278.0])
+    S.add("trapezius (upper)", "muscle", carve(ell((38, 214, 232), (44, 30, 34), rad2=(44, 34, 44)), neck_hole()), k=6.0,
+          colour=COL["trap"], km=6.0)
 
     # ---- trunk, front
     def serr(i, zc_, rc_):
