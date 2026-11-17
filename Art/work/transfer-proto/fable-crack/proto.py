@@ -68,15 +68,19 @@ def composition(F, d, h):
 # Prototype targets: widths relative to the shoulders (Virginie 2026-11-17). Rows of the Male frame where each is read:
 # shoulders = widest row (deltoid stump, 268), upper chest = under the armpits (298), waist = navel (358), pelvis = hips (382).
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
+# The three bodies (Virginie 2026-11-17):
+#   WDI source = the stylised starting silhouette; no biological composition is attributed to it.
+#   M1 lean / athletic = a chosen target: about 12 % fat, superficial muscles at about 100 %.
+#   M average = about 20 to 23 % fat, superficial muscles at about 80 to 90 % of M1, envelope and pads thicker and softer.
 # M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
 PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77},
-         "M1": None}   # M1 (Virginie 2026-11-17): the athletic / écorché preset, WDI Male average as drawn: its own widths
+         "M1": None}   # M1 keeps the widths of the WDI source silhouette (no target of its own yet)
 # Solved together by solve_comp: fat by the slider, bone by the shell counted, muscle by the thickening of the muscles.
 COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0},
-        "M1": {"fat": 12.0, "muscle": 42.0, "bone": 4.0}}   # M1: WDI read as lean / fit, about 12 % fat
+        "M1": {"fat": 12.0, "muscle": 42.0, "bone": 4.0}}
 # body type of each prototype. M (average): the superficial muscles at 80 to 90 % of the relief of M1, the upper trapezius
-# toned down most, the rectus abdominis not reinforced; bones and deep muscles unchanged (Virginie 2026-11-17)
-TY = {"M": dict(s.TYPES["Male"], abs=1.0, relief={"pectoralis major": 0.85, "latissimus dorsi": 0.85, "trapezius (upper)": 0.75,
+# toned down most (80 %), the rectus abdominis not reinforced; bones and deep muscles unchanged (Virginie 2026-11-17)
+TY = {"M": dict(s.TYPES["Male"], abs=1.0, relief={"pectoralis major": 0.85, "latissimus dorsi": 0.85, "trapezius (upper)": 0.8,
                                                    "trapezius (middle, lower)": 0.9, "gluteus maximus": 0.9, "external oblique": 0.9}),
       "M1": s.TYPES["Male"]}
 
@@ -238,6 +242,16 @@ def solve_fat(G, F, d00, zc_rows, target):
 
 ENV_CLOSE = 14.0      # px: gaps and hollows narrower than twice this between pieces are filled before the fat
 ENV_SMOOTH = 12.0     # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
+# envelope and pads of each body: M thicker and softer than M1 (a broader closing and smoothing, broader stronger pads)
+ENV = {"M1": dict(ENV_CLOSE=6.0, ENV_SMOOTH=5.0, PAD_GAIN=1.0, PAD_REACH=28.0),
+       "M": dict(ENV_CLOSE=14.0, ENV_SMOOTH=12.0, PAD_GAIN=1.5, PAD_REACH=40.0)}
+
+
+def use_env(name):
+    """Set the envelope and pad constants of a body (ENV) for the solves that follow."""
+    globals().update(ENV[name])
+
+
 ENV_COVER = 0.8       # px: the least fat over any piece, before the global layer
 
 
@@ -299,6 +313,7 @@ def proto_board(name, h):
     """Prototype vs WDI: the Male stack (skin, fat, lean) scaled row by row in width to the prototype's ratios, drawn
     by stack3d.board next to the WDI Male (WDI | stack in WDI style | outlines)."""
     import average as av
+    use_env(name)
     K = s.make("Male", h, ty=TY[name])
     G, T = K["G"], K["T"]
     if PROTO[name] is None:                                    # the prototype keeps the widths of the WDI body

@@ -28,8 +28,8 @@ BONES = [   # order of Virginie 2026-11-17
     ("hip bone", "os coxaux (BodyParts3D)"),
 ]
 MUSCLES = s.MUSCLE_ORDER   # deepest first (stack3d: the order settle() stacks them in)
-PRESET_NAME = {"M1": "athlétique, gras 12 %, relief musculaire complet",
-               "M": "moyen, gras 23 %, muscles superficiels à 75-90 % du relief de M1"}
+PRESET_NAME = {"M1": "lean / athlétique, gras 12 %, muscles superficiels à 100 %",
+               "M": "moyen, gras 23 %, muscles superficiels à 80-90 % de M1, enveloppe et pads plus épais et plus doux"}
 FAT = (238, 206, 140)
 SKIN = (226, 184, 156)
 SKIN_PX = 0.8          # the skin drawn as a thin layer over the fat
@@ -55,6 +55,7 @@ def main():
     h = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
     preset = sys.argv[2] if len(sys.argv) > 2 else "M"
     G = s.Grid(h)
+    proto.use_env(preset)
     S = s.build_male(G, s.Target("Male"), ty=proto.TY[preset])
     steps = []
     for key, lab in BONES + MUSCLES:
