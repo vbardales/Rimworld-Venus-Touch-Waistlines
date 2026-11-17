@@ -98,6 +98,7 @@ def width_scale(G, d, target):
 #   pecs: the front of the chest (rows 250..345, x < 85) lifted by pecs px, most at the under-chest fold;
 #   glutes: the back of the buttocks pushed back by glutes px and up by a third of it, round, centred on each cheek.
 SHAPE = {"M": dict(cage=12.0, pecs=12.0, glutes=7.0), "M1": dict(cage=0.0, pecs=0.0, glutes=0.0)}
+SHAPE_SMOOTH = 24.0   # px along the rows: the width and cage profiles are smoothed over this, no crease at their nodes
 
 
 def sstep(v):
@@ -121,10 +122,15 @@ def shaped(G, Gs, fields, rows, k, zc, sh):
     # pecs: output at R shows what was lower
     p = sh["pecs"] * bump(R, 315.0, 55.0) * sstep((85.0 - X) / 20.0) * front
     R = R + p
-    # cage: piecewise linear rows, output -> source
-    R = np.interp(R, [0.0, 232.0, 334.0 + sh["cage"], 422.0, 1000.0], [0.0, 232.0, 334.0, 422.0, 1000.0]).astype(np.float32)
-    # widths
-    X = X / np.interp(R, rows, k).astype(np.float32)
+    # cage and widths: the piecewise linear profiles creased the skin at every node (hard horizontal steps on M), so both
+    # are smoothed along the rows over SHAPE_SMOOTH px before use
+    rt = np.arange(100.0, 520.0, 0.5)
+    sg = SHAPE_SMOOTH / 0.5
+    cage = ndi.gaussian_filter1d(np.interp(rt, [0.0, 232.0, 334.0 + sh["cage"], 422.0, 1000.0], [0.0, 232.0, 334.0, 422.0, 1000.0]),
+                                 sg, mode="nearest")
+    R = np.interp(R, rt, cage).astype(np.float32)
+    kk = ndi.gaussian_filter1d(np.interp(rt, rows, k), sg, mode="nearest")
+    X = X / np.interp(R, rt, kk).astype(np.float32)
     co = np.stack([(R - Gs.r[0]) / Gs.h, X / Gs.h, (Z - Gs.z[0]) / Gs.h])
     out = []
     for a, order in fields:
@@ -314,7 +320,7 @@ def proto_board(name, h):
     _xm = np.nan_to_num(np.nanmax(s.last_cross(K["d"], 1, G.x), axis=1))
     print("half widths after the fat:", {n: round(float(np.interp(r, G.r, _xm)), 1) for n, r in WROWS.items()}, "grid x max", float(G.x[-1]))
     fat_map(G, d00, K["d"], near, F["lean"], name)
-    for it in range(4 if tgt is not None else 0):              # the shape edits move the rows: re-solve the widths on the result
+    for it in range(10 if tgt is not None else 0):             # the shape edits and the smoothing move the widths: re-solve them on the result
         d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
         xm = np.nan_to_num(np.nanmax(s.last_cross(d, 1, Go.x), axis=1))
         hw = lambda r: float(np.interp(r, Go.r, xm))
