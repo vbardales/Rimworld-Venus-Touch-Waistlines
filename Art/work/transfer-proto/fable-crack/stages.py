@@ -40,6 +40,7 @@ def main():
     h = float(sys.argv[2]) if len(sys.argv) > 2 else 1.5
     p.use_env(name)
     K = s.make("Male", h, ty=p.TY[name])
+    cut = p.stump_cut(K); K = dict(K); K["d"] = np.maximum(K["d"], cut)
     G, T, G0, S = K["G"], K["T"], K["G0"], K["S"]
     stages = [("1. le buste maigre : os et muscles empilés, cadre Male", G0, S.d.copy())]
     F = p.layer_fields(K)

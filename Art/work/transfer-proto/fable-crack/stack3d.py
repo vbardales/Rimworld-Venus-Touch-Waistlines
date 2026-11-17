@@ -1535,8 +1535,8 @@ def chain_forward(steps, x, r, z, clamp=None):
 
 def body_grid(T, h):
     """Grid of a body: its sprite extents with a margin, voxels no finer than h and about five million of them."""
-    x1 = float(T.hw.max()) + 24.0; z0 = float(T.zb.min()) - 24.0; z1 = float(T.zf.max()) + 24.0   # room for the prototype fat
-    r0 = float(T.s0) - 12.0; r1 = float(T.s1) + 12.0
+    x1 = float(T.hw.max()) + 40.0; z0 = float(T.zb.min()) - 40.0; z1 = float(T.zf.max()) + 40.0   # room for the prototype fat
+    r0 = float(T.s0) - 30.0; r1 = float(T.s1) + 30.0
     hb = max(h, round(float((x1 * (r1 - r0) * (z1 - z0) / 5.5e6) ** (1 / 3)), 2))
     return Grid(hb, x1=x1, r0=r0, r1=r1, z0=z0, z1=z1)
 

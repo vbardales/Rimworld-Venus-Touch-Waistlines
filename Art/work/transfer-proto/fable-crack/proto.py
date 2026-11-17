@@ -149,6 +149,31 @@ PAD_GAIN = 1.5        # a pad adds 1.5 times the global layer where it lies (2.5
 PAD_REACH = 40.0      # px from a pad over which its extra fat fades (broad: a pad melts into the layer, not a lump)
 
 
+# Virginie 2026-11-17: no skin or fat past the stumps of the thighs, the arms and the neck; the sections are cut flat
+# and closed by the skin alone. STUMP_CUT is that cut on the current grid (negative inside), set by stump_cut().
+STUMP_ROW = 426.0     # thigh stumps (stack3d THIGH_CUT)
+ARM_X = 90.0          # arm stumps: the plane past the acromion where the trunk muscles stop
+ARM_ROW = 300.0       # ... down to just under the armpit (Male armpit landmark 298); below it the flank is not cut
+SKIN_PX = 0.8         # the skin closing each section
+STUMP_CUT = None
+
+
+def stump_cut0(G):
+    """The cut on a Male-frame grid: inside between the neck section and the thigh section, and medial of the arm plane."""
+    R = G.r[:, None, None]; X = G.x[None, :, None]
+    # the arm section only where the arm joins, tilted outward toward the armpit so it meets the flank without a ledge
+    arm = np.where(R < ARM_ROW, X - (ARM_X + 0.5 * np.maximum(R - 262.0, 0.0)), -1e3)
+    a = np.maximum(np.maximum(s.MALE["neck_cut"] - R, R - STUMP_ROW), arm) - SKIN_PX
+    return np.broadcast_to(a, G.shape).astype(np.float32)
+
+
+def stump_cut(K=None, G=None):
+    """Set STUMP_CUT for the solves that follow: on the fitted body grid of make() (K), or on a Male-frame grid (G)."""
+    global STUMP_CUT
+    STUMP_CUT = carry(K, stump_cut0(K["G0"])) if K is not None else stump_cut0(G)
+    return STUMP_CUT
+
+
 def fat_base(G, zc_rows):
     """Where the global layer goes (1 = everywhere the same). Virginie 2026-11-17: on an average man the extra fat goes
     first to the lower belly, the flanks and the lower back, much less to the chest; so the front of the chest (rows 240
@@ -196,6 +221,8 @@ def solve_comp(G, F, d00, zc_rows, target):
     thorax = np.broadcast_to((G.r < DIAPHRAGM)[:, None, None], ins.shape)
     base = fat_base(G, zc_rows)
     grow = lambda t, gain=PAD_GAIN: dd - t * (base + gain * near)
+    if STUMP_CUT is not None:                                  # no fat or skin past the stump sections, only the skin on them
+        grow = (lambda g0: lambda t, gain=PAD_GAIN: np.maximum(g0(t, gain), STUMP_CUT))(grow)
 
     def comp(m, c, t):
         dt = grow(t)
@@ -234,6 +261,8 @@ def solve_fat(G, F, d00, zc_rows, target):
     dd = envelope(G, ins)
     base = fat_base(G, zc_rows)
     grow = lambda t, gain=PAD_GAIN: dd - t * (base + gain * near)
+    if STUMP_CUT is not None:                                  # no fat or skin past the stump sections, only the skin on them
+        grow = (lambda g0: lambda t, gain=PAD_GAIN: np.maximum(g0(t, gain), STUMP_CUT))(grow)
 
     def share(t):
         dt = grow(t)
@@ -332,6 +361,7 @@ def proto_board(name, h):
     import average as av
     use_env(name)
     K = s.make("Male", h, ty=TY[name])
+    cut = stump_cut(K); K = dict(K); K["d"] = np.maximum(K["d"], cut)
     G, T = K["G"], K["T"]
     if PROTO[name] is None:                                    # the prototype keeps the widths of the WDI body
         rows, k = list(WROWS.values()), [1.0] * len(WROWS)

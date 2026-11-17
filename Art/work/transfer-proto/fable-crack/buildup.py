@@ -57,6 +57,7 @@ def main():
     G = s.Grid(h)
     proto.use_env(preset)
     S = s.build_male(G, s.Target("Male"), ty=proto.TY[preset])
+    proto.stump_cut(G=G)
     steps = []
     for key, lab in BONES + MUSCLES:
         f = G.full(); col = None
