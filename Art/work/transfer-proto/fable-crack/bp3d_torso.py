@@ -122,6 +122,10 @@ def build():
             v = bi.thorax_width(T(O(v)))
             if key in PELVIC:
                 v = bi.pelvis_width(v)
+            if key == "erector spinae":
+                # Virginie 2026-11-17: the lumbar mass too narrow and too central; widen it on either side of the spine
+                r = v[:, 1]
+                v = v.copy(); v[:, 0] *= 1.0 + 0.35 * bi.smooth01((r - 280.0) / 40.0) * (1.0 - bi.smooth01((r - 352.0) / 16.0))
             V.append(v); F.append(f + off); off += len(v)
         if V:
             k = key.replace(" ", "_").replace(",", "").replace("(", "").replace(")", "")

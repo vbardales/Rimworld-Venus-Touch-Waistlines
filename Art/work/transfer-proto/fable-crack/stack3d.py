@@ -597,24 +597,37 @@ def build_male(G, T, prm=MALE, ty=None):
     lib("pectoralis major", COL["pec"]) or S.lens("pectoralis major", "muscle", "F", pec, 11.5, 5.5, colour=COL["pec"],
            mod=lambda u, v: (0.6 + 0.4 * sstep((v - (217.0 - 0.1 * np.abs(u))) / 70.0)) * (0.68 + 0.32 * sstep(np.abs(u) / 14.0)))
 
-    # rectus abdominis: four blocks a side, tendinous intersections between them, linea alba at the midline.
-    # ty["abs"] (2026-11-14): 1 = the old drawing (blocks touch, soft domes); higher = thicker blocks, tighter edges and real
-    # grooves at the intersections. Average colonists stay near 1, the Hulk (every muscle drawn) goes high.
-    xo = lambda r: 26.0 - 9.0 * sstep((r - 330.0) / 68.0)
+    # Abdominal wall (Virginie 2026-11-17), deepest first: transversus abdominis, internal oblique (BodyParts3D has
+    # neither: thin hand sheets on the flanks, their aponeuroses reaching the edge of the rectus), the rectus abdominis in
+    # its sheath, then the external oblique, whose fleshy part stays on the side: in front of the rectus only its thin
+    # aponeurosis passes, so the BodyParts3D muscle is cut away there.
+    S.lens("transversus abdominis", "muscle", "W", deg([(22, 300), (60, 304), (100, 318), (150, 324), (162, 344), (140, 360),
+           (100, 370), (60, 384), (22, 394)]), 2.0, 8.0, colour=COL["obl"], prof=1.2, on="core")
+    S.lens("internal oblique", "muscle", "W", deg([(25, 306), (70, 312), (110, 324), (142, 334), (136, 356), (100, 368), (60, 384),
+           (25, 392)]), 2.5, 8.0, colour=COL["obl"], prof=1.2, on="core")
+    # rectus abdominis: one band a side from the pubis (row 399) up to the cartilages of ribs 5 to 7 (BodyParts3D: rows
+    # 242 to 284, x 10 to 50), the linea alba at the midline, three tendinous intersections (near the xiphoid, between,
+    # at the navel 358) drawn as shallow grooves across the band, none below the navel.
+    # ty["abs"] (2026-11-14): 1 = average; higher = thicker band and deeper grooves (the Hulk).
+    xo = lambda r: 31.0 - 15.0 * sstep((r - 300.0) / 99.0)
     ab = float(ty.get("abs", 1.0)) if ty else 1.0
-    gap = 0.3 + (ab - 1.0) * 2.2
-    wd_ab = max(9.0 - (ab - 1.0) * 5.0, 4.0)
-    cuts = (340.85, 353.95, 369.95)
-    edges = [325.0] + [c + s * gap / 2 for c in cuts for s in (-1, 1)] + [399.0]
-    for i, (ra, rb) in enumerate(zip(edges[0::2], edges[1::2])):
-        V = [(0.5, ra), (xo(ra), ra), (xo(rb), rb), (0.5, rb)]
-        S.lens(f"rectus abdominis {i}", "muscle", "F", V, (3.2 if i < 3 else 2.8) * ab, wd_ab, colour=COL["rectus"], rnd=1, prof=1.3, on="core")
+    dip = min(0.18 + (ab - 1.0) * 0.3, 0.7)
+    cuts = (290.0, 322.0, 354.0)
+    top, bot = 262.0, 399.0
+    rows_ = np.linspace(top, bot, 12)
+    V = [(0.5, top)] + [(xo(r), r) for r in rows_] + [(0.5, bot)]
+    S.lens("rectus abdominis", "muscle", "F", V, 3.2 * ab, 5.0, colour=COL["rectus"], rnd=1, prof=1.3, on="core",
+           mod=lambda u, v: (1.0 - dip * sum(np.exp(-((v - c_) / 2.5) ** 2) for c_ in cuts))
+           * (0.45 + 0.55 * sstep((v - top) / 30.0)))
 
-    # external oblique: from the lower ribs (thin, under the pectoral border) to the iliac crest and the inguinal ligament;
-    # its medial edge runs under the rectus sheath
+    # external oblique: from the lower ribs to the iliac crest and the inguinal ligament; the BodyParts3D muscle is cut away
+    # in front of the rectus (medial of its edge xo, front half), where only the aponeurosis would be
+    shp_ = lambda X, R, Z: np.broadcast_shapes(X.shape, R.shape, Z.shape)
+    front_of_rectus = (lambda X, R, Z: np.broadcast_to(np.maximum(X - (xo(R) + 1.5), S.zc(R) - Z), shp_(X, R, Z)).astype(np.float32),
+                       np.array([-1.0, 250.0, float(G.z[0])]), np.array([40.0, 410.0, float(G.z[-1])]))
     obl = [(20, 327), (60, 327), (100, 330), (140, 332), (172, 329), (172, 344), (135, 350), (110, 354), (88, 362), (62, 374),
            (42, 388), (20, 392)]
-    lib("external oblique", COL["obl"]) or S.lens("external oblique", "muscle", "W", obl, 8.0, 12.0, colour=COL["obl"], prof=1.3, on="core",
+    lib("external oblique", COL["obl"], holes=(front_of_rectus,)) or S.lens("external oblique", "muscle", "W", obl, 8.0, 12.0, colour=COL["obl"], prof=1.3, on="core",
            mod=lambda u, v: (0.4 + 0.6 * sstep((u - 30.0) / 55.0)) * (0.45 + 0.55 * sstep((v - 322.0) / 18.0)))
 
     # ---- trunk, back
@@ -640,13 +653,16 @@ def build_male(G, T, prm=MALE, ty=None):
     # a diagonal to the back of the armpit and ends in a short oblique cut at the limit of the arm (the posterior
     # axillary fold; the insertion on the humerus belongs to the arm). It never comes forward of the flank: from the
     # front only a small edge shows under the armpit. Low relief for an average 23 % fat body.
-    lat = [(181, 262), (181, 362), (164, 359), (144, 351), (124, 345), (108, 338), (104, 318), (105, 302), (116, 280),
-           (132, 268), (156, 260)]
+    # 2026-11-17 review: one fan from the lower back to the back of the armpit, not two low wings. The upper border runs
+    # from T7 over the lower angle of the scapula and rises to the posterior axillary fold (about 100 deg, row 276), where
+    # the muscle is cut at the limit of the arm; the lumbar aponeurosis joins the two sides at the spine.
+    lat = [(181, 262), (181, 362), (164, 359), (144, 351), (124, 345), (108, 338), (103, 318), (100, 298), (99, 282),
+           (104, 272), (118, 266), (140, 262), (160, 259)]
     # fleshy only above and lateral of a diagonal from T8 by the spine (178 deg, row 268) to the iliac crest at the flank
     # (118 deg, row 342): below and medial of it the lat is its flat lumbar aponeurosis
     flesh = lambda u, v: sstep(((178.0 - 60.0 * (v - 268.0) / 74.0) - u / th) / 12.0)
     S.lens("latissimus dorsi", "muscle", "W", deg(lat), 3.5, 9.0, colour=COL["lat"], prof=1.25, span=8.0, rnd=1,
-           mod=lambda u, v: 0.65 + 0.35 * flesh(u, v))
+           mod=lambda u, v: 0.7 + 0.3 * flesh(u, v))
 
     trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
     lib("trapezius (middle, lower)", COL["trap"]) or S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
@@ -727,6 +743,8 @@ MUSCLE_ORDER = [
     ("quadratus femoris", "carré fémoral"),
     ("serratus", "dentelé antérieur"),
     ("infraspinatus, teres, rhomboid", "rhomboïdes, supra- et infra-épineux, ronds"),
+    ("transversus abdominis", "transverse de l'abdomen"),
+    ("internal oblique", "oblique interne"),
     ("rectus abdominis", "grand droit de l'abdomen"),
     ("external oblique", "oblique externe"),
     ("thigh, vastus intermedius", "vaste intermédiaire"),

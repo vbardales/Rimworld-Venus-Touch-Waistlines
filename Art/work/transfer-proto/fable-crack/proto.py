@@ -156,8 +156,8 @@ def solve_fat(G, F, d00, zc_rows, target):
     return grow, t, near, share(t), ref
 
 
-ENV_CLOSE = 8.0       # px: gaps and hollows narrower than twice this between pieces are filled before the fat
-ENV_SMOOTH = 6.0      # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
+ENV_CLOSE = 10.0      # px: gaps and hollows narrower than twice this between pieces are filled before the fat
+ENV_SMOOTH = 8.0      # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
 ENV_COVER = 0.8       # px: the least fat over any piece, before the global layer
 
 

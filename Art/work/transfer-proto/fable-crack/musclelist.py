@@ -18,9 +18,11 @@ import stack3d as s
 NAMES = [
     ("trapezius (upper)", "trapèze, partie haute"),
     ("trapezius (middle, lower)", "trapèze, parties moyenne et basse"),
-    ("serratus", "dentelé antérieur (4 digitations)"),
+    ("serratus", "dentelé antérieur"),
     ("pectoralis major", "grand pectoral"),
-    ("rectus abdominis", "grand droit de l'abdomen (4 blocs)"),
+    ("rectus abdominis", "grand droit de l'abdomen"),
+    ("transversus abdominis", "transverse de l'abdomen"),
+    ("internal oblique", "oblique interne"),
     ("external oblique", "oblique externe"),
     ("erector spinae", "érecteurs du rachis"),
     ("infraspinatus, teres, rhomboid", "infra-épineux, grand et petit ronds, rhomboïdes"),
