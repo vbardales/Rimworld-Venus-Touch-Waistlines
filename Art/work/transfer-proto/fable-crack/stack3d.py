@@ -652,7 +652,7 @@ def build_male(G, T, prm=MALE, ty=None):
 
     # ---- named fat pads (the fat layer itself is solved per body: fat_field)
     soft = dict(prof=1.0, rnd=2, colour=COL["fat"])
-    S.lens("fat pad, flank", "fat", "W", deg([(88, 324), (130, 318), (156, 332), (136, 354), (98, 358), (80, 342)]), 2.5, 16.0, **soft)
+    S.lens("fat pad, flank", "fat", "W", deg([(58, 324), (100, 318), (126, 332), (106, 354), (68, 358), (50, 342)]), 2.5, 16.0, **soft)
     S.lens("fat pad, lower abdomen", "fat", "F", [(0, 362), (26, 362), (40, 378), (30, 394), (12, 399), (0, 399)], 2.2, 16.0, **soft)
     S.lens("fat pad, pubis", "fat", "F", [(0, 392), (10, 392), (16, 400), (9, 409), (0, 409)], 4.0, 7.0, **soft)
     S.lens("fat pad, lower medial gluteal", "fat", "B", [(4, 382), (24, 379), (40, 390), (30, 402), (8, 404)], 2.5, 12.0, **soft)
