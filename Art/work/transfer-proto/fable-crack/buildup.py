@@ -7,7 +7,7 @@ The Average stack (stack3d.build_male, Male frame). Each step shows what is buil
 pieces already there in their own colour, the piece added at this step in blue. No grey body behind.
 The fat: proto.solve_fat on this stack for 23 % of the mass (prototype M), first the global layer alone, then the pads.
 
-Board: Art/work/captures/2026-11-17_buildup.png
+Board: Art/work/captures/2026-11-17_buildup-<preset>.png (preset M1 or M of proto.py: its body type, its fat share)
 Run: uv run --with numpy --with pillow --with scipy --with scikit-image python buildup.py [h]
 """
 import sys
@@ -28,6 +28,8 @@ BONES = [   # order of Virginie 2026-11-17
     ("hip bone", "os coxaux (BodyParts3D)"),
 ]
 MUSCLES = s.MUSCLE_ORDER   # deepest first (stack3d: the order settle() stacks them in)
+PRESET_NAME = {"M1": "athlétique, gras 12 %, relief musculaire complet",
+               "M": "moyen, gras 23 %, muscles superficiels à 75-90 % du relief de M1"}
 FAT = (238, 206, 140)
 SKIN = (226, 184, 156)
 SKIN_PX = 0.8          # the skin drawn as a thin layer over the fat
@@ -51,8 +53,9 @@ def fat_steps(G, S, target):
 
 def main():
     h = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
+    preset = sys.argv[2] if len(sys.argv) > 2 else "M"
     G = s.Grid(h)
-    S = s.build_male(G, s.Target("Male"))
+    S = s.build_male(G, s.Target("Male"), ty=proto.TY[preset])
     steps = []
     for key, lab in BONES + MUSCLES:
         f = G.full(); col = None
@@ -63,7 +66,7 @@ def main():
             print("absent:", key)
             continue
         steps.append((lab, f, col if col != s.BONE else (226, 218, 196)))
-    steps += fat_steps(G, S, proto.COMP["M"]["fat"])
+    steps += fat_steps(G, S, proto.COMP[preset]["fat"])
     cum = G.full(); owner = np.zeros(G.shape, np.int16)
     pal = np.zeros((len(steps) + 2, 3)); pal[0] = BG
     tiles = []
@@ -83,7 +86,7 @@ def main():
     cols = 4
     out = Image.new("RGB", (cols * tw, -(-len(tiles) // cols) * th + 24), BG); dr = ImageDraw.Draw(out)
     font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 13)
-    dr.text((4, 4), "Le buste monté pièce par pièce : os, muscles du plus profond au plus superficiel, graisse, peau. "
+    dr.text((4, 4), f"{preset} ({PRESET_NAME[preset]}) : le buste monté pièce par pièce, os, muscles du plus profond au plus superficiel, graisse, peau. "
                     "Face | côté | dos. En bleu : la pièce ajoutée.", fill=(0, 0, 0), font=font)
     for j, (lab, ims) in enumerate(tiles):
         x0 = (j % cols) * tw; y0 = 24 + (j // cols) * th
@@ -93,7 +96,7 @@ def main():
             arr = np.asarray(im).copy()
             arr[(np.abs(arr.astype(int) - np.array([226, 226, 222])).sum(-1) < 4)] = BG
             out.paste(Image.fromarray(arr), (x, y0 + 20)); x += im.width + 4
-    path = s.CAPT / "2026-11-17_buildup.png"
+    path = s.CAPT / f"2026-11-17_buildup-{preset}.png"
     out.save(path)
     print(path)
 
