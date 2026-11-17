@@ -539,7 +539,7 @@ def build_male(G, T, prm=MALE, ty=None):
     # none, or with HAND_MUSCLES=1.
     use_lib = os.environ.get("HAND_MUSCLES", "0") != "1"
 
-    def lib(name, colour, k=1.5, km=1.0, holes=()):
+    def lib(name, colour, k=1.5, km=1.0, holes=(), leg_row=None):
         if not use_lib:
             return False
         import bp3d_torso
@@ -553,8 +553,9 @@ def build_male(G, T, prm=MALE, ty=None):
         shp = lambda X, R, Z: np.broadcast_shapes(X.shape, R.shape, Z.shape)
         arm = (lambda X, R, Z: np.broadcast_to(90.0 - X, shp(X, R, Z)).astype(np.float32),
                np.array([90.0, 0.0, 0.0]), np.array([400.0, 600.0, 500.0]))
-        leg = (lambda X, R, Z: np.broadcast_to(prm["lm"][4] - R, shp(X, R, Z)).astype(np.float32),
-               np.array([-200.0, prm["lm"][4], 0.0]), np.array([200.0, 900.0, 500.0]))
+        lr = prm["lm"][4] if leg_row is None else leg_row
+        leg = (lambda X, R, Z: np.broadcast_to(lr - R, shp(X, R, Z)).astype(np.float32),
+               np.array([-200.0, lr, 0.0]), np.array([200.0, 900.0, 500.0]))
         S.add(name, "muscle", carve(p, top, arm, leg, *holes), k=k, colour=colour, km=km)
         return True
 
@@ -631,8 +632,19 @@ def build_male(G, T, prm=MALE, ty=None):
     lib("gluteus medius", COL["glmed"]) or S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
     lib("gluteus maximus", COL["glmax"], km=4.0) or S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
     lib("tensor fasciae latae, hip flexors", COL["tfl"]) or S.add("tensor fasciae latae, hip flexors", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
-    S.add("thigh stump (quadriceps, adductors, hamstrings)", "muscle", ell((35, 396, 242.5), (19, 36, 44), rad2=(19, 36, 47), rot=(-46, 0, 0)), k=6.0,
-          colour=COL["thigh"], km=2.0)
+    # thigh stump, by hand (Virginie 2026-11-17): very short proximal volumes, rectus femoris and vasti in front, adductors
+    # inside, hamstrings behind, on the lines of the ghost leg's muscles, cut at a plane just under the groin and the
+    # gluteal fold (row 426, the crotch at 422 and the gluteal fold at 404 to 407 sit above it)
+    THIGH_CUT = 426.0
+    below = (lambda X, R, Z: np.broadcast_to(R - THIGH_CUT, np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
+             np.array([-200.0, THIGH_CUT, 0.0]), np.array([200.0, 900.0, 500.0]))
+    cut = lambda prim: carve(prim, (lambda X, R, Z: -below[0](X, R, Z), below[1], below[2]))
+    S.add("thigh stump, front (rectus femoris, vasti)", "muscle",
+          cut(tube([(43, 396, 262), (44, 432, 266)], [7.0, 11.0])), k=3.0, colour=COL["thigh"])
+    S.add("thigh stump, front (vastus lateralis)", "muscle", cut(tube([(56, 404, 256), (57, 432, 258)], [6.0, 10.0])), k=3.0, colour=COL["thigh"])
+    S.add("thigh stump, front (vastus medialis, intermedius)", "muscle", cut(tube([(32, 412, 258), (31, 432, 259)], [5.0, 8.0])), k=3.0, colour=COL["thigh"])
+    S.add("thigh stump, inside (adductors)", "muscle", cut(tube([(12, 400, 256), (22, 432, 251)], [5.0, 9.5])), k=2.5, colour=COL["tfl"], km=1.0)
+    S.add("thigh stump, back (hamstrings)", "muscle", cut(tube([(28, 410, 232), (38, 432, 233)], [6.0, 11.0])), k=3.0, colour=COL["glmax"])
     # the sprite cuts the neck flat: the neck root and the trapezius end on that section, they do not close in a tip
     S.d = smax(S.d, (prm["neck_cut"] - G.r)[:, None, None].astype(np.float32), 2.0)
     S.layer_d["bone"] = np.maximum(S.layer_d["bone"], (prm["neck_cut"] + 3.0 - G.r)[:, None, None].astype(np.float32))   # the spine goes on in the ghost neck

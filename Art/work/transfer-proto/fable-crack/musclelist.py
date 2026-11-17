@@ -29,7 +29,11 @@ NAMES = [
     ("gluteus medius", "moyen fessier"),
     ("gluteus maximus", "grand fessier"),
     ("tensor fasciae latae, hip flexors", "tenseur du fascia lata, fléchisseurs de hanche"),
-    ("thigh stump", "moignon de cuisse (quadriceps, adducteurs, ischio-jambiers)"),
+    ("thigh stump, front (rectus femoris, vasti)", "moignon de cuisse, avant : droit fémoral et vastes"),
+    ("thigh stump, front (vastus lateralis)", "moignon de cuisse, avant : vaste latéral"),
+    ("thigh stump, front (vastus medialis", "moignon de cuisse, avant : vastes médial et intermédiaire"),
+    ("thigh stump, inside", "moignon de cuisse, intérieur : adducteurs"),
+    ("thigh stump, back", "moignon de cuisse, arrière : ischio-jambiers"),
 ]
 BG = np.array([226, 226, 222])
 
@@ -60,7 +64,7 @@ def main():
             out[hit] = m[hit]
             ims.append(Image.fromarray(out))
         import bp3d_torso
-        src = "BodyParts3D" if key in bp3d_torso.GROUPS and bp3d_torso.PATH.exists() else "fait main"
+        src = "BodyParts3D" if any(g.startswith(key) for g in bp3d_torso.GROUPS) and bp3d_torso.PATH.exists() else "fait main"
         tiles.append((f"{i}. {fr} [{src}]", ims))
         print(i, key, flush=True)
     tw = sum(im.width for im in tiles[0][1]) + 12; th = max(im.height for im in tiles[0][1]) + 22
