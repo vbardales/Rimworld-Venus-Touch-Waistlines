@@ -577,8 +577,8 @@ def build_male(G, T, prm=MALE, ty=None):
            colour=COL["erec"], prof=1.2)
 
     # ---- shoulder
-    # deltoid: cap over the shoulder joint from the clavicle, the acromion and the spine of the scapula down to the humerus
-    S.add("deltoid", "muscle", ell((78, 250, 254), (16.5, 52, 30), rad2=(16.5, 48, 30)), k=1.5, colour=COL["delt"])
+    # deltoid: removed from the trunk 2026-11-17 (Virginie: 'il fait partie des membres fantômes'). It is a muscle of the
+    # arm (clavicle, acromion, scapular spine to the humerus); the ghost carries it as "deltoid cap" (build_ghost).
 
     # ---- pelvis and thigh stump
     # gluteus medius: from the iliac crest (row 347) down to the greater trochanter (391)
