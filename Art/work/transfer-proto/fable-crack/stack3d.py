@@ -46,7 +46,7 @@ RW = 78.0           # px per radian of the unwrapped (W) projection
 
 # ---------------------------------------------------------------- grid
 class Grid:
-    def __init__(self, h=1.0, x1=110.0, r0=176.0, r1=438.0, z0=168.0, z1=348.0):
+    def __init__(self, h=1.0, x1=120.0, r0=176.0, r1=438.0, z0=150.0, z1=360.0):   # room for the settled muscles and the fat
         self.h = float(h)
         self.x = np.arange(0.0, x1 + h, h, dtype=np.float32)
         self.r = np.arange(r0, r1 + h, h, dtype=np.float32)
@@ -674,6 +674,7 @@ def build_male(G, T, prm=MALE, ty=None):
              ("biceps femoris (long head)", "glmax"), ("semitendinosus", "glmax"), ("semimembranosus", "glmax")]
     if not all([lib("thigh, " + n, COL[c], leg_row=THIGH_CUT) for n, c in THIGH]):
         hand_thigh(S, THIGH_CUT)
+    settle(S)
     # the sprite cuts the neck flat: the neck root and the trapezius end on that section, they do not close in a tip
     S.d = smax(S.d, (prm["neck_cut"] - G.r)[:, None, None].astype(np.float32), 2.0)
     S.layer_d["bone"] = np.maximum(S.layer_d["bone"], (prm["neck_cut"] + 3.0 - G.r)[:, None, None].astype(np.float32))   # the spine goes on in the ghost neck
@@ -700,6 +701,98 @@ RIBS = [(35, 213, "st", 214), (30, 233, "st", 228), (28, 252, "st", 243), (27, 2
         (62, 333, "arch", (40, 322)), (88, 334, None, None), (125, 324, None, None)]
 T_ROWS = [196.0 + 9.8 * i for i in range(12)]                  # T1..T12
 L_ROWS = [313.5 + 9.5 * i for i in range(5)]                   # L1..L5: L4 (342) at the top of the iliac crest
+
+
+# The muscles of the trunk from the deepest to the most superficial (Virginie 2026-11-17), with their French names: the
+# order settle() stacks them in and the build-up board shows them in.
+MUSCLE_ORDER = [
+    ("multifidus", "multifides"),
+    ("erector spinae", "érecteurs du rachis"),
+    ("thoracolumbar fascia", "fascia thoraco-lombaire postérieur, très fin"),
+    ("psoas major", "psoas majeur"),
+    ("iliacus", "iliaque"),
+    ("gluteus minimus", "petit fessier"),
+    ("gluteus medius", "moyen fessier"),
+    ("piriformis", "piriforme"),
+    ("obturator internus", "obturateur interne"),
+    ("obturator externus", "obturateur externe"),
+    ("gemellus superior", "jumeau supérieur"),
+    ("gemellus inferior", "jumeau inférieur"),
+    ("quadratus femoris", "carré fémoral"),
+    ("serratus", "dentelé antérieur"),
+    ("infraspinatus, teres, rhomboid", "rhomboïdes, supra- et infra-épineux, ronds"),
+    ("rectus abdominis", "grand droit de l'abdomen"),
+    ("external oblique", "oblique externe"),
+    ("thigh, vastus intermedius", "vaste intermédiaire"),
+    ("thigh, adductor magnus", "grand adducteur"),
+    ("thigh, adductor brevis", "adducteur bref"),
+    ("thigh, pectineus", "pectiné"),
+    ("thigh, vastus medialis", "vaste médial"),
+    ("thigh, semimembranosus", "semi-membraneux"),
+    ("thigh, adductor longus", "adducteur long"),
+    ("thigh, gracilis", "gracile"),
+    ("thigh, biceps femoris (long head)", "biceps fémoral, chef long"),
+    ("thigh, semitendinosus", "semi-tendineux"),
+    ("thigh, vastus lateralis", "vaste latéral"),
+    ("thigh, rectus femoris", "droit fémoral"),
+    ("tensor fasciae latae", "tenseur du fascia lata (superficiel, côté de hanche)"),
+    ("thigh, sartorius", "sartorius"),
+    ("gluteus maximus", "grand fessier"),
+    ("pectoralis major", "grand pectoral"),
+    ("latissimus dorsi", "grand dorsal"),
+    ("trapezius (middle, lower)", "trapèze, parties moyenne et basse"),
+    ("trapezius (upper)", "trapèze, partie haute"),
+]
+SETTLE_MAX = 6.0       # px: the most a muscle is moved off what lies under it
+SETTLE_SMOOTH = 4.0    # px: how broadly the push spreads, so a muscle moves as a whole instead of being dented
+
+
+def settle(S):
+    """Stack the muscles instead of fusing them (Virginie 2026-11-17: 'tu fonds deux muscles l'un dans l'autre, à la place
+    d'empiler proprement'). The bones stay where they are. Each muscle, deepest first (MUSCLE_ORDER), is pushed out of what
+    is already placed (bones and deeper muscles) by the depth it goes in, along the outward direction of what it lies on;
+    the push is spread over SETTLE_SMOOTH px so the muscle moves rather than dents. What still goes in after the push is cut
+    away, so no muscle shares volume with a bone or another muscle. The stack is then rebuilt from the core (bones and
+    viscera) and the settled muscles."""
+    G = S.G; h = G.h
+    placed = np.zeros(G.shape, bool)
+    for name, layer, colour, sl, a in S.parts:
+        if layer == "bone" and a is not None:
+            placed[sl] |= a < 0
+    idx = [i for i, p in enumerate(S.parts) if p[1] == "muscle" and p[4] is not None]
+    rank = lambda i: next((k for k, (pre, _) in enumerate(MUSCLE_ORDER) if S.parts[i][0].startswith(pre)), len(MUSCLE_ORDER))
+    idx.sort(key=lambda i: (rank(i), i))
+    sg = SETTLE_SMOOTH / h; kn = 2 * int(np.ceil(2.0 * sg)) + 1
+    pad = int(np.ceil((SETTLE_MAX + 2.0 * SETTLE_SMOOTH) / h))
+    musc = G.full()
+    S.settle_report = []
+    for i in idx:
+        name, layer, colour, sl, a = S.parts[i]
+        box = tuple(slice(max(0, q.start - pad), min(n, q.stop + pad)) for q, n in zip(sl, G.shape))
+        f = np.full(tuple(b.stop - b.start for b in box), BIG, np.float32)
+        f[tuple(slice(q.start - b.start, q.stop - b.start) for q, b in zip(sl, box))] = a
+        v0 = float((f < 0).sum()); moved = 0.0
+        pm = placed[box]
+        if pm.any():
+            pd = ((ndi.distance_transform_edt(~pm) - ndi.distance_transform_edt(pm)) * h).astype(np.float32)
+            grad = np.gradient(pd, h)
+            ix = np.indices(f.shape, dtype=np.float32)
+            for _ in range(3):
+                need = np.clip(-pd, 0.0, None) * (f < 0)
+                if need.max() < 0.5 * h:
+                    break
+                mag = np.minimum(ndi.gaussian_filter(ndi.maximum_filter(need, size=kn), sg), SETTLE_MAX)
+                moved += float(mag[f < 0].max()) if (f < 0).any() else 0.0
+                vec = [ndi.gaussian_filter(gc * need, sg) for gc in grad]
+                nrm = np.sqrt(sum(v * v for v in vec)) + 1e-6
+                f = ndi.map_coordinates(f, [ix[j] - vec[j] / nrm * mag / h for j in range(3)], order=1, mode="nearest").astype(np.float32)
+            f = np.maximum(f, -pd)                             # what still goes in is cut away
+        S.settle_report.append((name, moved, 1.0 - float((f < 0).sum()) / max(v0, 1.0)))
+        S.parts[i] = (name, layer, colour, box, f)
+        placed[box] |= f < 0
+        musc[box] = np.minimum(musc[box], f)
+        S.owner[box][f < 0.5] = i + 1
+    S.d = np.minimum(S.layer_d["core"], musc)
 
 
 def hand_thigh(S, THIGH_CUT):

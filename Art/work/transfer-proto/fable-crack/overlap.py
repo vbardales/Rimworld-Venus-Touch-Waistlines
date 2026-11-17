@@ -48,6 +48,10 @@ def main():
             depth = float(ndi.distance_transform_edt(both).max()) * h * 2.0
             rows.append((n / min(vol[a], vol[b]), n * h ** 3, depth, a, b, P[a][0], P[b][0]))
     rows.sort(reverse=True)
+    print("settle: muscle | moved px | volume cut")
+    for n, mv, cut in getattr(S, "settle_report", []):
+        if mv > 0 or cut > 0.01:
+            print(f"  {n:40s} {mv:5.1f} | {100 * cut:5.1f} %")
     mm = [r for r in rows if r[5] == "muscle" and r[6] == "muscle"]
     bm = [r for r in rows if {r[5], r[6]} == {"muscle", "bone"}]
     print(f"muscle-muscle pairs that share volume: {len(mm)}; muscle-bone: {len(bm)}")
@@ -68,6 +72,9 @@ def main():
         pal = np.array([[244, 242, 238], [190, 190, 186], [120, 160, 210], [220, 30, 30]], float)
         ims = [s.oblique(G, d, own, (pal,), ang, 0.7)[0] for ang in (0, 90, 180)]
         tiles.append((f"{100 * r[0]:.0f} % de {'l' if vol[a] < vol[b] else 'l'}a plus petite, {r[2]:.0f} px : {a}  x  {b}", ims))
+    if not tiles:
+        print("no muscle pair shares volume")
+        return
     tw = max(sum(im.width for im in t[1]) for t in tiles) + 16; th = max(max(im.height for im in t[1]) for t in tiles) + 24
     cols = 2
     out = Image.new("RGB", (cols * tw, -(-len(tiles) // cols) * th + 24), (244, 242, 238)); dr = ImageDraw.Draw(out)

@@ -137,7 +137,9 @@ def solve_fat(G, F, d00, zc_rows, target):
 
     def share(t):
         dt = grow(t)
-        Ft = dict(F); Ft["grown"] = (dt < 0) & ~ins
+        # the subcutaneous fat is what the slider grows over the envelope; the gaps the envelope closes between the
+        # pieces (intermuscular connective tissue) count as the rest, not as fat
+        Ft = dict(F); Ft["grown"] = (dt < 0) & ~(dd < 0)
         return composition(Ft, dt, G.h)
     lo, hi = 0.0, 25.0
     for _ in range(14):
@@ -172,7 +174,7 @@ def envelope(G, ins):
     # same smoothing): the envelope swells gently there, it does not copy the edge.
     lean = ((ndi.distance_transform_edt(~ins) - ndi.distance_transform_edt(ins)) * G.h).astype(np.float32)
     sg = ENV_SMOOTH / G.h; n = 2 * int(np.ceil(2.0 * sg)) + 1
-    for _ in range(3):
+    for _ in range(8):
         need = np.clip(sd - (lean - ENV_COVER), 0.0, None) * (lean < 3.0)
         if need.max() < 0.05:
             break
