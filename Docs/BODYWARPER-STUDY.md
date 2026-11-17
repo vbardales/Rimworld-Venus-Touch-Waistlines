@@ -38,3 +38,10 @@ its own data (WDI source silhouette to the M1 / M prototype silhouettes). Missin
 def or data file, not player settings), more resolution where edges matter (16 cells is about 8 px per cell on 128 px
 art, and the art stretches with the mesh), zero displacement toward the neck seam, cache refresh, the 1.6 fixes above.
 A clean Venus implementation of the idea (about 300 lines) is safer than depending on an experimental mod with no licence.
+
+## Intended use (Virginie, 2026-11-17)
+
+Not an automatic reshape of every body: a way to retouch by hand the occasional garment that the automatic cut leaves
+wrong. So a warp per apparel def (and body type, facing), sculpted in an in-game dev editor in the spirit of
+BodyWarper's vertex grid, saved as data shipped with Venus (a Def or XML, not player settings), applied to that
+garment's render node only. Breasts go to a separate mod (Venus Touch - Breasts).
