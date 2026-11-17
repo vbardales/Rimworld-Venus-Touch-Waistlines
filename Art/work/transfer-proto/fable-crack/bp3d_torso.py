@@ -36,7 +36,25 @@ GROUPS = {
     "gluteus maximus": ["right gluteus maximus"],
     "hip flexors (psoas, iliacus)": ["right iliacus", "right psoas major"],
     "tensor fasciae latae": ["right tensor fasciae latae"],
+    # Virginie 2026-11-17: every muscle whose belly lies in the pelvis and femur stump block, cut at the stump plane
+    "deep lateral rotators": ["right piriformis", "right obturator internus", "right obturator externus",
+                              "right gemellus superior", "right gemellus inferior", "right quadratus femoris"],
+    "thigh, rectus femoris": ["right rectus femoris"],
+    "thigh, vastus intermedius": ["right vastus intermedius"],
+    "thigh, vastus medialis": ["right vastus medialis"],
+    "thigh, vastus lateralis": ["right vastus lateralis"],
+    "thigh, sartorius": ["right sartorius"],
+    "thigh, pectineus": ["right pectineus"],
+    "thigh, adductor longus": ["right adductor longus"],
+    "thigh, adductor brevis": ["right adductor brevis"],
+    "thigh, adductor magnus": ["right adductor magnus"],
+    "thigh, gracilis": ["right gracilis"],
+    "thigh, biceps femoris (long head)": ["long head of right biceps femoris"],
+    "thigh, semitendinosus": ["right semitendinosus"],
+    "thigh, semimembranosus": ["right semimembranosus"],
 }
+# groups laid with the pelvis bones (bp3d_import.pelvis_width, like the hip bone and the sacrum)
+PELVIC = {k for k in GROUPS if k == "deep lateral rotators" or k.startswith("thigh, ")}
 
 
 # bones of the trunk (2026-11-17, Virginie: 'pareil pour les os'): display groups -> name words of BodyParts3D bones
@@ -94,6 +112,8 @@ def build():
                 continue
             v, f = mesh[n]
             v = bi.thorax_width(T(O(v)))
+            if key in PELVIC:
+                v = bi.pelvis_width(v)
             V.append(v); F.append(f + off); off += len(v)
         if V:
             k = key.replace(" ", "_").replace(",", "").replace("(", "").replace(")", "")

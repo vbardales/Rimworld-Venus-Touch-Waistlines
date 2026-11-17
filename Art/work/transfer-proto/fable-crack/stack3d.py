@@ -653,27 +653,20 @@ def build_male(G, T, prm=MALE, ty=None):
     lib("hip flexors (psoas, iliacus)", COL["tfl"])
     # tensor fasciae latae: superficial, side of the hip, over the gluteus medius toward the iliotibial band
     lib("tensor fasciae latae", COL["tfl"]) or S.add("tensor fasciae latae", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
-    # thigh stump, by hand (Virginie 2026-11-17): very short proximal volumes, rectus femoris and vasti in front, adductors
-    # inside, hamstrings behind, on the lines of the ghost leg's muscles, cut at a plane just under the groin and the
-    # gluteal fold (row 426, the crotch at 422 and the gluteal fold at 404 to 407 sit above it)
+    # thigh stump cut at a plane just under the groin and the gluteal fold (row 426, the crotch at 422 and the gluteal fold
+    # at 404 to 407 sit above it)
     THIGH_CUT = 426.0
-    below = (lambda X, R, Z: np.broadcast_to(R - THIGH_CUT, np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
-             np.array([-200.0, THIGH_CUT, 0.0]), np.array([200.0, 900.0, 500.0]))
-    cut = lambda prim: carve(prim, (lambda X, R, Z: -below[0](X, R, Z), below[1], below[2]))
-    S.add("thigh stump, front (rectus femoris, vasti)", "muscle",
-          cut(tube([(43, 396, 262), (44, 432, 266)], [7.0, 11.0])), k=3.0, colour=COL["thigh"])
-    S.add("thigh stump, front (vastus lateralis)", "muscle", cut(tube([(56, 404, 256), (57, 432, 258)], [6.0, 10.0])), k=3.0, colour=COL["thigh"])
-    S.add("thigh stump, front (vastus medialis, intermedius)", "muscle", cut(tube([(32, 412, 258), (31, 432, 259)], [5.0, 8.0])), k=3.0, colour=COL["thigh"])
-    S.add("thigh stump, inside (adductors)", "muscle", cut(tube([(12, 400, 256), (22, 432, 251)], [5.0, 9.5])), k=2.5, colour=COL["tfl"], km=1.0)
-    S.add("thigh stump, back (hamstrings)", "muscle", cut(tube([(28, 410, 232), (38, 432, 233)], [6.0, 11.0])), k=3.0, colour=COL["glmax"])
-    # pectineus (Virginie 2026-11-17): small, deep, front and inside, from the pecten of the pubis down to the femur
-    # under the lesser trochanter
-    S.add("thigh stump, pectineus", "muscle", cut(tube([(17, 392, 268), (27, 410, 259), (36, 430, 250)], [4.0, 4.8, 5.0])), k=2.0,
-          colour=COL["tfl"], km=1.0)
-    # sartorius: a thin superficial strap from the anterior superior iliac spine (BodyParts3D hip bone: 62, 359, 277),
-    # in a diagonal in front of the rectus femoris toward the inside of the thigh
-    S.add("thigh stump, sartorius", "muscle", cut(tube([(61, 362, 275), (54, 390, 278), (42, 414, 278), (33, 432, 274)],
-                                                       [2.6, 3.0, 3.0, 3.0])), k=1.5, colour=COL["thigh"], km=0.5)
+    # deep lateral rotators of the hip (Virginie 2026-11-17): piriformis, obturators, gemelli, quadratus femoris, under the
+    # gluteus maximus around the neck of the femur
+    lib("deep lateral rotators", COL["glmed"], leg_row=THIGH_CUT)
+    # Virginie 2026-11-17: every muscle whose belly lies in the pelvis and femur stump block, each its own piece from
+    # BodyParts3D, cut at the stump plane; none whose belly starts below it (short head of the biceps femoris, leg muscles)
+    THIGH = [("rectus femoris", "thigh"), ("vastus intermedius", "thigh"), ("vastus medialis", "thigh"),
+             ("vastus lateralis", "thigh"), ("sartorius", "thigh"), ("pectineus", "tfl"), ("adductor longus", "tfl"),
+             ("adductor brevis", "tfl"), ("adductor magnus", "tfl"), ("gracilis", "tfl"),
+             ("biceps femoris (long head)", "glmax"), ("semitendinosus", "glmax"), ("semimembranosus", "glmax")]
+    if not all([lib("thigh, " + n, COL[c], leg_row=THIGH_CUT) for n, c in THIGH]):
+        hand_thigh(S, THIGH_CUT)
     # the sprite cuts the neck flat: the neck root and the trapezius end on that section, they do not close in a tip
     S.d = smax(S.d, (prm["neck_cut"] - G.r)[:, None, None].astype(np.float32), 2.0)
     S.layer_d["bone"] = np.maximum(S.layer_d["bone"], (prm["neck_cut"] + 3.0 - G.r)[:, None, None].astype(np.float32))   # the spine goes on in the ghost neck
@@ -700,6 +693,24 @@ RIBS = [(35, 213, "st", 214), (30, 233, "st", 228), (28, 252, "st", 243), (27, 2
         (62, 333, "arch", (40, 322)), (88, 334, None, None), (125, 324, None, None)]
 T_ROWS = [196.0 + 9.8 * i for i in range(12)]                  # T1..T12
 L_ROWS = [313.5 + 9.5 * i for i in range(5)]                   # L1..L5: L4 (342) at the top of the iliac crest
+
+
+def hand_thigh(S, THIGH_CUT):
+    """Thigh stump by hand, used when BodyParts3D is absent (Virginie 2026-11-17, first version): very short proximal
+    volumes, rectus femoris and vasti in front, adductors inside, hamstrings behind, pectineus, sartorius."""
+    below = (lambda X, R, Z: np.broadcast_to(R - THIGH_CUT, np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
+             np.array([-200.0, THIGH_CUT, 0.0]), np.array([200.0, 900.0, 500.0]))
+    cut = lambda prim: carve(prim, (lambda X, R, Z: -below[0](X, R, Z), below[1], below[2]))
+    S.add("thigh stump, front (rectus femoris, vasti)", "muscle",
+          cut(tube([(43, 396, 262), (44, 432, 266)], [7.0, 11.0])), k=3.0, colour=COL["thigh"])
+    S.add("thigh stump, front (vastus lateralis)", "muscle", cut(tube([(56, 404, 256), (57, 432, 258)], [6.0, 10.0])), k=3.0, colour=COL["thigh"])
+    S.add("thigh stump, front (vastus medialis, intermedius)", "muscle", cut(tube([(32, 412, 258), (31, 432, 259)], [5.0, 8.0])), k=3.0, colour=COL["thigh"])
+    S.add("thigh stump, inside (adductors)", "muscle", cut(tube([(12, 400, 256), (22, 432, 251)], [5.0, 9.5])), k=2.5, colour=COL["tfl"], km=1.0)
+    S.add("thigh stump, back (hamstrings)", "muscle", cut(tube([(28, 410, 232), (38, 432, 233)], [6.0, 11.0])), k=3.0, colour=COL["glmax"])
+    S.add("thigh stump, pectineus", "muscle", cut(tube([(17, 392, 268), (27, 410, 259), (36, 430, 250)], [4.0, 4.8, 5.0])), k=2.0,
+          colour=COL["tfl"], km=1.0)
+    S.add("thigh stump, sartorius", "muscle", cut(tube([(61, 362, 275), (54, 390, 278), (42, 414, 278), (33, 432, 274)],
+                                                       [2.6, 3.0, 3.0, 3.0])), k=1.5, colour=COL["thigh"], km=0.5)
 
 
 def skeleton_detail(S, prm, fsp, ca, cf, cb):
