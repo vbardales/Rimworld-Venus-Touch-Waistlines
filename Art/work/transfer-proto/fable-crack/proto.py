@@ -23,8 +23,50 @@ def carry(K, a):
     return out
 
 
+# Prototype targets: widths relative to the shoulders (Virginie 2026-11-17). Rows of the Male frame where each is read:
+# shoulders = widest row (deltoid stump, 268), upper chest = under the armpits (298), waist = navel (358), pelvis = hips (382).
+WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
+PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.8, "waist": 0.66, "pelvis": 0.76}}
+
+
+def width_scale(G, d, target):
+    """Row-wise width scale that brings the skin half widths at WROWS to target x shoulder width (1 above the
+    shoulders, held below the pelvis)."""
+    xm = np.nanmax(s.last_cross(d, 1, G.x), axis=1)
+    hw = lambda r: float(np.interp(r, G.r, np.nan_to_num(xm)))
+    sh = hw(WROWS["shoulders"])
+    rows = [WROWS[k] for k in WROWS]
+    k = [target[n] * sh / hw(WROWS[n]) for n in WROWS]
+    return rows, k
+
+
+def proto_board(name, h):
+    """Prototype vs WDI: the Male stack (skin, fat, lean) scaled row by row in width to the prototype's ratios, drawn
+    by stack3d.board next to the WDI Male (WDI | stack in WDI style | outlines)."""
+    import average as av
+    K = s.make("Male", h)
+    G, T = K["G"], K["T"]
+    rows, k = width_scale(G, K["d"], PROTO[name])
+    print(f"{name}: width scale at {rows}: {[round(x, 3) for x in k]}")
+    av.ROWS_SAVE = av.ROWS
+    av.ROWS = rows
+    one = np.ones(len(rows))
+    TM = T
+    Go, d, o = av.vary(G, TM, K["d"], K["owner"], np.array(k), one)
+    av.ROWS = av.ROWS_SAVE
+    rep, path = s.board(K["S"], Go, d, T, f"proto{name}", o, extra=f"prototype {name}")
+    for f, r in rep.items():
+        print(f"{f:6s} sil p95 {r['p95']:.2f} | lum {r['mae']:.4f}")
+    xm = np.nanmax(s.last_cross(d, 1, Go.x), axis=1)
+    sh = float(np.interp(WROWS["shoulders"], Go.r, np.nan_to_num(xm)))
+    print("ratios now:", {n: round(float(np.interp(r, Go.r, np.nan_to_num(xm))) / sh, 3) for n, r in WROWS.items()})
+    print(path)
+
+
 def main():
-    h = float(sys.argv[1]) if len(sys.argv) > 1 else 1.5
+    h = float(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1][0].isdigit() else 1.5
+    if len(sys.argv) > 2 and sys.argv[2] in PROTO:
+        return proto_board(sys.argv[2], h)
     K = s.make("Male", h)
     G, S, d = K["G"], K["S"], K["d"]
     # the stack's own bone layer is a filled barrel (the rib cage as one solid): the bones are the display parts
