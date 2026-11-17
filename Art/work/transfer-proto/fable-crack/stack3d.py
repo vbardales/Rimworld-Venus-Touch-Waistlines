@@ -512,7 +512,11 @@ def build_male(G, T, prm=MALE, ty=None):
     lib_bones = os.environ.get("HAND_MUSCLES", "0") != "1" and bp3d_torso.PATH.exists()
     S.add("pubis", "bone", tube([pub, (18, 394, 276), acet], [5.0, 4.6, 6.0]), colour=BONE, show=not lib_bones)
     S.add("ischium", "bone", tube([acet, isch, (6, 406, 262), pub], [6.0, 6.5, 3.6, 4.0]), colour=BONE, show=not lib_bones)
-    S.add("femur", "bone", tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247)], [11.0, 7.0, 7.5, 5.5]), colour=BONE)
+    # proximal femur, down to the plane of the thigh stump (row 426), where its muscles are cut too
+    femur_cut = (lambda X, R, Z: np.broadcast_to(426.0 - R, np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
+                 np.array([-200.0, 426.0, 0.0]), np.array([200.0, 900.0, 500.0]))
+    S.add("femur", "bone", carve(tube([acet, (47, 388, 247), (52, 391, 245), (46, 405, 247), (45, 432, 248)], [11.0, 7.0, 7.5, 5.5, 5.8]),
+                                 femur_cut), colour=BONE)
     if lib_bones:
         for key in bp3d_torso.BONES:
             pb = bp3d_torso.bone_prim(key)
@@ -646,19 +650,22 @@ def build_male(G, T, prm=MALE, ty=None):
     # arm (clavicle, acromion, scapular spine to the humerus); the ghost carries it as "deltoid cap" (build_ghost).
 
     # ---- pelvis and thigh stump
-    # gluteus medius: from the iliac crest (row 347) down to the greater trochanter (391)
-    lib("gluteus medius", COL["glmed"]) or S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
-    lib("gluteus maximus", COL["glmax"], km=4.0) or S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
-    # psoas and iliacus: deep, inside the pelvis (no hand fallback: they make no outer shape)
-    lib("hip flexors (psoas, iliacus)", COL["tfl"])
-    # tensor fasciae latae: superficial, side of the hip, over the gluteus medius toward the iliotibial band
-    lib("tensor fasciae latae", COL["tfl"]) or S.add("tensor fasciae latae", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
-    # thigh stump cut at a plane just under the groin and the gluteal fold (row 426, the crotch at 422 and the gluteal fold
-    # at 404 to 407 sit above it)
+    # Virginie 2026-11-17: every muscle, tendon of insertion or origin present in the pelvis and proximal femur block is
+    # kept, each muscle its own piece, all cut clean at the plane of the femurs: a plane just under the groin and the
+    # gluteal fold (row 426, the crotch at 422 and the gluteal fold at 404 to 407 sit above it)
     THIGH_CUT = 426.0
-    # deep lateral rotators of the hip (Virginie 2026-11-17): piriformis, obturators, gemelli, quadratus femoris, under the
-    # gluteus maximus around the neck of the femur
-    lib("deep lateral rotators", COL["glmed"], leg_row=THIGH_CUT)
+    # gluteus minimus and medius: from the iliac wing and crest (row 347) down to the greater trochanter (391)
+    lib("gluteus minimus", COL["glmed"], leg_row=THIGH_CUT)
+    lib("gluteus medius", COL["glmed"], leg_row=THIGH_CUT) or S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
+    lib("gluteus maximus", COL["glmax"], km=4.0, leg_row=THIGH_CUT) or S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
+    # psoas major and iliacus: deep, inside the pelvis (no hand fallback: they make no outer shape)
+    lib("psoas major", COL["tfl"], leg_row=THIGH_CUT)
+    lib("iliacus", COL["tfl"], leg_row=THIGH_CUT)
+    # tensor fasciae latae: superficial, side of the hip, over the gluteus medius toward the iliotibial band
+    lib("tensor fasciae latae", COL["tfl"], leg_row=THIGH_CUT) or S.add("tensor fasciae latae", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
+    # deep lateral rotators of the hip, under the gluteus maximus around the neck of the femur
+    for n in ("piriformis", "obturator internus", "obturator externus", "gemellus superior", "gemellus inferior", "quadratus femoris"):
+        lib(n, COL["glmed"], leg_row=THIGH_CUT)
     # Virginie 2026-11-17: every muscle whose belly lies in the pelvis and femur stump block, each its own piece from
     # BodyParts3D, cut at the stump plane; none whose belly starts below it (short head of the biceps femoris, leg muscles)
     THIGH = [("rectus femoris", "thigh"), ("vastus intermedius", "thigh"), ("vastus medialis", "thigh"),

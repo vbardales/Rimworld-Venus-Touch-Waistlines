@@ -32,13 +32,19 @@ GROUPS = {
                        "right spinalis thoracis"],
     "infraspinatus, teres, rhomboid": ["right infraspinatus muscle", "right supraspinatus", "right teres major",
                                        "right teres minor", "right rhomboid major", "right rhomboid minor"],
-    "gluteus medius": ["right gluteus medius", "right gluteus minimus"],
+    "gluteus minimus": ["right gluteus minimus"],
+    "gluteus medius": ["right gluteus medius"],
     "gluteus maximus": ["right gluteus maximus"],
-    "hip flexors (psoas, iliacus)": ["right iliacus", "right psoas major"],
+    "psoas major": ["right psoas major"],
+    "iliacus": ["right iliacus"],
     "tensor fasciae latae": ["right tensor fasciae latae"],
     # Virginie 2026-11-17: every muscle whose belly lies in the pelvis and femur stump block, cut at the stump plane
-    "deep lateral rotators": ["right piriformis", "right obturator internus", "right obturator externus",
-                              "right gemellus superior", "right gemellus inferior", "right quadratus femoris"],
+    "piriformis": ["right piriformis"],
+    "obturator internus": ["right obturator internus"],
+    "obturator externus": ["right obturator externus"],
+    "gemellus superior": ["right gemellus superior"],
+    "gemellus inferior": ["right gemellus inferior"],
+    "quadratus femoris": ["right quadratus femoris"],
     "thigh, rectus femoris": ["right rectus femoris"],
     "thigh, vastus intermedius": ["right vastus intermedius"],
     "thigh, vastus medialis": ["right vastus medialis"],
@@ -54,7 +60,8 @@ GROUPS = {
     "thigh, semimembranosus": ["right semimembranosus"],
 }
 # groups laid with the pelvis bones (bp3d_import.pelvis_width, like the hip bone and the sacrum)
-PELVIC = {k for k in GROUPS if k == "deep lateral rotators" or k.startswith("thigh, ")}
+ROTATORS = ("piriformis", "obturator internus", "obturator externus", "gemellus superior", "gemellus inferior", "quadratus femoris")
+PELVIC = {k for k in GROUPS if k in ROTATORS or k.startswith("thigh, ")}
 
 
 # bones of the trunk (2026-11-17, Virginie: 'pareil pour les os'): display groups -> name words of BodyParts3D bones
