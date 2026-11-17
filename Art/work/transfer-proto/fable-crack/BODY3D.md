@@ -392,3 +392,74 @@ Open:
 - Clip and outline (B5, B6), tucked and untucked rules: untouched.
 - The six other bodies are not run: their stack is a first pass (frame of Female, breast lobes, fat folds, Hulk_Female tips; see the stack section), and that skeleton and crotch work is the dependency. `garment3d.py <Body>` runs on them as soon as the mesh is good.
 - Hulk south and north footprint is 4 px off the sprite (the known Hulk tips, 5 px in the viewer score).
+
+## Trunk prototypes M1 and M (2026-11-17, `stack3d.py`, `bp3d_torso.py`, `proto.py`, `buildup.py`, `stages.py`, `overlap.py`)
+
+Virginie's brief: torso prototypes, starting from the Male average, each defined by a fat, muscle and bone share and by
+four width ratios (shoulders, upper chest, waist, pelvis), measured on the torso only, the ghost limbs ignored.
+
+### The three bodies
+
+- **WDI source**: the stylised starting silhouette. No biological composition is attributed to it.
+- **M1 lean / athletic**: a chosen, stylised target. Fat about 12 to 16 % (solved at 14), superficial muscles at 100 %,
+  a light envelope (closing 6 px, smoothing 5 px), gentle pads. No width ratios of its own yet.
+- **M average**: fat about 20 to 23 % (solved at 23), superficial muscles at 80 to 90 % of M1 (pectoralis major and
+  latissimus 85 %, upper trapezius 80 %, middle and lower trapezius, gluteus maximus and external oblique 90 %, rectus
+  abdominis not reinforced), a thick soft envelope (closing 14 px, smoothing 12 px), stronger broader pads, the global
+  fat at 45 % on the chest and 150 % on the lower back. Widths 1 / 0.79 / 0.72 / 0.77; shape edits: rib cage stretched
+  12 px, pectorals raised 12 px, buttocks reworked 7 px.
+
+All percentages are calculation targets, not measurements. The bone target (4 %) comes from whole-body DXA bone mineral
+and is not comparable to the whole bones of a cropped torso: it waits for a coherent definition.
+
+### The lean stack (`stack3d.build_male`)
+
+- **Bones**: BodyParts3D 4.0 (CC BY-SA, `out/bp3d/`, out of git): spine from T1 to the coccyx, rib cage and sternum,
+  clavicles, scapulas, hip bones, proximal femurs; all cut at the stump planes. Hand bones are only the fallback.
+- **Muscles**, each its own piece, deepest first (`MUSCLE_ORDER`): multifidus (hand), erector spinae (BodyParts3D,
+  lumbar mass widened 35 %), posterior thoracolumbar fascia (hand, 0.8 px), psoas major, iliacus, gluteus minimus and
+  medius, the six deep lateral rotators (piriformis, obturators internus and externus, gemelli, quadratus femoris),
+  serratus anterior, rhomboids / supra- and infraspinatus / teres, transversus abdominis and internal oblique (hand,
+  thin), rectus abdominis (hand, one band a side from the pubis to the cartilages of ribs 5 to 7, three shallow
+  tendinous intersections), external oblique (BodyParts3D, cut away in front of the rectus), the thirteen thigh-stump
+  muscles (rectus femoris, vasti intermedius / medialis / lateralis, sartorius, pectineus, adductors longus / brevis /
+  magnus, gracilis, biceps femoris long head, semitendinosus, semimembranosus), tensor fasciae latae, gluteus maximus,
+  pectoralis major, latissimus dorsi (hand fan to the posterior axillary fold), trapezius middle-lower and upper.
+  Excluded: deltoid, arm stump, scalenes and lower sternocleidomastoids (they belong to the ghost limbs and neck),
+  the short head of the biceps femoris, articularis genus and every muscle below the knee.
+- **Cut planes**: neck section, arm plane past the acromion (x 90), thigh stump plane (row 426), femur cut there too.
+- **Stacking (`settle`)**: no muscle shares volume with a bone or another muscle (`overlap.py` finds 0 pairs). Each
+  muscle, deepest first, is pushed out of what is already placed by the depth it goes in (at most 6 px, spread over
+  4 px so it moves rather than dents); what still goes in is cut away. Cost: some wedged small muscles lose volume
+  (gemelli, multifidus, semitendinosus, sartorius), and the pushes leave gaps.
+
+### From the lean stack to the prototype (`proto.proto_board`, drawn by `stages.py`)
+
+1. The lean stack in the Male frame. (Putting it on the WDI source silhouette, with the fat that filled it, was removed
+   on 2026-11-17: `proto.WDI_FIT = False`.)
+2. The smooth envelope: the stack closed, smoothed, pushed out broadly where a piece would pierce it; the gaps it closes
+   count as the rest (internal tissue not modelled: junctions, organs, water, skin), not as fat.
+3. The global fat layer: one slider t, as a share of the shoulder half width, weighted by region (`fat_base`).
+4. The pads (flanks, lower belly, suprapubic, lower medial gluteal) melted into that layer.
+5. No fat or skin past the stumps: the neck, arm (above the armpit, tilted into the flank) and thigh sections are cut
+   flat and closed by a 0.8 px skin (`stump_cut`).
+6. The widths brought to the ratios (row profiles smoothed over 24 px, no crease), then the shape edits (M only).
+
+`solve_comp` solves fat (the slider), muscle (every muscle thickened into the room under the skin) and bone (the share
+of a bone's volume counted as bone tissue, the rest as marrow) in turn; the thoracic cavity counts at lung density
+(0.45). Latest run (no WDI fit): M fat 23 %, muscle 42 %, bone 4 %, widths 1 / 0.809 / 0.715 / 0.777, muscles
+thickened 22 px; M1 fat 14 %, widths 1 / 1.03 / 1.02 / 1.01 (a box: no width target).
+
+### Boards
+
+- `2026-11-17_buildup-M1.png`, `-M.png`: the torso built piece by piece (bones, muscles, fat layer, pads, skin).
+- `2026-11-17_stages-M.png`, `-M1.png`: from the lean stack to the finished prototype.
+- `2026-11-17_protoM1-vs-M.png`: the two prototypes lit, front, side, back.
+- `2026-11-17_muscles.png`, `2026-11-17_bones.png`: every piece alone, in transparency.
+
+### Open
+
+- M1 width ratios (Virginie to give); the bone definition for a cropped torso; M's upper chest at 0.809 for 0.79.
+- 42 % muscle is probably a whole-body figure: on the torso it forces the muscles 22 px into the cavity.
+- The muscle fibres are not drawn (only the shapes follow them). The fat-thickness map saturates (scale 16 px).
+- Next version only: the hand retouch of single garments (warped mesh with a GUI, see `Docs/BODYWARPER-STUDY.md`).
