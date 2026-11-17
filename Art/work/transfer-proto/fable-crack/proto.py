@@ -24,10 +24,41 @@ def carry(K, a):
     return out
 
 
+def layer_fields(K):
+    """Signed fields on the body grid: bone (display bones), muscle, fat pads, lean (whole stack), fat solid."""
+    G, S, G0 = K["G"], K["S"], K["G0"]
+    un = {"bone": G0.full(), "muscle": G0.full(), "fat": G0.full()}
+    for name, layer, colour, sl, a in S.parts:
+        if a is not None and layer in un:
+            un[layer][sl] = np.minimum(un[layer][sl], a)
+    fat = K["fat"]
+    for f in K["steps"][1:]:
+        fat = f.warp(G, fat, 1)
+    return {"bone": carry(K, un["bone"]), "muscle": carry(K, un["muscle"]), "pads": carry(K, un["fat"]),
+            "lean": carry(K, S.d), "fat": fat}
+
+
+def composition(F, d, h):
+    """Mass shares (%) inside the skin d: every layer less the ones under it; the fat outside the lean counts as fat."""
+    skin = d < 0
+    bone = F["bone"] < 0; musc = (F["muscle"] < 0) & ~bone; pads = (F["pads"] < 0) & ~bone & ~musc
+    lean = F["lean"] < 0
+    fat = (F["fat"] < 0) | F.get("grown", np.zeros_like(skin))   # the skin grown outward (prototype fat) is fat too
+    under = bone | musc | pads
+    fat = fat & ~lean & ~under
+    vox = {"bone": bone, "muscle": musc, "fat pads": pads, "viscera": lean & ~under, "fat": fat,
+           "rest": ~fat & ~lean & ~under}
+    mass = {k: float((m & skin).sum()) * h ** 3 * DENS[k] for k, m in vox.items()}
+    tot = sum(mass.values())
+    return {k: 100.0 * v / tot for k, v in mass.items()}
+
+
 # Prototype targets: widths relative to the shoulders (Virginie 2026-11-17). Rows of the Male frame where each is read:
 # shoulders = widest row (deltoid stump, 268), upper chest = under the armpits (298), waist = navel (358), pelvis = hips (382).
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
-PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.8, "waist": 0.66, "pelvis": 0.76}}
+# M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
+PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77}}
+COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0}}
 
 
 def width_scale(G, d, target):
@@ -92,6 +123,20 @@ def proto_board(name, h):
     Go = s.Grid(G.h, x1=float(G.x[-1]) * max(max(k), 1.0) + 4.0, r0=float(G.r[0]), r1=float(G.r[-1]) + 8.0,
                 z0=float(G.z[0]) - 8.0, z1=float(G.z[-1]))
     tgt = PROTO[name]
+    # fat: the skin grown outward by t px (all of it fat) until the fat share of the torso reaches the target
+    F = layer_fields(K)
+    d0 = K["d"]
+    def fat_share(t):
+        Ft = dict(F); Ft["grown"] = (d0 - t < 0) & ~(d0 < 0)
+        return composition(Ft, d0 - t, G.h)
+    lo_, hi_ = 0.0, 25.0
+    for _ in range(14):
+        mid = 0.5 * (lo_ + hi_)
+        lo_, hi_ = (mid, hi_) if fat_share(mid)["fat"] + fat_share(mid)["fat pads"] < COMP[name]["fat"] else (lo_, mid)
+    tf = 0.5 * (lo_ + hi_)
+    comp = fat_share(tf)
+    print(f"{name}: fat grown {tf:.2f} px; composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
+    K = dict(K); K["d"] = d0 - tf
     for it in range(4):                                        # the shape edits move the rows: re-solve the widths on the result
         d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
         xm = np.nan_to_num(np.nanmax(s.last_cross(d, 1, Go.x), axis=1))
@@ -100,7 +145,7 @@ def proto_board(name, h):
         k = [kk * tgt[n] * sh / hw(WROWS[n]) for kk, n in zip(k, WROWS)]
     d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
     o = np.round(o).astype(np.int16)
-    rep, path = s.board(K["S"], Go, d, T, f"proto{name}", o, extra=f"prototype {name}")
+    rep, path = s.board(K["S"], Go, d, T, f"proto{name}", o, extra=f"prototype {name}, fat +{tf:.1f} px")
     for f, r in rep.items():
         print(f"{f:6s} sil p95 {r['p95']:.2f} | lum {r['mae']:.4f}")
     xm = np.nanmax(s.last_cross(d, 1, Go.x), axis=1)
