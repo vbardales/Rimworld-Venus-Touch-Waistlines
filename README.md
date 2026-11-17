@@ -1,7 +1,7 @@
 # Venus Touch Waistlines
 
-Decides where garments stop on the body. An add-on to TailorMade, which is
-MIT, and not affiliated with it.
+Decides where garments stop on the body. Works with TailorMade (MIT), which is
+optional, and is not affiliated with it.
 
 Meant for release. Only `Mod/` is uploaded, and it holds nothing but this
 project's own work — see [ATTRIBUTION.md](ATTRIBUTION.md). `Parked/` never leaves
