@@ -523,8 +523,33 @@ def build_male(G, T, prm=MALE, ty=None):
             cyl = (np.sqrt((X / 36.0) ** 2 + ((Z - 246.0) / 32.0) ** 2) - 1.0) * 32.0
             return np.maximum(cyl, R - 222.0).astype(np.float32)
         return fn, np.array([-36.0, 140.0, 214.0]), np.array([36.0, 222.0, 278.0])
-    S.add("trapezius (upper)", "muscle", carve(ell((38, 214, 232), (44, 30, 34), rad2=(44, 34, 44)), neck_hole()), k=6.0,
-          colour=COL["trap"], km=6.0)
+    # BodyParts3D first (2026-11-17, Virginie: 'repars de ceux de la lib'): every muscle the library has is its mesh, laid
+    # on the Male frame (bp3d_torso.py), cut at the neck section; the hand-made shape stays only where the library has
+    # none, or with HAND_MUSCLES=1.
+    use_lib = os.environ.get("HAND_MUSCLES", "0") != "1"
+
+    def lib(name, colour, k=1.5, km=1.0, holes=()):
+        if not use_lib:
+            return False
+        import bp3d_torso
+        p = bp3d_torso.prim(name)
+        if p is None:
+            return False
+        top = (lambda X, R, Z: np.broadcast_to(R - prm["neck_cut"], np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
+               np.array([-200.0, 0.0, 0.0]), np.array([200.0, prm["neck_cut"], 500.0]))
+        # the library muscles run on into the limbs (pectoral and teres to the humerus, hip flexors and glutes to the
+        # femur): cut at the shoulder (past the acromion, x 90) and at the crotch row; the ghost limbs carry the rest
+        shp = lambda X, R, Z: np.broadcast_shapes(X.shape, R.shape, Z.shape)
+        arm = (lambda X, R, Z: np.broadcast_to(90.0 - X, shp(X, R, Z)).astype(np.float32),
+               np.array([90.0, 0.0, 0.0]), np.array([400.0, 600.0, 500.0]))
+        leg = (lambda X, R, Z: np.broadcast_to(prm["lm"][4] - R, shp(X, R, Z)).astype(np.float32),
+               np.array([-200.0, prm["lm"][4], 0.0]), np.array([200.0, 900.0, 500.0]))
+        S.add(name, "muscle", carve(p, top, arm, leg, *holes), k=k, colour=colour, km=km)
+        return True
+
+    if not lib("trapezius (upper)", COL["trap"], holes=(neck_hole(),)):
+        S.add("trapezius (upper)", "muscle", carve(ell((38, 214, 232), (44, 30, 34), rad2=(44, 34, 44)), neck_hole()), k=6.0,
+              colour=COL["trap"], km=6.0)
 
     # ---- trunk, front
     def serr(i, zc_, rc_):
@@ -533,14 +558,15 @@ def build_male(G, T, prm=MALE, ty=None):
              ((-1, 0), (-0.6, 0.85), (0.3, 1), (0.9, 0.5), (1, 0), (0.9, -0.5), (0.3, -1), (-0.6, -0.85))]
         S.lens(f"serratus {i}", "muscle", "S", V, 1.4, 4.5, colour=COL["serr"], rnd=1, prof=1.5)
 
-    for i, (z_, r_) in enumerate(((270, 297), (274, 307), (277, 317), (279, 327))):
-        serr(i, z_, r_)
+    if not lib("serratus", COL["serr"]):
+        for i, (z_, r_) in enumerate(((270, 297), (274, 307), (277, 317), (279, 327))):
+            serr(i, z_, r_)
 
     # the two pectorals meet on the sternum (the polygon crosses the midline, so the pair is one sheet there); they thin
     # toward it, which leaves the sternal furrow as a shallow valley and not a bare strip of bone
     pec = [(-1, 217), (-1, 309), (11, 316), (26, 322.5), (42, 325.5), (56, 323), (68, 315), (76, 305), (80, 288), (80, 250),
            (78, 226), (72, 213), (62, 209.5), (46, 212.5), (24, 216.5), (8, 217)]
-    S.lens("pectoralis major", "muscle", "F", pec, 11.5, 5.5, colour=COL["pec"],
+    lib("pectoralis major", COL["pec"]) or S.lens("pectoralis major", "muscle", "F", pec, 11.5, 5.5, colour=COL["pec"],
            mod=lambda u, v: (0.6 + 0.4 * sstep((v - (217.0 - 0.1 * np.abs(u))) / 70.0)) * (0.68 + 0.32 * sstep(np.abs(u) / 14.0)))
 
     # rectus abdominis: four blocks a side, tendinous intersections between them, linea alba at the midline.
@@ -560,16 +586,16 @@ def build_male(G, T, prm=MALE, ty=None):
     # its medial edge runs under the rectus sheath
     obl = [(20, 327), (60, 327), (100, 330), (140, 332), (172, 329), (172, 344), (135, 350), (110, 354), (88, 362), (62, 374),
            (42, 388), (20, 392)]
-    S.lens("external oblique", "muscle", "W", obl, 8.0, 12.0, colour=COL["obl"], prof=1.3, on="core",
+    lib("external oblique", COL["obl"]) or S.lens("external oblique", "muscle", "W", obl, 8.0, 12.0, colour=COL["obl"], prof=1.3, on="core",
            mod=lambda u, v: (0.4 + 0.6 * sstep((u - 30.0) / 55.0)) * (0.45 + 0.55 * sstep((v - 322.0) / 18.0)))
 
     # ---- trunk, back
     er = [(6.5, 212, 5.0, 4.5), (7, 250, 6.0, 4.5), (8.5, 285, 8.0, 6.5), (10.5, 310, 10.0, 8.5), (9.5, 332, 8.5, 6.7), (6.5, 346, 5.0, 5.5)]
-    S.add("erector spinae", "muscle", tube([(x, r, float(fsp(r)) + dz) for x, r, rad, dz in er], [p[2] for p in er]), k=1.5,
+    lib("erector spinae", COL["erec"]) or S.add("erector spinae", "muscle", tube([(x, r, float(fsp(r)) + dz) for x, r, rad, dz in er], [p[2] for p in er]), k=1.5,
           colour=COL["erec"], km=1.0)
 
     scap = [(19, 214), (19, 254), (24, 266), (44, 270), (66, 272), (84, 262), (88, 244), (76, 222), (44, 216)]   # on the scapula (ribs 2 to 7)
-    S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
+    lib("infraspinatus, teres, rhomboid", COL["scap"]) or S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
            mod=lambda u, v: 1.0 - 0.3 * sstep((v - 236.0) / 26.0))
 
     # latissimus dorsi: one fan. Origin on the spine from T7 down to the sacrum and along the iliac crest, free border
@@ -580,7 +606,7 @@ def build_male(G, T, prm=MALE, ty=None):
            mod=lambda u, v: 0.55 + 0.45 * sstep((228.0 - u) / 70.0))
 
     trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
-    S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
+    lib("trapezius (middle, lower)", COL["trap"]) or S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
     # thoracolumbar fascia with the multifidus under it: from the lumbar erectors onto the sacrum, between the two PSIS
     S.lens("thoracolumbar fascia, multifidus", "muscle", "B", [(-1, 296), (24, 302), (38, 318), (30, 332), (15, 341), (-1, 354)], 2.6, 11.0,
            colour=COL["erec"], prof=1.2)
@@ -591,9 +617,9 @@ def build_male(G, T, prm=MALE, ty=None):
 
     # ---- pelvis and thigh stump
     # gluteus medius: from the iliac crest (row 347) down to the greater trochanter (391)
-    S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
-    S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
-    S.add("tensor fasciae latae, hip flexors", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
+    lib("gluteus medius", COL["glmed"]) or S.add("gluteus medius", "muscle", ell((50, 366, 238), (23, 23, 33), rot=(12, 0, 0)), k=3.0, colour=COL["glmed"])
+    lib("gluteus maximus", COL["glmax"], km=4.0) or S.add("gluteus maximus", "muscle", ell((23, 370, 224.5), (30, 36, 36.5), rad2=(30, 52, 37.5), rot=(18, 0, 0)), k=2.5, colour=COL["glmax"], km=6.0)
+    lib("tensor fasciae latae, hip flexors", COL["tfl"]) or S.add("tensor fasciae latae, hip flexors", "muscle", ell((55, 372, 264), (13.5, 27, 21)), k=6.0, colour=COL["tfl"])
     S.add("thigh stump (quadriceps, adductors, hamstrings)", "muscle", ell((35, 396, 242.5), (19, 36, 44), rad2=(19, 36, 47), rot=(-46, 0, 0)), k=6.0,
           colour=COL["thigh"], km=2.0)
     # the sprite cuts the neck flat: the neck root and the trapezius end on that section, they do not close in a tip

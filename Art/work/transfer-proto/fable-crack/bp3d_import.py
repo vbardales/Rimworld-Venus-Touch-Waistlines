@@ -187,6 +187,23 @@ def head_fit(v):
     return out
 
 
+def frame():
+    """(O, T): BodyParts3D axes to (right, up, front), then mm to the Male frame (one scale per axis), from the bones."""
+    B = load(); O = orient(B)
+    P = {fj: (n, O(v), f) for fj, (n, v, f) in B.items()}
+    get = lambda w: np.concatenate([v for n, v, _ in P.values() if n == w])
+    ribs = np.concatenate([v for n, v, _ in P.values() if n.endswith(" rib")])
+    x0 = float(get("body of sternum")[:, 0].mean())
+    notch = float(get("manubrium")[np.abs(get("manubrium")[:, 0] - x0) < 6.0][:, 1].max())
+    hip = get("right hip bone"); pubis = float(hip[np.abs(hip[:, 0] - x0) < 12.0][:, 1].min())
+    half = float(np.abs(ribs[:, 0] - x0).max())
+    mid = ribs[np.abs(ribs[:, 1] - (notch + pubis) / 2 - (notch - pubis) * 0.2) < (notch - pubis) * 0.15]
+    f1, f0 = float(get("body of sternum")[:, 2].max()), float(mid[:, 2].min())
+    sx = CAGE_HALF / half; sy = (ROW_PUBIS - ROW_NOTCH) / (notch - pubis); sz = (Z_FRONT - Z_BACK) / (f1 - f0)
+    T = lambda v: np.stack([(v[:, 0] - x0) * sx, ROW_NOTCH + (notch - v[:, 1]) * sy, Z_BACK + (v[:, 2] - f0) * sz], 1).astype(np.float32)
+    return O, T
+
+
 def build():
     B = load(); O = orient(B)
     P = {fj: (n, O(v), f) for fj, (n, v, f) in B.items()}

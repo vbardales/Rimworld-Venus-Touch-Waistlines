@@ -59,7 +59,9 @@ def main():
             hit = np.abs(m.astype(int) - BG).sum(-1) >= 4
             out[hit] = m[hit]
             ims.append(Image.fromarray(out))
-        tiles.append((f"{i}. {fr}", ims))
+        import bp3d_torso
+        src = "BodyParts3D" if key in bp3d_torso.GROUPS and bp3d_torso.PATH.exists() else "fait main"
+        tiles.append((f"{i}. {fr} [{src}]", ims))
         print(i, key, flush=True)
     tw = sum(im.width for im in tiles[0][1]) + 12; th = max(im.height for im in tiles[0][1]) + 22
     cols = 3
