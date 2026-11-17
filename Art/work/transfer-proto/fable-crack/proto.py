@@ -17,6 +17,7 @@ import stack3d as s
 DENS = {"bone": 1.85, "viscera": 1.04, "viscera (thorax)": 0.45, "muscle": 1.06, "fat pads": 0.92, "fat": 0.92, "rest": 1.10}   # g/cm3
 # the thoracic cavity holds the lungs (about 0.3 g/cm3, mostly air) and the heart: 0.45 on average, above the diaphragm
 DIAPHRAGM = 300.0
+DENS_MARROW = 1.0
 
 
 def carry(K, a):
@@ -56,6 +57,10 @@ def composition(F, d, h):
         vox["viscera (thorax)"] = vox["viscera"] & F["thorax"]
         vox["viscera"] = vox["viscera"] & ~F["thorax"]
     mass = {k: float((m & skin).sum()) * h ** 3 * DENS[k] for k, m in vox.items()}
+    q = F.get("bone_frac", 1.0)                                  # share of a bone's volume that is bone tissue; the rest is marrow
+    if q < 1.0:
+        vb = mass["bone"] / DENS["bone"]
+        mass["bone"] = q * vb * DENS["bone"]; mass["rest"] += (1.0 - q) * vb * DENS_MARROW
     tot = sum(mass.values())
     return {k: 100.0 * v / tot for k, v in mass.items()}
 
@@ -64,9 +69,16 @@ def composition(F, d, h):
 # shoulders = widest row (deltoid stump, 268), upper chest = under the armpits (298), waist = navel (358), pelvis = hips (382).
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
 # M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
-PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77}}
+PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77},
+         "M1": None}   # M1 (Virginie 2026-11-17): the athletic / écorché preset, WDI Male average as drawn: its own widths
 # Solved together by solve_comp: fat by the slider, bone by the shell counted, muscle by the thickening of the muscles.
-COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0}}
+COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0},
+        "M1": {"fat": 12.0, "muscle": 42.0, "bone": 4.0}}   # M1: WDI read as lean / fit, about 12 % fat
+# body type of each prototype. M (average): the superficial muscles at 80 to 90 % of the relief of M1, the upper trapezius
+# toned down most, the rectus abdominis not reinforced; bones and deep muscles unchanged (Virginie 2026-11-17)
+TY = {"M": dict(s.TYPES["Male"], abs=1.0, relief={"pectoralis major": 0.85, "latissimus dorsi": 0.85, "trapezius (upper)": 0.75,
+                                                   "trapezius (middle, lower)": 0.9, "gluteus maximus": 0.9, "external oblique": 0.9}),
+      "M1": s.TYPES["Male"]}
 
 
 def width_scale(G, d, target):
@@ -85,7 +97,7 @@ def width_scale(G, d, target):
 #   cage: rows of the thorax stretched down: the costal margin (334) goes to 334 + cage, the crotch (422) stays;
 #   pecs: the front of the chest (rows 250..345, x < 85) lifted by pecs px, most at the under-chest fold;
 #   glutes: the back of the buttocks pushed back by glutes px and up by a third of it, round, centred on each cheek.
-SHAPE = {"M": dict(cage=12.0, pecs=12.0, glutes=7.0)}
+SHAPE = {"M": dict(cage=12.0, pecs=12.0, glutes=7.0), "M1": dict(cage=0.0, pecs=0.0, glutes=0.0)}
 
 
 def sstep(v):
@@ -146,15 +158,14 @@ def bisect(f, target, lo, hi, n=14):
 def solve_comp(G, F, d00, zc_rows, target):
     """Fat, muscle and bone shares solved together (Virginie 2026-11-17: 'solve them'), the silhouette kept.
     fat: the global slider t over the smooth envelope, with the pads (as in solve_fat).
-    bone: a bone is counted as its cortical and trabecular shell of thickness c px; the marrow inside is internal tissue
-          (BodyParts3D bones are solid, which counted them all at the density of compact bone).
+    bone: only a share c of a bone's volume is bone tissue (cortical shell and trabeculae); the rest is marrow, counted
+          as internal tissue (BodyParts3D bones are solid, which counted them all at the density of compact bone).
     muscle: every muscle thickened by m px into the room under the skin that is not bone (the gaps between pieces, the
           inside of the envelope): the muscles fill the body instead of floating in unmodelled tissue.
     The three are solved in turn, four rounds. Returns grow, t, near, composition, ref, m, c."""
     near, dd = fat_fields(G, F, d00, zc_rows)
     ins = d00 < 0; envin = dd < 0
     bone0 = F["bone"] < 0
-    bdepth = ndi.distance_transform_edt(bone0) * G.h
     mus0 = (F["muscle"] < 0) & ~bone0
     mdist = ndi.distance_transform_edt(~mus0) * G.h
     room = ins & ~bone0
@@ -163,18 +174,18 @@ def solve_comp(G, F, d00, zc_rows, target):
 
     def comp(m, c, t):
         dt = grow(t)
-        F2 = dict(F); F2["bone_vox"] = bone0 & (bdepth <= c); F2["muscle_vox"] = mus0 | (room & (mdist <= m))
+        F2 = dict(F); F2["bone_frac"] = c; F2["muscle_vox"] = mus0 | (room & (mdist <= m))
         F2["grown"] = (dt < 0) & ~envin; F2["thorax"] = thorax
         return composition(F2, dt, G.h)
-    m, c, t = 0.0, 40.0, 0.0
+    m, c, t = 0.0, 1.0, 0.0
     for _ in range(4):
         t = bisect(lambda x: (lambda q: q["fat"] + q["fat pads"])(comp(m, c, x)), target["fat"], 0.0, 25.0)
-        c = bisect(lambda x: comp(m, x, t)["bone"], target["bone"], 0.0, 20.0)
+        c = bisect(lambda x: comp(m, x, t)["bone"], target["bone"], 0.0, 1.0)
         m = bisect(lambda x: comp(x, c, t)["muscle"], target["muscle"], 0.0, 40.0)
     t = bisect(lambda x: (lambda q: q["fat"] + q["fat pads"])(comp(m, c, x)), target["fat"], 0.0, 25.0)
     xm = np.nan_to_num(np.nanmax(s.last_cross(d00, 1, G.x), axis=1))
     ref = float(np.interp(WROWS["shoulders"], G.r, xm))
-    print(f"solved: fat layer {t:.2f} px ({100 * t / ref:.1f} % of the shoulder half width), bone shell {c:.2f} px, "
+    print(f"solved: fat layer {t:.2f} px ({100 * t / ref:.1f} % of the shoulder half width), bone tissue {100 * c:.0f} % of the bone volume, "
           f"muscles thickened {m:.2f} px")
     return grow, t, near, comp(m, c, t), ref, m, c
 
@@ -282,9 +293,12 @@ def proto_board(name, h):
     """Prototype vs WDI: the Male stack (skin, fat, lean) scaled row by row in width to the prototype's ratios, drawn
     by stack3d.board next to the WDI Male (WDI | stack in WDI style | outlines)."""
     import average as av
-    K = s.make("Male", h)
+    K = s.make("Male", h, ty=TY[name])
     G, T = K["G"], K["T"]
-    rows, k = width_scale(G, K["d"], PROTO[name])
+    if PROTO[name] is None:                                    # the prototype keeps the widths of the WDI body
+        rows, k = list(WROWS.values()), [1.0] * len(WROWS)
+    else:
+        rows, k = width_scale(G, K["d"], PROTO[name])
     print(f"{name}: width scale at {rows}: {[round(x, 3) for x in k]}")
     Go = s.Grid(G.h, x1=float(G.x[-1]) * max(max(k), 1.0) + 4.0, r0=float(G.r[0]), r1=float(G.r[-1]) + 8.0,
                 z0=float(G.z[0]) - 8.0, z1=float(G.z[-1]))
@@ -300,7 +314,7 @@ def proto_board(name, h):
     _xm = np.nan_to_num(np.nanmax(s.last_cross(K["d"], 1, G.x), axis=1))
     print("half widths after the fat:", {n: round(float(np.interp(r, G.r, _xm)), 1) for n, r in WROWS.items()}, "grid x max", float(G.x[-1]))
     fat_map(G, d00, K["d"], near, F["lean"], name)
-    for it in range(4):                                        # the shape edits move the rows: re-solve the widths on the result
+    for it in range(4 if tgt is not None else 0):              # the shape edits move the rows: re-solve the widths on the result
         d, o = shaped(Go, G, [(K["d"], 1), (K["owner"], 0)], rows, k, (T.rows, T.zc), SHAPE[name])
         xm = np.nan_to_num(np.nanmax(s.last_cross(d, 1, Go.x), axis=1))
         hw = lambda r: float(np.interp(r, Go.r, xm))

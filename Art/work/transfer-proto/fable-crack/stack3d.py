@@ -555,6 +555,8 @@ def build_male(G, T, prm=MALE, ty=None):
     # none, or with HAND_MUSCLES=1.
     use_lib = os.environ.get("HAND_MUSCLES", "0") != "1"
 
+    relief = lambda name: next((f for pre, f in ty.get("relief", {}).items() if name.startswith(pre)), 1.0)
+
     def lib(name, colour, k=1.5, km=1.0, holes=(), leg_row=None):
         if not use_lib:
             return False
@@ -562,6 +564,9 @@ def build_male(G, T, prm=MALE, ty=None):
         p = bp3d_torso.prim(name)
         if p is None:
             return False
+        rf = relief(name)
+        if rf < 1.0:                                           # a superficial muscle with less relief: thinned on every side
+            p = (lambda X, R, Z, fn=p[0], e=(1.0 - rf) * RELIEF_PX: fn(X, R, Z) + e, p[1], p[2])
         top = (lambda X, R, Z: np.broadcast_to(R - prm["neck_cut"], np.broadcast_shapes(X.shape, R.shape, Z.shape)).astype(np.float32),
                np.array([-200.0, 0.0, 0.0]), np.array([200.0, prm["neck_cut"], 500.0]))
         # the library muscles run on into the limbs (pectoral and teres to the humerus, hip flexors and glutes to the
@@ -661,7 +666,7 @@ def build_male(G, T, prm=MALE, ty=None):
     # fleshy only above and lateral of a diagonal from T8 by the spine (178 deg, row 268) to the iliac crest at the flank
     # (118 deg, row 342): below and medial of it the lat is its flat lumbar aponeurosis
     flesh = lambda u, v: sstep(((178.0 - 60.0 * (v - 268.0) / 74.0) - u / th) / 12.0)
-    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 3.5, 9.0, colour=COL["lat"], prof=1.25, span=8.0, rnd=1,
+    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 3.5 * relief("latissimus dorsi"), 9.0, colour=COL["lat"], prof=1.25, span=8.0, rnd=1,
            mod=lambda u, v: (0.7 + 0.3 * flesh(u, v)) * (1.0 + 0.7 * np.exp(-((u / th - 104.0) / 14.0) ** 2 - ((v - 276.0) / 18.0) ** 2)))   # thickest in the posterior axillary fold
 
     trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
@@ -767,6 +772,7 @@ MUSCLE_ORDER = [
     ("trapezius (middle, lower)", "trapèze, parties moyenne et basse"),
     ("trapezius (upper)", "trapèze, partie haute"),
 ]
+RELIEF_PX = 6.0        # px: how much a superficial muscle is thinned on every side at relief 0 (relief 0.85 = 0.9 px)
 SETTLE_MAX = 6.0       # px: the most a muscle is moved off what lies under it
 SETTLE_SMOOTH = 4.0    # px: how broadly the push spreads, so a muscle moves as a whole instead of being dented
 
@@ -1627,11 +1633,11 @@ def clip_lean(S, G0, G, steps, frame, d, fat, tmin):
     return out
 
 
-def make(body="Male", h=1.0, fit=True, ghost=False, order=1):
+def make(body="Male", h=1.0, fit=True, ghost=False, order=1, ty=None):
     """Build the stack of a body: the lean stack in the Male frame (muscles and pads scaled by the type), the frame
     put on the body by its landmark rows and a broad row-wise affine, the fat solved from the silhouettes, the skin,
-    then the fine fit. Returns everything the boards and the export need."""
-    ty = TYPES[body]
+    then the fine fit. Returns everything the boards and the export need. ty: a body type to use instead of TYPES[body]."""
+    ty = ty or TYPES[body]
     TM = Target("Male")
     T = TM if body == "Male" else Target(body)
     G0 = Grid(h)
