@@ -264,7 +264,7 @@ class Stack:
         self.parts.append((name, layer, colour, sl, a if show else None))
         return sl, a
 
-    def lens(self, name, layer, proj, poly, T, wd, mod=None, colour=(200, 200, 200), prof=2.0, rnd=2, pad=14.0, on="stack", k=0.0):
+    def lens(self, name, layer, proj, poly, T, wd, mod=None, colour=(200, 200, 200), prof=2.0, rnd=2, pad=14.0, on="stack", k=0.0, span=0.0):
         """Sheet muscle: thickness T inside the polygon, rounded over wd px at its border, laid on what is below it.
 
         on: "stack" = on everything built so far (a superficial sheet adds to the deeper ones); a layer name ("core",
@@ -316,7 +316,13 @@ class Stack:
             if mod is not None:
                 tt = tt * mod(u, v)
             t[near] = tt
-        new = base - t
+        if span:                                               # a broad sheet bridges the bumps under it: laid on a smoothed copy of the surface
+            w = np.clip(t / (0.5 * T), 0.0, 1.0)
+            n = max(3, int(round(span / G.h)) | 1)            # opening of the field = the solid closed: hollows filled, bumps kept
+            env = ndi.gaussian_filter(ndi.grey_opening(base, size=(n, n, n)), 1.0)
+            new = np.minimum(base, base + w * (env - base) - t)
+        else:
+            new = base - t
         cur = self.d[sl]
         self.owner[sl][(t > 0.6) & (base > -3.0) & (new < cur + 0.3)] = len(self.parts) + 1
         self.d[sl] = new if on == "stack" else smin(cur, new, k)
@@ -610,18 +616,24 @@ def build_male(G, T, prm=MALE, ty=None):
     lib("infraspinatus, teres, rhomboid", COL["scap"]) or S.lens("infraspinatus, teres, rhomboid", "muscle", "B", scap, 4.8, 7.0, colour=COL["scap"], on="core",
            mod=lambda u, v: 1.0 - 0.3 * sstep((v - 236.0) / 26.0))
 
+    # thoracolumbar fascia with the multifidus under it: from the lumbar erectors onto the sacrum, between the two PSIS.
+    # Laid before the latissimus, whose lumbar aponeurosis covers it.
+    S.lens("thoracolumbar fascia, multifidus", "muscle", "B", [(-1, 296), (24, 302), (38, 318), (30, 332), (15, 341), (-1, 354)], 2.6, 11.0,
+           colour=COL["erec"], prof=1.2)
+
     # latissimus dorsi: one fan. Origin on the spine from T7 down to the sacrum and along the iliac crest, free border
     # up the flank, all fibres converging on the humerus behind the armpit; thinner over its lumbar aponeurosis
-    lat = [(181, 262), (181, 340), (150, 343), (122, 343), (102, 336), (97, 314), (98, 298), (103, 286), (112, 277), (130, 266),
+    lat = [(181, 262), (181, 360), (164, 356), (144, 347), (122, 340), (102, 334), (97, 314), (98, 298), (103, 286), (112, 277), (130, 266),
            (154, 258)]
-    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 8.0, 10.0, colour=COL["lat"], prof=1.25,
-           mod=lambda u, v: 0.55 + 0.45 * sstep((228.0 - u) / 70.0))
+    # fleshy only above and lateral of a diagonal from T8 by the spine (178 deg, row 268) to the iliac crest at the flank
+    # (118 deg, row 342): below and medial of it the lat is its flat lumbar aponeurosis, almost no thickness. The belly
+    # is thickest at the posterior axillary fold, so seen from the back the muscle is a V widening toward the armpits.
+    flesh = lambda u, v: sstep(((178.0 - 60.0 * (v - 268.0) / 74.0) - u / th) / 12.0)
+    S.lens("latissimus dorsi", "muscle", "W", deg(lat), 5.0, 10.0, colour=COL["lat"], prof=1.25, span=8.0,
+           mod=lambda u, v: 0.6 + 0.4 * flesh(u, v))
 
     trap = [(-1, 204), (30, 204), (62, 208), (78, 212), (64, 222), (40, 224), (22, 244), (9, 272), (-1, 302)]
     lib("trapezius (middle, lower)", COL["trap"]) or S.lens("trapezius (middle, lower)", "muscle", "B", trap, 2.6, 10.0, colour=COL["trap"], prof=1.2)
-    # thoracolumbar fascia with the multifidus under it: from the lumbar erectors onto the sacrum, between the two PSIS
-    S.lens("thoracolumbar fascia, multifidus", "muscle", "B", [(-1, 296), (24, 302), (38, 318), (30, 332), (15, 341), (-1, 354)], 2.6, 11.0,
-           colour=COL["erec"], prof=1.2)
 
     # ---- shoulder
     # deltoid: removed from the trunk 2026-11-17 (Virginie: 'il fait partie des membres fantômes'). It is a muscle of the
