@@ -371,6 +371,19 @@ def one(body, fields=None):
             hf = ndi.map_coordinates(H["south"], [[y], [xs]], order=1)[0]
             xn = nr - ((xs - xl) / max(xr - xl, 1)) * (nr - nl)
             hb = ndi.map_coordinates(H["north"], [[yn], [xn]], order=1)[0]
+            if fields is not None:
+                # The structural WDI carrier formerly joined its front and rear height
+                # sheets as a hard edge at each flank.  Round only the final 22 % of
+                # the transverse section toward its shared side point: the three WDI
+                # silhouettes remain fixed, while oblique cameras get a true fillet.
+                side = abs(2.0 * u - 1.0)
+                # The former circular arc reaches the seam with an infinite slope,
+                # visible as a hard vertical ridge.  This C1 taper reaches the same
+                # shared side point with zero slope at both ends of the transition.
+                fade = np.clip((side - 0.70) / 0.30, 0.0, 1.0)
+                fade = fade * fade * (3.0 - 2.0 * fade)
+                scale = 1.0 - fade
+                hf *= scale; hb *= scale
             # The east patches are intentionally a small correction: the
             # south/north maps provide the primary surface while the measured
             # east envelope remains a hard cap below.
@@ -424,8 +437,13 @@ def one(body, fields=None):
         if len(L) >= 2:
             L = np.array(L); Rr = np.array(Rr)
             L[..., 2] -= zmean; Rr[..., 2] -= zmean
-            constrain_east_profile(L, ms, me, zmean)
-            constrain_east_profile(Rr, ms, me, zmean)
+            if fields is None:
+                # Standalone relief strips need their own profile guard.  The fitted
+                # WDI carrier already shares every strip vertex with the main ring at
+                # the split; constraining each half independently breaks that weld and
+                # creates a visible rectangular step at the proximal thigh.
+                constrain_east_profile(L, ms, me, zmean)
+                constrain_east_profile(Rr, ms, me, zmean)
             legs = {
                 "L": np.round(L.reshape(len(L), -1), 1 if fields is None else 2).tolist(),
                 "R": np.round(Rr.reshape(len(Rr), -1), 1 if fields is None else 2).tolist(),

@@ -29,6 +29,7 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy import ndimage as ndi
+from skimage.morphology import skeletonize
 
 import crack as c1
 import explain5b as e5
@@ -78,6 +79,26 @@ def find(P, *keys):
         if any(k.startswith(q) or q in k for q in keys):
             return P[k]
     return None
+
+
+def pectoral_fold_curve(points, cols, fallback):
+    """Curved lower pec boundary from the artist's two fold points and the armpits.
+
+    It is deliberately a curve, not a horizontal row: its outer ends rise into the
+    axilla while its middle sits just lower under the paired pectorals.
+    """
+    left, right = points.get("under-breast fold L"), points.get("under-breast fold R")
+    if left is None or right is None:
+        return np.full_like(cols, fallback, dtype=float)
+    al, ar = points.get("armpit L", left), points.get("armpit R", right)
+    mid = 0.5 * (left[0] + right[0])
+    nodes_x = np.array((al[0], left[0], mid, right[0], ar[0]), float)
+    nodes_y = np.array((al[1] + 10.0, left[1], 0.5 * (left[1] + right[1]) + 6.0, right[1], ar[1] + 10.0), float)
+    order = np.argsort(nodes_x)
+    nodes_x, nodes_y = nodes_x[order], nodes_y[order]
+    keep = np.r_[True, np.diff(nodes_x) > 0.25]
+    curve = np.interp(cols, nodes_x[keep], nodes_y[keep], left=fallback, right=fallback)
+    return ndi.gaussian_filter1d(curve, 2.0)
 
 
 # ---------------------------------------------------------------- profile, core, masses
@@ -130,6 +151,10 @@ def params(body):
         p.update(breast=True, sternum=0.10, alba=0.06)
     if fl["fat"] and not fl["female"]:
         p.update(breast=True, breast_rx=1.05, breast_p=2.2)   # hanging male chest: two lobes too
+    if body == "Male":
+        # WDI Male is defined by its broad lower pectoral shelf, not two high breast-like lobes.
+        # The export adds no second sternal hollow for this carrier (see wdi3d_export.py).
+        p.update(sternum=0.10)
     return fl, p
 
 
@@ -215,9 +240,59 @@ def build_field(body, view, M, P, prof):
                 lobe = 1.0 - notch * np.exp(-(s / (0.035 * W + 2)) ** 2)
         lobe_row = lobe * sect(t, pr["edge_q"]) * inside
         mass = fit_mass(core_row, lobe_row, depth)
+        if body == "Male" and front and not pr["breast"] and y < y_waist:
+            # The upper chest slopes down from the clavicular cage.  Let the pectoral mass
+            # rise only over the lower part of that interval; the east-profile correction
+            # still holds the external silhouette, so this changes form rather than width.
+            # The clavicular half is rib cage and slope; the muscular pair
+            # begins lower, around the measured apex/fold interval.
+            pec_top = y_neck + 0.52 * (y_waist - y_neck)
+            pec_rise = 0.22 * (y_waist - y_neck)
+            mass *= smooth01((y - pec_top) / max(pec_rise, 1.0))
         field[y] = core_row + mass * lobe_row
     # local signed anatomy patches of shade3d (kept, laid over the base)
     yy, xx = np.mgrid[0:N, 0:N]
+    if body == "Male" and front:
+        # A lower pectoral shelf: a broad roll just above the artist-placed fold,
+        # then a narrow trough on it.  This is the single-valued-surface version of
+        # a small skin overlap, without self-intersection or a separate breast volume.
+        fold = pectoral_fold_curve(pts, np.arange(N), y_waist - 0.08 * (y_waist - y_neck))
+        d = fold[None, :] - yy
+        span = max(0.5 * abs((pts.get("armpit R", (N, 0))[0]) - (pts.get("armpit L", (0, 0))[0])), 12.0)
+        lateral = np.clip(1.0 - (np.abs(xx - midx) / (span + 8.0)) ** 6, 0.0, 1.0)
+        # Enough relief to survive the profile-fit and the final surface smoothing, but
+        # still much smaller than a separate breast lobe.  This makes the lower edge
+        # read as a soft overlap only in oblique light.
+        roll = 7.0 * np.exp(-0.5 * ((d - 17.0) / 14.0) ** 2)
+        crease = 3.0 * np.exp(-0.5 * ((d + 1.5) / 4.0) ** 2)
+        field += (roll - crease) * lateral * m
+    if front and body in ("Male", "Fat"):
+        # Paired lower-chest masses.  Their centre follows the WDI areola/apex
+        # landmarks but is shifted a little down, so the clavicular half slopes
+        # into the breastbone while only the lower half carries the round mass.
+        # The two wide kernels overlap softly at the sternum: no spoon-shaped gap.
+        apexes = (pts.get("breast apex L"), pts.get("breast apex R"))
+        rx, ry, height = (48.0, 17.0, 9.0) if body == "Male" else (75.0, 29.0, 13.0)
+        for apex in apexes:
+            if apex is None:
+                continue
+            ax, ay = apex
+            lower_pec = height * np.exp(-0.5 * (((xx - ax) / rx) ** 2 + ((yy - (ay + 10.0)) / ry) ** 2))
+            field += lower_pec * m
+    if front:
+        # The source apexes are also the nipple landmarks.  Give each a minimal
+        # areola and papilla relief so its location survives when the WDI painting
+        # is not used as the material; this remains part of the same single-valued
+        # front sheet rather than a detached primitive.
+        apexes = (pts.get("breast apex L"), pts.get("breast apex R"))
+        nipple_height = 1.4 if body.startswith("Fat") else 1.0
+        for apex in apexes:
+            if apex is None:
+                continue
+            ax, ay = apex
+            areola = 0.28 * np.exp(-0.5 * (((xx - ax) / 8.5) ** 2 + ((yy - ay) / 6.0) ** 2))
+            papilla = nipple_height * np.exp(-0.5 * (((xx - ax) / 2.4) ** 2 + ((yy - ay) / 2.4) ** 2))
+            field += (areola + papilla) * m
     shade3d.BODY[0] = body
     anchors = shade3d._anchors(pts)
     flags = shade3d._body_flags()
@@ -265,6 +340,24 @@ def wdi_lines(img, m, width):
     broad = ndi.grey_opening(dark, size=(11, 11))
     black = np.clip((0.45 - lum) / 0.3, 0, 1) * inner          # black paint is ink whatever its width
     return np.clip(np.maximum(dark - broad, black), 0, 1)
+
+
+def stroke_width(lines, m):
+    """Full local width of an internal WDI stroke, in source pixels.
+
+    The distance transform is sampled on the stroke skeleton then copied to
+    each of its pixels.  Unlike darkness, it distinguishes a thin ink mark
+    from a wide painted shadow boundary while keeping neighbouring strokes
+    independent.
+    """
+    stroke = (lines > 0.04) & m
+    if not stroke.any():
+        return np.zeros_like(lines)
+    radius = ndi.distance_transform_edt(stroke)
+    centre = skeletonize(stroke)
+    _distance, nearest = ndi.distance_transform_edt(~centre, return_indices=True)
+    local = (2.0 * radius * centre)[tuple(nearest)]
+    return local * stroke
 
 
 def diffuse(h, m, lines, steps=DIFFUSE):
@@ -384,12 +477,19 @@ def fit_shading(h, m, grey, rounds=24):
 
 
 def fit_grooves(h, m, lines, img, width, rounds=8):
-    """Depth of each drawn crease, adjusted until the captured ink has the painted tone."""
+    """Depth of each drawn crease, adjusted until the captured ink has the painted tone.
+
+    Width acts separately from darkness: a 2 px ink line remains a shallow
+    material crease, while a 7--12 px mark can support a larger height offset
+    and the corresponding shadow transition.
+    """
     lum = c1.lum(img)
     dark = 1.0 - lum
     faint = (dark - ndi.grey_opening(dark, size=(11, 11))) > 0.03   # thin pale strokes too (spine, cleft)
     sel = ((lines > 0.04) | faint) & (ndi.distance_transform_edt(m) > width + 1.0)   # stroke pixels: flat floor, full width
-    depth = GROOVE * np.clip(1.0 - lum, 0, 1) * sel
+    line_width = stroke_width(np.maximum(lines, 0.05 * faint), m)
+    wide = np.clip((line_width - 2.0) / 6.0, 0.0, 1.0)
+    depth = GROOVE * np.clip(1.0 - lum, 0, 1) * (0.70 + 0.60 * wide) * sel
     best = (1e9, h)
     for _ in range(rounds):
         out = np.maximum(h - depth, 0.0) * m
@@ -399,6 +499,50 @@ def fit_grooves(h, m, lines, img, width, rounds=8):
             best = (e, out)
         depth = np.clip(depth + 0.8 * GROOVE * err, 0, 16.0) * sel
     return best[1]
+
+
+def restore_broad_male_masses(h, m, points, back=False):
+    """Reapply only broad WDI-M forms after the 260-step texture diffusion.
+
+    The diagnostic delta distinguishes broad WDI shadows from thin ink.  These are the
+    former: lower pectoral shelf, a modest lower-abdominal pad, and paired gluteal mass.
+    Fine sternum, scapular and crease lines deliberately remain material marks.
+    """
+    yy, xx = np.mgrid[0:N, 0:N]
+    add = np.zeros_like(h)
+    if not back:
+        apexes = (points.get("breast apex L"), points.get("breast apex R"))
+        neck_l, neck_r = points.get("neck base L"), points.get("neck base R")
+        if all((*apexes, neck_l, neck_r)):
+            # The green annotation is a quiet upper rib-cage plane, not a third
+            # pair of pectorals.  Make that distinction in the *source height
+            # field*, before export closes/fillets it.  A very wide normalized
+            # blur retains the cage's global slope and WDI outline but removes
+            # little shading-driven mounds.  The yellow pectoral mass is added
+            # below afterwards, so its relief is not averaged away.
+            y0 = 0.5 * (neck_l[1] + neck_r[1]) + 12.0
+            # Continue the quiet supporting plane through the chest base.  The
+            # earlier version stopped above the pectorals, leaving a painted
+            # central dome higher than either pectoral centre to fight against.
+            fold_l, fold_r = points.get("under-breast fold L"), points.get("under-breast fold R")
+            y1 = (0.5 * (fold_l[1] + fold_r[1]) + 4.0
+                  if fold_l is not None and fold_r is not None else min(a[1] for a in apexes) + 24.0)
+            midx = 0.5 * (apexes[0][0] + apexes[1][0])
+            half = 0.60 * abs(apexes[1][0] - apexes[0][0]) + 28.0
+            vertical = smooth01((yy - y0) / 10.0) * smooth01((y1 - yy) / 10.0)
+            lateral = np.clip(1.0 - ((xx - midx) / half) ** 6, 0.0, 1.0)
+            support = m.astype(float)
+            plane = ndi.gaussian_filter(h * support, (7.0, 28.0)) / np.maximum(
+                ndi.gaussian_filter(support, (7.0, 28.0)), 1e-6)
+            quiet = 0.90 * vertical * lateral * support
+            h = h * (1.0 - quiet) + plane * quiet
+    else:
+        hip_l, hip_r, crotch = points.get("hip L"), points.get("hip R"), points.get("crotch point")
+        if hip_l is not None and hip_r is not None and crotch is not None:
+            cy = hip_l[1] + 0.53 * (crotch[1] - hip_l[1])
+            for cx in (0.5 * (hip_l[0] + crotch[0]), 0.5 * (hip_r[0] + crotch[0])):
+                add += 3.4 * np.exp(-0.5 * (((xx - cx) / 34.0) ** 2 + ((yy - cy) / 20.0) ** 2))
+    return np.maximum(h + add, 0.0) * m
 
 
 def tone_full(h, m):
@@ -479,9 +623,19 @@ def one(body):
     fields = {}; moved = {}
     for f in base:
         fitted = fit_shading(base[f], M[f], wdi_shade(imgs[f], M[f], width[f]))
-        fields[f] = fit_grooves(fitted, M[f], lines[f], imgs[f], width[f])
+        # The WDI paint contains contour and illustrative ink as well as actual
+        # relief.  For Male Average, treating every such stroke as a groove made
+        # a padded torso read as a cross-hatched ecorche.  Keep the smooth fitted
+        # field; only named broad masses and named folds below become geometry.
+        fields[f] = fitted if body == "Male" else fit_grooves(fitted, M[f], lines[f], imgs[f], width[f])
         inner = ndi.distance_transform_edt(M[f]) > width[f] + 2
-        moved[f] = (float(np.abs(fitted - base[f])[inner].mean()), float(np.percentile(np.abs(fitted - base[f])[inner], 95)))
+        moved[f] = (float(np.abs(fitted - base[f])[inner].mean()),
+                    float(np.percentile(np.abs(fitted - base[f])[inner], 95)))
+    # Diffusion is intentionally strong for garment-atlas continuity.  Restore only the
+    # broad forms that the delta map identifies as missing after that smoothing pass.
+    if body == "Male":
+        fields["south"] = restore_broad_male_masses(fields["south"], M["south"], P["south"])
+        fields["north"] = restore_broad_male_masses(fields["north"], M["north"], P["north"], back=True)
     tiles, rep = [], {}
     for f in ("south", "north", "east"):
         w = width[f]
