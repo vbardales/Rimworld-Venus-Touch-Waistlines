@@ -68,22 +68,32 @@ def composition(F, d, h):
 # Prototype targets: widths relative to the shoulders (Virginie 2026-11-17). Rows of the Male frame where each is read:
 # shoulders = widest row (deltoid stump, 268), upper chest = under the armpits (298), waist = navel (358), pelvis = hips (382).
 WROWS = {"shoulders": 268.0, "upper chest": 298.0, "waist": 358.0, "pelvis": 382.0}
-# The three bodies (Virginie 2026-11-17):
+# The prototypes (Virginie 2026-11-17):
 #   WDI source = the stylised starting silhouette; no biological composition is attributed to it.
+#   WDI-M = the WDI Male silhouette with the anatomical stack fitted beneath it.  Its mass shares are measurements of
+#     that fitted stack.  It never fills organ space by dilating muscles or relabels a solid bone as marrow to hit a
+#     target.  It is the coherent WDI Male reference, not a claim about a population average.
 #   M1 lean / athletic = a chosen target: about 12 to 16 % fat, superficial muscles at about 100 %. A stylised
 #     athletic preset, not a measured reference: its percentages are calculation targets, not facts shown by WDI.
 #   The bone target (4 %) is borrowed from whole-body DXA bone mineral; it is not directly comparable to the whole
 #   bones of a cropped torso, so it stays a calculation target until a coherent definition is chosen.
 #   M average = about 20 to 23 % fat, superficial muscles at about 80 to 90 % of M1, envelope and pads thicker and softer.
 # M of 2026-11-17 (second sheet): fat 23 %, muscle 42 %, bone 4 %; shoulders 43 cm, upper chest 34, waist 31, pelvis 33
-PROTO = {"M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77},
+PROTO = {"WDI-M": None,
+         "M": {"shoulders": 1.0, "upper chest": 0.79, "waist": 0.72, "pelvis": 0.77},
          "M1": None}   # M1 keeps the widths of the WDI source silhouette (no target of its own yet)
 # Solved together by solve_comp: fat by the slider, bone by the shell counted, muscle by the thickening of the muscles.
 COMP = {"M": {"fat": 23.0, "muscle": 42.0, "bone": 4.0},
         "M1": {"fat": 14.0, "muscle": 42.0, "bone": 4.0}}   # M1 fat: middle of 12 to 16 %
-# body type of each prototype. M (average): the superficial muscles at 80 to 90 % of the relief of M1, the upper trapezius
-# toned down most (80 %), the rectus abdominis not reinforced; bones and deep muscles unchanged (Virginie 2026-11-17)
-TY = {"M": dict(s.TYPES["Male"], abs=1.0, relief={"pectoralis major": 0.85, "latissimus dorsi": 0.85, "trapezius (upper)": 0.8,
+# body type of each prototype.  WDI-M is not an ecorche: the source reads as broad pectoral and gluteal masses separated
+# by a few graphic landmarks.  Its existing skin tethers retain the pectoral border, groin V and gluteal fold; its
+# hollows retain the navel and the shallow lumbar/sacral marks.  Between those guides, a wider fat bridge and skin
+# tension blur remove the individually readable ribs, serratus, rectus blocks, erectors and small hip muscles.
+WDI_M_TY = dict(s.TYPES["Male"], fill=9.0, skin_blur=3.0)
+# M (average): the superficial muscles at 80 to 90 % of the relief of M1, the upper trapezius toned down most (80 %),
+# the rectus abdominis not reinforced; bones and deep muscles unchanged (Virginie 2026-11-17)
+TY = {"WDI-M": WDI_M_TY,
+      "M": dict(s.TYPES["Male"], abs=1.0, relief={"pectoralis major": 0.85, "latissimus dorsi": 0.85, "trapezius (upper)": 0.8,
                                                    "trapezius (middle, lower)": 0.9, "gluteus maximus": 0.9, "external oblique": 0.9}),
       "M1": s.TYPES["Male"]}
 
@@ -104,7 +114,8 @@ def width_scale(G, d, target):
 #   cage: rows of the thorax stretched down: the costal margin (334) goes to 334 + cage, the crotch (422) stays;
 #   pecs: the front of the chest (rows 250..345, x < 85) lifted by pecs px, most at the under-chest fold;
 #   glutes: the back of the buttocks pushed back by glutes px and up by a third of it, round, centred on each cheek.
-SHAPE = {"M": dict(cage=12.0, pecs=12.0, glutes=7.0), "M1": dict(cage=0.0, pecs=0.0, glutes=0.0)}
+SHAPE = {"WDI-M": dict(cage=0.0, pecs=0.0, glutes=0.0),
+         "M": dict(cage=12.0, pecs=12.0, glutes=7.0), "M1": dict(cage=0.0, pecs=0.0, glutes=0.0)}
 SHAPE_SMOOTH = 24.0   # px along the rows: the width and cage profiles are smoothed over this, no crease at their nodes
 
 
@@ -288,7 +299,8 @@ def solve_fat(G, F, d00, zc_rows, target):
 ENV_CLOSE = 14.0      # px: gaps and hollows narrower than twice this between pieces are filled before the fat
 ENV_SMOOTH = 12.0     # px: large-scale smoothing of the envelope (keeps the silhouette, drops the muscle edges)
 # envelope and pads of each body: M thicker and softer than M1 (a broader closing and smoothing, broader stronger pads)
-ENV = {"M1": dict(ENV_CLOSE=6.0, ENV_SMOOTH=5.0, PAD_GAIN=1.0, PAD_REACH=28.0, CHEST_FAT=1.0, LOWBACK_FAT=1.0),
+ENV = {"WDI-M": dict(ENV_CLOSE=6.0, ENV_SMOOTH=5.0, PAD_GAIN=1.0, PAD_REACH=28.0, CHEST_FAT=1.0, LOWBACK_FAT=1.0),
+       "M1": dict(ENV_CLOSE=6.0, ENV_SMOOTH=5.0, PAD_GAIN=1.0, PAD_REACH=28.0, CHEST_FAT=1.0, LOWBACK_FAT=1.0),
        "M": dict(ENV_CLOSE=14.0, ENV_SMOOTH=12.0, PAD_GAIN=1.5, PAD_REACH=40.0, CHEST_FAT=0.45, LOWBACK_FAT=1.5)}
 CHEST_FAT = LOWBACK_FAT = 1.0
 
@@ -355,9 +367,10 @@ def fat_map(G, d_before, d_after, near, lean, name):
     out.save(path); print(path)
 
 
-# Virginie 2026-11-17: the prototype is no longer put on the WDI source silhouette (the landmark rows, row-wise affine,
-# fine fit and the fat that filled that silhouette): it is built from the lean stack in the Male frame alone.
-WDI_FIT = False
+# The experimental M and M1 bodies start in the Male frame.  WDI-M is different: WDI is its required exterior, so the
+# established stack3d fit supplies its skin, fat and fitted anatomical layers.  Keeping this per-preset avoids making
+# WDI's stylised silhouette an implicit constraint on either experiment.
+WDI_FIT = {"WDI-M": True, "M": False, "M1": False}
 
 
 def raw_fields(G, S):
@@ -370,9 +383,9 @@ def raw_fields(G, S):
 
 
 def make_body(name, h):
-    """(K, F) of a prototype: with WDI_FIT the stack put on the WDI silhouette by stack3d.make, else the lean stack in
-    the Male frame. The stump sections are cut either way."""
-    if WDI_FIT:
+    """(K, F) of a prototype: WDI-M is fitted to the WDI Male exterior; the experimental bodies use the Male frame.
+    The stump sections are cut either way."""
+    if WDI_FIT[name]:
         K = s.make("Male", h, ty=TY[name])
         cut = stump_cut(K); K = dict(K); K["d"] = np.maximum(K["d"], cut)
         return K, layer_fields(K)
@@ -390,6 +403,21 @@ def proto_board(name, h):
     use_env(name)
     K, F = make_body(name, h)
     G, T = K["G"], K["T"]
+    if name == "WDI-M":
+        # WDI is the finished exterior.  Measure the fitted stack beneath it as it stands: do not use solve_comp(),
+        # whose dilation of every muscle into the unassigned interior is useful only for the M/M1 target experiment.
+        d, o = K["d"], K["owner"]
+        comp = composition(F, d, G.h)
+        print("WDI-M: measured fitted-stack composition " + ", ".join(f"{k} {v:.1f} %" for k, v in comp.items()))
+        rep, path = s.board(K["S"], G, d, T, "protoWDI-M", o,
+                            extra="WDI-M: silhouette WDI, masses measured from the fitted stack")
+        for facing, result in rep.items():
+            print(f"{facing:6s} sil p95 {result['p95']:.2f} | lum {result['mae']:.4f}")
+        xm = np.nanmax(s.last_cross(d, 1, G.x), axis=1)
+        sh = float(np.interp(WROWS["shoulders"], G.r, np.nan_to_num(xm)))
+        print("ratios WDI:", {n: round(float(np.interp(r, G.r, np.nan_to_num(xm))) / sh, 3) for n, r in WROWS.items()})
+        print(path)
+        return
     if PROTO[name] is None:                                    # the prototype keeps the widths of the WDI body
         rows, k = list(WROWS.values()), [1.0] * len(WROWS)
     else:

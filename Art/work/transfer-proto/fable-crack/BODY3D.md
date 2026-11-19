@@ -393,14 +393,20 @@ Open:
 - The six other bodies are not run: their stack is a first pass (frame of Female, breast lobes, fat folds, Hulk_Female tips; see the stack section), and that skeleton and crotch work is the dependency. `garment3d.py <Body>` runs on them as soon as the mesh is good.
 - Hulk south and north footprint is 4 px off the sprite (the known Hulk tips, 5 px in the viewer score).
 
-## Trunk prototypes M1 and M (2026-11-17, `stack3d.py`, `bp3d_torso.py`, `proto.py`, `buildup.py`, `stages.py`, `overlap.py`)
+## Trunk prototypes WDI-M, M1 and M (2026-11-17/18, `stack3d.py`, `bp3d_torso.py`, `proto.py`, `buildup.py`, `stages.py`, `overlap.py`)
 
 Virginie's brief: torso prototypes, starting from the Male average, each defined by a fat, muscle and bone share and by
 four width ratios (shoulders, upper chest, waist, pelvis), measured on the torso only, the ghost limbs ignored.
 
-### The three bodies
+### The four reference bodies
 
 - **WDI source**: the stylised starting silhouette. No biological composition is attributed to it.
+- **WDI-M**: the established anatomical stack fitted under the WDI Male silhouette, then covered by a stylised
+  subcutaneous envelope.  Its shares are *measurements of this particular fitted, cropped stack*, not targets and not
+  a population average: at h3, fat 14.5 % (including 0.4 % pads), explicitly modelled muscle 17.3 %, solid bone
+  12.1 %, viscera 50.1 % and remaining unmodelled tissue 6.1 %.  Explicit muscles do not equal total whole-body
+  skeletal muscle, and solid bone does not equal DXA bone
+  mineral.  This is the WDI-coherent reference for later garment remapping; it is visually a lean / athletic body.
 - **M1 lean / athletic**: a chosen, stylised target. Fat about 12 to 16 % (solved at 14), superficial muscles at 100 %,
   a light envelope (closing 6 px, smoothing 5 px), gentle pads. No width ratios of its own yet.
 - **M average**: fat about 20 to 23 % (solved at 23), superficial muscles at 80 to 90 % of M1 (pectoralis major and
@@ -433,10 +439,20 @@ and is not comparable to the whole bones of a cropped torso: it waits for a cohe
   4 px so it moves rather than dents); what still goes in is cut away. Cost: some wedged small muscles lose volume
   (gemelli, multifidus, semitendinosus, sartorius), and the pushes leave gaps.
 
-### From the lean stack to the prototype (`proto.proto_board`, drawn by `stages.py`)
+### From the lean stack to a prototype (`proto.proto_board`, drawn by `stages.py`)
 
-1. The lean stack in the Male frame. (Putting it on the WDI source silhouette, with the fat that filled it, was removed
-   on 2026-11-17: `proto.WDI_FIT = False`.)
+**WDI-M** takes the different, non-destructive path: it fits the lean stack to the WDI Male silhouette, then smooths
+its subcutaneous surface between the WDI graphic landmarks before measuring the categorical fields.  The bridge is
+9 px and the skin tension blur 3 px; it keeps the pectoral border, inguinal V, navel, shallow lumbar/sacral marks and
+gluteal fold, while removing individually readable ribs, serratus, rectus blocks, erectors and small hip muscles.  It
+never calls `solve_comp`: there is no muscle dilation into the remaining interior and no reclassification of a solid
+bone as marrow.  At h3 its silhouette p95 is 2.2 px south, 2.8 px north and 2.0 px east; that is a useful constraint
+baseline, not yet a pixel-perfect source match.
+
+**M and M1** retain the exploratory calculation path:
+
+1. The lean stack in the Male frame. (Putting these experimental presets on the WDI source silhouette was removed on
+   2026-11-17.)
 2. The smooth envelope: the stack closed, smoothed, pushed out broadly where a piece would pierce it; the gaps it closes
    count as the rest (internal tissue not modelled: junctions, organs, water, skin), not as fat.
 3. The global fat layer: one slider t, as a share of the shoulder half width, weighted by region (`fat_base`).
@@ -454,6 +470,20 @@ thickened 22 px; M1 fat 14 %, widths 1 / 1.03 / 1.02 / 1.01 (a box: no width tar
 
 - `2026-11-17_buildup-M1.png`, `-M.png`: the torso built piece by piece (bones, muscles, fat layer, pads, skin).
 - `2026-11-17_stages-M.png`, `-M1.png`: from the lean stack to the finished prototype.
+- `2026-11-17_stages-WDI-M.png`: WDI-M's short path: lean stack, fitted stack, WDI-guided subcutaneous envelope with
+  measured shares.
+  It is a local work capture and is deliberately untracked because the comparison boards use WDI source material.
+- `2026-11-18_wdi-m-atlas-visibility.png` (`atlas_visibility.py`): proof that an atlas can be attached to the WDI-M
+  surface then projected through a depth buffer.  South, east, north and a south/front camera 30 degrees above it show
+  only the visible surface: no back or underside grid line crosses the body.  Diagnostic only, not garment rendering.
+- `2026-11-18_wdi-m-cage.png` (`wdi_cage.py`): candidate carrier surface.  It reuses the source-fitted WDI mass mesh,
+  not the smooth anatomical-stack envelope: thorax, waist, pelvis and gluteal volume remain distinct under the same
+  z-buffer.  Its three source-contour p95 errors are 5.0 / 3.2 / 5.0 px (south/east/north).  The rejected optional
+  `wdi_cage.py rings` control demonstrates why silhouette-only rings produce a blob in the 30-degree view.
+- `2026-11-18_wdi-m-cage-vs-wdi.png` (`wdi_cage.py`): local, untracked direct review board: WDI source beside the
+  structural carrier for south/east/north.  In the Male carrier only, the pectoral mass now rises from the lower chest,
+  the exporter does not add a second sternal hollow, and the outer 22 % of each front/back section is filleted.  These
+  change 3D form and oblique reading, not the three silhouette targets.
 - `2026-11-17_protoM1-vs-M.png`: the two prototypes lit, front, side, back.
 - `2026-11-17_muscles.png`, `2026-11-17_bones.png`: every piece alone, in transparency.
 
@@ -461,5 +491,11 @@ thickened 22 px; M1 fat 14 %, widths 1 / 1.03 / 1.02 / 1.01 (a box: no width tar
 
 - M1 width ratios (Virginie to give); the bone definition for a cropped torso; M's upper chest at 0.809 for 0.79.
 - 42 % muscle is probably a whole-body figure: on the torso it forces the muscles 22 px into the cavity.
+- WDI-M's fitted silhouette remains 3 to 4 px p95 from the source.  Its field shares are a model accounting, not a
+  clinical composition measurement.
+- The garment map still uses its 2D relief map.  The next replacement is a curve-constrained surface atlas: named
+  Vanilla/WDI landmark curves correct the dense map, then a camera depth test determines visibility.
+- The structural cage has not yet replaced that map: accept its macroscopic shape first.  It is regenerated by the
+  established WDI mesh path (`wdi3d.py Male`, then `wdi3d_export.py Male`) before `wdi_cage.py` renders its review board.
 - The muscle fibres are not drawn (only the shapes follow them). The fat-thickness map saturates (scale 16 px).
 - Next version only: the hand retouch of single garments (warped mesh with a GUI, see `Docs/BODYWARPER-STUDY.md`).
