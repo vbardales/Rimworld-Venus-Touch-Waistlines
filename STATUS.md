@@ -68,7 +68,7 @@ remaining:
   - "the open design questions of 2026-09-20 (per-body-type values through a preset module, whether to cover boots and chest, whether the compressed shirt reads acceptably) are kept in the section Earlier remaining entries below."
 publication_changelog_review_sha: b083afbf2c36b906c562272fc3719a556c5922e2
 updated:      2026-11-13
-protocols_read_sha: 990ae1b9b23c8d0e74fa279a3f39ff5d481e2a2b
+protocols_read_sha: 3df3487e678c30c11212603e2b80dc2d526f6202
 ---
 ## Ecosystem, 2026-11-13, refreshed 2026-11-17 (AUDIT.md 1.a and 8.0; PiI study `../docs/inventory/ecosystem-steam/VenusTouchWaistlines.md`, rimworld commits aed3523 and 2c96187)
 
