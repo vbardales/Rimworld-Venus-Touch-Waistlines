@@ -8,23 +8,41 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px sy
 #ui{position:fixed;left:16px;top:12px;background:var(--pn);padding:8px 12px;border-radius:8px;z-index:2;max-width:calc(100% - 32px)}
 select,button{font:inherit;margin:2px 6px 2px 0}
 label{margin-right:10px;white-space:nowrap}
+input[type=number]{width:58px}
+#lampHandles{position:fixed;inset:0;z-index:3;pointer-events:none}
+.lampHandle{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;border:3px solid currentColor;background:#fff;font-weight:800;box-shadow:0 1px 4px #0008;cursor:grab;pointer-events:auto}
+.lampHandle:active{cursor:grabbing}
+.lampHandle[data-lamp="0"]{color:#b67400}.lampHandle[data-lamp="1"]{color:#167ba8}.lampHandle[data-lamp="2"]{color:#a43aaa}
 #note{position:fixed;left:16px;bottom:10px;right:16px;font-size:12px;opacity:.7}
+body.focus #ui,body.focus #note,body.focus #lampHandles{display:none}
 </style></head><body>
 <div id="ui">
 <select id="b"></select><select id="m"></select>
 <button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><br>
-<label><input type="checkbox" id="sk"> squelette</label>
-<label><input type="checkbox" id="rb"> os BP3D (référence)</label>
-<label><input type="checkbox" id="mu"> muscles</label>
-<label><input type="checkbox" id="fa"> graisse</label>
-<label><input type="checkbox" id="rm"> muscles BP3D (référence)</label>
+<button id="focus" title="H masque ou restaure l'interface">aperçu</button><button id="colour" title="Affiche les zones musculaires imprimées sur WDI 2">zones couleur</button><button id="landmarks" title="Affiche les traits 2D dans la vue courante ; les balises des quatre directions restent toujours visibles">traits 2D</button><button id="forms" title="Projette les formes de construction 2D sur la peau WDI 2">formes 2D ✓</button>
+<label class="wdi2Only" title="Isole la clavicule BodyParts3D à 6 unités sous la peau WDI 2"><input type="checkbox" id="cb" checked> os clavicule seul</label>
+<label class="wdi2Only" title="Isole la colonne BodyParts3D sous la peau nord WDI 2"><input type="checkbox" id="sp"> os colonne seul</label>
+<label class="stackOnly"><input type="checkbox" id="sk"> squelette</label>
+<label class="stackOnly"><input type="checkbox" id="rb"> os BP3D (référence)</label>
+<label class="stackOnly"><input type="checkbox" id="mu"> muscles</label>
+<label class="stackOnly"><input type="checkbox" id="fa"> graisse</label>
+<label class="stackOnly"><input type="checkbox" id="rm"> muscles BP3D (référence)</label>
 <label><input type="checkbox" id="ref"> calque WDI</label>
 <label>WDI <input type="range" id="ro" min="5" max="90" value="35"></label>
 <label><input type="checkbox" id="zen" checked> éclairage zénithal</label>
-<label><input type="checkbox" id="gh" checked> membres fantômes</label>
-<label><input type="checkbox" id="og"> organes (corps masculins)</label>
+<label class="stackOnly"><input type="checkbox" id="gh" checked> membres fantômes</label>
+<label class="stackOnly"><input type="checkbox" id="og"> organes (corps masculins)</label>
 <label>peau <input type="range" id="op" min="10" max="100" value="100"></label>
+<div id="blobLights">
+  <label>lampe <select id="li"><option value="0">1 jaune</option><option value="1">2 bleue</option><option value="2">3 rose</option></select></label>
+  <label><input type="checkbox" id="lon"> active</label>
+  <label>X <input type="number" id="lx" min="-1500" max="1500" step="25"></label>
+  <label>Y <input type="number" id="ly" min="-1500" max="1500" step="25"></label>
+  <label>Z <input type="number" id="lz" min="-1500" max="1500" step="25"></label>
+  <label>intensité <input type="range" id="lg" min="0" max="200" value="100"></label>
 </div>
+</div>
+<div id="lampHandles" hidden><button type="button" class="lampHandle" data-lamp="0">1</button><button type="button" class="lampHandle" data-lamp="1">2</button><button type="button" class="lampHandle" data-lamp="2">3</button></div>
 <div id="note"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -38,7 +56,9 @@ const NOTES={
  wdi:"wdi3d model (core + masses fitted to the WDI drawing). Mesh = crease-free volumes of the south and north fields. Material: white skin, light from the top of the screen, taken relative to the body's centre plane (flat grey on skin that faces down, same transfer as wdi3d.py), creases and areolae from the model's crease maps (south, north, east, chosen by the surface normal), black rim. Not reproduced: the rim is a screen-space estimate (uneven width, thin on flat flanks), the east greys come from the south/north volumes and not from the east fit, creases are maps and not geometry.",
  shade:"relief + ombres + jambes: shading read as a zenithal light, outline = rim of the body, nipples raised, navel hollowed, sex = dome in the groin creases, legs split below the crotch: the drawn notch when present, otherwise an internal medial seam from the crotch landmark. Skeleton = schematic, fitted on the landmark rows (not anatomical bone shapes). Organs = a first volume from a profile reference (shaft hanging forward and down from the pubis, scrotum below and behind), proportioned on the shoulder width.",
  relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
- simple:"simple volume: superellipse sections from the E masks."};
+ simple:"simple volume: superellipse sections from the E masks.",
+ blob:"blob WDI: une seule enveloppe 3D lisse. Largeur = silhouette commune face/dos ; profondeur = profil WDI. Aucun relief, muscle, creux, ligne ou texture n'est injecté.",
+ blob2:"blob WDI 2: reliefs signés (sorties et creux) ancrés sur les repères 2D du cou, des épaules, des aisselles et du dos. « zones couleur » plaque les silhouettes du pack musculaire existant sur cette peau ; « repères 2D » montre les coordonnées canoniques de l’éditeur 2D dans la vue correspondante. Les bras restent hors modèle."};
 const sc=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);globalThis.__cam=cam;
 const ren=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
@@ -46,18 +66,59 @@ ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(devicePixelRatio);
 document.body.appendChild(ren.domElement);
 const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;globalThis.__ctl=ctl;
 // Without zenithal modelling this is a neutral white illumination; with it, leave enough ambient room for the relief.
-const fill=new THREE.AmbientLight(0xffffff,.95);sc.add(fill);
-const dl=new THREE.DirectionalLight(0xffffff,.75);dl.position.set(0,900,0);sc.add(dl); // optional zenithal accent; no WDI colour on skin
+const fill=new THREE.AmbientLight(0xffffff,.58);sc.add(fill);
+const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(-300,900,520);sc.add(dl); // soft top-front key; no WDI colour on skin
 const $=id=>document.getElementById(id);
 const sel=$('b'),msel=$('m');
+const isBlobMode=mode=>mode==='blob'||mode==='blob2';
+// Positions start inside the viewport; the draggable handles are drawn in screen space,
+// but write directly into these real 3D coordinates.
+const lights=[{p:new THREE.Vector3(3,150,200),gain:.5},{p:new THREE.Vector3(-300,300,0),gain:.5},{p:new THREE.Vector3(0,150,-200),gain:.5}];
+const lampIndex=()=>+$('li').value;
+const lampHandleBox=$('lampHandles'),lampHandles=[...document.querySelectorAll('.lampHandle')],lampScreen=new THREE.Vector3();
+function syncLampInputs(){const l=lights[lampIndex()];$('lon').checked=l.gain>0;$('lx').value=l.p.x;$('ly').value=l.p.y;$('lz').value=l.p.z;$('lg').value=Math.round(l.gain*100)}
+function updateLampHandles(){
+  const show=isBlobMode(msel.value)&&!(msel.value==='blob2'&&$('cb')?.checked);lampHandleBox.hidden=!show;
+  lampHandles.forEach((h,i)=>{lampScreen.copy(lights[i].p).project(cam);const inView=lampScreen.z>=-1&&lampScreen.z<=1&&Math.abs(lampScreen.x)<=1&&Math.abs(lampScreen.y)<=1;
+    h.hidden=!show||!inView;h.style.left=`${(lampScreen.x+1)*innerWidth*.5}px`;h.style.top=`${(1-lampScreen.y)*innerHeight*.5}px`;h.style.opacity=lights[i].gain>0?'1':'.45';h.style.scale=i===lampIndex()?'1.18':'1';
+  });
+}
+function syncBlobLights(){for(const mat of [blobMat,blob2Mat])for(let i=0;i<3;i++){mat.uniforms.lamps.value[i].copy(lights[i].p);mat.uniforms.gain.value[i]=lights[i].gain;mat.uniformsNeedUpdate=true;}updateLampHandles();}
+function updateLamp(){const l=lights[lampIndex()];l.p.set(+$('lx').value||0,+$('ly').value||0,+$('lz').value||0);l.gain=$('lon').checked?(+$('lg').value/100):0;syncBlobLights();}
 const isWdi=e=>!!(e&&e.tex);
 const WDI=isWdi(Object.values(DATA.shade.bodies)[0]);
-Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={shade:'stack anatomique',relief:'relief',simple:'simple volume'}[k];msel.appendChild(o)});
-Object.keys(DATA.shade.bodies).forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
-let G=null,fitD=1000,refBox=null,activeView=0;
+Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={blob:'blob WDI',blob2:'blob WDI 2',shade:'stack anatomique',relief:'relief',simple:'simple volume'}[k]||k;msel.appendChild(o)});
+if(DATA.blob2)msel.value='blob2';
+function populateBodies(){
+  const requestedBody=new URLSearchParams(location.search).get('body'),keep=sel.value,names=Object.keys(DATA[msel.value].bodies);sel.replaceChildren();
+  names.forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
+  sel.value=names.includes(requestedBody)?requestedBody:(names.includes(keep)?keep:(names.includes('Male')?'Male':names[0]));
+}
+populateBodies();
+let G=null,fitD=1000,refBox=null,activeView=0,colourGuide=false,landmarkGuide=false,formGuide=true;
 const skin=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.88,side:THREE.DoubleSide});
+// Blob WDI is lit by the three movable point lights below.  It remains a plain envelope:
+// lights change only the surface tone, never the silhouette or painted WDI shading.
+const blobMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,
+ uniforms:{opacity:{value:1},zen:{value:1},lamps:{value:[new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]},gain:{value:[1,0,0]}},
+ vertexShader:`varying vec3 vNo;varying vec3 vWorld;void main(){vNo=normal;vWorld=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+ fragmentShader:`uniform float opacity;uniform float zen;uniform vec3 lamps[3];uniform float gain[3];varying vec3 vNo;varying vec3 vWorld;
+ void main(){vec3 n=-normalize(vNo);float lit=0.;for(int i=0;i<3;i++){vec3 d=normalize(lamps[i]-vWorld);lit+=gain[i]*max(dot(n,d),0.);}
+  float tone=clamp(.72+.28*lit,.62,1.);gl_FragColor=vec4(vec3(mix(1.,tone,zen)),opacity);}`
+});
+// WDI 2 uses the very same lamps but has enough tonal range for its deliberately
+// sculpted landmarks to cast readable shadows.  The neutral blob above remains
+// a faithful, low-contrast WDI hull for comparison.
+const blob2Mat=blobMat.clone();
+blob2Mat.fragmentShader=`uniform float opacity;uniform float zen;uniform vec3 lamps[3];uniform float gain[3];varying vec3 vNo;varying vec3 vWorld;
+ void main(){vec3 n=-normalize(vNo);float lit=0.;for(int i=0;i<3;i++){vec3 d=normalize(lamps[i]-vWorld);lit+=gain[i]*max(dot(n,d),0.);}
+  float tone=clamp(.38+.62*lit,.34,1.);gl_FragColor=vec4(vec3(mix(1.,tone,zen)),opacity);}`;
+blob2Mat.needsUpdate=true;
+syncLampInputs();syncBlobLights();
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
 const Q=new URLSearchParams(location.search);
+if(Q.get('landmarks')==='1')landmarkGuide=true;
+if(Q.has('op'))$('op').value=Math.max(10,Math.min(100,Number(Q.get('op'))||100));
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
  uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},zen:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)},gm:{value:+(Q.get('gm')||.6)}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
@@ -92,8 +153,185 @@ const boneL=new THREE.MeshStandardMaterial({color:0xe9e4d4,roughness:.6,side:THR
 const fatL=new THREE.MeshStandardMaterial({color:0xd0a64c,roughness:.85,transparent:true,opacity:.78,side:THREE.DoubleSide});
 const ghostL=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9,side:THREE.DoubleSide});
 // a layer of the stack model (right half): its mesh and the mirror image
-function layerMesh(L,mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L.v,3));g.setIndex(L.i);g.computeVertexNormals();
-  const grp=new THREE.Group(),a=new THREE.Mesh(g,mat),b=new THREE.Mesh(g,mat);b.scale.x=-1;grp.add(a);grp.add(b);return grp}
+function layerMesh(L,mat,mirror=true){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(L.v,3));g.setIndex(L.i);g.computeVertexNormals();
+  const grp=new THREE.Group(),a=new THREE.Mesh(g,mat);grp.add(a);if(mirror){const b=new THREE.Mesh(g,mat);b.scale.x=-1;grp.add(b)}return grp}
+// Map an existing muscle-library vertex back to the front or back skin at its
+// own X/Y position.  The resulting colour mesh is a thin printed layer on WDI
+// 2, not the anatomical volume sitting underneath the skin.
+function ringDepth(row,A,x,side){
+  const hits=[];
+  for(let k=0;k<A;k++){
+    const a=k*3,b=((k+1)%A)*3,x0=row[a],x1=row[b],z0=row[a+2],z1=row[b+2];
+    if(Math.abs(x1-x0)<1e-6){if(Math.abs(x-x0)<1e-4){hits.push(z0,z1)};continue}
+    if(x>=Math.min(x0,x1)&&x<=Math.max(x0,x1)){const t=(x-x0)/(x1-x0);hits.push(z0+(z1-z0)*t)}
+  }
+  if(!hits.length){let nearest=0,d=Infinity;for(let k=0;k<A;k++){const q=Math.abs(x-row[k*3]);if(q<d){d=q;nearest=k*3}}return row[nearest+2]}
+  return side>0?Math.max(...hits):Math.min(...hits);
+}
+function skinDepth(rows,A,x,y,side){
+  let best=0,dist=Infinity;
+  for(let i=0;i<rows.length;i++){const d=Math.abs(y-rows[i][1]);if(d<dist){dist=d;best=i}
+    if(i+1<rows.length){const y0=rows[i][1],y1=rows[i+1][1];if((y-y0)*(y-y1)<=0){const t=(y-y0)/(y1-y0||1);return THREE.MathUtils.lerp(ringDepth(rows[i],A,x,side),ringDepth(rows[i+1],A,x,side),t)}}
+  }
+  return ringDepth(rows[best],A,x,side);
+}
+function ringSideX(row,A,z,side){
+  const hits=[];
+  for(let k=0;k<A;k++){
+    const a=k*3,b=((k+1)%A)*3,z0=row[a+2],z1=row[b+2],x0=row[a],x1=row[b];
+    if(Math.abs(z1-z0)<1e-6){if(Math.abs(z-z0)<1e-4)hits.push(x0,x1);continue}
+    if(z>=Math.min(z0,z1)&&z<=Math.max(z0,z1)){const t=(z-z0)/(z1-z0);hits.push(x0+(x1-x0)*t)}
+  }
+  if(!hits.length){let nearest=0,d=Infinity;for(let k=0;k<A;k++){const q=Math.abs(z-row[k*3+2]);if(q<d){d=q;nearest=k*3}}return row[nearest]}
+  return side>0?Math.max(...hits):Math.min(...hits);
+}
+function skinSideX(rows,A,z,y,side){
+  let best=0,dist=Infinity;
+  for(let i=0;i<rows.length;i++){const d=Math.abs(y-rows[i][1]);if(d<dist){dist=d;best=i}
+    if(i+1<rows.length){const y0=rows[i][1],y1=rows[i+1][1];if((y-y0)*(y-y1)<=0){const t=(y-y0)/(y1-y0||1);return THREE.MathUtils.lerp(ringSideX(rows[i],A,z,side),ringSideX(rows[i+1],A,z,side),t)}}
+  }
+  return ringSideX(rows[best],A,z,side);
+}
+function printedPart(part,rows,A,side,mat){
+  const v=part.v,out=[];
+  for(let i=0;i<v.length;i+=3)out.push(v[i],v[i+1],skinDepth(rows,A,v[i],v[i+1],side)+side*.85);
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(out,3));geo.setIndex(part.i);geo.computeVertexNormals();
+  const g=new THREE.Group(),a=new THREE.Mesh(geo,mat),b=new THREE.Mesh(geo,mat);b.scale.x=-1;g.add(a,b);return g;
+}
+function muscleZoneMesh(parts,rows,A){
+  const g=new THREE.Group(),colour=n=>n.startsWith('trapezius')?0x54ba83:n==='deltoid'?0x58b9db:n==='pectoralis major'?0xe7c76e:n.startsWith('serratus')?0xc367c4:n.includes('infraspinatus')?0xc367c4:0x69c7df;
+  const faces=n=>n==='pectoralis major'||n.startsWith('serratus')?[1]:n.includes('infraspinatus')||n.includes('rhomboid')?[-1]:[-1,1];
+  parts.forEach(p=>faces(p.n).forEach(side=>{const m=new THREE.MeshBasicMaterial({color:colour(p.n),transparent:true,opacity:.72,depthWrite:false,depthTest:true,side:THREE.DoubleSide});const o=printedPart(p,rows,A,side,m);o.userData.k='zones';g.add(o)}));
+  g.userData.k='zones';g.visible=colourGuide;return g;
+}
+function landmarkMesh(e,torso){
+  // A ray from the current camera always hits the front shell first, even when
+  // it is transparent.  Map each editor face directly to its own shell so the
+  // south, east, north and mirrored-west strokes remain simultaneously true.
+  const g=new THREE.Group(),F=e.frame,A=e.A||DATA[msel.value].A,inside=3;
+  const toSurface=(view,p)=>{const y=-p[1];let x,z;
+    if(view==='south'){x=p[0]-F.cxs;z=skinDepth(e.rows,A,x,y,1)-inside}
+    else if(view==='north'){x=F.cxn-p[0];z=skinDepth(e.rows,A,x,y,-1)+inside}
+    else if(view==='east'){z=p[0]-F.zmean;x=skinSideX(e.rows,A,z,y,-1)+inside}
+    else {z=F.zmean-p[0];x=skinSideX(e.rows,A,z,y,1)-inside}
+    return new THREE.Vector3(x,y,z);
+  };
+  const stroke=(view,a,b,colour)=>{const curve=new THREE.LineCurve3(toSurface(view,a),toSurface(view,b)),mat=new THREE.MeshBasicMaterial({color:colour,depthTest:false,depthWrite:false});const o=new THREE.Mesh(new THREE.TubeGeometry(curve,10,1.15,6,false),mat);o.renderOrder=35;o.userData.k='landmarks';g.add(o)};
+  const pointsOnly=msel.value==='blob2'&&($('cb').checked||$('sp').checked);
+  const links=[['shoulderL','shoulderR',0x2f76b2],['armpitL','armpitR',0x2b9699],['waistL','waistR',0xbf8b21],['pelvisL','pelvisR',0xa63767],['legL','legR',0x3e945b],['pubis','crotch',0xc34e76]];
+  if(!pointsOnly)for(const view of ['south','east','north','west']){const source=e.landmarks[view==='west'?'east':view]||{};links.forEach(([a,b,c])=>{if(source[a]&&source[b])stroke(view,source[a],source[b],c)})}
+  g.userData.k='landmarks';g.visible=landmarkGuide||pointsOnly;return g;
+}
+function hardLandmarkMesh(e,A){
+  // Every saved landmark stays visible.  Upper-torso markers are latex
+  // constraints; pelvic/leg markers are a temporary 3D placement scaffold and
+  // carry a different anchor tag so they can later snap to the pelvic bone.
+  const g=new THREE.Group(),F=e.frame,inside=3;
+  const markerColor=n=>n==='chin'?0x8e4397:n.startsWith('shoulder')?0x2f76b2:n.startsWith('armpit')?0x2b9699:n.startsWith('waist')?0xbf8b21:n.startsWith('hip')?0xcb5b39:n==='navel'?0x3d4ea4:n.startsWith('pelvis')?0xa63767:n==='pubis'?0x8e2f62:n.startsWith('groin')||n==='crotch'?0xc34e76:n.startsWith('leg')?0x3e945b:0x71756f;
+  const pelvic=/^(hip|pelvis|pubis|groin|crotch|leg)/;
+  const emit=(view,point,name,colour=null,guide=false)=>{
+    let x,y,z;y=-point[1];
+    if(view==='south'){x=point[0]-F.cxs;z=skinDepth(e.rows,A,x,y,1)-inside}
+    else if(view==='north'){x=F.cxn-point[0];z=skinDepth(e.rows,A,x,y,-1)+inside}
+    else if(view==='east'){z=point[0]-F.zmean;x=skinSideX(e.rows,A,z,y,-1)+inside}
+    else {z=F.zmean-point[0];x=skinSideX(e.rows,A,z,y,1)-inside}
+    const shoulder=name.startsWith('shoulder'),dot=new THREE.Mesh(new THREE.SphereGeometry(shoulder?4.2:2.8,12,8),new THREE.MeshBasicMaterial({color:colour??markerColor(name),depthTest:false,depthWrite:false,transparent:true,opacity:.96}));
+    dot.position.set(x,y,z);dot.renderOrder=40;dot.userData.k='hardLandmarks';dot.userData.label=`${view}:${name}`;dot.userData.anchor=guide?'guide':(pelvic.test(name)?'pelvis':'latex');g.add(dot);
+  };
+  for(const view of ['south','east','north','west']){
+    const source=view==='west'?'east':view;
+    for(const [name,point] of Object.entries(e.landmarks?.[source]||{}))emit(view,point,name);
+  }
+  // These are not generic landmarks: they are the editable vertices of the
+  // north construction itself.  In particular the blue oblique route runs
+  // from its thoracic/ellipse arc through to the lowest ``low`` control of
+  // the lower-back diamond, so it can constrain the future spine and pelvis.
+  const back=e.guide_layers?.backPlan?.north;
+  if(back)for(const [kind,shape,colour] of [['upper',back.upper,0xa66d1a],['lower',back.lower,0x694b99],['oblique',back.oblique,0x2f76b2]])if(shape?.points){
+    for(const [id,p] of Object.entries(shape.points))for(const side of (p.x===0?[1]:[-1,1]))emit('north',{x:shape.cx+p.x*side,y:shape.cy+p.y},`north:${kind}:${id}`,colour,true);
+  }
+  // Same provenance for the other editor views: front-plan/chest controls and
+  // the profile-chest controls are real saved vertices, not inferred anatomy.
+  for(const [kind,shape,colour] of [['frontPlan',e.guide_layers?.frontPlan?.south,0x694b99],['chestPlan',e.guide_layers?.chestPlan?.south,0x9c3b97]])if(shape?.points){
+    for(const [id,p] of Object.entries(shape.points))for(const side of (p.x===0?[1]:[-1,1]))emit('south',{x:shape.cx+p.x*side,y:shape.cy+p.y},`south:${kind}:${id}`,colour,true);
+  }
+  const profile=e.guide_layers?.profileChest?.east;
+  if(profile?.points)for(const [id,p] of Object.entries(profile.points))emit('east',{x:profile.cx+p.x,y:profile.cy+p.y},`east:profileChest:${id}`,0x9c3b97,true);
+  g.userData.k='hardLandmarks';return g;
+}
+function projectedStroke(points,torso,face,colour,width=1.05){
+  // Each point starts in the exact 512px editor plane.  We only retain pieces
+  // that ray-cast onto WDI's skin, so a construction line never bridges across
+  // empty space or becomes an invented head/neck volume.
+  const plane=refBox.faces[face].p,ray=new THREE.Raycaster(),runs=[],run=[];
+  const flush=()=>{if(run.length>1)runs.push(run.splice(0));else run.length=0};
+  // A construction rectangle generally has all four corners outside the body.
+  // Projecting only those corners made the entire form disappear.  Sample each
+  // segment first, so its portion crossing the skin remains a continuous line.
+  const samples=[];for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/4));for(let j=0;j<n;j++){const t=j/n;samples.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}samples.push(points.at(-1));
+  samples.forEach(p=>{const target=plane.localToWorld(new THREE.Vector3(p[0]-256,256-p[1],0));const direction=target.clone().sub(cam.position);ray.set(cam.position,direction.normalize());ray.near=0;ray.far=cam.far;const hit=ray.intersectObject(torso,false)[0];if(!hit){flush();return};
+    // Move a fraction toward the camera: the coloured tube is printed just
+    // above the skin rather than occluded by the shell it annotates.
+    run.push(G.worldToLocal(hit.point.clone().addScaledVector(direction,-1.05)))});
+  flush();
+  const mat=new THREE.MeshBasicMaterial({color:colour,transparent:true,opacity:.98,depthTest:false,depthWrite:false});
+  const g=new THREE.Group();runs.forEach(r=>{const curve=new THREE.CatmullRomCurve3(r,false,'centripetal');const line=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(2,r.length*2),width,6,false),mat);line.renderOrder=30;line.userData.k='forms';g.add(line)});return g;
+}
+function claviclePlanMesh(e,torso){
+  // The paired purple segment is the exact front-plan clavicular constraint,
+  // not an inferred contour.  It stays in the bone inspection so any axis
+  // mismatch between WDI2 and BodyParts3D remains explicit.
+  const g=new THREE.Group(),fp=e.guide_layers?.frontPlan?.south;
+  if(!fp?.points?.sternumTop||!fp.points.top||activeView!==0)return g;
+  const at=(id,side)=>[fp.cx+fp.points[id].x*side,fp.cy+fp.points[id].y];
+  for(const side of [1,-1]){
+    const stroke=projectedStroke([at('sternumTop',side),at('top',side)],torso,'s',0x694b99,.95);
+    stroke.traverse(o=>o.userData.k='clavicleGuide');stroke.userData.k='clavicleGuide';g.add(stroke);
+  }
+  g.userData.k='clavicleGuide';return g;
+}
+function formMesh(e,torso){
+  const g=new THREE.Group(),view=['south','east','north'][activeView],face=['s','e','n'][activeView],m=e.landmarks?.[view]||{},box=e.construction?.[view];
+  if(!refBox||!box||!m.chin||!m.shoulderL||!m.shoulderR||!m.waistL||!m.waistR||!m.pubis)return g;
+  const female=/Female/.test(msel.value==='blob2'?sel.value:''),rot=view==='east'?(box.rotation||0):0;
+  const centre=[box.cx,box.y+box.height/2],turn=([x,y])=>{const dx=x-centre[0],dy=y-centre[1],c=Math.cos(rot),s=Math.sin(rot);return[centre[0]+dx*c-dy*s,centre[1]+dx*s+dy*c]};
+  const add=(pts,c,w)=>g.add(projectedStroke(pts,torso,face,c,w));
+  const L=box.cx-box.width/2,R=box.cx+box.width/2,B=box.y+box.height;
+  // Exact equivalent of drawConstruction(): shoulder box, neck trapezoid,
+  // head construction and the editor's dotted centre axis.  The head curve is
+  // naturally absent where WDI has no skin rather than floating in space.
+  add([[L,box.y],[R,box.y],[R,B],[L,B],[L,box.y]].map(turn),0x246b84,1.05);
+  const headWidth=Math.max(38,(box.width-6)/(female?2.5:3))*(box.headScale||1),radius=headWidth/2,head=[m.chin[0],m.chin[1]-radius];
+  const circle=[];for(let i=0;i<=32;i++){const a=Math.PI*2*i/32;circle.push([head[0]+Math.cos(a)*radius,head[1]+Math.sin(a)*radius])}add(circle,0x694b99,.9);
+  const avg=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2],axis=[m.chin,avg(m.shoulderL,m.shoulderR),avg(m.waistL,m.waistR),m.pubis];
+  for(let i=0;i<axis.length-1;i++){const a=axis[i],b=axis[i+1];for(let t=0;t<1;t+=.18){const u=Math.min(1,t+.085);add([[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u]],0x6f6f6f,.65)}}
+  // Remaining editor layers.  Use their saved points when available and the
+  // editor's documented seed otherwise, rather than drawing generic anatomy.
+  const layers=e.guide_layers||{},layer=n=>layers[n]?.[view],xy=p=>[p.x,p.y],ell=(o,n=40)=>{const r=[];for(let i=0;i<=n;i++){const a=Math.PI*2*i/n,c=Math.cos(o.rotation||0),s=Math.sin(o.rotation||0),x=Math.cos(a)*(o.rx||0),y=Math.sin(a)*(o.ry||0);r.push([o.cx+x*c-y*s,o.cy+x*s+y*c])}return r};
+  const cage=layer('thoracicCage')||{cx:box.cx,cy:box.y+box.height*.54,rx:box.width*.43,ry:box.height*.78,rotation:view==='east'?rot:0};
+  add(ell(view==='east'?(layer('profileEllipse')||{cx:box.cx,cy:box.y+box.height*.54,rx:box.width*.48,ry:box.height*.86,rotation:rot}):cage),0xb7791f,.72);
+  if(view!=='east'){
+    // Same lower inner arc as drawShoulderVolumeEllipse() in the 2D editor:
+    // it marks the inferior costal margin / floating ribs, not an added organ.
+    const rib=[];const a=[cage.cx-cage.rx*.73,cage.cy+cage.ry*.43],q=[cage.cx,cage.cy+cage.ry*.06],b=[cage.cx+cage.rx*.73,cage.cy+cage.ry*.43];for(let i=0;i<=24;i++){const t=i/24,u=1-t;rib.push([u*u*a[0]+2*u*t*q[0]+t*t*b[0],u*u*a[1]+2*u*t*q[1]+t*t*b[1]])}add(rib,0xb7791f,.8);
+  }
+  if(view==='south'){
+    const fp=layer('frontPlan')||(()=>{const h=Math.max(42,box.height*1.15),w=box.width*.72;return{cx:avg(m.shoulderL,m.shoulderR)[0],cy:box.y+box.height+h/2+10,points:{sternumTop:{x:0,y:-h*.42},top:{x:-w*.19,y:-h*.5},outer:{x:-w*.5,y:-h*.08},joint:{x:-w*.39,y:h*.08},sternumLow:{x:0,y:h*.42}}}})();
+    const fpp=(id,side=1)=>[fp.cx+fp.points[id].x*side,fp.cy+fp.points[id].y];
+    for(const side of [1,-1])add(['sternumTop','top','outer','joint','sternumLow'].map(id=>fpp(id,side)),0x694b99,.85);
+    const cp=layer('chestPlan');if(cp){const cpp=(id,side)=>[cp.cx+cp.points[id].x*side,cp.cy+cp.points[id].y];for(const side of [1,-1])add(['top','upperOuter','outer','lowerOuter','lowerInner','inner','top'].map(id=>cpp(id,side)),0x9c3b97,.8)}
+  }
+  if(view==='east'){
+    const pc=layer('profileChest');if(pc){const p=id=>[pc.cx+pc.points[id].x,pc.cy+pc.points[id].y];add(['top','slope','frontUpper','front','low','backLow','back','top'].map(p),0x9c3b97,.8)}
+  }
+  if(view==='north'){
+    const bp=layer('backPlan');if(bp){const at=(shape,id,side)=>[shape.cx+shape.points[id].x*side,shape.cy+shape.points[id].y];const mirrored=(shape,ids)=>ids.map(id=>at(shape,id,1)).concat(ids.slice(0,-1).reverse().map(id=>at(shape,id,-1)));
+      if(bp.upper)add(mirrored(bp.upper,['neckTop','neckBase','shoulder','outer','waist','low']),0xa66d1a,.85);
+      for(const shape of [bp.lower,bp.oblique])if(shape){const ids=['wingTip','wingInner','notch','wingLow','stem','low'];const path=[at(shape,'wingTip',-1),at(shape,'wingInner',-1),at(shape,'notch',1),at(shape,'wingInner',1),at(shape,'wingTip',1),at(shape,'wingLow',1),at(shape,'stem',1),at(shape,'low',1),at(shape,'stem',-1),at(shape,'wingLow',-1)];add(path,shape===bp.oblique?0x2f76b2:0x694b99,.8)}
+    }
+  }
+  g.userData.k='forms';g.visible=formGuide;return g;
+}
 const flesh=new THREE.MeshStandardMaterial({color:0xc48a76,roughness:.75});
 // ring-to-ring noise of the mesh normals sits at the toon threshold and bands the greys: low-pass the normals on the grid (rows more than ring)
 function smoothNormals(g,R,A,sn){const n=g.attributes.normal.array,m=R*A,t=new Float32Array(m*3);
@@ -125,7 +363,7 @@ function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null,sn=null}={}){
 function tube(pts,r,mat,seg){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));return new THREE.Mesh(new THREE.TubeGeometry(c,seg||24,r,6,false),mat||bone)}
 function ball(p,rx,ry,rz,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),mat||bone);m.scale.set(rx,ry,rz);m.position.set(...p);return m}
 function setReferenceBox(){
-  if(!refBox)return;const q=refBox,e=q.e,F=e.frame,b=q.b,c=q.c,show=$('ref').checked,o=+$('ro').value/100;
+  if(!refBox)return;const q=refBox,e=q.e,F=e.frame,b=q.b,c=q.c,show=$('ref').checked&&msel.value!=='blob2',o=+$('ro').value/100;
   // Four real faces surround the body.  Only the camera-facing one is drawn, preventing the opposite translucent
   // drawing from bleeding through the skin while retaining a correctly placed WDI image on every cardinal face.
   const put=(key,s,rot,pos)=>{const qf=q.faces[key];qf.p.rotation.set(...rot);qf.p.scale.set(...s);qf.p.position.set(...pos);qf.m.opacity=o;qf.m.needsUpdate=true;};
@@ -146,6 +384,17 @@ function addReferenceOverlay(e,b,c){
   const maps={s:refTexOf(e.wdi.s),n:refTexOf(e.wdi.n),e:refTexOf(e.wdi.e)};
   const face=(map)=>{const m=new THREE.MeshBasicMaterial({map,transparent:true,opacity:+$('ro').value/100,depthTest:true,depthWrite:false,side:THREE.DoubleSide});const p=new THREE.Mesh(new THREE.PlaneGeometry(512,512),m);p.renderOrder=20;p.userData.k='ref';G.add(p);return{p,m}};
   refBox={e,b:b.clone(),c:c.clone(),faces:{s:face(maps.s),n:face(maps.n),e:face(maps.e),w:face(maps.e)}};setReferenceBox();
+}
+function surfaceReference(torso,e){
+  // WDI 2's comparison image is a decal on the actual skin, not a free plane.
+  // Its black outline therefore follows the 3D envelope by construction.
+  const F=e.frame,source=activeView===0?e.wdi.s:activeView===1?e.wdi.e:e.wdi.n;
+  const xexpr=activeView===0?'vP.x+off.x':activeView===1?'vP.z+off.z':'off.y-vP.x';
+  const mat=new THREE.ShaderMaterial({transparent:true,depthTest:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide,
+    uniforms:{map:{value:refTexOf(source)},off:{value:new THREE.Vector3(F.cxs,F.cxn,F.zmean)},opacity:{value:+$('ro').value/100}},
+    vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:`uniform sampler2D map;uniform vec3 off;uniform float opacity;varying vec3 vP;void main(){float px=${xexpr};vec2 uv=vec2(px/512.,1.+vP.y/512.);if(uv.x<0.||uv.x>1.||uv.y<0.||uv.y>1.)discard;vec4 c=texture2D(map,uv);gl_FragColor=vec4(c.rgb,c.a*opacity);}`});
+  const decal=new THREE.Mesh(torso.geometry,mat);decal.userData.k='surfaceRef';decal.visible=$('ref').checked;decal.renderOrder=25;return decal;
 }
 function skeleton(rows,A,lm,legs,cage){
   const g=new THREE.Group(),R=rows.length;
@@ -255,7 +504,7 @@ function build(){
   if(Array.isArray(e))e={rows:e,legs:null,lm:null};
   const A=e.A||DATA[mode].A,sn=e.sn??null;
   G=new THREE.Group();
-  cur=isWdi(e)?wdiMat:skin;
+  cur=mode==='blob2'?blob2Mat:(mode==='blob'?blobMat:(isWdi(e)?wdiMat:skin));
   if(isWdi(e)){const u=wdiMat.uniforms,F=e.frame;u.tS.value=texOf(e.tex.s);u.tN.value=texOf(e.tex.n);u.tE.value=texOf(e.tex.e);
     u.bS.value=texOf(e.bake.s);u.bN.value=texOf(e.bake.n);u.bE.value=texOf(e.bake.e);
     u.gS.value=texOf(e.gate.s);u.gN.value=texOf(e.gate.n);u.gE.value=texOf(e.gate.e);
@@ -272,42 +521,85 @@ function build(){
       const gm=new THREE.Group();gh.parts.forEach(p=>gm.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.75,side:THREE.DoubleSide}))));add(gm,'ghm')}}
   const zc=e.frame&&e.frame.zc,tilt=zc?y=>{const r=Math.max(1,Math.min(zc.length-2,Math.round(-y-e.frame.s[0])));return -(zc[r+1]-zc[r-1])/2}:null;
   const torso=meshOf(e.rows,A,{capTop:!e.horns,capBottom:!e.legs,tilt,sn});torso.userData.k='skin';G.add(torso);
+  if(mode==='blob2'&&e.clavicle_bone){const cb=layerMesh(e.clavicle_bone,boneL);cb.userData.k='cb';cb.visible=$('cb').checked;G.add(cb)}
+  if(mode==='blob2'&&e.spine_bone){const sp=layerMesh(e.spine_bone,boneL,false);sp.userData.k='sp';sp.visible=$('sp').checked;G.add(sp)}
+  // The WDI reference is a torso sprite.  Keep its fit tied to that original
+  // skin shell, not to optional WDI 2 neck/shoulder study volumes.
+  const torsoBB=new THREE.Box3().setFromObject(torso);
+  if(mode==='blob2'&&e.wdi)G.add(surfaceReference(torso,e));
+  if(mode==='blob2'&&e.muscle_zones)G.add(muscleZoneMesh(e.muscle_zones,e.rows,A));
   const piece=(rows,o)=>{const m=meshOf(rows,A,{...o,tilt,sn});m.userData.k='skin';G.add(m)};
   if(e.legs){piece(e.legs.L,{capBottom:true});piece(e.legs.R,{capBottom:true})}
   if(e.horns){piece(e.horns.L,{capTop:true});piece(e.horns.R,{capTop:true})}
   if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
-  const bb=new THREE.Box3().setFromObject(torso);const c=new THREE.Vector3();bb.getCenter(c);G.position.sub(c);
-  $('ref').disabled=!e.wdi;$('ro').disabled=!e.wdi;$('rb').disabled=!e.layers?.reference_bones;addReferenceOverlay(e,bb,c);
+  const bb=new THREE.Box3().setFromObject(G),c=new THREE.Vector3();torsoBB.getCenter(c);G.position.sub(c);
+  $('ref').disabled=!e.wdi;$('ro').disabled=!e.wdi;$('rb').disabled=!e.layers?.reference_bones;addReferenceOverlay(e,torsoBB,c);
   sc.add(G);
   // with the ghost limbs shown the camera steps back to hold the whole figure; with them off nothing moves
   if(e.layers&&e.layers.ghost&&$('gh').checked){const v=e.layers.ghost.skin.v.concat(e.layers.ghost.bone.v);for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
   }
   // the target stays on the torso centre (a recentred figure shifts the shoulders by parallax): fit the taller half twice
   fitD=Math.max(2*Math.max(bb.max.y-c.y,c.y-bb.min.y),(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
-  apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode];
+  const clavicleOnly=mode==='blob2'&&$('cb').checked;
+  if(mode==='blob2'&&e.landmarks){G.updateMatrixWorld(true);setReferenceBox();G.updateMatrixWorld(true);G.add(hardLandmarkMesh(e,A));if(clavicleOnly)G.add(claviclePlanMesh(e,torso));else if(landmarkGuide)G.add(landmarkMesh(e,torso));if(formGuide)G.add(formMesh(e,torso));}
+  apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode]+(isBlobMode(mode)?' Glisse les pastilles colorées pour déplacer les lampes dans le plan de vue.':'');
 }
 function apply(){
-  const sk=$('sk').checked,rb=$('rb').checked,mu=$('mu').checked,fa=$('fa').checked,rm=$('rm').checked,gh=$('gh').checked,op=+$('op').value/100;
+  const sk=$('sk').checked,rb=$('rb').checked,mu=$('mu').checked,fa=$('fa').checked,rm=$('rm').checked,gh=$('gh').checked,op=+$('op').value/100,cbOnly=msel.value==='blob2'&&$('cb').checked,spOnly=msel.value==='blob2'&&$('sp').checked,boneOnly=cbOnly||spOnly;
   const hasMu=G.children.some(o=>o.userData.k==='mu');   // a body without a muscle layer keeps its skin
   const o=op;
   cur.wireframe=false;cur.transparent=op<1;cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=op===1;cur.needsUpdate=true;
   // Ghost limbs use a separate material, but are still skin: keep their opacity and depth behaviour identical.
   ghostL.transparent=op<1;ghostL.opacity=o;ghostL.depthWrite=op===1;ghostL.needsUpdate=true;
   // Visibility controls never rewrite the skin: transparency alone decides whether bones and muscles show through it.
-  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='rb')o.visible=rb;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='fa')o.visible=fa;if(o.userData.k==='rm')o.visible=rm;if(o.userData.k==='skin')o.visible=true;
+  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='rb')o.visible=rb;if(o.userData.k==='cb')o.visible=cbOnly;if(o.userData.k==='sp')o.visible=spOnly;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='fa')o.visible=fa;if(o.userData.k==='rm')o.visible=rm;if(o.userData.k==='skin')o.visible=!boneOnly;
     if(o.userData.k==='ghs')o.visible=gh;if(o.userData.k==='ghb')o.visible=gh&&sk;if(o.userData.k==='ghm')o.visible=gh&&mu});
-  const zen=$('zen').checked;fill.intensity=zen?.38:.95;dl.visible=zen;if(cur.uniforms)cur.uniforms.zen.value=zen?1:0;
+  const zen=$('zen').checked;
+  // The blob carries WDI's own top-light transfer in its shader; do not add a second physical key.
+  const blob=isBlobMode(msel.value);fill.intensity=blob?1:(zen?.46:1.0);dl.visible=zen&&!blob;$('blobLights').hidden=!blob;updateLampHandles();
+  if(cur.uniforms)cur.uniforms.zen.value=zen?1:0;
+  G.traverse(o=>{if(o.userData.k==='zones')o.visible=msel.value==='blob2'&&colourGuide&&!boneOnly;if(o.userData.k==='landmarks')o.visible=msel.value==='blob2'&&landmarkGuide&&!boneOnly;if(o.userData.k==='hardLandmarks')o.visible=msel.value==='blob2';if(o.userData.k==='clavicleGuide')o.visible=msel.value==='blob2'&&cbOnly;if(o.userData.k==='forms')o.visible=msel.value==='blob2'&&formGuide&&(!boneOnly||spOnly);if(o.userData.k==='surfaceRef'){o.visible=msel.value==='blob2'&&$('ref').checked&&!boneOnly;o.material.uniforms.opacity.value=+$('ro').value/100;}});
+  const isWdi2=msel.value==='blob2';document.querySelectorAll('.stackOnly').forEach(o=>o.hidden=isWdi2);document.querySelectorAll('.wdi2Only').forEach(o=>o.hidden=!isWdi2);$('colour').hidden=!isWdi2;$('landmarks').hidden=!isWdi2;$('forms').hidden=!isWdi2;
   setReferenceBox();
 }
-function view(v){activeView=v;globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update();setReferenceBox()}
-sel.onchange=msel.onchange=build;['sk','rb','mu','fa','rm','ref','ro','zen','gh','og','op'].forEach(i=>$(i).oninput=apply);
-['sk','rb','mu','fa','rm','ref','zen','og'].forEach(i=>{if(Q.get(i))$(i).checked=true});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
-document.querySelectorAll('button').forEach(b=>b.onclick=()=>view(+b.dataset.v));
+function view(v){activeView=v;globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update();if((landmarkGuide||formGuide||$('cb').checked)&&msel.value==='blob2'){build();return}setReferenceBox()}
+sel.onchange=build;msel.onchange=()=>{populateBodies();build();view(0)};['sk','rb','mu','fa','rm','cb','sp','ref','ro','zen','gh','og','op'].forEach(i=>$(i).oninput=apply);
+['li'].forEach(i=>$(i).oninput=syncLampInputs);['lon','lx','ly','lz','lg'].forEach(i=>$(i).oninput=updateLamp);
+['sk','rb','mu','fa','rm','cb','sp','ref','zen','og'].forEach(i=>{if(Q.has(i))$(i).checked=Q.get(i)!=='0'});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
+document.querySelectorAll('button[data-v]').forEach(b=>b.onclick=()=>view(+b.dataset.v));
+$('focus').onclick=()=>document.body.classList.toggle('focus');
+$('colour').onclick=()=>{colourGuide=!colourGuide;$('colour').textContent=colourGuide?'zones couleur ✓':'zones couleur';apply()};
+$('landmarks').onclick=()=>{landmarkGuide=!landmarkGuide;$('landmarks').textContent=landmarkGuide?'traits 2D ✓':'traits 2D';build()};
+$('forms').onclick=()=>{formGuide=!formGuide;$('forms').textContent=formGuide?'formes 2D ✓':'formes 2D';build()};
+addEventListener('keydown',ev=>{if(ev.key.toLowerCase()==='h'&&!/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName))document.body.classList.toggle('focus')});
 ctl.addEventListener('change',setReferenceBox);
-build();view(0);sel.addEventListener('change',()=>view(0));msel.addEventListener('change',()=>view(0));
+// The coloured diamonds are both a light-position readout and a direct manipulation handle.
+// Dragging follows the camera plane: face = X/Y, profile = Z/Y.
+const lampRay=new THREE.Raycaster(),lampMouse=new THREE.Vector2(),dragPlane=new THREE.Plane(),dragHit=new THREE.Vector3();lampRay.params.Line.threshold=26;
+let draggedLamp=null;
+function lampRayAt(ev){const r=ren.domElement.getBoundingClientRect();lampMouse.set((ev.clientX-r.left)/r.width*2-1,-(ev.clientY-r.top)/r.height*2+1);lampRay.setFromCamera(lampMouse,cam)}
+function grabLamp(index,ev){
+  draggedLamp=+index;$('li').value=String(draggedLamp);syncLampInputs();updateLampHandles();
+  const normal=cam.getWorldDirection(new THREE.Vector3()).normalize();dragPlane.setFromNormalAndCoplanarPoint(normal,lights[draggedLamp].p);
+  ctl.enabled=false;ev.preventDefault();ev.stopPropagation();
+}
+function moveLampDrag(ev){
+  if(draggedLamp==null)return;
+  lampRayAt(ev);if(lampRay.ray.intersectPlane(dragPlane,dragHit)){lights[draggedLamp].p.copy(dragHit);syncLampInputs();syncBlobLights();}
+  ev.preventDefault();ev.stopPropagation();
+}
+function endLampDrag(ev){
+  if(draggedLamp==null)return;
+  draggedLamp=null;ctl.enabled=true;ev.preventDefault();ev.stopPropagation();
+}
+addEventListener('pointermove',moveLampDrag,true);addEventListener('pointerup',endLampDrag,true);addEventListener('pointercancel',endLampDrag,true);
+lampHandles.forEach(h=>h.addEventListener('pointerdown',ev=>{if(isBlobMode(msel.value)&&ev.button===0)grabLamp(h.dataset.lamp,ev)}));
+if(Q.get('focus')==='1')document.body.classList.add('focus');
+const initialView=Math.max(0,Math.min(2,Number(Q.get('view'))||0));
+build();view(initialView);sel.addEventListener('change',()=>view(initialView));
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
-function frame(){ctl.update();
+function frame(){ctl.update();updateLampHandles();
   // outline width of the sprite (world px) in device pixels at the current zoom
   wdiMat.uniforms.pxw.value=outlinePx*innerHeight*ren.getPixelRatio()/(2*Math.tan(cam.fov*Math.PI/360)*cam.position.distanceTo(ctl.target));
   wdiMat.uniforms.cdir.value.copy(cam.position).sub(ctl.target).normalize();
