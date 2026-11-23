@@ -220,6 +220,33 @@ function wdiPlanePoint(view,p){
   const x=view==='west'?512-p[0]:p[0];
   return plane?G.worldToLocal(plane.localToWorld(new THREE.Vector3(x-256,256-p[1],.4))):null;
 }
+// Keep the 3D guide a literal projection of the editable WDI chest controls.
+// The editor is the source of truth for both coordinates of every vertex.
+function chestPlanPoint(shape,id,side=1){
+  const p=shape?.points?.[id];
+  return p?[shape.cx+p.x*side,shape.cy+p.y]:null;
+}
+function chestPlanPath(shape,side=1,steps=10){
+  // Match landmark-editor-site's drawChestPlan(): its breast outline is three
+  // quadratic Beziers, not an interpolating polygon through the handles.
+  const p=id=>chestPlanPoint(shape,id,side),quad=(a,b,c)=>{
+    const out=[];for(let i=0;i<=steps;i++){const t=i/steps,u=1-t;out.push([
+      u*u*a[0]+2*u*t*b[0]+t*t*c[0],u*u*a[1]+2*u*t*b[1]+t*t*c[1]
+    ])}return out;
+  };
+  const top=p('top'),upperOuter=p('upperOuter'),outer=p('outer'),lowerOuter=p('lowerOuter'),lowerInner=p('lowerInner'),inner=p('inner');
+  if([top,upperOuter,outer,lowerOuter,lowerInner,inner].some(v=>!v))return [];
+  return [...quad(top,upperOuter,outer),...quad(outer,lowerOuter,lowerInner).slice(1),...quad(lowerInner,inner,top).slice(1)];
+}
+function chestLowerArc(shape,side=1,steps=10){
+  // The green construction stroke in the editor is deliberately open:
+  // outer -> lowerOuter -> lowerInner.
+  const a=chestPlanPoint(shape,'outer',side),b=chestPlanPoint(shape,'lowerOuter',side),c=chestPlanPoint(shape,'lowerInner',side);
+  if(!a||!b||!c)return [];
+  const out=[];for(let i=0;i<=steps;i++){const t=i/steps,u=1-t;out.push([
+    u*u*a[0]+2*u*t*b[0]+t*t*c[0],u*u*a[1]+2*u*t*b[1]+t*t*c[1]
+  ])}return out;
+}
 function landmarkMesh(e,torso){
   // A ray from the current camera always hits the front shell first, even when
   // it is transparent.  Map each editor face directly to its own shell so the
@@ -268,8 +295,15 @@ function hardLandmarkMesh(e,A){
   }
   // Same provenance for the other editor views: front-plan/chest controls and
   // the profile-chest controls are real saved vertices, not inferred anatomy.
-  for(const [kind,shape,colour] of [['frontPlan',e.guide_layers?.frontPlan?.south,0x694b99],['chestPlan',e.guide_layers?.chestPlan?.south,0x9c3b97]])if(shape?.points){
-    for(const [id,p] of Object.entries(shape.points))for(const side of (p.x===0?[1]:[-1,1]))emit('south',{x:shape.cx+p.x*side,y:shape.cy+p.y},`south:${kind}:${id}`,colour,true);
+  const front=e.guide_layers?.frontPlan?.south;
+  if(front?.points){
+    for(const [id,p] of Object.entries(front.points))for(const side of (p.x===0?[1]:[-1,1]))emit('south',{x:front.cx+p.x*side,y:front.cy+p.y},`south:frontPlan:${id}`,0x694b99,true);
+  }
+  // A chest plan denotes breasts, not the male pectoral construction. Keep it
+  // exclusive to Female WDI sources, projected at its saved WDI coordinates.
+  const chest=e.guide_layers?.chestPlan?.south;
+  if(/Female/.test(sel.value)&&chest?.points){
+    for(const [id,p] of Object.entries(chest.points))for(const side of (p.x===0?[1]:[-1,1])){const point=chestPlanPoint(chest,id,side);if(point)emit('south',{x:point[0],y:point[1]},`south:chestPlan:${id}`,0x9c3b97,true)}
   }
   const profile=e.guide_layers?.profileChest?.east;
   if(profile?.points)for(const [id,p] of Object.entries(profile.points))emit('east',{x:profile.cx+p.x,y:profile.cy+p.y},`east:profileChest:${id}`,0x9c3b97,true);
@@ -283,7 +317,8 @@ function projectedStroke(points,torso,face,colour,width=1.05){
   if(msel.value==='blob3'){
     const view={s:'south',n:'north',e:'east',w:'west'}[face],local=points.map(point=>wdiPlanePoint(view,point));
     const mat=new THREE.MeshBasicMaterial({color:colour,transparent:true,opacity:.98,depthTest:false,depthWrite:false}),g=new THREE.Group();
-    if(local.length>1){const curve=new THREE.CatmullRomCurve3(local,false,'centripetal'),line=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(2,local.length*2),width,6,false),mat);line.renderOrder=30;line.userData.k='forms';g.add(line)}
+    const closed=local.length>2&&local[0].distanceTo(local.at(-1))<.001,shape=closed?local.slice(0,-1):local;
+    if(shape.length>1){const curve=new THREE.CatmullRomCurve3(shape,closed,'centripetal'),line=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(2,shape.length*2),width,6,closed),mat);line.renderOrder=30;line.userData.k='forms';g.add(line)}
     return g;
   }
   const flush=()=>{if(run.length>1)runs.push(run.splice(0));else run.length=0};
@@ -324,8 +359,8 @@ function formMesh(e,torso){
     const centre=[box.cx,box.y+box.height/2],turn=([x,y])=>{const dx=x-centre[0],dy=y-centre[1],c=Math.cos(rot),s=Math.sin(rot);return[centre[0]+dx*c-dy*s,centre[1]+dx*s+dy*c]};
     const faceGroup=new THREE.Group();faceGroup.userData.k='formFace';faceGroup.userData.face=face;g.add(faceGroup);
     const add=(pts,c,w)=>faceGroup.add(projectedStroke(pts,torso,face,c,w));
-    const L=box.cx-box.width/2,R=box.cx+box.width/2,B=box.y+box.height;
-    add([[L,box.y],[R,box.y],[R,B],[L,B],[L,box.y]].map(turn),0x246b84,1.05);
+    // The blue shoulder construction rectangle was useful while fitting the
+    // source editor, but it obscures the upper body in the four-face box.
     const headWidth=Math.max(38,(box.width-6)/(female?2.5:3))*(box.headScale||1),radius=headWidth/2,head=[m.chin[0],m.chin[1]-radius],circle=[];
     for(let i=0;i<=32;i++){const a=Math.PI*2*i/32;circle.push([head[0]+Math.cos(a)*radius,head[1]+Math.sin(a)*radius])}add(circle,0x694b99,.9);
     const axis=[m.chin,avg(m.shoulderL,m.shoulderR),avg(m.waistL,m.waistR),m.pubis];
@@ -336,14 +371,31 @@ function formMesh(e,torso){
     if(!profile){const rib=[],a=[cage.cx-cage.rx*.73,cage.cy+cage.ry*.43],q=[cage.cx,cage.cy+cage.ry*.06],b=[cage.cx+cage.rx*.73,cage.cy+cage.ry*.43];for(let i=0;i<=24;i++){const t=i/24,u=1-t;rib.push([u*u*a[0]+2*u*t*q[0]+t*t*b[0],u*u*a[1]+2*u*t*q[1]+t*t*b[1]])}add(rib,0xb7791f,.8)}
     if(view==='south'){
       const fp=layer('frontPlan')||(()=>{const h=Math.max(42,box.height*1.15),w=box.width*.72;return{cx:avg(m.shoulderL,m.shoulderR)[0],cy:box.y+box.height+h/2+10,points:{sternumTop:{x:0,y:-h*.42},top:{x:-w*.19,y:-h*.5},outer:{x:-w*.5,y:-h*.08},joint:{x:-w*.39,y:h*.08},sternumLow:{x:0,y:h*.42}}}})(),fpp=(id,side=1)=>[fp.cx+fp.points[id].x*side,fp.cy+fp.points[id].y];
-      for(const side of [1,-1])add(['sternumTop','top','outer','joint','sternumLow'].map(id=>fpp(id,side)),0x694b99,.85);
-      const cp=layer('chestPlan');if(cp){const cpp=(id,side)=>[cp.cx+cp.points[id].x*side,cp.cy+cp.points[id].y];for(const side of [1,-1])add(['top','upperOuter','outer','lowerOuter','lowerInner','inner','top'].map(id=>cpp(id,side)),0x9c3b97,.8)}
+      // The two halves of the double diamond are polygons in the 2D editor:
+      // the medial sternum edge is part of each closed outline.
+      for(const side of [1,-1]){const path=['sternumTop','top','outer','joint','sternumLow'].map(id=>fpp(id,side));path.push(path[0]);add(path,0x694b99,.85)}
+      const cp=layer('chestPlan');if(female&&cp){for(const side of [1,-1]){
+        const outline=chestPlanPath(cp,side);if(outline.length)outline.push(outline[0]);add(outline,0x9c3b97,.8);
+        add(chestLowerArc(cp,side),0x4d9d6b,.68);
+      }}
     }
-    if(profile){const pc=layer('profileChest');if(pc){const p=id=>[pc.cx+pc.points[id].x,pc.cy+pc.points[id].y];add(['top','slope','frontUpper','front','low','backLow','back','top'].map(p),0x9c3b97,.8)}}
+    if(profile){
+      // A side construction has only the complete thoracic ellipse and its
+      // lower costal/sub-rib trait.  The old closed profile-chest contour
+      // invented a second silhouette and obscured the profile WDI mask.
+      const pc=layer('profileChest');if(pc?.points?.low&&pc.points.backLow){const p=id=>[pc.cx+pc.points[id].x,pc.cy+pc.points[id].y];add([p('backLow'),p('low')],0xb7791f,.8)}
+    }
     if(view==='north'){
       const bp=layer('backPlan');if(bp){const at=(shape,id,side)=>[shape.cx+shape.points[id].x*side,shape.cy+shape.points[id].y],mirrored=(shape,ids)=>ids.map(id=>at(shape,id,1)).concat(ids.slice(0,-1).reverse().map(id=>at(shape,id,-1)));
-        if(bp.upper)add(mirrored(bp.upper,['neckTop','neckBase','shoulder','outer','waist','low']),0xa66d1a,.85);
-        for(const shape of [bp.lower,bp.oblique])if(shape){const path=[at(shape,'wingTip',-1),at(shape,'wingInner',-1),at(shape,'notch',1),at(shape,'wingInner',1),at(shape,'wingTip',1),at(shape,'wingLow',1),at(shape,'stem',1),at(shape,'low',1),at(shape,'stem',-1),at(shape,'wingLow',-1)];add(path,shape===bp.oblique?0x2f76b2:0x694b99,.8)}
+        if(bp.upper){
+          const upper=mirrored(bp.upper,['neckTop','neckBase','shoulder','outer','waist','low']);upper.push(upper[0]);add(upper,0xa66d1a,.85);
+          // Same inner diamond as landmark-editor-site's upperBackDiamond():
+          // it is a separate construction inside the upper-back arrow, not
+          // merely the closing edge of that arrow.
+          const neck=bp.upper.points.neckTop,waist=bp.upper.points.waist,shoulder=bp.upper.points.shoulder;
+          if(neck&&waist&&shoulder){const cy=bp.upper.cy+(neck.y+waist.y)*.44,rx=Math.max(5,Math.abs(shoulder.x)*.12),ry=Math.max(7,Math.abs(waist.y-neck.y)*.17),diamond=[[bp.upper.cx,cy-ry],[bp.upper.cx+rx,cy],[bp.upper.cx,cy+ry],[bp.upper.cx-rx,cy]];diamond.push(diamond[0]);add(diamond,0xa66d1a,.72)}
+        }
+        for(const shape of [bp.lower,bp.oblique])if(shape){const path=[at(shape,'wingTip',-1),at(shape,'wingInner',-1),at(shape,'notch',1),at(shape,'wingInner',1),at(shape,'wingTip',1),at(shape,'wingLow',1),at(shape,'stem',1),at(shape,'low',1),at(shape,'stem',-1),at(shape,'wingLow',-1)];path.push(path[0]);add(path,shape===bp.oblique?0x2f76b2:0x694b99,.8)}
       }
     }
   }
@@ -576,7 +628,9 @@ function build(){
   let fixedBB=null;
   if(mode==='blob3'&&e.fixed_objects){const fx=new THREE.Group();e.fixed_objects.forEach(p=>fx.add(layerMesh(p,boneL)));fx.userData.k='fx';fx.visible=$('fx').checked;G.add(fx);fixedBB=new THREE.Box3().setFromObject(fx)}
   // WDI remains in its canonical frame: a contracted diagnostic mesh must not
-  // shrink the reference, its 2D guides, or their relationship to fixed objects.
+  // shrink or stretch the reference and its 2D guides.  Fixed bones are a
+  // diagnostic layer only; including their bounds here distorted Female's
+  // 180x269 WDI frame into a 180x339 panel.
   const torsoBB=new THREE.Box3().setFromObject(torso);
   if(isWdiStudyMode(mode)&&e.muscle_zones)G.add(muscleZoneMesh(e.muscle_zones,e.rows,A));
   const piece=(rows,o)=>{const m=meshOf(rows,A,{...o,tilt,sn});m.userData.k='skin';G.add(m)};
@@ -586,7 +640,6 @@ function build(){
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   const bb=new THREE.Box3().setFromObject(G),c=new THREE.Vector3();torsoBB.getCenter(c);G.position.sub(c);
   const referenceBB=e.reference_bounds?new THREE.Box3(new THREE.Vector3(...e.reference_bounds.min),new THREE.Vector3(...e.reference_bounds.max)):torsoBB.clone();
-  if(fixedBB)referenceBB.union(fixedBB);
   $('ref').disabled=!e.wdi;$('ro').disabled=!e.wdi;$('rb').disabled=!e.layers?.reference_bones;addReferenceOverlay(e,referenceBB,c);
   if(mode==='blob3')G.add(gravityCentreMesh(referenceBB));
   sc.add(G);
