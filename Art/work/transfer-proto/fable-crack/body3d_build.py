@@ -17,6 +17,7 @@ import math
 import ast
 import struct
 import zipfile
+from wdi3_latex import rebuild_deformable_mesh
 here = pathlib.Path(__file__).parent
 out = here.parent.parent / "captures" / "2026-11-08_body3d.html"
 
@@ -502,6 +503,8 @@ def add_wdi2_neck_and_shoulder_volumes(blob, anchors, volume_reference, guide_re
         body["anatomy"] = "neck-shoulders-bodyparts3d-clavicles-v10"
         body["anchor_source"] = "BodyParts3D v_bone_clavicle + landmark-editor-site/dist/assets/volume-reference.json"
     return blob
+
+
 cur = out.read_text(encoding="utf-8").splitlines()
 data_line = next(line for line in cur if line.startswith("const DATA="))
 data = json.loads(data_line[len("const DATA="):].rstrip(";"))
@@ -617,6 +620,10 @@ if blob_path.exists():
             }.items()
         }
         body["landmark_source"] = "landmark-editor-site/dist/assets/volume-reference.json"
+    # WDI 3 begins as a deep copy of the approved WDI 2 study: its guides,
+    # bones and landmark coordinates remain independently editable while only
+    # its outer membrane receives the latex constraints above.
+data["blob3"] = rebuild_deformable_mesh(copy.deepcopy(data["blob2"]))
 tpl = (here / "body3d_template.html").read_text(encoding="utf-8")
 marker = "const DATA=globalThis.__DATA__;"
 if marker not in tpl:

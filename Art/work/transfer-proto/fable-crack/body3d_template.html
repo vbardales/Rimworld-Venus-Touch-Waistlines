@@ -9,7 +9,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px sy
 select,button{font:inherit;margin:2px 6px 2px 0}
 label{margin-right:10px;white-space:nowrap}
 input[type=number]{width:58px}
-#lampHandles{position:fixed;inset:0;z-index:3;pointer-events:none}
+#lampHandles,#blobLights{display:none!important}
 .lampHandle{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;border:3px solid currentColor;background:#fff;font-weight:800;box-shadow:0 1px 4px #0008;cursor:grab;pointer-events:auto}
 .lampHandle:active{cursor:grabbing}
 .lampHandle[data-lamp="0"]{color:#b67400}.lampHandle[data-lamp="1"]{color:#167ba8}.lampHandle[data-lamp="2"]{color:#a43aaa}
@@ -18,10 +18,9 @@ body.focus #ui,body.focus #note,body.focus #lampHandles{display:none}
 </style></head><body>
 <div id="ui">
 <select id="b"></select><select id="m"></select>
-<button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><br>
-<button id="focus" title="H masque ou restaure l'interface">aperçu</button><button id="colour" title="Affiche les zones musculaires imprimées sur WDI 2">zones couleur</button><button id="landmarks" title="Affiche les traits 2D dans la vue courante ; les balises des quatre directions restent toujours visibles">traits 2D</button><button id="forms" title="Projette les formes de construction 2D sur la peau WDI 2">formes 2D ✓</button>
-<label class="wdi2Only" title="Isole la clavicule BodyParts3D à 6 unités sous la peau WDI 2"><input type="checkbox" id="cb" checked> os clavicule seul</label>
-<label class="wdi2Only" title="Isole la colonne BodyParts3D sous la peau nord WDI 2"><input type="checkbox" id="sp"> os colonne seul</label>
+<button data-v="0">south</button><button data-v="1">east</button><button data-v="2">north</button><button data-v="3">west</button><button data-v="4">sud-est</button><button data-v="5">dessus</button><br>
+<button id="focus" title="H masque ou restaure l'interface">aperçu</button><button id="landmarks" title="Affiche les traits 2D dans la vue courante ; les balises des quatre directions restent toujours visibles">traits 2D</button><button id="forms" title="Projette les formes de construction 2D sur le maillage WDI">formes 2D ✓</button>
+<label class="wdi3Only" title="Diagnostic seulement : les os ne définissent pas la boîte WDI"><input type="checkbox" id="fx"> os fixes</label>
 <label class="stackOnly"><input type="checkbox" id="sk"> squelette</label>
 <label class="stackOnly"><input type="checkbox" id="rb"> os BP3D (référence)</label>
 <label class="stackOnly"><input type="checkbox" id="mu"> muscles</label>
@@ -29,11 +28,10 @@ body.focus #ui,body.focus #note,body.focus #lampHandles{display:none}
 <label class="stackOnly"><input type="checkbox" id="rm"> muscles BP3D (référence)</label>
 <label><input type="checkbox" id="ref"> calque WDI</label>
 <label>WDI <input type="range" id="ro" min="5" max="90" value="35"></label>
-<label><input type="checkbox" id="zen" checked> éclairage zénithal</label>
 <label class="stackOnly"><input type="checkbox" id="gh" checked> membres fantômes</label>
 <label class="stackOnly"><input type="checkbox" id="og"> organes (corps masculins)</label>
-<label>peau <input type="range" id="op" min="10" max="100" value="100"></label>
-<div id="blobLights">
+<label>maillage <input type="range" id="op" min="0" max="100" value="100"></label>
+<div id="blobLights" hidden>
   <label>lampe <select id="li"><option value="0">1 jaune</option><option value="1">2 bleue</option><option value="2">3 rose</option></select></label>
   <label><input type="checkbox" id="lon"> active</label>
   <label>X <input type="number" id="lx" min="-1500" max="1500" step="25"></label>
@@ -58,7 +56,8 @@ const NOTES={
  relief:"relief: front = south height field, back = north (relief3d.py), no shading read, no leg split.",
  simple:"simple volume: superellipse sections from the E masks.",
  blob:"blob WDI: une seule enveloppe 3D lisse. Largeur = silhouette commune face/dos ; profondeur = profil WDI. Aucun relief, muscle, creux, ligne ou texture n'est injecté.",
- blob2:"blob WDI 2: reliefs signés (sorties et creux) ancrés sur les repères 2D du cou, des épaules, des aisselles et du dos. « zones couleur » plaque les silhouettes du pack musculaire existant sur cette peau ; « repères 2D » montre les coordonnées canoniques de l’éditeur 2D dans la vue correspondante. Les bras restent hors modèle."};
+ blob2:"blob WDI 2: reliefs signés (sorties et creux) ancrés sur les repères 2D du cou, des épaules, des aisselles et du dos. « repères 2D » montre les coordonnées canoniques de l’éditeur 2D dans la vue correspondante. Les bras restent hors modèle.",
+ blob3:"blob WDI 3: maillage fermé générique. Chaque sommet se contracte vers le centre humain ; les os fixes l’arrêtent. Sans objet, il devient une petite sphère centrale. Ni épaisseur, ni pression, ni volume minimal, ni repère 2D ne le contraignent."};
 const sc=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,6000);globalThis.__cam=cam;
 const ren=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
@@ -70,7 +69,8 @@ const fill=new THREE.AmbientLight(0xffffff,.58);sc.add(fill);
 const dl=new THREE.DirectionalLight(0xffffff,1.05);dl.position.set(-300,900,520);sc.add(dl); // soft top-front key; no WDI colour on skin
 const $=id=>document.getElementById(id);
 const sel=$('b'),msel=$('m');
-const isBlobMode=mode=>mode==='blob'||mode==='blob2';
+const isBlobMode=mode=>mode==='blob'||mode==='blob2'||mode==='blob3';
+const isWdiStudyMode=mode=>mode==='blob2'||mode==='blob3';
 // Positions start inside the viewport; the draggable handles are drawn in screen space,
 // but write directly into these real 3D coordinates.
 const lights=[{p:new THREE.Vector3(3,150,200),gain:.5},{p:new THREE.Vector3(-300,300,0),gain:.5},{p:new THREE.Vector3(0,150,-200),gain:.5}];
@@ -78,24 +78,24 @@ const lampIndex=()=>+$('li').value;
 const lampHandleBox=$('lampHandles'),lampHandles=[...document.querySelectorAll('.lampHandle')],lampScreen=new THREE.Vector3();
 function syncLampInputs(){const l=lights[lampIndex()];$('lon').checked=l.gain>0;$('lx').value=l.p.x;$('ly').value=l.p.y;$('lz').value=l.p.z;$('lg').value=Math.round(l.gain*100)}
 function updateLampHandles(){
-  const show=isBlobMode(msel.value)&&!(msel.value==='blob2'&&$('cb')?.checked);lampHandleBox.hidden=!show;
+  const show=false;lampHandleBox.hidden=!show;
   lampHandles.forEach((h,i)=>{lampScreen.copy(lights[i].p).project(cam);const inView=lampScreen.z>=-1&&lampScreen.z<=1&&Math.abs(lampScreen.x)<=1&&Math.abs(lampScreen.y)<=1;
     h.hidden=!show||!inView;h.style.left=`${(lampScreen.x+1)*innerWidth*.5}px`;h.style.top=`${(1-lampScreen.y)*innerHeight*.5}px`;h.style.opacity=lights[i].gain>0?'1':'.45';h.style.scale=i===lampIndex()?'1.18':'1';
   });
 }
-function syncBlobLights(){for(const mat of [blobMat,blob2Mat])for(let i=0;i<3;i++){mat.uniforms.lamps.value[i].copy(lights[i].p);mat.uniforms.gain.value[i]=lights[i].gain;mat.uniformsNeedUpdate=true;}updateLampHandles();}
+function syncBlobLights(){for(const mat of [blobMat,blob2Mat,blob3Mat])for(let i=0;i<3;i++){mat.uniforms.lamps.value[i].copy(lights[i].p);mat.uniforms.gain.value[i]=lights[i].gain;mat.uniformsNeedUpdate=true;}updateLampHandles();}
 function updateLamp(){const l=lights[lampIndex()];l.p.set(+$('lx').value||0,+$('ly').value||0,+$('lz').value||0);l.gain=$('lon').checked?(+$('lg').value/100):0;syncBlobLights();}
 const isWdi=e=>!!(e&&e.tex);
 const WDI=isWdi(Object.values(DATA.shade.bodies)[0]);
-Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={blob:'blob WDI',blob2:'blob WDI 2',shade:'stack anatomique',relief:'relief',simple:'simple volume'}[k]||k;msel.appendChild(o)});
-if(DATA.blob2)msel.value='blob2';
+Object.keys(DATA).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent={blob:'blob WDI',blob2:'blob WDI 2',blob3:'blob WDI 3 · maillage',shade:'stack anatomique',relief:'relief',simple:'simple volume'}[k]||k;msel.appendChild(o)});
+if(DATA.blob3){msel.value='blob3'}else if(DATA.blob2)msel.value='blob2';
 function populateBodies(){
   const requestedBody=new URLSearchParams(location.search).get('body'),keep=sel.value,names=Object.keys(DATA[msel.value].bodies);sel.replaceChildren();
   names.forEach(k=>{const o=document.createElement('option');o.value=o.textContent=k;sel.appendChild(o)});
   sel.value=names.includes(requestedBody)?requestedBody:(names.includes(keep)?keep:(names.includes('Male')?'Male':names[0]));
 }
 populateBodies();
-let G=null,fitD=1000,refBox=null,activeView=0,colourGuide=false,landmarkGuide=false,formGuide=true;
+let G=null,fitD=1000,refBox=null,activeView=0,landmarkGuide=false,formGuide=true;
 const skin=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.88,side:THREE.DoubleSide});
 // Blob WDI is lit by the three movable point lights below.  It remains a plain envelope:
 // lights change only the surface tone, never the silhouette or painted WDI shading.
@@ -114,11 +114,19 @@ blob2Mat.fragmentShader=`uniform float opacity;uniform float zen;uniform vec3 la
  void main(){vec3 n=-normalize(vNo);float lit=0.;for(int i=0;i<3;i++){vec3 d=normalize(lamps[i]-vWorld);lit+=gain[i]*max(dot(n,d),0.);}
   float tone=clamp(.38+.62*lit,.34,1.);gl_FragColor=vec4(vec3(mix(1.,tone,zen)),opacity);}`;
 blob2Mat.needsUpdate=true;
+// WDI 3 deliberately shares WDI 2's readable lamp response: latex changes
+// geometry here, not painted colour or an opaque shader trick.
+const blob3Mat=blob2Mat.clone();
+blob3Mat.needsUpdate=true;
 syncLampInputs();syncBlobLights();
 // WDI look: toon top light from the view-space normal, crease/areola maps projected from the three sprite frames, rim.
 const Q=new URLSearchParams(location.search);
+const planarCheck=Q.get('plane')==='1';
+const activeFaceKey=()=>['s','e','n','w'][activeView]||'s';
+if(Q.has('mode')&&DATA[Q.get('mode')]){msel.value=Q.get('mode');populateBodies();}
 if(Q.get('landmarks')==='1')landmarkGuide=true;
-if(Q.has('op'))$('op').value=Math.max(10,Math.min(100,Number(Q.get('op'))||100));
+if(Q.has('forms'))formGuide=Q.get('forms')!=='0';
+if(Q.has('op'))$('op').value=Math.max(0,Math.min(100,Number(Q.get('op'))||0));
 const wdiMat=new THREE.ShaderMaterial({side:THREE.DoubleSide,extensions:{derivatives:true},
  uniforms:{tS:{value:null},tN:{value:null},tE:{value:null},gS:{value:null},gN:{value:null},gE:{value:null},bS:{value:null},bN:{value:null},bE:{value:null},rows:{value:new THREE.Vector4()},erow:{value:new THREE.Vector2()},off:{value:new THREE.Vector3()},pxw:{value:13},opacity:{value:1},zen:{value:1},cdir:{value:new THREE.Vector3(0,0,1)},fl:{value:+(Q.get('form')||.85)},lc:{value:+(Q.get('cap')||.6)},gm:{value:+(Q.get('gm')||.6)}},
  vertexShader:`attribute float tilt;varying vec3 vP;varying vec3 vNo;varying vec3 vNv;varying vec3 vNr;
@@ -202,22 +210,30 @@ function muscleZoneMesh(parts,rows,A){
   const g=new THREE.Group(),colour=n=>n.startsWith('trapezius')?0x54ba83:n==='deltoid'?0x58b9db:n==='pectoralis major'?0xe7c76e:n.startsWith('serratus')?0xc367c4:n.includes('infraspinatus')?0xc367c4:0x69c7df;
   const faces=n=>n==='pectoralis major'||n.startsWith('serratus')?[1]:n.includes('infraspinatus')||n.includes('rhomboid')?[-1]:[-1,1];
   parts.forEach(p=>faces(p.n).forEach(side=>{const m=new THREE.MeshBasicMaterial({color:colour(p.n),transparent:true,opacity:.72,depthWrite:false,depthTest:true,side:THREE.DoubleSide});const o=printedPart(p,rows,A,side,m);o.userData.k='zones';g.add(o)}));
-  g.userData.k='zones';g.visible=colourGuide;return g;
+  g.userData.k='zones';g.visible=false;return g;
+}
+function wdiPlanePoint(view,p){
+  if(msel.value!=='blob3'||!refBox)return null;
+  const face={south:'s',north:'n',east:'e',west:'w'}[view],plane=refBox.faces[face]?.p;
+  // West is East's true mirror in the source canvas, not a second copy whose
+  // points happen to occupy the same pixel coordinates.
+  const x=view==='west'?512-p[0]:p[0];
+  return plane?G.worldToLocal(plane.localToWorld(new THREE.Vector3(x-256,256-p[1],.4))):null;
 }
 function landmarkMesh(e,torso){
   // A ray from the current camera always hits the front shell first, even when
   // it is transparent.  Map each editor face directly to its own shell so the
   // south, east, north and mirrored-west strokes remain simultaneously true.
   const g=new THREE.Group(),F=e.frame,A=e.A||DATA[msel.value].A,inside=3;
-  const toSurface=(view,p)=>{const y=-p[1];let x,z;
+  const toSurface=(view,p)=>{const planePoint=wdiPlanePoint(view,p);if(planePoint)return planePoint;const y=-p[1];let x,z;
     if(view==='south'){x=p[0]-F.cxs;z=skinDepth(e.rows,A,x,y,1)-inside}
     else if(view==='north'){x=F.cxn-p[0];z=skinDepth(e.rows,A,x,y,-1)+inside}
     else if(view==='east'){z=p[0]-F.zmean;x=skinSideX(e.rows,A,z,y,-1)+inside}
     else {z=F.zmean-p[0];x=skinSideX(e.rows,A,z,y,1)-inside}
     return new THREE.Vector3(x,y,z);
   };
-  const stroke=(view,a,b,colour)=>{const curve=new THREE.LineCurve3(toSurface(view,a),toSurface(view,b)),mat=new THREE.MeshBasicMaterial({color:colour,depthTest:false,depthWrite:false});const o=new THREE.Mesh(new THREE.TubeGeometry(curve,10,1.15,6,false),mat);o.renderOrder=35;o.userData.k='landmarks';g.add(o)};
-  const pointsOnly=msel.value==='blob2'&&($('cb').checked||$('sp').checked);
+  const stroke=(view,a,b,colour)=>{const curve=new THREE.LineCurve3(toSurface(view,a),toSurface(view,b)),mat=new THREE.MeshBasicMaterial({color:colour,depthTest:false,depthWrite:false});const o=new THREE.Mesh(new THREE.TubeGeometry(curve,10,1.15,6,false),mat);o.renderOrder=35;o.userData.k='landmarks';o.userData.face={south:'s',north:'n',east:'e',west:'w'}[view];g.add(o)};
+  const pointsOnly=false;
   const links=[['shoulderL','shoulderR',0x2f76b2],['armpitL','armpitR',0x2b9699],['waistL','waistR',0xbf8b21],['pelvisL','pelvisR',0xa63767],['legL','legR',0x3e945b],['pubis','crotch',0xc34e76]];
   if(!pointsOnly)for(const view of ['south','east','north','west']){const source=e.landmarks[view==='west'?'east':view]||{};links.forEach(([a,b,c])=>{if(source[a]&&source[b])stroke(view,source[a],source[b],c)})}
   g.userData.k='landmarks';g.visible=landmarkGuide||pointsOnly;return g;
@@ -230,13 +246,13 @@ function hardLandmarkMesh(e,A){
   const markerColor=n=>n==='chin'?0x8e4397:n.startsWith('shoulder')?0x2f76b2:n.startsWith('armpit')?0x2b9699:n.startsWith('waist')?0xbf8b21:n.startsWith('hip')?0xcb5b39:n==='navel'?0x3d4ea4:n.startsWith('pelvis')?0xa63767:n==='pubis'?0x8e2f62:n.startsWith('groin')||n==='crotch'?0xc34e76:n.startsWith('leg')?0x3e945b:0x71756f;
   const pelvic=/^(hip|pelvis|pubis|groin|crotch|leg)/;
   const emit=(view,point,name,colour=null,guide=false)=>{
-    let x,y,z;y=-point[1];
+    const planePoint=wdiPlanePoint(view,point);let x,y,z;if(planePoint){({x,y,z}=planePoint)}else{y=-point[1];
     if(view==='south'){x=point[0]-F.cxs;z=skinDepth(e.rows,A,x,y,1)-inside}
     else if(view==='north'){x=F.cxn-point[0];z=skinDepth(e.rows,A,x,y,-1)+inside}
     else if(view==='east'){z=point[0]-F.zmean;x=skinSideX(e.rows,A,z,y,-1)+inside}
-    else {z=F.zmean-point[0];x=skinSideX(e.rows,A,z,y,1)-inside}
+    else {z=F.zmean-point[0];x=skinSideX(e.rows,A,z,y,1)-inside}}
     const shoulder=name.startsWith('shoulder'),dot=new THREE.Mesh(new THREE.SphereGeometry(shoulder?4.2:2.8,12,8),new THREE.MeshBasicMaterial({color:colour??markerColor(name),depthTest:false,depthWrite:false,transparent:true,opacity:.96}));
-    dot.position.set(x,y,z);dot.renderOrder=40;dot.userData.k='hardLandmarks';dot.userData.label=`${view}:${name}`;dot.userData.anchor=guide?'guide':(pelvic.test(name)?'pelvis':'latex');g.add(dot);
+    dot.position.set(x,y,z);dot.renderOrder=40;dot.userData.k='hardLandmarks';dot.userData.face={south:'s',north:'n',east:'e',west:'w'}[view];dot.userData.label=`${view}:${name}`;dot.userData.anchor=guide?'guide':(pelvic.test(name)?'pelvis':'latex');g.add(dot);
   };
   for(const view of ['south','east','north','west']){
     const source=view==='west'?'east':view;
@@ -264,6 +280,12 @@ function projectedStroke(points,torso,face,colour,width=1.05){
   // that ray-cast onto WDI's skin, so a construction line never bridges across
   // empty space or becomes an invented head/neck volume.
   const plane=refBox.faces[face].p,ray=new THREE.Raycaster(),runs=[],run=[];
+  if(msel.value==='blob3'){
+    const view={s:'south',n:'north',e:'east',w:'west'}[face],local=points.map(point=>wdiPlanePoint(view,point));
+    const mat=new THREE.MeshBasicMaterial({color:colour,transparent:true,opacity:.98,depthTest:false,depthWrite:false}),g=new THREE.Group();
+    if(local.length>1){const curve=new THREE.CatmullRomCurve3(local,false,'centripetal'),line=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(2,local.length*2),width,6,false),mat);line.renderOrder=30;line.userData.k='forms';g.add(line)}
+    return g;
+  }
   const flush=()=>{if(run.length>1)runs.push(run.splice(0));else run.length=0};
   // A construction rectangle generally has all four corners outside the body.
   // Projecting only those corners made the entire form disappear.  Sample each
@@ -291,43 +313,38 @@ function claviclePlanMesh(e,torso){
   g.userData.k='clavicleGuide';return g;
 }
 function formMesh(e,torso){
-  const g=new THREE.Group(),view=['south','east','north'][activeView],face=['s','e','n'][activeView],m=e.landmarks?.[view]||{},box=e.construction?.[view];
-  if(!refBox||!box||!m.chin||!m.shoulderL||!m.shoulderR||!m.waistL||!m.waistR||!m.pubis)return g;
-  const female=/Female/.test(msel.value==='blob2'?sel.value:''),rot=view==='east'?(box.rotation||0):0;
-  const centre=[box.cx,box.y+box.height/2],turn=([x,y])=>{const dx=x-centre[0],dy=y-centre[1],c=Math.cos(rot),s=Math.sin(rot);return[centre[0]+dx*c-dy*s,centre[1]+dx*s+dy*c]};
-  const add=(pts,c,w)=>g.add(projectedStroke(pts,torso,face,c,w));
-  const L=box.cx-box.width/2,R=box.cx+box.width/2,B=box.y+box.height;
-  // Exact equivalent of drawConstruction(): shoulder box, neck trapezoid,
-  // head construction and the editor's dotted centre axis.  The head curve is
-  // naturally absent where WDI has no skin rather than floating in space.
-  add([[L,box.y],[R,box.y],[R,B],[L,B],[L,box.y]].map(turn),0x246b84,1.05);
-  const headWidth=Math.max(38,(box.width-6)/(female?2.5:3))*(box.headScale||1),radius=headWidth/2,head=[m.chin[0],m.chin[1]-radius];
-  const circle=[];for(let i=0;i<=32;i++){const a=Math.PI*2*i/32;circle.push([head[0]+Math.cos(a)*radius,head[1]+Math.sin(a)*radius])}add(circle,0x694b99,.9);
-  const avg=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2],axis=[m.chin,avg(m.shoulderL,m.shoulderR),avg(m.waistL,m.waistR),m.pubis];
-  for(let i=0;i<axis.length-1;i++){const a=axis[i],b=axis[i+1];for(let t=0;t<1;t+=.18){const u=Math.min(1,t+.085);add([[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u]],0x6f6f6f,.65)}}
-  // Remaining editor layers.  Use their saved points when available and the
-  // editor's documented seed otherwise, rather than drawing generic anatomy.
-  const layers=e.guide_layers||{},layer=n=>layers[n]?.[view],xy=p=>[p.x,p.y],ell=(o,n=40)=>{const r=[];for(let i=0;i<=n;i++){const a=Math.PI*2*i/n,c=Math.cos(o.rotation||0),s=Math.sin(o.rotation||0),x=Math.cos(a)*(o.rx||0),y=Math.sin(a)*(o.ry||0);r.push([o.cx+x*c-y*s,o.cy+x*s+y*c])}return r};
-  const cage=layer('thoracicCage')||{cx:box.cx,cy:box.y+box.height*.54,rx:box.width*.43,ry:box.height*.78,rotation:view==='east'?rot:0};
-  add(ell(view==='east'?(layer('profileEllipse')||{cx:box.cx,cy:box.y+box.height*.54,rx:box.width*.48,ry:box.height*.86,rotation:rot}):cage),0xb7791f,.72);
-  if(view!=='east'){
-    // Same lower inner arc as drawShoulderVolumeEllipse() in the 2D editor:
-    // it marks the inferior costal margin / floating ribs, not an added organ.
-    const rib=[];const a=[cage.cx-cage.rx*.73,cage.cy+cage.ry*.43],q=[cage.cx,cage.cy+cage.ry*.06],b=[cage.cx+cage.rx*.73,cage.cy+cage.ry*.43];for(let i=0;i<=24;i++){const t=i/24,u=1-t;rib.push([u*u*a[0]+2*u*t*q[0]+t*t*b[0],u*u*a[1]+2*u*t*q[1]+t*t*b[1]])}add(rib,0xb7791f,.8);
-  }
-  if(view==='south'){
-    const fp=layer('frontPlan')||(()=>{const h=Math.max(42,box.height*1.15),w=box.width*.72;return{cx:avg(m.shoulderL,m.shoulderR)[0],cy:box.y+box.height+h/2+10,points:{sternumTop:{x:0,y:-h*.42},top:{x:-w*.19,y:-h*.5},outer:{x:-w*.5,y:-h*.08},joint:{x:-w*.39,y:h*.08},sternumLow:{x:0,y:h*.42}}}})();
-    const fpp=(id,side=1)=>[fp.cx+fp.points[id].x*side,fp.cy+fp.points[id].y];
-    for(const side of [1,-1])add(['sternumTop','top','outer','joint','sternumLow'].map(id=>fpp(id,side)),0x694b99,.85);
-    const cp=layer('chestPlan');if(cp){const cpp=(id,side)=>[cp.cx+cp.points[id].x*side,cp.cy+cp.points[id].y];for(const side of [1,-1])add(['top','upperOuter','outer','lowerOuter','lowerInner','inner','top'].map(id=>cpp(id,side)),0x9c3b97,.8)}
-  }
-  if(view==='east'){
-    const pc=layer('profileChest');if(pc){const p=id=>[pc.cx+pc.points[id].x,pc.cy+pc.points[id].y];add(['top','slope','frontUpper','front','low','backLow','back','top'].map(p),0x9c3b97,.8)}
-  }
-  if(view==='north'){
-    const bp=layer('backPlan');if(bp){const at=(shape,id,side)=>[shape.cx+shape.points[id].x*side,shape.cy+shape.points[id].y];const mirrored=(shape,ids)=>ids.map(id=>at(shape,id,1)).concat(ids.slice(0,-1).reverse().map(id=>at(shape,id,-1)));
-      if(bp.upper)add(mirrored(bp.upper,['neckTop','neckBase','shoulder','outer','waist','low']),0xa66d1a,.85);
-      for(const shape of [bp.lower,bp.oblique])if(shape){const ids=['wingTip','wingInner','notch','wingLow','stem','low'];const path=[at(shape,'wingTip',-1),at(shape,'wingInner',-1),at(shape,'notch',1),at(shape,'wingInner',1),at(shape,'wingTip',1),at(shape,'wingLow',1),at(shape,'stem',1),at(shape,'low',1),at(shape,'stem',-1),at(shape,'wingLow',-1)];add(path,shape===bp.oblique?0x2f76b2:0x694b99,.8)}
+  const g=new THREE.Group();if(!refBox)return g;
+  const female=/Female/.test(isWdiStudyMode(msel.value)?sel.value:''),avg=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  // All four construction tables exist together.  A view button only moves
+  // the camera; it never makes the other three WDI sources disappear.
+  for(const [view,face,source] of [['south','s','south'],['east','e','east'],['north','n','north'],['west','w','east']]){
+    const m=e.landmarks?.[source]||{},box=e.construction?.[source];
+    if(!box||!m.chin||!m.shoulderL||!m.shoulderR||!m.waistL||!m.waistR||!m.pubis)continue;
+    const profile=source==='east',rot=profile?(box.rotation||0):0;
+    const centre=[box.cx,box.y+box.height/2],turn=([x,y])=>{const dx=x-centre[0],dy=y-centre[1],c=Math.cos(rot),s=Math.sin(rot);return[centre[0]+dx*c-dy*s,centre[1]+dx*s+dy*c]};
+    const faceGroup=new THREE.Group();faceGroup.userData.k='formFace';faceGroup.userData.face=face;g.add(faceGroup);
+    const add=(pts,c,w)=>faceGroup.add(projectedStroke(pts,torso,face,c,w));
+    const L=box.cx-box.width/2,R=box.cx+box.width/2,B=box.y+box.height;
+    add([[L,box.y],[R,box.y],[R,B],[L,B],[L,box.y]].map(turn),0x246b84,1.05);
+    const headWidth=Math.max(38,(box.width-6)/(female?2.5:3))*(box.headScale||1),radius=headWidth/2,head=[m.chin[0],m.chin[1]-radius],circle=[];
+    for(let i=0;i<=32;i++){const a=Math.PI*2*i/32;circle.push([head[0]+Math.cos(a)*radius,head[1]+Math.sin(a)*radius])}add(circle,0x694b99,.9);
+    const axis=[m.chin,avg(m.shoulderL,m.shoulderR),avg(m.waistL,m.waistR),m.pubis];
+    for(let i=0;i<axis.length-1;i++){const a=axis[i],b=axis[i+1];for(let t=0;t<1;t+=.18){const u=Math.min(1,t+.085);add([[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u]],0x6f6f6f,.65)}}
+    const layers=e.guide_layers||{},layer=n=>layers[n]?.[source],ell=(o,n=40)=>{const r=[];for(let i=0;i<=n;i++){const a=Math.PI*2*i/n,c=Math.cos(o.rotation||0),s=Math.sin(o.rotation||0),x=Math.cos(a)*(o.rx||0),y=Math.sin(a)*(o.ry||0);r.push([o.cx+x*c-y*s,o.cy+x*s+y*c])}return r};
+    const cage=layer('thoracicCage')||{cx:box.cx,cy:box.y+box.height*.54,rx:box.width*.43,ry:box.height*.78,rotation:profile?rot:0};
+    add(ell(profile?(layer('profileEllipse')||{cx:box.cx,cy:box.y+box.height*.54,rx:box.width*.48,ry:box.height*.86,rotation:rot}):cage),0xb7791f,.72);
+    if(!profile){const rib=[],a=[cage.cx-cage.rx*.73,cage.cy+cage.ry*.43],q=[cage.cx,cage.cy+cage.ry*.06],b=[cage.cx+cage.rx*.73,cage.cy+cage.ry*.43];for(let i=0;i<=24;i++){const t=i/24,u=1-t;rib.push([u*u*a[0]+2*u*t*q[0]+t*t*b[0],u*u*a[1]+2*u*t*q[1]+t*t*b[1]])}add(rib,0xb7791f,.8)}
+    if(view==='south'){
+      const fp=layer('frontPlan')||(()=>{const h=Math.max(42,box.height*1.15),w=box.width*.72;return{cx:avg(m.shoulderL,m.shoulderR)[0],cy:box.y+box.height+h/2+10,points:{sternumTop:{x:0,y:-h*.42},top:{x:-w*.19,y:-h*.5},outer:{x:-w*.5,y:-h*.08},joint:{x:-w*.39,y:h*.08},sternumLow:{x:0,y:h*.42}}}})(),fpp=(id,side=1)=>[fp.cx+fp.points[id].x*side,fp.cy+fp.points[id].y];
+      for(const side of [1,-1])add(['sternumTop','top','outer','joint','sternumLow'].map(id=>fpp(id,side)),0x694b99,.85);
+      const cp=layer('chestPlan');if(cp){const cpp=(id,side)=>[cp.cx+cp.points[id].x*side,cp.cy+cp.points[id].y];for(const side of [1,-1])add(['top','upperOuter','outer','lowerOuter','lowerInner','inner','top'].map(id=>cpp(id,side)),0x9c3b97,.8)}
+    }
+    if(profile){const pc=layer('profileChest');if(pc){const p=id=>[pc.cx+pc.points[id].x,pc.cy+pc.points[id].y];add(['top','slope','frontUpper','front','low','backLow','back','top'].map(p),0x9c3b97,.8)}}
+    if(view==='north'){
+      const bp=layer('backPlan');if(bp){const at=(shape,id,side)=>[shape.cx+shape.points[id].x*side,shape.cy+shape.points[id].y],mirrored=(shape,ids)=>ids.map(id=>at(shape,id,1)).concat(ids.slice(0,-1).reverse().map(id=>at(shape,id,-1)));
+        if(bp.upper)add(mirrored(bp.upper,['neckTop','neckBase','shoulder','outer','waist','low']),0xa66d1a,.85);
+        for(const shape of [bp.lower,bp.oblique])if(shape){const path=[at(shape,'wingTip',-1),at(shape,'wingInner',-1),at(shape,'notch',1),at(shape,'wingInner',1),at(shape,'wingTip',1),at(shape,'wingLow',1),at(shape,'stem',1),at(shape,'low',1),at(shape,'stem',-1),at(shape,'wingLow',-1)];add(path,shape===bp.oblique?0x2f76b2:0x694b99,.8)}
+      }
     }
   }
   g.userData.k='forms';g.visible=formGuide;return g;
@@ -363,31 +380,66 @@ function meshOf(rows,A,{capTop=false,capBottom=false,tilt=null,sn=null}={}){
 function tube(pts,r,mat,seg){const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));return new THREE.Mesh(new THREE.TubeGeometry(c,seg||24,r,6,false),mat||bone)}
 function ball(p,rx,ry,rz,mat){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),mat||bone);m.scale.set(rx,ry,rz);m.position.set(...p);return m}
 function setReferenceBox(){
-  if(!refBox)return;const q=refBox,e=q.e,F=e.frame,b=q.b,c=q.c,show=$('ref').checked&&msel.value!=='blob2',o=+$('ro').value/100;
-  // Four real faces surround the body.  Only the camera-facing one is drawn, preventing the opposite translucent
-  // drawing from bleeding through the skin while retaining a correctly placed WDI image on every cardinal face.
+  if(!refBox)return;const q=refBox,b=q.b,show=$('ref').checked,o=+$('ro').value/100,pad=3;
+  // A genuine physical box: each WDI PNG is one transparent exterior face,
+  // independent from the latex/skin mesh and visible at the same time.  The
+  // PNG is 512px square but its transparent margin is large: fitting that
+  // whole square to the anatomical bounds used to shrink the actual WDI body
+  // (and all its 2D traits) to about half scale.  Fit the saved WDI frame,
+  // whose coordinates are the same source coordinates as reference_bounds.
   const put=(key,s,rot,pos)=>{const qf=q.faces[key];qf.p.rotation.set(...rot);qf.p.scale.set(...s);qf.p.position.set(...pos);qf.m.opacity=o;qf.m.needsUpdate=true;};
-  let z=b.max.z+.5,zw=z+G.position.z,s=(fitD-zw)/fitD;
-  put('s',[s,s,1],[0,0,0],[c.x+s*(256-F.cxs-c.x),c.y+s*(-256-c.y),z]);
-  z=b.min.z-.5;zw=z+G.position.z;s=(fitD+zw)/fitD;
-  put('n',[-s,s,1],[0,0,0],[c.x+s*(F.cxn-256-c.x),c.y+s*(-256-c.y),z]);
-  let x=b.min.x-.5,xw=x+G.position.x;s=(fitD+xw)/fitD;
-  put('e',[s,s,1],[0,-Math.PI/2,0],[x,c.y+s*(-256-c.y),c.z+s*(256-F.zmean-c.z)]);
-  x=b.max.x+.5;xw=x+G.position.x;s=(fitD-xw)/fitD;
-  put('w',[s,s,1],[0,Math.PI/2,0],[x,c.y+s*(-256-c.y),c.z+s*(F.zmean-256-c.z)]);
-  const dx=cam.position.x-ctl.target.x,dz=cam.position.z-ctl.target.z;
-  const face=Math.abs(dz)>=Math.abs(dx)?(dz>=0?'s':'n'):(dx<0?'e':'w');
-  for(const [key,qf] of Object.entries(q.faces))qf.p.visible=show&&key===face;
+  const width=b.max.x-b.min.x,height=b.max.y-b.min.y,depth=b.max.z-b.min.z;
+  const cx=(b.max.x+b.min.x)/2,cy=(b.max.y+b.min.y)/2,cz=(b.max.z+b.min.z)/2;
+  const F=q.e.frame||{},front=F.s||[0,512],back=F.n||front,side=F.e||front;
+  // A reference-bound width/depth is already expressed in WDI pixels.  Its
+  // matching image span is therefore that many source pixels about the saved
+  // centre; vertical spans are recorded explicitly in frame.{s,n,e}.
+  const fw=width,ew=depth,fsx=width/fw,esx=depth/ew;
+  const fsy=height/Math.max(1,front[1]-front[0]),bsy=height/Math.max(1,back[1]-back[0]),esy=height/Math.max(1,side[1]-side[0]);
+  const scx=F.cxs??256,ncx=F.cxn??256,ecz=F.zmean??256;
+  const fy=(span,scale)=>b.max.y-(256-span[0])*scale;
+  put('s',[fsx,fsy,1],[0,0,0],[cx+(256-scx)*fsx,fy(front,fsy),b.max.z+pad]);
+  put('n',[fsx,bsy,1],[0,Math.PI,0],[cx+(ncx-256)*fsx,fy(back,bsy),b.min.z-pad]);
+  put('e',[esx,esy,1],[0,-Math.PI/2,0],[b.min.x-pad,fy(side,esy),cz+(256-ecz)*esx]);
+  put('w',[esx,esy,1],[0,Math.PI/2,0],[b.max.x+pad,fy(side,esy),cz+(ecz-256)*esx]);
+  for(const [key,qf] of Object.entries(q.faces))qf.p.visible=show&&(!planarCheck||key===activeFaceKey());
+}
+function referenceGrid(plane,rect,color){
+  // The grid is a separate construction layer attached to its WDI face.  It
+  // uses the useful source rectangle, not the 512px transparent canvas.
+  const [x0,x1,y0,y1]=rect,step=24,positions=[];
+  const push=(a,b)=>positions.push(a[0],a[1],a[2],b[0],b[1],b[2]);
+  const P=(x,y)=>[x-256,256-y,.75];
+  for(let x=Math.ceil(x0/step)*step;x<x1;x+=step)push(P(x,y0),P(x,y1));
+  for(let y=Math.ceil(y0/step)*step;y<y1;y+=step)push(P(x0,y),P(x1,y));
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  const grid=new THREE.LineSegments(geometry,new THREE.LineBasicMaterial({color,transparent:true,opacity:.34,depthTest:false,depthWrite:false}));grid.renderOrder=29;grid.userData.k='referenceGrid';plane.add(grid);
+  // Keep the two stronger central axes independent from the light grid.
+  const axisGeometry=new THREE.BufferGeometry();
+  axisGeometry.setAttribute('position',new THREE.Float32BufferAttribute([...(P((x0+x1)/2,y0)),...(P((x0+x1)/2,y1)),...(P(x0,(y0+y1)/2)),...(P(x1,(y0+y1)/2))],3));
+  const axis=new THREE.LineSegments(axisGeometry,new THREE.LineBasicMaterial({color,transparent:true,opacity:.78,depthTest:false,depthWrite:false}));axis.renderOrder=30;axis.userData.k='referenceGrid';plane.add(axis);
+}
+function gravityCentreMesh(b){
+  // This is intentionally only the future mesh's centre of gravity, not a
+  // provisional spine, cross, or centreline.
+  const g=new THREE.Group(),cx=(b.min.x+b.max.x)/2,cy=(b.min.y+b.max.y)/2,cz=(b.min.z+b.max.z)/2;
+  const sphere=new THREE.Mesh(new THREE.SphereGeometry(5,18,12),new THREE.MeshBasicMaterial({color:0x27b875,depthTest:false,depthWrite:false}));sphere.position.set(cx,cy,cz);sphere.renderOrder=43;g.add(sphere);
+  g.userData.k='gravity';return g;
 }
 function addReferenceOverlay(e,b,c){
   if(!e.wdi||!e.frame)return;
   const maps={s:refTexOf(e.wdi.s),n:refTexOf(e.wdi.n),e:refTexOf(e.wdi.e)};
-  const face=(map)=>{const m=new THREE.MeshBasicMaterial({map,transparent:true,opacity:+$('ro').value/100,depthTest:true,depthWrite:false,side:THREE.DoubleSide});const p=new THREE.Mesh(new THREE.PlaneGeometry(512,512),m);p.renderOrder=20;p.userData.k='ref';G.add(p);return{p,m}};
-  refBox={e,b:b.clone(),c:c.clone(),faces:{s:face(maps.s),n:face(maps.n),e:face(maps.e),w:face(maps.e)}};setReferenceBox();
+  const face=(map,key)=>{const m=new THREE.MeshBasicMaterial({map,transparent:true,opacity:+$('ro').value/100,depthTest:true,depthWrite:false,side:THREE.DoubleSide});const p=new THREE.Mesh(new THREE.PlaneGeometry(512,512),m);p.renderOrder=20;p.userData.k='ref';p.userData.face=key;G.add(p);return{p,m}};
+  refBox={e,b:b.clone(),c:c.clone(),faces:{s:face(maps.s,'s'),n:face(maps.n,'n'),e:face(maps.e,'e'),w:face(maps.e,'w')}};setReferenceBox();
+  const width=b.max.x-b.min.x,depth=b.max.z-b.min.z,F=e.frame;
+  referenceGrid(refBox.faces.s.p,[F.cxs-width/2,F.cxs+width/2,F.s[0],F.s[1]],0x909090);
+  referenceGrid(refBox.faces.n.p,[F.cxn-width/2,F.cxn+width/2,F.n[0],F.n[1]],0xe1bb2d);
+  referenceGrid(refBox.faces.e.p,[F.zmean-depth/2,F.zmean+depth/2,F.e[0],F.e[1]],0xc9433d);
+  referenceGrid(refBox.faces.w.p,[F.zmean-depth/2,F.zmean+depth/2,F.e[0],F.e[1]],0x3183bf);
 }
 function surfaceReference(torso,e){
-  // WDI 2's comparison image is a decal on the actual skin, not a free plane.
-  // Its black outline therefore follows the 3D envelope by construction.
+  // Legacy skin decal, kept only for old captures. New WDI comparison uses
+  // the independent four-face box above.
   const F=e.frame,source=activeView===0?e.wdi.s:activeView===1?e.wdi.e:e.wdi.n;
   const xexpr=activeView===0?'vP.x+off.x':activeView===1?'vP.z+off.z':'off.y-vP.x';
   const mat=new THREE.ShaderMaterial({transparent:true,depthTest:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide,
@@ -504,7 +556,7 @@ function build(){
   if(Array.isArray(e))e={rows:e,legs:null,lm:null};
   const A=e.A||DATA[mode].A,sn=e.sn??null;
   G=new THREE.Group();
-  cur=mode==='blob2'?blob2Mat:(mode==='blob'?blobMat:(isWdi(e)?wdiMat:skin));
+  cur=mode==='blob3'?blob3Mat:(mode==='blob2'?blob2Mat:(mode==='blob'?blobMat:(isWdi(e)?wdiMat:skin)));
   if(isWdi(e)){const u=wdiMat.uniforms,F=e.frame;u.tS.value=texOf(e.tex.s);u.tN.value=texOf(e.tex.n);u.tE.value=texOf(e.tex.e);
     u.bS.value=texOf(e.bake.s);u.bN.value=texOf(e.bake.n);u.bE.value=texOf(e.bake.e);
     u.gS.value=texOf(e.gate.s);u.gN.value=texOf(e.gate.n);u.gE.value=texOf(e.gate.e);
@@ -521,55 +573,55 @@ function build(){
       const gm=new THREE.Group();gh.parts.forEach(p=>gm.add(layerMesh(p,new THREE.MeshStandardMaterial({color:new THREE.Color(p.c[0]/255,p.c[1]/255,p.c[2]/255),roughness:.75,side:THREE.DoubleSide}))));add(gm,'ghm')}}
   const zc=e.frame&&e.frame.zc,tilt=zc?y=>{const r=Math.max(1,Math.min(zc.length-2,Math.round(-y-e.frame.s[0])));return -(zc[r+1]-zc[r-1])/2}:null;
   const torso=meshOf(e.rows,A,{capTop:!e.horns,capBottom:!e.legs,tilt,sn});torso.userData.k='skin';G.add(torso);
-  if(mode==='blob2'&&e.clavicle_bone){const cb=layerMesh(e.clavicle_bone,boneL);cb.userData.k='cb';cb.visible=$('cb').checked;G.add(cb)}
-  if(mode==='blob2'&&e.spine_bone){const sp=layerMesh(e.spine_bone,boneL,false);sp.userData.k='sp';sp.visible=$('sp').checked;G.add(sp)}
-  // The WDI reference is a torso sprite.  Keep its fit tied to that original
-  // skin shell, not to optional WDI 2 neck/shoulder study volumes.
+  let fixedBB=null;
+  if(mode==='blob3'&&e.fixed_objects){const fx=new THREE.Group();e.fixed_objects.forEach(p=>fx.add(layerMesh(p,boneL)));fx.userData.k='fx';fx.visible=$('fx').checked;G.add(fx);fixedBB=new THREE.Box3().setFromObject(fx)}
+  // WDI remains in its canonical frame: a contracted diagnostic mesh must not
+  // shrink the reference, its 2D guides, or their relationship to fixed objects.
   const torsoBB=new THREE.Box3().setFromObject(torso);
-  if(mode==='blob2'&&e.wdi)G.add(surfaceReference(torso,e));
-  if(mode==='blob2'&&e.muscle_zones)G.add(muscleZoneMesh(e.muscle_zones,e.rows,A));
+  if(isWdiStudyMode(mode)&&e.muscle_zones)G.add(muscleZoneMesh(e.muscle_zones,e.rows,A));
   const piece=(rows,o)=>{const m=meshOf(rows,A,{...o,tilt,sn});m.userData.k='skin';G.add(m)};
   if(e.legs){piece(e.legs.L,{capBottom:true});piece(e.legs.R,{capBottom:true})}
   if(e.horns){piece(e.horns.L,{capTop:true});piece(e.horns.R,{capTop:true})}
   if(e.lm){sk.visible=$('sk').checked;sk.userData.k='sk';G.add(sk);
     if(!name.includes('Female')){const og=organs(e.rows,A,e.lm);if(og){og.visible=$('og').checked;og.userData.k='og';G.add(og)}}}
   const bb=new THREE.Box3().setFromObject(G),c=new THREE.Vector3();torsoBB.getCenter(c);G.position.sub(c);
-  $('ref').disabled=!e.wdi;$('ro').disabled=!e.wdi;$('rb').disabled=!e.layers?.reference_bones;addReferenceOverlay(e,torsoBB,c);
+  const referenceBB=e.reference_bounds?new THREE.Box3(new THREE.Vector3(...e.reference_bounds.min),new THREE.Vector3(...e.reference_bounds.max)):torsoBB.clone();
+  if(fixedBB)referenceBB.union(fixedBB);
+  $('ref').disabled=!e.wdi;$('ro').disabled=!e.wdi;$('rb').disabled=!e.layers?.reference_bones;addReferenceOverlay(e,referenceBB,c);
+  if(mode==='blob3')G.add(gravityCentreMesh(referenceBB));
   sc.add(G);
   // with the ghost limbs shown the camera steps back to hold the whole figure; with them off nothing moves
   if(e.layers&&e.layers.ghost&&$('gh').checked){const v=e.layers.ghost.skin.v.concat(e.layers.ghost.bone.v);for(let i=0;i<v.length;i+=3){bb.expandByPoint(new THREE.Vector3(v[i],v[i+1],v[i+2]));bb.expandByPoint(new THREE.Vector3(-v[i],v[i+1],v[i+2]))}
   }
   // the target stays on the torso centre (a recentred figure shifts the shoulders by parallax): fit the taller half twice
   fitD=Math.max(2*Math.max(bb.max.y-c.y,c.y-bb.min.y),(bb.max.x-bb.min.x)*0.8)*1.25/(2*Math.tan(cam.fov*Math.PI/360));fitD=Math.max(fitD,(bb.max.x-bb.min.x)*1.15/(2*Math.tan(cam.fov*Math.PI/360)*cam.aspect));
-  const clavicleOnly=mode==='blob2'&&$('cb').checked;
-  if(mode==='blob2'&&e.landmarks){G.updateMatrixWorld(true);setReferenceBox();G.updateMatrixWorld(true);G.add(hardLandmarkMesh(e,A));if(clavicleOnly)G.add(claviclePlanMesh(e,torso));else if(landmarkGuide)G.add(landmarkMesh(e,torso));if(formGuide)G.add(formMesh(e,torso));}
-  apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode]+(isBlobMode(mode)?' Glisse les pastilles colorées pour déplacer les lampes dans le plan de vue.':'');
+  if(isWdiStudyMode(mode)&&e.landmarks){G.updateMatrixWorld(true);setReferenceBox();G.updateMatrixWorld(true);G.add(hardLandmarkMesh(e,A));if(landmarkGuide)G.add(landmarkMesh(e,torso));if(formGuide)G.add(formMesh(e,torso));}
+  apply();$('note').textContent=NOTES[e.layers?'stack':isWdi(e)?'wdi':mode];
 }
 function apply(){
-  const sk=$('sk').checked,rb=$('rb').checked,mu=$('mu').checked,fa=$('fa').checked,rm=$('rm').checked,gh=$('gh').checked,op=+$('op').value/100,cbOnly=msel.value==='blob2'&&$('cb').checked,spOnly=msel.value==='blob2'&&$('sp').checked,boneOnly=cbOnly||spOnly;
+  const sk=$('sk').checked,rb=$('rb').checked,mu=$('mu').checked,fa=$('fa').checked,rm=$('rm').checked,gh=$('gh').checked,fx=$('fx').checked,op=+$('op').value/100;
   const hasMu=G.children.some(o=>o.userData.k==='mu');   // a body without a muscle layer keeps its skin
   const o=op;
   cur.wireframe=false;cur.transparent=op<1;cur.opacity=o;if(cur.uniforms)cur.uniforms.opacity.value=o;cur.depthWrite=op===1;cur.needsUpdate=true;
   // Ghost limbs use a separate material, but are still skin: keep their opacity and depth behaviour identical.
   ghostL.transparent=op<1;ghostL.opacity=o;ghostL.depthWrite=op===1;ghostL.needsUpdate=true;
   // Visibility controls never rewrite the skin: transparency alone decides whether bones and muscles show through it.
-  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='rb')o.visible=rb;if(o.userData.k==='cb')o.visible=cbOnly;if(o.userData.k==='sp')o.visible=spOnly;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='fa')o.visible=fa;if(o.userData.k==='rm')o.visible=rm;if(o.userData.k==='skin')o.visible=!boneOnly;
+  G.children.forEach(o=>{if(o.userData.k==='sk')o.visible=sk;if(o.userData.k==='rb')o.visible=rb;if(o.userData.k==='fx')o.visible=fx;if(o.userData.k==='og')o.visible=$('og').checked;if(o.userData.k==='mu')o.visible=mu;if(o.userData.k==='fa')o.visible=fa;if(o.userData.k==='rm')o.visible=rm;if(o.userData.k==='skin')o.visible=true;
     if(o.userData.k==='ghs')o.visible=gh;if(o.userData.k==='ghb')o.visible=gh&&sk;if(o.userData.k==='ghm')o.visible=gh&&mu});
-  const zen=$('zen').checked;
+  const zen=true;
   // The blob carries WDI's own top-light transfer in its shader; do not add a second physical key.
   const blob=isBlobMode(msel.value);fill.intensity=blob?1:(zen?.46:1.0);dl.visible=zen&&!blob;$('blobLights').hidden=!blob;updateLampHandles();
   if(cur.uniforms)cur.uniforms.zen.value=zen?1:0;
-  G.traverse(o=>{if(o.userData.k==='zones')o.visible=msel.value==='blob2'&&colourGuide&&!boneOnly;if(o.userData.k==='landmarks')o.visible=msel.value==='blob2'&&landmarkGuide&&!boneOnly;if(o.userData.k==='hardLandmarks')o.visible=msel.value==='blob2';if(o.userData.k==='clavicleGuide')o.visible=msel.value==='blob2'&&cbOnly;if(o.userData.k==='forms')o.visible=msel.value==='blob2'&&formGuide&&(!boneOnly||spOnly);if(o.userData.k==='surfaceRef'){o.visible=msel.value==='blob2'&&$('ref').checked&&!boneOnly;o.material.uniforms.opacity.value=+$('ro').value/100;}});
-  const isWdi2=msel.value==='blob2';document.querySelectorAll('.stackOnly').forEach(o=>o.hidden=isWdi2);document.querySelectorAll('.wdi2Only').forEach(o=>o.hidden=!isWdi2);$('colour').hidden=!isWdi2;$('landmarks').hidden=!isWdi2;$('forms').hidden=!isWdi2;
+  G.traverse(o=>{if(o.userData.k==='zones')o.visible=false;if(o.userData.k==='landmarks')o.visible=isWdiStudyMode(msel.value)&&landmarkGuide&&(!planarCheck||!o.userData.face||o.userData.face===activeFaceKey());if(o.userData.k==='hardLandmarks')o.visible=isWdiStudyMode(msel.value)&&(!planarCheck||!o.userData.face||o.userData.face===activeFaceKey());if(o.userData.k==='clavicleGuide')o.visible=false;if(o.userData.k==='forms')o.visible=isWdiStudyMode(msel.value)&&formGuide;if(o.userData.k==='formFace')o.visible=isWdiStudyMode(msel.value)&&formGuide&&(!planarCheck||o.userData.face===activeFaceKey());if(o.userData.k==='gravity')o.visible=isWdiStudyMode(msel.value)&&$('ref').checked;if(o.userData.k==='surfaceRef'){o.visible=isWdiStudyMode(msel.value)&&$('ref').checked;o.material.uniforms.opacity.value=+$('ro').value/100;}});
+  const isStudy=isWdiStudyMode(msel.value);document.querySelectorAll('.stackOnly').forEach(o=>o.hidden=isStudy);document.querySelectorAll('.wdi3Only').forEach(o=>o.hidden=msel.value!=='blob3');$('landmarks').hidden=!isStudy;$('forms').hidden=!isStudy;
   setReferenceBox();
 }
-function view(v){activeView=v;globalThis.__fit=fitD;const d=fitD;const p=[[0,0,d],[-d,0,0],[0,0,-d]][v];cam.position.set(...p);ctl.target.set(0,0,0);ctl.update();if((landmarkGuide||formGuide||$('cb').checked)&&msel.value==='blob2'){build();return}setReferenceBox()}
-sel.onchange=build;msel.onchange=()=>{populateBodies();build();view(0)};['sk','rb','mu','fa','rm','cb','sp','ref','ro','zen','gh','og','op'].forEach(i=>$(i).oninput=apply);
+function view(v){activeView=v;globalThis.__fit=fitD;const d=fitD,q=d*Math.SQRT1_2;const p=[[0,0,d],[-d,0,0],[0,0,-d],[d,0,0],[-q,0,q],[0,d,.001]][v]||[0,0,d];cam.up.set(v===5?0:0,v===5?0:1,v===5?-1:0);cam.position.set(...p);ctl.target.set(0,0,0);ctl.update();if((landmarkGuide||formGuide)&&isWdiStudyMode(msel.value)){build();return}setReferenceBox()}
+sel.onchange=build;msel.onchange=()=>{populateBodies();build();view(0)};['sk','rb','mu','fa','rm','fx','ref','ro','gh','og','op'].forEach(i=>$(i).oninput=apply);
 ['li'].forEach(i=>$(i).oninput=syncLampInputs);['lon','lx','ly','lz','lg'].forEach(i=>$(i).oninput=updateLamp);
-['sk','rb','mu','fa','rm','cb','sp','ref','zen','og'].forEach(i=>{if(Q.has(i))$(i).checked=Q.get(i)!=='0'});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
+['sk','rb','mu','fa','rm','fx','ref','og'].forEach(i=>{if(Q.has(i))$(i).checked=Q.get(i)!=='0'});if(Q.get('gh')==='0')$('gh').checked=false;$('gh').addEventListener('change',build);
 document.querySelectorAll('button[data-v]').forEach(b=>b.onclick=()=>view(+b.dataset.v));
 $('focus').onclick=()=>document.body.classList.toggle('focus');
-$('colour').onclick=()=>{colourGuide=!colourGuide;$('colour').textContent=colourGuide?'zones couleur ✓':'zones couleur';apply()};
 $('landmarks').onclick=()=>{landmarkGuide=!landmarkGuide;$('landmarks').textContent=landmarkGuide?'traits 2D ✓':'traits 2D';build()};
 $('forms').onclick=()=>{formGuide=!formGuide;$('forms').textContent=formGuide?'formes 2D ✓':'formes 2D';build()};
 addEventListener('keydown',ev=>{if(ev.key.toLowerCase()==='h'&&!/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName))document.body.classList.toggle('focus')});
@@ -596,7 +648,7 @@ function endLampDrag(ev){
 addEventListener('pointermove',moveLampDrag,true);addEventListener('pointerup',endLampDrag,true);addEventListener('pointercancel',endLampDrag,true);
 lampHandles.forEach(h=>h.addEventListener('pointerdown',ev=>{if(isBlobMode(msel.value)&&ev.button===0)grabLamp(h.dataset.lamp,ev)}));
 if(Q.get('focus')==='1')document.body.classList.add('focus');
-const initialView=Math.max(0,Math.min(2,Number(Q.get('view'))||0));
+const initialView=Math.max(0,Math.min(5,Number(Q.get('view'))||0));
 build();view(initialView);sel.addEventListener('change',()=>view(initialView));
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
 function frame(){ctl.update();updateLampHandles();
