@@ -263,6 +263,52 @@ def _fit_bodyparts3d_spine(body, sides, guide_reference, north_key):
         waist_canvas_y = (top_canvas_y + lower["cy"] + lower["points"]["low"]["y"]) / 2
         bottom_canvas_y = lower["cy"] + lower["points"]["low"]["y"]
         top_axis_x = waist_axis_x = bottom_axis_x = 0.0
+    # A saved editor column guide is a sagittal constraint.  When it exists,
+    # its five anchors are authoritative for both height and front/back depth:
+    # no profile curve is guessed from the north/back view.  The JSON supplied
+    # for the current Male pass predates these controls, so this branch stays
+    # deliberately dormant until the editor exports ``_spineGuide``.
+    body_name = north_key.split(":", 1)[0]
+    profile_guide = guide_reference.get("_spineGuide", {}).get(f"{body_name}:east", {})
+    profile_anchor_names = ("deepBlue", "blueLower", "blueUpper", "pink", "green")
+    profile_inflection_names = ("inflectBlueDeep", "inflectBlueBlue", "inflectPinkBlue", "inflectGreenPink")
+    has_profile_guide = all(
+        isinstance(profile_guide.get(name), dict)
+        and "x" in profile_guide[name]
+        and "y" in profile_guide[name]
+        for name in (*profile_anchor_names, *profile_inflection_names)
+    )
+    if has_profile_guide:
+        guide_nodes = [profile_guide[name] for name in profile_anchor_names]
+        guide_controls = [profile_guide[name] for name in profile_inflection_names]
+        # The five nodes follow the source asset from sacrum to cervical end.
+        guide_u = (0.0, .25, .52, .78, 1.0)
+        def profile_value(u, coordinate):
+            """Evaluate the editor's four saved quadratic spine curves.
+
+            ``drawSpineZones`` uses one quadratic Bézier per coloured zone.
+            Its square inflection handles are therefore geometry, not merely
+            UI decoration: omitting them reduces the profile to four straight
+            segments and loses the user's kyphosis/lordosis.
+            """
+            for limit in range(1, len(guide_u)):
+                if u <= guide_u[limit]:
+                    lo, hi = guide_u[limit - 1], guide_u[limit]
+                    t = (u - lo) / (hi - lo)
+                    a, control, c = guide_nodes[limit - 1], guide_controls[limit - 1], guide_nodes[limit]
+                    return (1 - t) ** 2 * a[coordinate] + 2 * (1 - t) * t * control[coordinate] + t ** 2 * c[coordinate]
+            return guide_nodes[-1][coordinate]
+    # Translate the complete profile until the sacral endpoint meets the
+    # croup-side inner WDI boundary.  This is an anchor translation, not a
+    # deformation: the five zone proportions and all Bézier curvatures stay
+    # exactly as the editor recorded them.
+    croup_guide = guide_reference.get("_spineCroup", {}).get(f"{body_name}:east")
+    spine_drop = (
+        croup_guide - profile_guide["deepBlue"]["y"]
+        if has_profile_guide and isinstance(croup_guide, (int, float))
+        else 0.0
+    )
+
     source_y0, source_y1 = min(vertex[1] for vertex in vertices), max(vertex[1] for vertex in vertices)
     source_y_span = max(source_y1 - source_y0, 1.0)
     source_x0, source_x1 = min(vertex[0] for vertex in vertices), max(vertex[0] for vertex in vertices)
@@ -271,10 +317,15 @@ def _fit_bodyparts3d_spine(body, sides, guide_reference, north_key):
     out = []
     for source_x, source_y, source_z in vertices:
         u = (source_y - source_y0) / source_y_span  # sacrum -> cervical end
+        # Keep the two source end caps a hair inside the closed membrane.
+        # The guide anchors define the visible extrema; an exact cap-on-cap
+        # fit can otherwise leave a couple of numerical boundary vertices.
+        profile_u = max(.003, min(.997, u))
         # The lumbar transition of the package is at roughly one quarter of
         # the sacrum-to-cervical path.  Snap that locus to the north waist
         # trait, then interpolate the two remaining anatomical spans.
         canvas_y = (
+            profile_value(profile_u, "y") if has_profile_guide else
             bottom_canvas_y + (waist_canvas_y - bottom_canvas_y) * (u / .25)
             if u <= .25 else
             waist_canvas_y + (top_canvas_y - waist_canvas_y) * ((u - .25) / .75)
@@ -284,10 +335,17 @@ def _fit_bodyparts3d_spine(body, sides, guide_reference, north_key):
             if u <= .25 else
             waist_axis_x + (top_axis_x - waist_axis_x) * ((u - .25) / .75)
         )
-        target_y = -canvas_y
-        # Keep the existing vertebral cross-section modest: WDI2 has no fat
-        # layer yet, so a wide artificial channel would violate the latex rule.
-        target_x = axis_x + (source_x - source_x_center) * .44
+        target_y = -canvas_y - spine_drop
+        # Preserve the source bone's cross-section proportions.  The same
+        # scale is applied across and through the profile: squashing Z alone
+        # makes the vertebrae look like a flat ribbon in the East view.
+        # Uniform fit scale: preserves the packaged bone's X:Z proportions
+        # while remaining close enough for the current closed membrane.
+        # Fat has the shallowest usable anterior/posterior corridor at the
+        # rebalanced sacral transition.  Keep the bone's X:Z ratio intact,
+        # but use the smallest uniform fit that remains inside its envelope.
+        cross_section_scale = .18 if body_name == "Fat" else .20
+        target_x = axis_x + (source_x - source_x_center) * cross_section_scale
         back_z = _skin_depth(rows, sides, target_x, target_y, False)
         front_z = _skin_depth(rows, sides, target_x, target_y, True)
         source_mid_z = 226.0 + 8.0 * math.sin(u * math.pi * .8)
@@ -295,9 +353,46 @@ def _fit_bodyparts3d_spine(body, sides, guide_reference, north_key):
         # The spine is a core element: unlike a clavicle it must not be a
         # near-back decal.  Place it on the local anterior/posterior median,
         # while retaining the source vertebrae's shallow sagittal curve.
-        target_z = max(back_z + 2.0, min(front_z - 2.0, centre_z + (source_z - source_mid_z) * .16))
+        if has_profile_guide:
+            # This is the very same East projection as the 3D WDI guide:
+            # screen X maps directly onto world Z about the profile's zmean.
+            # Normalising it against the silhouette depth flattened the saved
+            # cyphosis/lordosis into an almost straight vertical line.
+            guide_z = profile_value(profile_u, "x") - body["frame"]["zmean"]
+            target_z = guide_z + (source_z - source_mid_z) * cross_section_scale
+            target_z = max(back_z + 2.0, min(front_z - 2.0, target_z))
+        else:
+            target_z = max(back_z + 2.0, min(front_z - 2.0, centre_z + (source_z - source_mid_z) * .16))
         out.extend((target_x, target_y, target_z))
-    return {"v": out, "i": [index for face in faces for index in face], "source": "BodyParts3D v_bone_spine, centred in the WDI2 core"}
+    source_label = "BodyParts3D v_bone_spine, fitted to Male east spine guide" if has_profile_guide else "BodyParts3D v_bone_spine, centred in the WDI2 core"
+    return {"v": out, "i": [index for face in faces for index in face], "source": source_label}
+
+
+def _apply_spine_reference(base_reference, column_reference):
+    """Overlay the approved spine guides without replacing other constructions.
+
+    The landmark editor export is shared by every body type.  The current
+    The earlier column pass was edited for Male only, so its regular landmark
+    records remain a Male-only overlay.  The current ``_spineGuide`` has a
+    complete 8 × 3 set; copy every one of those independent curves while
+    preserving the approved cage, chest and construction layers.
+    """
+    merged = copy.deepcopy(base_reference)
+    for view in ("south", "east", "north"):
+        name = f"Male:{view}"
+        if isinstance(column_reference.get(name), dict):
+            merged[name] = copy.deepcopy(column_reference[name])
+    if isinstance(column_reference.get("_spineGuide"), dict):
+        merged["_spineGuide"] = copy.deepcopy(column_reference["_spineGuide"])
+    croup_guides = {}
+    for name in column_reference.get("_spineGuide", {}):
+        landmarks = column_reference.get(name, {})
+        pelvis_l, pelvis_r = landmarks.get("pelvisL"), landmarks.get("pelvisR")
+        if isinstance(pelvis_l, dict) and isinstance(pelvis_r, dict):
+            if isinstance(pelvis_l.get("y"), (int, float)) and isinstance(pelvis_r.get("y"), (int, float)):
+                croup_guides[name] = (pelvis_l["y"] + pelvis_r["y"]) / 2
+    merged["_spineCroup"] = croup_guides
+    return merged
 
 
 def add_wdi2_neck_and_shoulder_volumes(blob, anchors, volume_reference, guide_reference):
@@ -554,6 +649,14 @@ if blob_path.exists():
     volume_reference = json.loads(volume_reference_path.read_text(encoding="utf-8"))
     guide_path = here.parent.parent / "landmark-editor-site" / "dist" / "assets" / "reperes-anatomiquesGrandOblique.json"
     guide_reference = json.loads(guide_path.read_text(encoding="utf-8")) if guide_path.exists() else {}
+    # The current column pass was authored only for Male.  It is an explicit
+    # overlay, rather than a replacement for the approved all-body reference.
+    column_path = here.parent.parent / "landmark-editor-site" / "dist" / "assets" / "reperes-anatomiquesColonne.json"
+    if column_path.exists():
+        guide_reference = _apply_spine_reference(
+            guide_reference,
+            json.loads(column_path.read_text(encoding="utf-8")),
+        )
     data["blob"] = json.loads(blob_path.read_text(encoding="utf-8"))
     # Separate JSON tree: later experiments on blob WDI 2 never alter blob WDI.
     data["blob2"] = add_wdi2_neck_and_shoulder_volumes(copy.deepcopy(data["blob"]), anchors, volume_reference, guide_reference)
@@ -576,9 +679,13 @@ if blob_path.exists():
     for name, body in data["blob2"]["bodies"].items():
         landmarks = {}
         for view in ("south", "east", "north"):
+            # The active Male column pass is the source of truth for its
+            # visible 2D landmark planes; every other body keeps the canonical
+            # volume reference until it has its own approved edit.
+            landmark_reference = guide_reference if name == "Male" else volume_reference
             points = {
                 label: [point["x"], point["y"]]
-                for label, point in volume_reference.get(f"{name}:{view}", {}).items()
+                for label, point in landmark_reference.get(f"{name}:{view}", {}).items()
                 if isinstance(point, dict) and "x" in point and "y" in point
             }
             # The editor adds these three points at runtime from pubis and leg
@@ -620,9 +727,10 @@ if blob_path.exists():
             }.items()
         }
         body["landmark_source"] = "landmark-editor-site/dist/assets/volume-reference.json"
-    # WDI 3 begins as a deep copy of the approved WDI 2 study: its guides,
-    # bones and landmark coordinates remain independently editable while only
-    # its outer membrane receives the latex constraints above.
+    # WDI 3 begins as a deep copy of the approved WDI 2 study.  Its WDI box,
+    # guides and bones remain inspectable.  The current active membrane is
+    # constrained by the spinal mesh only; clavicles remain display references
+    # while their 2D fit is still being refined.
 data["blob3"] = rebuild_deformable_mesh(copy.deepcopy(data["blob2"]))
 tpl = (here / "body3d_template.html").read_text(encoding="utf-8")
 marker = "const DATA=globalThis.__DATA__;"
